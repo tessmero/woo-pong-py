@@ -1,0 +1,19 @@
+**/*Zone.Identifier
+
+# Node modules
+node_modules/
+
+# Build output
+dist/
+
+# Sublime project/workspace files
+*.sublime-workspace
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific
+.DS_Store
+Thumbs.db

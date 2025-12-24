@@ -1,0 +1,19 @@
+{
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true
+    },
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "eslint.rules.customizations": [
+      {
+        "rule": "*",
+        "severity": "warn"
+      }
+    ],
+    "glsllint.fallBackStage": "vert"
+  }
+  

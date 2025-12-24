@@ -1,0 +1,17 @@
+{
+  "extension": ["ts"],
+  "spec": [
+    "tests/**/*.test.ts",
+    "eslint-plugin-tt/tests/**/*.test.ts"
+  ],
+  "require": [
+    "ts-node/register",
+    "tsconfig-paths/register",
+    "./tests/fixtures.ts"
+  ],
+  "node-option": [
+    "experimental-specifier-resolution=node",
+    "loader=ts-node/esm"
+  ],
+  "timeout": 60000
+}

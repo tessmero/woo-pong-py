@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "baseUrl": "src",
+    "rootDir": "src",
+    "target": "es2022",
+    "moduleResolution": "nodenext",
+    "module": "nodenext",
+    "strictNullChecks": true, 
+    "resolveJsonModule": true,
+    "noImplicitThis": true,
+    
+    // classes must define readonly properties in constructor
+    "strictPropertyInitialization": true,
+  },
+  "include": ["src"]
+}

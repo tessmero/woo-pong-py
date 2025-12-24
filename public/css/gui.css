@@ -1,0 +1,217 @@
+@font-face {
+  font-family: 'Chewy';
+  src: url('/fonts/Chewy-Regular.ttf')  format('truetype');
+}
+
+button {
+  all: unset;
+  cursor: pointer;
+}
+
+/* button or clickable non-button tag */
+.button {
+  cursor: pointer;
+}
+
+
+.gui-element {
+  font-family: 'Chewy';
+  font-size: 12px;
+  z-index: 3;
+  border: 1px solid black;
+  border-radius: 5px;
+  box-sizing: border-box;
+  position: absolute;
+  transition:
+    color 0.1s ease-in-out,
+    background-color 0.1s ease-in-out,
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: black;
+  background: transparent;
+  opacity: 1;
+  transform: scale(1);
+  text-align: center;
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.gui-element.button {
+  border: 5px solid black;
+  background-color: #cccccc;
+}
+
+.gui-element:not(.button) {
+  pointer-events: none;
+}
+
+.gui-element > span {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+/* 600 threshold should agree with layout-parser.ts */
+@media screen and ((max-width: 600px) or (max-height: 600px)) {
+  .gui-element > span {
+    font-size: 1.5em;
+  }
+}
+
+.panel {
+  cursor: default;
+}
+
+.diagram {
+  cursor: default;
+}
+
+.transparent {
+  opacity: .5;
+  cursor: default;
+  border: none;
+}
+
+.gui-element.hidden {
+  display: none;
+  pointer-events: none;
+  transform: scale(0.95);
+}
+
+.button:hover {
+  background-color: gray;
+  color: black;
+}
+
+.button:active, .button.active {
+  background-color: black;
+  color: white;
+}
+
+.button.red-button {
+  background-color: rgb(255,100,100);
+  color: black;
+}
+
+.button.red-button:hover {
+  background-color: rgb(255,200,200);
+  color: black;
+}
+
+.button.red-button:active, .button.red-button.active {
+  background-color: black;
+  color: white;
+}
+
+.button.green-button {
+  background-color: rgb(100,255,100);
+  color: black;
+}
+
+.button.green-button:hover {
+  background-color: rgb(200,255,200);
+  color: black;
+}
+
+.button.green-button:active, .button.green-button.active {
+  background-color: black;
+  color: white;
+}
+
+.button.blue-button {
+  background-color: rgb(100,100,255);
+  color: black;
+}
+
+.button.blue-button:hover {
+  background-color: rgb(200,200,255);
+  color: black;
+}
+
+.button.blue-button:active, .button.blue-button.active {
+  background-color: black;
+  color: white;
+}
+
+.button.yellow-button {
+  background-color: rgb(255,255,100);
+  color: black;
+}
+
+.button.yellow-button:hover {
+  background-color: rgb(255,255,200);
+  color: black;
+}
+
+.button.yellow-button:active, .button.yellow-button.active {
+  background-color: black;
+  color: white;
+}
+
+.noselect {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.loading-bar {
+  --progress: 0%;
+}
+
+.loading-bar::before {
+  pointer-events: none;
+  content: "";
+  position: absolute;
+  border-radius: 5px;
+  inset: 0;
+  background: #cccccc;
+  width: var(--progress); 
+  z-index: -1;
+  transition:
+    color 0.1s ease-in-out,
+    background-color 0.1s ease-in-out,
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+.button:hover::before {
+  background-color: gray;
+}
+
+.button:active::before, .button.active::before {
+  background-color: black;
+}
+
+
+.click-me {
+  -webkit-animation: TUTORIAL_HL 1s infinite;  /* Safari 4+ */
+  -moz-animation: TUTORIAL_HL 1s infinite;  /* Fx 5+ */
+  -o-animation: TUTORIAL_HL 1s infinite;  /* Opera 12+ */
+  animation: TUTORIAL_HL 1s infinite;  /* IE 10+, Fx 29+ */
+}
+
+@-webkit-keyframes TUTORIAL_HL {
+  0% { background-color: rgb(170, 170, 170); }
+  5% { background-color: rgb(163, 163, 163); }
+  10% { background-color: rgb(156, 156, 156); }
+  15% { background-color: rgb(149, 149, 149); }
+  20% { background-color: rgb(142, 142, 142); }
+  25% { background-color: rgb(135, 135, 135); }
+  30% { background-color: rgb(128, 128, 128); }
+  35% { background-color: rgb(121, 121, 121); }
+  40% { background-color: rgb(114, 114, 114); }
+  45% { background-color: rgb(107, 107, 107); }
+  50% { background-color: rgb(100, 100, 100); }
+  55% { background-color: rgb(107, 107, 107); }
+  60% { background-color: rgb(114, 114, 114); }
+  65% { background-color: rgb(121, 121, 121); }
+  70% { background-color: rgb(128, 128, 128); }
+  75% { background-color: rgb(135, 135, 135); }
+  80% { background-color: rgb(142, 142, 142); }
+  85% { background-color: rgb(149, 149, 149); }
+  90% { background-color: rgb(156, 156, 156); }
+  95% { background-color: rgb(163, 163, 163); }
+  100% { background-color: rgb(170, 170, 170); }
+}

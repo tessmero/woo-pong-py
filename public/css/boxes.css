@@ -1,0 +1,38 @@
+
+.tt-box, .tt-box-editor {
+    position: absolute;
+    z-index: 20;
+    background: transparent;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+/* playing 
+.tt-box {
+    background-color: rgba(150,255,150,.5) 
+}*/
+.tt-box:hover, .tt-box.hover {
+    background-color: rgba(255,255,150,.5)
+}
+
+/* level editor */
+.tt-box-editor-center {
+    background-color: rgba(150,150,255,.5);
+}
+.tt-box-editor-center:hover {
+    background-color: rgba(255,255,255,.5);
+}
+
+.tt-box-editor-edge, .tt-box-editor-corner {
+    background-color: yellow;
+    border: 1px solid black;
+}
+
+.tt-box-editor-edge:hover , .tt-box-editor-corner:hover  {
+    background-color: white;
+    border: 1px solid black;
+}
+
+.tt-box-editor.active {
+    border: 2px solid black !important;
+}

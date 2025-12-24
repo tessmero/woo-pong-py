@@ -1,0 +1,78 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+#groundElem, #skyElem {
+  pointer-events: none;
+  transition: background-color 0.5s ease-in-out;
+}
+
+#groundElem {
+  z-index: 10;
+}
+
+#groundElem canvas, #skyElem canvas {
+  width: 100%;
+  height: 100%;
+}
+
+
+
+#skyElem {
+  z-index: -40,
+}
+
+
+* {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+body {
+  overflow: hidden;
+}
+
+canvas {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  background: transparent;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+
+  image-rendering: optimizeSpeed;             /* Older versions of FF          */
+  image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
+  image-rendering: -webkit-optimize-contrast; /* Safari                        */
+  image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
+  image-rendering: pixelated;                 /* Awesome future-browsers       */
+  -ms-interpolation-mode: nearest-neighbor;   /* IE     */
+}
+
+
+
+#controls-container {
+  width: 0px;
+  height: 0px;
+  border: 1px solid black;
+  position: absolute;
+}
+
+.loading-bar {
+  position: fixed; 
+  bottom: 0; 
+  left: 0;        
+  right: 0;       
+  z-index: 9999;  
+  height: 50px;     
+  background-color: #007bff;
+  transition: width 0.4s ease; 
+}
