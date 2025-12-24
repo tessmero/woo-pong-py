@@ -1,100 +1,88 @@
 /**
  * @file disk.ts
- * 
+ *
  * Sliding circle on airhockey table.
  */
 
-import { Obstacle } from './obstacle'
-import type { Vector } from './vector-math'
-import { VectorMath } from './vector-math'
+import type { Barrier } from './barrier'
 
 export class Disk {
-  position: Vector
-  velocity: Vector
-  radius: number
+  static readonly radius = 10
+  x = 51
+  y = 50
+  dx = 2
+  dy = 1
 
-  /**
-   * Construct a sliding disk.
-   * @param {object} params
-   * @param {Vector} params.position
-   * @param {Vector} params.velocity
-   * @param {number} params.radius The size of the disk
-   */
-  constructor(params) {
-    const { position, velocity, radius } = params
-
-    this.position = position
-    this.velocity = velocity
-    this.radius = radius
+  static fromJson(obj: object) {
+    const [x, y, dx, dy] = obj as any
+    const d = new Disk()
+    d.x = x
+    d.y = y
+    d.dx = dx
+    d.dy = dy
+    return d
   }
 
-  /**
-   * Implement homebrew physics step and update this.position.
-   * We add robustness by checking collisions three times.
-   * 1. start of step, using current position
-   * 2. start of step, using anticipated next position
-   * 3. end of step, using new position
-   * Typically check #2 is the only necessary check. It triggers the bouncing behavior.
-   * @param {object[]} obstacles The array of Obstacle instances to collide with
-   */
-  step(obstacles: Array<Obstacle>) {
-    // get ready to anticipate collisions in the immediate future
-    const futureSelf = new Disk(this) // copy self
-    futureSelf.position = VectorMath.add(this.position, this.velocity)
+  toJson() {
+    return [
+      this.x, this.y, this.dx, this.dy,
+    ]
+  }
 
-    // iterate over obstacles
-    for (const obstacle of obstacles) {
-      // 1. check if colliding at current position
-      const currentCollision = obstacle.collisionCheck(this)
-      if (currentCollision) {
-        // attempt to force into valid position
-        this.position = currentCollision.adjustedPosition
-      }
+  // move one tick
+  advance(barriers: Array<Barrier>) {
+    // if( gravityTick ){
+    //     //gravity
+    //     this.dy += 1
+    //     //friction
+    //     var tv = 10
+    //     if(Math.abs(this.dx)>tv) this.dx -= Math.sign(this.dx)
+    //     if(Math.abs(this.dy)>tv) this.dy -= Math.sign(this.dy)
+    // }
 
-      // 2. anticipate collision at next position
-      const nextCollision = obstacle.collisionCheck(futureSelf)
-      if (nextCollision) {
-        // simulate bounce
+    const nx = this.x + this.dx
+    const ny = this.y + this.dy
 
-        // check trajectory before bounce
-        const speed = VectorMath.getLength(this.velocity)
-        const angle = VectorMath.getAngle(this.velocity)
-
-        // reflect angle off of the wall
-        const newAngle = 2 * nextCollision.nearestSegment.angle - angle
-
-        // update velocity
-        this.velocity = VectorMath.polarToCartesian(newAngle, speed)
-
-        // break loop to prevent bouncing more than once per step
+    // check for collision
+    let bi = 0
+    let noHits = true
+    let ndx = this.dx
+    let ndy = this.dy
+    for (; bi < barriers.length; bi++) {
+      const bar = barriers[bi]
+      if (bar.isTouchingBallAtPos(nx, ny)) {
+        // bounce off wall
+        if (bar.isTouchingBallAtPos(this.x - this.dx, ny)) {
+          ndy *= -1
+        }
+        else {
+          ndx *= -1
+        }
+        noHits = false
         break
       }
     }
-
-    // execute step and advance to next position
-    this.position = VectorMath.add(this.position, this.velocity)
-
-    // 3. check if colliding after advancing
-    const afterCollision = obstacles.map(obs => obs.collisionCheck(this)).find(Boolean)
-    if (afterCollision) {
-      // attempt to force into valid position
-      this.position = afterCollision.adjustedPosition
+    if (noHits) {
+      // move forward without changing velocity
+      this.x = nx
+      this.y = ny
+      return
     }
-  }
 
-  /**
-   * Get position for purposes of drawing
-   * @returns {Vector}
-   */
-  getPosition() {
-    return this.position
-  }
+    // check for second collision (hit corner)
+    bi++
+    for (; bi < barriers.length; bi++) {
+      if (barriers[bi].isTouchingBallAtPos(nx, ny)) {
+        // reverse direction
+        ndx = -this.dx
+        ndy = -this.dy
+      }
+    }
 
-  /**
-   * Get angle for purposes of drawing
-   * @returns {number}
-   */
-  getAngle() {
-    return 0
+    // apply changed velocity
+    this.dx = ndx
+    this.dy = ndy
+    this.x += ndx
+    this.y += ndy
   }
 }

@@ -4,43 +4,36 @@
  * Disks and obstacles 2D simulation.
  */
 
+import { Barrier } from './barrier'
 import { Disk } from './disk'
 import { Graphics } from './graphics'
-import { Obstacle } from './obstacle'
 
 const STEP_DURATION = 4
 
-// air hockey scene
 const thick = 10 // thickness of walls
 
-// one sliding disk
-const _disks = [
-  {
-    position: { x: 25, y: 25 },
-    velocity: { x: 0.15, y: 0.1 },
-    radius: 5,
-  },
-]
 
-// 5 solid obstacles
-const _obstacles = [
-
-  // center obstacle that moves with the mouse
-  { center: { x: 50, y: 50 }, radius: 10, n: 10 },
-
-  // four outer walls
-  { box: [0, 0, thick, 100] }, // left
-  { box: [100 - thick, 0, thick, 100] }, // right
-  { box: [0, 0, 100, thick] }, // top
-  { box: [0, 100 - thick, 100, thick] }, // bottom
-]
+const _barriers = [
+  [0, 0, thick, 100], // left
+  [100 - thick, 0, thick, 100], // right
+  [0, 0, 100, thick], // top
+  [0, 100 - thick, 100, thick], // bottom
+] as const
 
 export class Simulation {
   disks: Array<Disk>
-  obstacles: Array<Obstacle>
+  // obstacles: Array<Obstacle>
+  barriers: Array<Barrier>
   constructor() {
-    this.disks = _disks.map(pars => new Disk(pars))
-    this.obstacles = _obstacles.map(pars => new Obstacle(pars))
+    this.disks = [new Disk()]
+    // this.obstacles = _obstacles.map(pars => new Obstacle(pars))
+    this.barriers = _barriers.map(([x, y, w, h]) => new Barrier(x, y, w, h))
+  }
+
+  step() {
+    for (const disk of this.disks) {
+      disk.advance(this.barriers)
+    }
   }
 
   update(dt: number) {
@@ -48,9 +41,7 @@ export class Simulation {
 
     // advance the simulation by n steps
     for (let i = 0; i < nSteps; i++) {
-      for (const disk of this.disks) {
-        disk.step(this.obstacles)
-      }
+      this.step()
 
       // sanityCheck();
     }
@@ -64,8 +55,11 @@ export class Simulation {
     for (const disk of this.disks) {
       Graphics.drawDisk(ctx, disk)
     }
-    for (const obstacle of this.obstacles) {
-      Graphics.drawObstacle(ctx, obstacle)
+    // for (const obstacle of this.obstacles) {
+    //   Graphics.drawObstacle(ctx, obstacle)
+    // }
+    for (const barrier of this.barriers) {
+      Graphics.drawBarrier(ctx, barrier)
     }
     ctx.restore()
   }
