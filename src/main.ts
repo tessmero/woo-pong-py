@@ -12,6 +12,7 @@ import { PinballWizard } from './pinball-wizard'
 import { getTestSupport } from 'test-support'
 import { applyDevMode, isDevMode } from 'configs/imp/top-config'
 import type { Vec2 } from 'util/math-util'
+import { Collisions } from 'simulation/collisions'
 
 async function main() {
   // const layeredViewport = new LayeredViewport()
@@ -47,6 +48,7 @@ async function main() {
     pinballWizard.up(rawMousePos)
   })
 
+  Collisions.preloadAll()
   await pinballWizard.init()
 
   if (isDevMode) {

@@ -1,3 +1,4 @@
+import { DISK_RADIUS } from "./constants"
 import { Disk } from "./disk"
 
 
@@ -12,12 +13,12 @@ export class Barrier {
     h = Math.floor(h)// * global.minDist
     this.xywh = [x, y, w, h]
     this.xr = [
-      x - Disk.radius,
-      x + w + Disk.radius,
+      x - DISK_RADIUS,
+      x + w + DISK_RADIUS,
     ]
     this.yr = [
-      y - Disk.radius,
-      y + h + Disk.radius,
+      y - DISK_RADIUS,
+      y + h + DISK_RADIUS,
     ]
   }
 

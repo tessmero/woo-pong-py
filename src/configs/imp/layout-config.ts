@@ -65,7 +65,7 @@ const layoutConfigTree = {
 for (const item of Object.values(layoutConfigTree.children)) {
   (item as ConfigItem).onChange = (pinballWizard) => {
     layoutConfig.refreshConfig()
-    pinballWizard.onResize()
+    // pinballWizard.onResize()
   }
 }
 

@@ -9,6 +9,7 @@ import { Barrier } from './barrier'
 import { STEP_DURATION, valueScale } from './constants'
 import { Disk } from './disk'
 import { Graphics } from './graphics'
+import { Collisions } from './collisions'
 
 const thick = 10 * valueScale // thickness of walls
 
@@ -50,7 +51,7 @@ export class Simulation {
     // collide disks with disks
     for (let a = 1; a < this.disks.length; a++) {
       for (let b = 0; b < a; b++) {
-        Disk.collide(this.disks[a], this.disks[b])
+        Collisions.collide(this.disks[a], this.disks[b])
       }
     }
   }

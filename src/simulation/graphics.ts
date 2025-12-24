@@ -6,6 +6,7 @@
  */
 
 import type { Barrier } from './barrier'
+import { DISK_RADIUS } from './constants'
 import { Disk } from './disk'
 import type { Obstacle } from './obstacle'
 
@@ -22,7 +23,7 @@ export class Graphics {
     ctx.strokeStyle = 'black'
     ctx.beginPath()
     ctx.moveTo(x, y)
-    ctx.arc(x, y, Disk.radius, angle, angle + Math.PI * 2)
+    ctx.arc(x, y, DISK_RADIUS, angle, angle + Math.PI * 2)
     ctx.stroke()
   }
 
