@@ -4,20 +4,27 @@
  * Disks and obstacles 2D simulation.
  */
 
+import { topConfig } from 'configs/imp/top-config'
 import { Barrier } from './barrier'
+import { STEP_DURATION, valueScale } from './constants'
 import { Disk } from './disk'
 import { Graphics } from './graphics'
 
-const STEP_DURATION = 4
+const thick = 10 * valueScale // thickness of walls
 
-const thick = 10 // thickness of walls
-
+const n = 20 // Number of disks to generate
+const _disks = Array.from({ length: n }, (_, i) => [
+  (20 + i * 2) * valueScale, // x position increases by 20 units per disk
+  (20 + i * 1) * valueScale, // y position increases by 10 units per disk
+  500 - i * 10, // dx decreases by 10 units per disk
+  500 + i * 5, // dy increases by 5 units per disk
+])
 
 const _barriers = [
-  [0, 0, thick, 100], // left
-  [100 - thick, 0, thick, 100], // right
-  [0, 0, 100, thick], // top
-  [0, 100 - thick, 100, thick], // bottom
+  [0, 0, thick, 100 * valueScale], // left
+  [100 * valueScale - thick, 0, thick, 100 * valueScale], // right
+  [0, 0, 100 * valueScale, thick], // top
+  [0, 100 * valueScale - thick, 100 * valueScale, thick], // bottom
 ] as const
 
 export class Simulation {
@@ -25,19 +32,31 @@ export class Simulation {
   // obstacles: Array<Obstacle>
   barriers: Array<Barrier>
   constructor() {
-    this.disks = [new Disk()]
+    this.disks = _disks.map(pars => Disk.fromJson(pars))
     // this.obstacles = _obstacles.map(pars => new Obstacle(pars))
     this.barriers = _barriers.map(([x, y, w, h]) => new Barrier(x, y, w, h))
   }
 
+  private _stepCount = 0
+  get stepCount() { return this._stepCount }
   step() {
+    this._stepCount++
+
+    // collide disks with barriers
     for (const disk of this.disks) {
       disk.advance(this.barriers)
+    }
+
+    // collide disks with disks
+    for (let a = 1; a < this.disks.length; a++) {
+      for (let b = 0; b < a; b++) {
+        Disk.collide(this.disks[a], this.disks[b])
+      }
     }
   }
 
   update(dt: number) {
-    const nSteps = Math.round(dt / STEP_DURATION)
+    const nSteps = Math.round(dt / STEP_DURATION) * topConfig.flatConfig.speedMultiplier
 
     // advance the simulation by n steps
     for (let i = 0; i < nSteps; i++) {
@@ -51,7 +70,8 @@ export class Simulation {
   // draw the updated scene
     ctx.clearRect(0, 0, w, h)
     ctx.save()
-    ctx.scale(10, 10)
+    ctx.scale(10 / valueScale, 10 / valueScale)
+    ctx.lineWidth = valueScale
     for (const disk of this.disks) {
       Graphics.drawDisk(ctx, disk)
     }

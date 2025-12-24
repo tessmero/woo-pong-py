@@ -5,11 +5,12 @@
  */
 
 import type { Barrier } from './barrier'
+import { valueScale } from './constants'
 
 export class Disk {
-  static readonly radius = 10
-  x = 51
-  y = 50
+  static readonly radius = 3 * valueScale
+  x = 51 * valueScale
+  y = 50 * valueScale
   dx = 2
   dy = 1
 
@@ -29,15 +30,52 @@ export class Disk {
     ]
   }
 
+  static collide(a: Disk, b: Disk) {
+    const dx = b.x - a.x
+    const dy = b.y - a.y
+    const distanceSquared = dx * dx + dy * dy
+    const radiusSum = Disk.radius * 2
+
+    if (distanceSquared < radiusSum * radiusSum) {
+      const distance = Math.sqrt(distanceSquared) || 1 // Avoid division by zero
+      const overlap = radiusSum - distance
+
+      // Normalize the collision vector
+      const nx = dx / distance
+      const ny = dy / distance
+
+      // Separate the disks to resolve overlap
+      const separation = overlap / 2
+      a.x -= Math.round(nx * separation)
+      a.y -= Math.round(ny * separation)
+      b.x += Math.round(nx * separation)
+      b.y += Math.round(ny * separation)
+
+      // Reflect velocities along the collision normal
+      const relativeVelocityX = b.dx - a.dx
+      const relativeVelocityY = b.dy - a.dy
+      const dotProduct = relativeVelocityX * nx + relativeVelocityY * ny
+
+      if (dotProduct > 0) return // Prevent further collision resolution if already separating
+
+      const impulse = 2 * dotProduct / 2 // Equal mass assumption
+      // impulse = Math.max(impulse,-100)
+      a.dx += Math.round(impulse * nx)
+      a.dy += Math.round(impulse * ny)
+      b.dx -= Math.round(impulse * nx)
+      b.dy -= Math.round(impulse * ny)
+    }
+  }
+
   // move one tick
   advance(barriers: Array<Barrier>) {
     // if( gravityTick ){
-    //     //gravity
-    //     this.dy += 1
-    //     //friction
-    //     var tv = 10
-    //     if(Math.abs(this.dx)>tv) this.dx -= Math.sign(this.dx)
-    //     if(Math.abs(this.dy)>tv) this.dy -= Math.sign(this.dy)
+    // gravity
+    this.dy += 1
+    // friction
+    // const tv = 10
+    // if (Math.abs(this.dx) > tv) this.dx -= Math.sign(this.dx)
+    // if (Math.abs(this.dy) > tv) this.dy -= Math.sign(this.dy)
     // }
 
     const nx = this.x + this.dx

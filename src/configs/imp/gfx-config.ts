@@ -11,7 +11,7 @@ import type { PinballWizard } from 'pinball-wizard'
 // called when sliders are dragged in dev mode
 function onChange(pinballWizard: PinballWizard) {
   gfxConfig.refreshConfig()
-  pinballWizard.onResize()
+  // pinballWizard.onResize()
 }
 
 const gfxConfigTree = {
@@ -26,36 +26,6 @@ const gfxConfigTree = {
       onChange,
     },
 
-    emoteProbability: {
-      tooltip: 'probability to change facial expression per ms',
-      value: 1e-3,
-      min: 0,
-      max: 1e-2,
-      onChange,
-    },
-
-    sceneryEntrance: {
-      children: {
-        seDamping: {
-          value: 15,
-          min: 0,
-          max: 100,
-          onChange,
-        },
-        seFreq: {
-          value: 6,
-          min: 1,
-          max: 100,
-          onChange,
-        },
-        seMaxTime: {
-          value: 0.5,
-          min: 0.1,
-          max: 10,
-          onChange,
-        },
-      },
-    },
   },
 } satisfies ConfigTree
 

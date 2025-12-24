@@ -7,6 +7,7 @@
 import { Configurable } from '../configurable'
 import type { ConfigTree } from '../config-tree'
 import type { PinballWizard } from 'pinball-wizard'
+import { pinballWizardConfig } from './pinball-wizard-config'
 
 export const isDevMode = true
 export async function applyDevMode(pinballWizard: PinballWizard) {
@@ -30,10 +31,17 @@ const topConfigTree = {
     speedMultiplier: {
       value: 1,
       min: 1,
-      max: 10,
+      max: 100,
       step: 1,
       onChange: () => topConfig.refreshConfig(),
     },
+
+    stepCount:{
+      action: (pinballWizard) => {
+        const count = pinballWizard.activeSim.stepCount
+        console.log(count)
+      }
+    }
 
   },
 } satisfies ConfigTree
