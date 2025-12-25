@@ -33,7 +33,7 @@ export class Disk {
   advance(barriers: Array<Barrier>) {
     // if( gravityTick ){
     // gravity
-    this.dy += 0
+    this.dy += 1
     // friction
     // const tv = 10
     // if (Math.abs(this.dx) > tv) this.dx -= Math.sign(this.dx)

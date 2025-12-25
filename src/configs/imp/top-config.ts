@@ -9,7 +9,7 @@ import type { ConfigTree } from '../config-tree'
 import type { PinballWizard } from 'pinball-wizard'
 import { pinballWizardConfig } from './pinball-wizard-config'
 import { Disk } from 'simulation/disk'
-import { Collisions } from 'simulation/collisions'
+import { Collisions, downloadCollisionBlob } from 'simulation/collisions'
 
 export const isDevMode = true
 export async function applyDevMode(pinballWizard: PinballWizard) {
@@ -42,6 +42,7 @@ const topConfigTree = {
       action: (pinballWizard) => {
         const count = pinballWizard.activeSim.stepCount
         console.log(`steps: ${count} cache size: ${Collisions.cacheSize}`)
+        downloadCollisionBlob()
       }
     }
 

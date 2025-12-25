@@ -4,51 +4,82 @@
  * Preloaded lookup table for ball-ball collisions.
  */
 
+import { CollisionEncoder } from './collision-encoder'
 import { DISK_RADIUS } from './constants'
 import type { Disk } from './disk'
 
 const cacheScale = 1e2
-type CachedCollision = null | {
-  x: number
-  y: number
-  dx: number
-  dy: number
-}
-const cache: Record<string, CachedCollision> = {}
+export type CachedCollision = null | [number, number, number, number] // x,y,dx,dy
 
-const speedDetail = 20 // half size of cache along relative vx and vy
+// relative pos x/y, relative vel x/y -> possible collision
+let cache: Array<Array<Array<Array<CachedCollision>>>> = []
+
+export const speedDetail = 20 // half size of cache along relative vx and vy
 const maxAxisSpeed = cacheScale * speedDetail
 const speedToIndex = speed => Math.floor(speed * speedDetail / maxAxisSpeed)
 const indexToSpeed = i => i * maxAxisSpeed / speedDetail
 
-const offsetDetail = 5 // hald size of cache along dx and dy
+export const offsetDetail = 10 // hald size of cache along dx and dy
 const maxOffset = 2 * DISK_RADIUS
 const offsetToIndex = offset => Math.floor(offset * offsetDetail / maxOffset)
 const indexToOffset = i => i * maxOffset / offsetDetail
 
 export class Collisions {
+  static get cache() { return cache }
   static get cacheSize() { return Object.keys(cache).length }
 
-  static preloadAll() {
+  static async loadAll() {
+    try {
+    // Fetch the binary blob from the URL
+      const response = await fetch('/collisions/collision-cache.bin')
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch blob: ${response.statusText}`)
+      }
+
+      // Convert the response to an ArrayBuffer
+      const arrayBuffer = await response.arrayBuffer()
+
+      // Convert the ArrayBuffer to a Uint8Array
+      const intArr = new Int16Array(arrayBuffer)
+
+      // Decode the binary data into the collision cache structure
+      cache = CollisionEncoder.decode(intArr)
+    }
+    catch (error) {
+      console.error('Error loading collision blob:', error)
+      throw error
+    }
+  }
+
+  static computeAll() {
+    const n = 2 * offsetDetail + 1 // size of cache at top level
     for (let dxi = -offsetDetail; dxi <= offsetDetail; dxi++) {
       const dx = indexToOffset(dxi)
+      const dxArr: Array<Array<Array<CachedCollision>>> = []
+      cache.push(dxArr)
+
       for (let dyi = -offsetDetail; dyi <= offsetDetail; dyi++) {
         const dy = indexToOffset(dyi)
+        const dyArr: Array<Array<CachedCollision>> = []
+        dxArr.push(dyArr)
         for (let vxi = -speedDetail; vxi <= speedDetail; vxi++) {
           const vx = indexToSpeed(vxi)
+          const vxArr: Array<CachedCollision> = []
+          dyArr.push(vxArr)
           for (let vyi = -speedDetail; vyi <= speedDetail; vyi++) {
             const vy = indexToSpeed(vyi)
-
-            const key = (
-              [dxi, dyi, vxi, vyi]
-            ).join('|')
-
-            cache[key] = Collisions.computeCollision(dx, dy, vx, vy)
+            const col = Collisions.computeCollision(dx, dy, vx, vy)
+            vxArr.push(col)
+            // const key = (
+            //   [dxi, dyi, vxi, vyi]
+            // ).join('|')
+            // cache[key] = col
           }
         }
       }
+      console.log(`building collisions cache (${Math.floor(100 * cache.length / n)}%)`)
     }
-    console.log('build cache with size:', Object.keys(cache).length)
   }
 
   static collide(a: Disk, b: Disk) {
@@ -86,21 +117,27 @@ export class Collisions {
     //   cache[key] = Collisions.computeCollision(dx, dy, relativeVelocityX, relativeVelocityY)
     // }
     // const col = cache[key]
-    const col = Collisions.computeCollision(
-      indexToOffset(dxi), indexToOffset(dyi),
-      indexToSpeed(vxi), indexToSpeed(vyi),
-    )
+    const col = cache
+      [dxi + offsetDetail]
+      [dyi + offsetDetail]
+      [vxi + speedDetail]
+      [vyi + speedDetail]
+    // const col = Collisions.computeCollision(
+    //   indexToOffset(dxi), indexToOffset(dyi),
+    //   indexToSpeed(vxi), indexToSpeed(vyi),
+    // )
 
     // const col = Disk.computeCollision(dx, dy, relativeVelocityX, relativeVelocityY)
     if (!col) return
-    a.x -= col.x
-    a.y -= col.y
-    b.x += col.x
-    b.y += col.y
-    a.dx -= col.dx
-    a.dy -= col.dy
-    b.dx += col.dx
-    b.dy += col.dy
+    const [cx, cy, cdx, cdy] = col
+    a.x -= cx
+    a.y -= cy
+    b.x += cx
+    b.y += cy
+    a.dx -= cdx
+    a.dy -= cdy
+    b.dx += cdx
+    b.dy += cdy
   }
 
   static computeCollision(dx, dy, relativeVelocityX, relativeVelocityY): CachedCollision {
@@ -125,14 +162,36 @@ export class Collisions {
       const impulse = 2 * dotProduct / 2 // Equal mass assumption
       // impulse = Math.max(impulse,-100)
 
-      return {
-        x: Math.round(nx * separation),
-        y: Math.round(ny * separation),
+      return [
+        Math.round(nx * separation), // dx
+        Math.round(ny * separation), // dy
 
-        dx: -Math.round(impulse * nx),
-        dy: -Math.round(impulse * ny),
-      }
+        -Math.round(impulse * nx), // vx
+        -Math.round(impulse * ny), // vy
+      ]
     }
     return null
   }
+}
+
+export function downloadCollisionBlob(
+  filename: string = 'collision-cache.bin',
+) {
+  // Encode the cache into a binary blob
+  const encodedData = CollisionEncoder.encode(cache)
+
+  // Create a Blob object
+  const blob = new Blob([encodedData as BlobPart], { type: 'application/octet-stream' })
+
+  // Create a temporary <a> element
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = filename
+
+  // Programmatically click the link to trigger the download
+  document.body.appendChild(link)
+  link.click()
+
+  // Clean up the temporary link
+  document.body.removeChild(link)
 }

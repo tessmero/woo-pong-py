@@ -13,10 +13,10 @@ import { Collisions } from './collisions'
 
 const thick = 10 * valueScale // thickness of walls
 
-const n = 20 // Number of disks to generate
+const n = 10 // Number of disks to generate
 const _disks = Array.from({ length: n }, (_, i) => [
-  (20 + i * 2) * valueScale, // x position increases by 20 units per disk
-  (20 + i * 1) * valueScale, // y position increases by 10 units per disk
+  (20 + i * 5) * valueScale, // x position increases by 20 units per disk
+  (20 + i * 5) * valueScale, // y position increases by 10 units per disk
   500 - i * 10, // dx decreases by 10 units per disk
   500 + i * 5, // dy increases by 5 units per disk
 ])

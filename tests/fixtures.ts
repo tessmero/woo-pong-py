@@ -6,9 +6,12 @@
 
 import { JSDOM } from 'jsdom'
 import { Image } from 'canvas'
-
 import * as mocha from 'mocha'
 import { RuleTester } from '@typescript-eslint/rule-tester'
+import { Collisions } from '../src/simulation/collisions'
+
+Collisions.computeAll()
+
 RuleTester.afterAll = mocha.after
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', {
