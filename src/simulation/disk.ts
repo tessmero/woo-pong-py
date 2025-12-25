@@ -5,54 +5,65 @@
  */
 
 import type { Barrier } from './barrier'
-import { valueScale } from './constants'
+
+export type DiskState = [number, number, number, number] // x,y,dx,dy
 
 export class Disk {
-  x = 51 * valueScale
-  y = 50 * valueScale
-  dx = 2
-  dy = 1
+  readonly currentState: DiskState = [0, 0, 0, 0]
+  readonly nextState: DiskState = [0, 0, 0, 0]
+
+  static flushStates(disks: Array<Disk>) {
+    for (const d of disks) {
+      d.currentState[0] = d.nextState[0]
+      d.currentState[1] = d.nextState[1]
+      d.currentState[2] = d.nextState[2]
+      d.currentState[3] = d.nextState[3]
+    }
+  }
 
   static fromJson(obj: object) {
     const [x, y, dx, dy] = obj as any
     const d = new Disk()
-    d.x = x
-    d.y = y
-    d.dx = dx
-    d.dy = dy
+    d.currentState[0] = x
+    d.currentState[1] = y
+    d.currentState[2] = dx
+    d.currentState[3] = dy
+    d.nextState[0] = x
+    d.nextState[1] = y
+    d.nextState[2] = dx
+    d.nextState[3] = dy
     return d
   }
 
   toJson() {
-    return [
-      this.x, this.y, this.dx, this.dy,
-    ]
+    return this.currentState
   }
 
   // move one tick
   advance(barriers: Array<Barrier>) {
     // if( gravityTick ){
-    // gravity
-    this.dy += 1
+
+    this.currentState[1] += 1 // gravity
     // friction
     // const tv = 10
     // if (Math.abs(this.dx) > tv) this.dx -= Math.sign(this.dx)
     // if (Math.abs(this.dy) > tv) this.dy -= Math.sign(this.dy)
     // }
 
-    const nx = this.x + this.dx
-    const ny = this.y + this.dy
+    const [x, y, dx, dy] = this.currentState
+    const nx = x + dx
+    const ny = y + dy
 
     // check for collision
     let bi = 0
     let noHits = true
-    let ndx = this.dx
-    let ndy = this.dy
+    let ndx = dx
+    let ndy = dy
     for (; bi < barriers.length; bi++) {
       const bar = barriers[bi]
       if (bar.isTouchingBallAtPos(nx, ny)) {
         // bounce off wall
-        if (bar.isTouchingBallAtPos(this.x - this.dx, ny)) {
+        if (bar.isTouchingBallAtPos(x - dx, ny)) {
           ndy *= -1
         }
         else {
@@ -64,8 +75,8 @@ export class Disk {
     }
     if (noHits) {
       // move forward without changing velocity
-      this.x = nx
-      this.y = ny
+      this.nextState[0] = nx
+      this.nextState[1] = ny
       return
     }
 
@@ -74,15 +85,17 @@ export class Disk {
     for (; bi < barriers.length; bi++) {
       if (barriers[bi].isTouchingBallAtPos(nx, ny)) {
         // reverse direction
-        ndx = -this.dx
-        ndy = -this.dy
+        ndx = -dx
+        ndy = -dy
       }
     }
 
     // apply changed velocity
-    this.dx = ndx
-    this.dy = ndy
-    this.x += ndx
-    this.y += ndy
+    this.nextState[0] += ndx
+    this.nextState[1] += ndy
+
+    // update velocity
+    this.nextState[2] = ndx
+    this.nextState[3] = ndy
   }
 }

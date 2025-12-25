@@ -7,7 +7,7 @@
 
 import type { Barrier } from './barrier'
 import { DISK_RADIUS } from './constants'
-import { Disk } from './disk'
+import type { Disk } from './disk'
 import type { Obstacle } from './obstacle'
 
 export class Graphics {
@@ -17,7 +17,7 @@ export class Graphics {
    * @param {object} disk The Disk instance to draw
    */
   static drawDisk(ctx: CanvasRenderingContext2D, disk: Disk) {
-    const { x, y } = disk
+    const [x, y, _dx, _dy] = disk.currentState
     const angle = 0// disk.getAngle();
 
     ctx.strokeStyle = 'black'

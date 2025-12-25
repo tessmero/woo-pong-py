@@ -48,8 +48,8 @@ async function main() {
     pinballWizard.up(rawMousePos)
   })
 
-  // Collisions.computeAll()
-  await Collisions.loadAll()
+  Collisions.computeAll()
+  // await Collisions.loadAll()
   await pinballWizard.init()
 
   if (isDevMode) {

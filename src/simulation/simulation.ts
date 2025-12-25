@@ -13,13 +13,17 @@ import { Collisions } from './collisions'
 
 const thick = 10 * valueScale // thickness of walls
 
-const n = 10 // Number of disks to generate
-const _disks = Array.from({ length: n }, (_, i) => [
-  (20 + i * 5) * valueScale, // x position increases by 20 units per disk
-  (20 + i * 5) * valueScale, // y position increases by 10 units per disk
-  500 - i * 10, // dx decreases by 10 units per disk
-  500 + i * 5, // dy increases by 5 units per disk
-])
+const _disks: Array<[number, number, number, number]> = []
+for (let i = 0; i < 5; i++) {
+  for (let j = 0; j < 5; j++) {
+    _disks.push([
+      (20 + i * 8) * valueScale, // x position increases by 20 units per disk
+      (20 + j * 8) * valueScale, // y position increases by 10 units per disk
+      500 - i * 10, // dx decreases by 10 units per disk
+      500 + i * 5, // dy increases by 5 units per disk
+    ])
+  }
+}
 
 const _barriers = [
   [0, 0, thick, 100 * valueScale], // left
@@ -43,17 +47,20 @@ export class Simulation {
   step() {
     this._stepCount++
 
-    // collide disks with barriers
-    for (const disk of this.disks) {
-      disk.advance(this.barriers)
-    }
-
     // collide disks with disks
     for (let a = 1; a < this.disks.length; a++) {
       for (let b = 0; b < a; b++) {
         Collisions.collide(this.disks[a], this.disks[b])
       }
     }
+
+    // collide disks with barriers
+    for (const disk of this.disks) {
+      disk.advance(this.barriers)
+    }
+
+    Disk.flushStates(this.disks)
+
   }
 
   update(dt: number) {

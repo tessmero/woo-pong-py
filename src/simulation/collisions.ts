@@ -28,20 +28,23 @@ export class Collisions {
   static get cache() { return cache }
   static get cacheSize() { return Object.keys(cache).length }
 
-  static async loadAll() {
+  static async fetchBlob(url: string): Promise<Int16Array> {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch blob: ${response.statusText}`);
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    return new Int16Array(arrayBuffer);
+  }
+
+  static loadFromBlob(intArr: Int16Array) {
+    cache = CollisionEncoder.decode(intArr);
+  }
+
+  static async loadAll(url = '/collisions/collision-cache.bin') {
     try {
     // Fetch the binary blob from the URL
-      const response = await fetch('/collisions/collision-cache.bin')
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch blob: ${response.statusText}`)
-      }
-
-      // Convert the response to an ArrayBuffer
-      const arrayBuffer = await response.arrayBuffer()
-
-      // Convert the ArrayBuffer to a Uint8Array
-      const intArr = new Int16Array(arrayBuffer)
+      const intArr = await Collisions.fetchBlob(url)
 
       // Decode the binary data into the collision cache structure
       cache = CollisionEncoder.decode(intArr)
@@ -84,8 +87,8 @@ export class Collisions {
 
   static collide(a: Disk, b: Disk) {
     // index based on relative position
-    let dxi = offsetToIndex(b.x - a.x)
-    let dyi = offsetToIndex(b.y - a.y)
+    let dxi = offsetToIndex(b.currentState[0] - a.currentState[0])
+    let dyi = offsetToIndex(b.currentState[1] - a.currentState[1])
 
     if (Math.abs(dxi) > offsetDetail) {
       return
@@ -97,8 +100,8 @@ export class Collisions {
     }
 
     // index based on relative velcoity
-    let vxi = speedToIndex(b.dx - a.dx)
-    let vyi = speedToIndex(b.dy - a.dy)
+    let vxi = speedToIndex(b.currentState[2] - a.currentState[2])
+    let vyi = speedToIndex(b.currentState[3] - a.currentState[3])
 
     if (Math.abs(vxi) > speedDetail) {
       // throw new Error(`dx ${dx} or of range (${maxAxisSpeed}) in collisions`)
@@ -130,14 +133,14 @@ export class Collisions {
     // const col = Disk.computeCollision(dx, dy, relativeVelocityX, relativeVelocityY)
     if (!col) return
     const [cx, cy, cdx, cdy] = col
-    a.x -= cx
-    a.y -= cy
-    b.x += cx
-    b.y += cy
-    a.dx -= cdx
-    a.dy -= cdy
-    b.dx += cdx
-    b.dy += cdy
+    a.nextState[0] -= cx
+    a.nextState[1] -= cy
+    b.nextState[0] += cx
+    b.nextState[1] += cy
+    a.nextState[2] -= cdx
+    a.nextState[3] -= cdy
+    b.nextState[2] += cdx
+    b.nextState[3] += cdy
   }
 
   static computeCollision(dx, dy, relativeVelocityX, relativeVelocityY): CachedCollision {
