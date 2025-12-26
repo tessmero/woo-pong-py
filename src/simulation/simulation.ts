@@ -11,7 +11,7 @@ import { Disk } from './disk'
 import { Graphics } from './graphics'
 import { Collisions } from './collisions'
 
-const thick = 10 * valueScale // thickness of walls
+const thick = 1 * valueScale // thickness of walls
 
 const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 5; i++) {
@@ -26,6 +26,11 @@ for (let i = 0; i < 5; i++) {
 }
 
 const _barriers = [
+
+  // test
+  [40 * valueScale, 40 * valueScale, 20 * valueScale, 20 * valueScale],
+
+  // outer walls
   [0, 0, thick, 100 * valueScale], // left
   [100 * valueScale - thick, 0, thick, 100 * valueScale], // right
   [0, 0, 100 * valueScale, thick], // top
@@ -57,10 +62,14 @@ export class Simulation {
     // collide disks with barriers
     for (const disk of this.disks) {
       disk.advance(this.barriers)
+      disk.nextState[3] += 1  // gravity
     }
 
-    Disk.flushStates(this.disks)
+    Disk.flushStates(this.disks) // commit updates after collisions
 
+    if (this._stepCount % 3 === 0) {
+      Disk.updateHistory(this.disks) // add to graphical tail
+    }
   }
 
   update(dt: number) {

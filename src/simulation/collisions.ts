@@ -91,11 +91,11 @@ export class Collisions {
     let dyi = offsetToIndex(b.currentState[1] - a.currentState[1])
 
     if (Math.abs(dxi) > offsetDetail) {
-      return
+      return // disks are not colliding
       dxi = offsetDetail * Math.sign(dxi)
     }
     if (Math.abs(dyi) > offsetDetail) {
-      return
+      return // disks are not colliding
       dyi = offsetDetail * Math.sign(dyi)
     }
 
@@ -112,27 +112,14 @@ export class Collisions {
       vyi = speedDetail * Math.sign(vyi)
     }
 
-    // const key = (
-    //   [dxi, dyi, vxi, vyi]
-    // ).join('|')
-    // if (!(key in cache)) {
-    //   throw new Error('key not in cache')
-    //   cache[key] = Collisions.computeCollision(dx, dy, relativeVelocityX, relativeVelocityY)
-    // }
-    // const col = cache[key]
     const col = cache
       [dxi + offsetDetail]
       [dyi + offsetDetail]
       [vxi + speedDetail]
       [vyi + speedDetail]
-    // const col = Collisions.computeCollision(
-    //   indexToOffset(dxi), indexToOffset(dyi),
-    //   indexToSpeed(vxi), indexToSpeed(vyi),
-    // )
 
-    // const col = Disk.computeCollision(dx, dy, relativeVelocityX, relativeVelocityY)
     if (!col) return
-    const [cx, cy, cdx, cdy] = col
+    const [cx, cy, cdx, cdy] = col // change in pos, change in vel
     a.nextState[0] -= cx
     a.nextState[1] -= cy
     b.nextState[0] += cx

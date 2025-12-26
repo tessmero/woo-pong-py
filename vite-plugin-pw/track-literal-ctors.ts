@@ -1,14 +1,19 @@
 /**
- * @file vite-plugin-track-literals.ts
+ * @file track-literal-ctors.ts
  *
- * PLugin to wrap literals [] and {} with functions.
+ * Vite plugin to wrap literals [] and {} with functions.
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Plugin } from 'vite'
 import { parse } from '@babel/parser'
+
+// @ts-expect-error import babel/traverse
 import _traverse from '@babel/traverse'
+
+// @ts-expect-error import babel/generator
 import generate from '@babel/generator'
+
 import * as t from '@babel/types'
 
 const traverse = (typeof _traverse === 'function'
