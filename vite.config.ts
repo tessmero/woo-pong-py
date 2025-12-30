@@ -12,7 +12,7 @@ import trackLiteralsPlugin from './vite-plugin-pw/track-literal-ctors'
 
 export default defineConfig({
   plugins: [
-    trackLiteralsPlugin(),
+    // trackLiteralsPlugin(),
     tsconfigPaths(),
     json5Plugin(),
     glsl(),

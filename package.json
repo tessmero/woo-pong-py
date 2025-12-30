@@ -7,7 +7,8 @@
     "dev:static": "concurrently \"npx vite build --watch\" \"npx serve dist\"",
     "build:prod": "vite build --config vite.config.prod.ts && npx mocha && npm run zip",
     "build:quickprod": "vite build --config vite.config.prod.ts && npm run zip",
-    "zip": "cp -r reports dist && cd dist && zip -r pinball-wizard.zip ."
+    "zip": "cp -r reports dist && cd dist && zip -r pinball-wizard.zip .",
+    "rebuild-blobs": "ts-node build/rebuild-blobs.ts"
   },
   "keywords": [],
   "author": "",
@@ -52,6 +53,7 @@
     "vite-tsconfig-paths": "^5.1.4"
   },
   "dependencies": {
+    "@julusian/skia-canvas": "^1.0.5",
     "lil-gui": "^0.20.0"
   }
 }

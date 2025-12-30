@@ -55,20 +55,20 @@ export class Graphics {
     ctx.fillRect(...barrier.xywh)
   }
 
-  /**
-   * Draw a solid obstacle.
-   * @param {object} ctx The graphics context
-   * @param {object} obstacle The Obstacle instance to draw
-   */
-  static drawObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
-    ctx.fillStyle = 'black'
+  // /**
+  //  * Draw a solid obstacle.
+  //  * @param {object} ctx The graphics context
+  //  * @param {object} obstacle The Obstacle instance to draw
+  //  */
+  // static drawObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
+  //   ctx.fillStyle = 'black'
 
-    ctx.beginPath()
-    for (const { x, y } of obstacle.getVertices()) {
-      ctx.lineTo(x, y)
-    }
-    ctx.closePath()
+  //   ctx.beginPath()
+  //   for (const { x, y } of obstacle.getVertices()) {
+  //     ctx.lineTo(x, y)
+  //   }
+  //   ctx.closePath()
 
-    ctx.fill()
-  }
+  //   ctx.fill()
+  // }
 }

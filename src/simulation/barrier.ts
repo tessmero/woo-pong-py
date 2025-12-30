@@ -1,6 +1,9 @@
-import { DISK_RADIUS } from "./constants"
-import { Disk } from "./disk"
-
+/**
+ * @file barrier.ts
+ *
+ * Solid grid-aligned rectangle that disks bounce against.
+ */
+import { DISK_RADIUS } from './constants'
 
 export class Barrier {
   xr: [number, number]
@@ -30,7 +33,7 @@ export class Barrier {
     return (x > this.xr[0]) && (x < this.xr[1]) && (y > this.yr[0]) && (y < this.yr[1])
   }
 
-  isCornerTouchingDisk(){
+  isCornerTouchingDisk() {
 
   }
 

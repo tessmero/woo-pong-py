@@ -1,135 +1,75 @@
 /**
  * @file obstacle.ts
  *
- * A solid barrier that the disk can collide with.
+ * Solid obstacle defined by a closed path.
  */
 
-import type { Vector } from './vector-math'
-import { VectorMath } from './vector-math'
+import type { Rectangle, Vec2 } from 'util/math-util'
+import { DISK_RADIUS } from './constants'
+import type { Path2D } from '@julusian/skia-canvas'
+import { Normals } from './normals'
 
-export type Segment = {
-  start: Vector
-  end: Vector
-  delta: Vector
-  angle: number
-  lengthSquared: number
-}
-
-export type CollisionDatum = {
-  nearestSegment: Segment
-  nearestPoint: Vector
-  adjustedPosition: Vector
-}
+// // dummy context to call isPointInPath
+// const canvas = document.createElement('canvas')
+// const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
 export class Obstacle {
-  vertices: Array<Vector>
-  segments: Array<Segment>
+  readonly collisionRect: Rectangle
+  readonly points: ReadonlyArray<[x: number, y: number]>
 
-  /**
-   * Construct an obstacle based on flexible shape parameters.
-   * @param {object} params The (center/radius/n) or box:[x,y,w,h] or vertices
-   */
-  constructor(params) {
-    // interpret flexible parameters as standard shape
-    const { vertices } = VectorMath.parseVertices(params)
-
-    this.vertices = vertices
-    this.segments = []
-
-    // iterate over line segments
-    for (let i = 0; i < vertices.length; i++) {
-      const start = vertices[i]
-      const end = vertices[(i + 1) % vertices.length]
-
-      // prepare to check the line segment for collisions later
-      const delta = VectorMath.subtract(end, start)
-      const angle = VectorMath.getAngle(delta)
-      const lengthSquared = VectorMath.getLengthSquared(delta)
-      this.segments.push({
-        start, end, delta,
-        angle, lengthSquared,
-      })
-    }
+  constructor(
+    readonly path: Path2D,
+    readonly boundingRect: Rectangle,
+  ) {
+    const [x, y, w, h] = boundingRect
+    this.collisionRect = [
+      x - DISK_RADIUS, y - DISK_RADIUS,
+      w + 2 * DISK_RADIUS, h + 2 * DISK_RADIUS,
+    ]
+    this.points = path.points(0.5)
   }
 
-  /**
-   * Get vertices for purposes of rendering
-   */
-  getVertices() { return this.vertices }
+  computeCollision(pos: Vec2): null | { pos: Vec2, normIndex: number } {
+    // check if inside of obstacle
+    const isInside = this.path.contains(...pos)
 
-  /**
-   * Check if the given disk is intersecting this obstacle.
-   * @param {object} disk The Disk instance
-   * @returns {object} result The collision data or null
-   */
-  collisionCheck(disk): CollisionDatum | null {
-    const {
-      nearestSegment,
-      nearestPoint,
-    } = this._getPointOnEdge(disk.position)
-
-    // check if the CENTER of the disk is inside this obstacle
-    const centerInside = VectorMath.isPointInPolygon(disk.position, this.vertices)
-
-    if (!centerInside) {
-      // check if ANY part of the disk is inside this obstacle
-      const delta = VectorMath.subtract(nearestPoint, disk.position)
-      const distance = VectorMath.getLength(delta)
-      if (distance >= disk.radius) {
-        return null // the disk does not intersect with this platform
+    // locate nearest point
+    let minDistSquared = Infinity
+    let nearestPointIndex = 0
+    for (const [i, point] of this.points.entries()) {
+      const dx = point[0] - pos[0]
+      const dy = point[1] - pos[1]
+      const distSquared = dx * dx + dy * dy
+      if (distSquared < minDistSquared) {
+        minDistSquared = distSquared
+        nearestPointIndex = i
       }
     }
 
-    // the disk is intersecting the platform
-    // compute an adjusted position where the disk would just touch this platform
-    const normal = nearestSegment.angle - Math.PI / 2
-    const adjustedPosition = VectorMath.add(nearestPoint,
-      VectorMath.polarToCartesian(normal, disk.radius))
+    const distToNearestPoint = Math.sqrt(minDistSquared)
 
-    return { nearestSegment, nearestPoint, adjustedPosition }
-  }
+    if (isInside || distToNearestPoint < DISK_RADIUS) {
+      // compute normal based on neighboring points
+      const n = this.points.length
+      const a = this.points[(nearestPointIndex + 1) % n]
+      const b = this.points[(nearestPointIndex - 1 + n) % n]
+      const normAngle = Math.atan2(b[1] - a[1], b[0] - a[0])
 
-  /**
-   * Find the edge point nearest to the given point
-   * @param {Vector} point
-   */
-  _getPointOnEdge(point): { nearestSegment: Segment, nearestPoint: Vector } {
-    let nearestSegment: Segment = this.segments[0]
-    let nearestPoint: Vector = point
-    let shortestDistance = Infinity
+      // compute offset for disk to stop overlapping
+      const offsetDist = DISK_RADIUS - distToNearestPoint
+      const offset: Vec2 = [
+        offsetDist * Math.cos(normAngle),
+        offsetDist * Math.sin(normAngle),
+      ]
 
-    // Iterate through each edge line segment
-    for (const segment of this.segments) {
-      // find nearest point on this segment
-      const edgePoint = this._getPointOnSegment(segment, point)
-
-      // check distance to target point
-      const distance = VectorMath.getLength(VectorMath.subtract(edgePoint, point))
-
-      // check if this is the new best candidate
-      if (distance < shortestDistance) {
-        shortestDistance = distance
-        nearestSegment = segment
-        nearestPoint = edgePoint
+      return {
+        normIndex: Normals.getIndex(normAngle),
+        pos: offset,
       }
     }
-
-    // return best candidate
-    return { nearestSegment, nearestPoint }
-  }
-
-  /**
-   * Get the point on the line segment nearest to point p.
-   * @param {object} segment The segment processed in constructor
-   * @param {Vector} p
-   */
-  _getPointOnSegment(segment, p): Vector {
-    const d = VectorMath.subtract(p, segment.start)
-    let r = (d.x * segment.delta.x + d.y * segment.delta.y) / segment.lengthSquared
-
-    if (r < 0) { r = 0 }
-    if (r > 1) { r = 1 }
-
-    return VectorMath.add(segment.start, VectorMath.multiply(segment.delta, r))
+    else {
+      // not colliding
+      return null
+    }
   }
 }

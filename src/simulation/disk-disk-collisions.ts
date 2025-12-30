@@ -1,9 +1,11 @@
 /**
- * @file collisions.ts
+ * @file disk-disk-collisions.ts
  *
- * Preloaded lookup table for ball-ball collisions.
+ * Preloaded lookup table for disk-disk collisions.
  */
 
+import { DDCOLLISION_BLOB_HASH, DDCOLLISION_BLOB_URL } from '../set-by-build'
+import type { DDCollisionTree } from './collision-encoder'
 import { CollisionEncoder } from './collision-encoder'
 import { DISK_RADIUS } from './constants'
 import type { Disk } from './disk'
@@ -12,7 +14,7 @@ const cacheScale = 1e2
 export type CachedCollision = null | [number, number, number, number] // x,y,dx,dy
 
 // relative pos x/y, relative vel x/y -> possible collision
-let cache: Array<Array<Array<Array<CachedCollision>>>> = []
+let cache: DDCollisionTree = []
 
 export const speedDetail = 20 // half size of cache along relative vx and vy
 const maxAxisSpeed = cacheScale * speedDetail
@@ -24,27 +26,51 @@ const maxOffset = 2 * DISK_RADIUS
 const offsetToIndex = offset => Math.floor(offset * offsetDetail / maxOffset)
 const indexToOffset = i => i * maxOffset / offsetDetail
 
-export class Collisions {
+export class DiskDiskCollisions {
   static get cache() { return cache }
   static get cacheSize() { return Object.keys(cache).length }
 
   static async fetchBlob(url: string): Promise<Int16Array> {
-    const response = await fetch(url);
+    const response = await fetch(url)
     if (!response.ok) {
-      throw new Error(`Failed to fetch blob: ${response.statusText}`);
+      throw new Error(`Failed to fetch blob: ${response.statusText}`)
     }
-    const arrayBuffer = await response.arrayBuffer();
-    return new Int16Array(arrayBuffer);
+    const arrayBuffer = await response.arrayBuffer()
+    return new Int16Array(arrayBuffer, 0, arrayBuffer.byteLength / Int16Array.BYTES_PER_ELEMENT)
+  }
+
+  static async fetchBlobWithIntegrityCheck(url: string, expectedHash: string): Promise<Int16Array> {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch blob: ${response.statusText}`)
+    }
+    const arrayBuffer = await response.arrayBuffer()
+
+    // Compute hash for integrity check
+    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+
+    if (hashHex !== expectedHash) {
+      throw new Error(`Integrity check failed: expected ${expectedHash}, got ${hashHex}`)
+    }
+
+    return new Int16Array(arrayBuffer)
   }
 
   static loadFromBlob(intArr: Int16Array) {
-    cache = CollisionEncoder.decode(intArr);
+    cache = CollisionEncoder.decode(intArr)
   }
 
-  static async loadAll(url = '/collisions/collision-cache.bin') {
+  static async loadAll() {
     try {
-    // Fetch the binary blob from the URL
-      const intArr = await Collisions.fetchBlob(url)
+    // // Fetch the binary blob from the URL
+    //   const intArr = await DiskDiskCollisions.fetchBlobWithIntegrityCheck(
+    //     DDCOLLISION_BLOB_URL,
+    //     DDCOLLISION_BLOB_HASH,
+    //   )
+
+      const intArr = await DiskDiskCollisions.fetchBlob('/collisions/encoded-collision-cache.bin')
 
       // Decode the binary data into the collision cache structure
       cache = CollisionEncoder.decode(intArr)
@@ -56,6 +82,8 @@ export class Collisions {
   }
 
   static computeAll() {
+    cache = []
+
     const n = 2 * offsetDetail + 1 // size of cache at top level
     for (let dxi = -offsetDetail; dxi <= offsetDetail; dxi++) {
       const dx = indexToOffset(dxi)
@@ -72,7 +100,7 @@ export class Collisions {
           dyArr.push(vxArr)
           for (let vyi = -speedDetail; vyi <= speedDetail; vyi++) {
             const vy = indexToSpeed(vyi)
-            const col = Collisions.computeCollision(dx, dy, vx, vy)
+            const col = DiskDiskCollisions.computeCollision(dx, dy, vx, vy)
             vxArr.push(col)
             // const key = (
             //   [dxi, dyi, vxi, vyi]
@@ -120,6 +148,11 @@ export class Collisions {
 
     if (!col) return
     const [cx, cy, cdx, cdy] = col // change in pos, change in vel
+
+    if (col.some(val => isNaN(val))) {
+      throw new Error('collisions has nan bounce value')
+    }
+
     a.nextState[0] -= cx
     a.nextState[1] -= cy
     b.nextState[0] += cx
@@ -162,26 +195,26 @@ export class Collisions {
     }
     return null
   }
-}
 
-export function downloadCollisionBlob(
-  filename: string = 'collision-cache.bin',
-) {
+  static downloadBlob(
+    filename: string = 'disk-disk.bin',
+  ) {
   // Encode the cache into a binary blob
-  const encodedData = CollisionEncoder.encode(cache)
+    const encodedData = CollisionEncoder.encode(cache)
 
-  // Create a Blob object
-  const blob = new Blob([encodedData as BlobPart], { type: 'application/octet-stream' })
+    // Create a Blob object
+    const blob = new Blob([encodedData as BlobPart], { type: 'application/octet-stream' })
 
-  // Create a temporary <a> element
-  const link = document.createElement('a')
-  link.href = URL.createObjectURL(blob)
-  link.download = filename
+    // Create a temporary <a> element
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = filename
 
-  // Programmatically click the link to trigger the download
-  document.body.appendChild(link)
-  link.click()
+    // Programmatically click the link to trigger the download
+    document.body.appendChild(link)
+    link.click()
 
-  // Clean up the temporary link
-  document.body.removeChild(link)
+    // Clean up the temporary link
+    document.body.removeChild(link)
+  }
 }

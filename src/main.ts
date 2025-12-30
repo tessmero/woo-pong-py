@@ -12,7 +12,7 @@ import { PinballWizard } from './pinball-wizard'
 import { getTestSupport } from 'test-support'
 import { applyDevMode, isDevMode } from 'configs/imp/top-config'
 import type { Vec2 } from 'util/math-util'
-import { Collisions } from 'simulation/collisions'
+import { DiskDiskCollisions } from 'simulation/disk-disk-collisions'
 
 async function main() {
   // const layeredViewport = new LayeredViewport()
@@ -48,8 +48,8 @@ async function main() {
     pinballWizard.up(rawMousePos)
   })
 
-  Collisions.computeAll()
-  // await Collisions.loadAll()
+  // DiskDiskCollisions.computeAll()
+  await DiskDiskCollisions.loadAll()
   await pinballWizard.init()
 
   if (isDevMode) {

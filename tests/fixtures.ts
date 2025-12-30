@@ -8,9 +8,10 @@ import { JSDOM } from 'jsdom'
 import { Image } from 'canvas'
 import * as mocha from 'mocha'
 import { RuleTester } from '@typescript-eslint/rule-tester'
-import { Collisions } from '../src/simulation/collisions'
+import { DiskDiskCollisions } from '../src/simulation/disk-disk-collisions'
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { DDCOLLISION_BLOB_URL } from '../src/set-by-build'
 
 
 RuleTester.afterAll = mocha.after
@@ -26,6 +27,6 @@ global.document = dom.window.document
 /* eslint-disable @typescript-eslint/no-explicit-any */
 global.Image = Image as any
 
-const blobPath = join(__dirname, '../public/collisions/collision-cache.bin');
-const blobData = new Int16Array(readFileSync(blobPath).buffer);
-Collisions.loadFromBlob(blobData);
+// const blobPath = join(__dirname, `../public/${DDCOLLISION_BLOB_URL}`);
+// const blobData = new Int16Array(readFileSync(blobPath).buffer);
+// DiskDiskCollisions.loadFromBlob(blobData);

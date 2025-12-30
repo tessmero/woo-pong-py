@@ -4,7 +4,7 @@
  * Assert that simulation is deterministic.
  */
 
-import { Collisions } from '../../src/simulation/collisions'
+import { DiskDiskCollisions } from '../../src/simulation/disk-disk-collisions'
 import { Simulation } from '../../src/simulation/simulation'
 import { equal } from 'assert'
 import { readFileSync } from 'fs'
@@ -15,7 +15,7 @@ const stepCount = 1e7
 
 describe('deterministic simulation', function () {
   // before(async function () {
-  //   const blobPath = join(__dirname, '../../public/collisions/collision-cache.bin')
+  //   const blobPath = join(__dirname, '../../public/collisions/disk-disk.bin')
   //   const blobData = new Int16Array(readFileSync(blobPath).buffer)
   //   Collisions.loadFromBlob(blobData)
   // })
