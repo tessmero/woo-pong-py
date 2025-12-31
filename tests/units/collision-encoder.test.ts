@@ -6,21 +6,23 @@
 
 import { CollisionEncoder, DDCollisionTree } from '../../src/simulation/collision-encoder'
 import { ok, strictEqual } from 'assert'
-import { DiskDiskCollisions } from '../../src/simulation/disk-disk-collisions'
 import { randomDDIndex } from '../test-util'
 import { readFileSync, writeFileSync } from 'fs'
-import { Buffer } from 'buffer'; // Ensure Buffer is imported explicitly
+import { Buffer } from 'buffer' // Ensure Buffer is imported explicitly
+import { Lut } from '../../src/simulation/luts/lut'
 
 describe('collision data encoder/decoder', function () {
   it('correctly encodes and decodes cache in memory', function () {
-    DiskDiskCollisions.computeAll()
-    const encodedBlob = CollisionEncoder.encode(DiskDiskCollisions.cache)
+    const lut = Lut.create('disk-disk-lut')
+    lut.computeAll()
+    const encodedBlob = CollisionEncoder.encode(lut.tree)
     const decodedCache = CollisionEncoder.decode(encodedBlob)
-    assertCachesMatch(DiskDiskCollisions.cache, decodedCache)
+    assertCachesMatch(lut.tree, decodedCache)
   })
   it('correctly encodes and decodes blob in file system', function () {
-    DiskDiskCollisions.computeAll()
-    const encodedBlob = CollisionEncoder.encode(DiskDiskCollisions.cache)
+    const lut = Lut.create('disk-disk-lut')
+    lut.computeAll()
+    const encodedBlob = CollisionEncoder.encode(lut.tree)
 
     // Write the encoded blob to a file in raw binary format
     const filePath = './encoded-collision-cache.bin'
@@ -30,7 +32,7 @@ describe('collision data encoder/decoder', function () {
     const readEncodedBlob = new Int16Array(readBuffer.buffer, readBuffer.byteOffset, readBuffer.byteLength / Int16Array.BYTES_PER_ELEMENT)
     const decodedCache = CollisionEncoder.decode(readEncodedBlob)
 
-    assertCachesMatch(DiskDiskCollisions.cache, decodedCache)
+    assertCachesMatch(lut.tree, decodedCache)
   })
 })
 

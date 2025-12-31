@@ -23,3 +23,12 @@ export const CONFIGURABLE = {
   SOURCES: ['src/configs/imp/**/*.ts'],
 } as const satisfies ImpManifest
 export type ConfigurableName = (typeof CONFIGURABLE.NAMES)[number]
+
+// lookup tables
+export const LUT = {
+  NAMES: [
+    'disk-disk-lut',
+  ],
+  SOURCES: ['src/simulation/luts/imp/**/*.ts'],
+} as const satisfies ImpManifest
+export type LutName = (typeof LUT.NAMES)[number]

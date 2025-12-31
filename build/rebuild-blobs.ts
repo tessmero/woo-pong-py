@@ -9,6 +9,7 @@ import { join } from 'path';
 import { CollisionEncoder } from '../src/simulation/collision-encoder';
 import { DiskDiskCollisions } from '../src/simulation/disk-disk-collisions';
 import { createHash } from 'crypto';
+import { Lut } from '../src/simulation/luts/lut';
 
 // Remove existing files in public/collisions
 const collisionsDir = join(__dirname, '../public/collisions');
@@ -19,8 +20,13 @@ existingFiles.forEach(file => {
 });
 console.log(`Removed existing files in: ${collisionsDir}`);
 
-DiskDiskCollisions.computeAll()
-const encodedData = CollisionEncoder.encode(DiskDiskCollisions.cache);
+
+// DiskDiskCollisions.computeAll()
+// const encodedData = CollisionEncoder.encode(DiskDiskCollisions.cache);
+
+const lut = Lut.create('disk-disk-lut')
+lut.computeAll()
+const encodedData = CollisionEncoder.encode(lut.tree);
 
 
 // Compute the hash of the encoded data

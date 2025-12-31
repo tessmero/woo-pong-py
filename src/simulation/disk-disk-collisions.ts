@@ -4,11 +4,11 @@
  * Preloaded lookup table for disk-disk collisions.
  */
 
-import { DDCOLLISION_BLOB_HASH, DDCOLLISION_BLOB_URL } from '../set-by-build'
 import type { DDCollisionTree } from './collision-encoder'
 import { CollisionEncoder } from './collision-encoder'
 import { DISK_RADIUS } from './constants'
 import type { Disk } from './disk'
+import { Lut } from './luts/lut'
 
 const cacheScale = 1e2
 export type CachedCollision = null | [number, number, number, number] // x,y,dx,dy
@@ -18,16 +18,16 @@ let cache: DDCollisionTree = []
 
 export const speedDetail = 20 // half size of cache along relative vx and vy
 const maxAxisSpeed = cacheScale * speedDetail
-const speedToIndex = speed => Math.floor(speed * speedDetail / maxAxisSpeed)
-const indexToSpeed = i => i * maxAxisSpeed / speedDetail
+export const speedToIndex = speed => Math.floor(speed * speedDetail / maxAxisSpeed)
+export const indexToSpeed = i => i * maxAxisSpeed / speedDetail
 
 export const offsetDetail = 10 // hald size of cache along dx and dy
 const maxOffset = 2 * DISK_RADIUS
-const offsetToIndex = offset => Math.floor(offset * offsetDetail / maxOffset)
-const indexToOffset = i => i * maxOffset / offsetDetail
+export const offsetToIndex = offset => Math.floor(offset * offsetDetail / maxOffset)
+export const indexToOffset = i => i * maxOffset / offsetDetail
 
 export class DiskDiskCollisions {
-  static get cache() { return cache }
+  static get cache() { throw new Error('shoudl use disk-disk-lut registered imp') }
   static get cacheSize() { return Object.keys(cache).length }
 
   static async fetchBlob(url: string): Promise<Int16Array> {
@@ -63,6 +63,8 @@ export class DiskDiskCollisions {
   }
 
   static async loadAll() {
+    throw new Error('should use disk-disk-lut registered imp')
+
     try {
     // // Fetch the binary blob from the URL
     //   const intArr = await DiskDiskCollisions.fetchBlobWithIntegrityCheck(
@@ -82,6 +84,8 @@ export class DiskDiskCollisions {
   }
 
   static computeAll() {
+    throw new Error('should use disk-disk-lut registered imp')
+
     cache = []
 
     const n = 2 * offsetDetail + 1 // size of cache at top level
@@ -140,7 +144,7 @@ export class DiskDiskCollisions {
       vyi = speedDetail * Math.sign(vyi)
     }
 
-    const col = cache
+    const col = Lut.create('disk-disk-lut').tree // cache
       [dxi + offsetDetail]
       [dyi + offsetDetail]
       [vxi + speedDetail]
