@@ -65,14 +65,13 @@ export class Disk {
 
   // move one tick
   advance(barriers: Array<Barrier>) {
-
     const [x, y, dx, dy] = this.currentState
     const nx = x + dx
     const ny = y + dy
 
     // check for collision
     let bi = 0
-    let noHits = true
+    let hasNoHits = true
     let ndx = dx
     let ndy = dy
     for (; bi < barriers.length; bi++) {
@@ -90,11 +89,11 @@ export class Disk {
         else {
           ndx *= -1
         }
-        noHits = false
+        hasNoHits = false
         break
       }
     }
-    if (noHits) {
+    if (hasNoHits) {
       // move forward without changing velocity
       this.nextState[0] = nx
       this.nextState[1] = ny

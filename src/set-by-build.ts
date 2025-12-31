@@ -4,5 +4,5 @@
  * This file gets modified by npm scripts in build folder.
  */
 
-export const DDCOLLISION_BLOB_URL = '/collisions/disk-disk-5a9565eb039c83f1.bin';
-export const DDCOLLISION_BLOB_HASH = '5a9565eb039c83f12d0c1a5056dd90339a05f22726f7803a3d220ca2ee9f0ebd';
+export const DDCOLLISION_BLOB_URL = '/collisions/disk-disk-e9cd18aa3e3da17a.bin'
+export const DDCOLLISION_BLOB_HASH = 'e9cd18aa3e3da17a07ed2d5fbe3559e39c81868b0f54a103ec98c96b1210d902'

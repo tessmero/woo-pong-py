@@ -4,7 +4,10 @@
  * Utility to encode and decode the collision cache structure to and from a binary blob file.
  */
 
-import { offsetDetail, speedDetail, type CachedCollision } from './disk-disk-collisions'
+export type CachedCollision = null | [number, number, number, number] // x,y,dx,dy
+export const speedDetail = 20 // half size of cache along relative vx and vy
+
+export const offsetDetail = 10 // hald size of cache along dx and dy
 
 export type DDCollisionTree = Array<Array<Array<Array<CachedCollision>>>>
 

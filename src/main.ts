@@ -12,7 +12,6 @@ import { PinballWizard } from './pinball-wizard'
 import { getTestSupport } from 'test-support'
 import { applyDevMode, isDevMode } from 'configs/imp/top-config'
 import type { Vec2 } from 'util/math-util'
-import { DiskDiskCollisions } from 'simulation/disk-disk-collisions'
 import { Lut } from 'simulation/luts/lut'
 
 async function main() {
@@ -51,9 +50,9 @@ async function main() {
 
   // DiskDiskCollisions.computeAll()
   // await DiskDiskCollisions.loadAll()
-  
-  Lut.create('disk-disk-lut').computeAll()
-  // await Lut.create('disk-disk-lut').loadAll()
+
+  // Lut.create('disk-disk-lut').computeAll()
+  await Lut.create('disk-disk-lut').loadAll()
   await pinballWizard.init()
 
   if (isDevMode) {

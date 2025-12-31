@@ -1,7 +1,8 @@
 /**
- * @file VectorMath
- * utility functions involving 2D vectors
- * Vectors are objects with properties x and y
+ * @file vector-math.ts
+ *
+ * Utility functions involving 2D vectors.
+ * Vectors are objects with properties x and y.
  */
 export type Vector = { x: number, y: number }
 
@@ -106,41 +107,6 @@ export class VectorMath {
       x: x * scalar,
       y: y * scalar,
     }
-  }
-
-  /**
-   * Check if the point is contained by the polygon
-   * @param {Vector} point The point to check
-   * @param {Vector[]} verts The vertices of the shape to check
-   */
-  static isPointInPolygon(point, verts) {
-    const { x, y } = point
-
-    // ray casting algorithm
-    // we cast a ray from the point (direction doesn't matter)
-    // and count how many times the ray crosses the edge of the polygon
-
-    // assume the point is outside until we find an intersection
-    let isInside = false
-
-    // iterate over polygon line segments
-    for (let i = 0; i < verts.length; i++) {
-      const j = (i + 1) % verts.length
-      const xi = verts[i].x
-      const yi = verts[i].y
-      const xj = verts[j].x
-      const yj = verts[j].y
-
-      // check if ray intersects this line segment
-      const intersect = ((yi > y) !== (yj > y))
-        && (x < ((xj - xi) * (y - yi)) / (yj - yi) + xi)
-
-      if (intersect) {
-        isInside = !isInside
-      }
-    }
-
-    return isInside
   }
 
   /**

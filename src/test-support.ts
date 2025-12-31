@@ -7,7 +7,7 @@
 import { type PinballWizard } from 'pinball-wizard'
 import { topConfig } from 'configs/imp/top-config'
 
-export function getTestSupport(pinballWizard: PinballWizard) {
+export function getTestSupport(_pinballWizard: PinballWizard) {
   return {
 
     getSetting: (key) => {

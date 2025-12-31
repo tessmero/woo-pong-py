@@ -15,7 +15,9 @@ describe('collision data blobs in public/collisions', function () {
   it('loads as valid disk-disk -> bounce tree', function () {
     const blobPath = join(__dirname, `../../public/${DDCOLLISION_BLOB_URL}`)
     const readBuffer = readFileSync(blobPath)
-    const blobData = new Int16Array(readBuffer.buffer, readBuffer.byteOffset, readBuffer.byteLength / Int16Array.BYTES_PER_ELEMENT)
+    const blobData = new Int16Array(
+      readBuffer.buffer, readBuffer.byteOffset,
+      readBuffer.byteLength / Int16Array.BYTES_PER_ELEMENT)
 
     ok(typeof blobData[0] === 'number'
       && (blobData[0] === Math.floor(blobData[0])),

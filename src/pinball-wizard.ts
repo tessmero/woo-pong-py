@@ -46,7 +46,7 @@ export class PinballWizard {
 
   update(dt: number) {
     // if (this.state.isActive) {
-      this.activeSim.update(dt)
+    this.activeSim.update(dt)
     // }
     this.activeSim.draw(ctx, cvs.width, cvs.height)
   }
@@ -67,7 +67,7 @@ export class PinballWizard {
 
   private isMouseDown = false
   down(rawPos: Vec2) {
-    const mousePos = this.move(rawPos)
+    const _mousePos = this.move(rawPos)
     this.isMouseDown = true
 
     // this.gui.down(this, mousePos)

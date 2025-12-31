@@ -9,7 +9,7 @@ import { Barrier } from './barrier'
 import { STEP_DURATION, valueScale } from './constants'
 import { Disk } from './disk'
 import { Graphics } from './graphics'
-import { DiskDiskCollisions } from './disk-disk-collisions'
+import { collideDisks } from './luts/imp/disk-disk-lut'
 
 const thick = 1 * valueScale // thickness of walls
 
@@ -55,14 +55,14 @@ export class Simulation {
     // collide disks with disks
     for (let a = 1; a < this.disks.length; a++) {
       for (let b = 0; b < a; b++) {
-        DiskDiskCollisions.collide(this.disks[a], this.disks[b])
+        collideDisks(this.disks[a], this.disks[b])
       }
     }
 
     // collide disks with barriers
     for (const disk of this.disks) {
       disk.advance(this.barriers)
-      disk.nextState[3] += 1  // gravity
+      disk.nextState[3] += 1 // gravity
     }
 
     Disk.flushStates(this.disks) // commit updates after collisions

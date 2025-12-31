@@ -8,11 +8,6 @@ import { JSDOM } from 'jsdom'
 import { Image } from 'canvas'
 import * as mocha from 'mocha'
 import { RuleTester } from '@typescript-eslint/rule-tester'
-import { DiskDiskCollisions } from '../src/simulation/disk-disk-collisions'
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import { DDCOLLISION_BLOB_URL } from '../src/set-by-build'
-
 
 RuleTester.afterAll = mocha.after
 

@@ -9,7 +9,7 @@ import type { ConfigTree } from '../config-tree'
 import type { PinballWizard } from 'pinball-wizard'
 
 // called when sliders are dragged in dev mode
-function onChange(pinballWizard: PinballWizard) {
+function onChange(_pinballWizard: PinballWizard) {
   gfxConfig.refreshConfig()
   // pinballWizard.onResize()
 }

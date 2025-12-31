@@ -9,7 +9,6 @@ import { twopi } from 'util/math-util'
 import type { Barrier } from './barrier'
 import { DISK_RADIUS, valueScale } from './constants'
 import { tailLength, type Disk } from './disk'
-import type { Obstacle } from './obstacle'
 
 export class Graphics {
   /**
@@ -18,20 +17,19 @@ export class Graphics {
    * @param {object} disk The Disk instance to draw
    */
   static drawDisk(ctx: CanvasRenderingContext2D, disk: Disk) {
-    const [cx, cy, _dx, _dy] = disk.currentState
+    const [_cx, _cy, _dx, _dy] = disk.currentState
 
     // ctx.strokeStyle = 'black'
     // ctx.beginPath()
     // ctx.arc(cx, cy, DISK_RADIUS, 0, twopi)
     // ctx.stroke()
 
-
     ctx.fillStyle = 'black'
     ctx.beginPath()
     let i = 0
     for (const [x, y] of disk.history()) {
       // draw point in tail
-      ctx.moveTo(x,y)
+      ctx.moveTo(x, y)
       ctx.arc(x, y, DISK_RADIUS * (1 - i / tailLength / 2), 0, twopi)
       i++
     }
@@ -43,7 +41,7 @@ export class Graphics {
     i = 0
     for (const [x, y] of disk.history()) {
       // draw point in tail
-      ctx.moveTo(x,y)
+      ctx.moveTo(x, y)
       ctx.arc(x, y, Math.max(0, DISK_RADIUS * (1 - i / tailLength / 2) - edgeThickness), 0, twopi)
       i++
     }
