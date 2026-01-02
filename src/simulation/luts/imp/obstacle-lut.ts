@@ -136,7 +136,7 @@ function computeCollision(pos: Vec2): ObstacleCollision {
     ]
 
     return [
-      -offset[0], -offset[1],
+      offset[0], offset[1],
       angleToIndex(normAngle),
     ]
   }

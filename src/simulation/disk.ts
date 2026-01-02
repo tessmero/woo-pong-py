@@ -110,8 +110,8 @@ export class Disk {
           ndx += vxAdj
           ndy += vyAdj
 
-          this.nextState[0] += ndx + xAdj
-          this.nextState[1] += ndy + yAdj
+          this.nextState[0] += xAdj
+          this.nextState[1] += yAdj
           this.nextState[2] = ndx
           this.nextState[3] = ndy
 
