@@ -70,6 +70,7 @@ export class Graphics {
     ctx.strokeStyle = 'green'
     ctx.lineWidth = 1 * valueScale
     ctx.strokeRect(...collisionRect)
+    
 
     ctx.beginPath()
     for (const [x, y] of points) {

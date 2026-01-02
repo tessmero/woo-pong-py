@@ -6,7 +6,7 @@
 
 import { topConfig } from 'configs/imp/top-config'
 import { Barrier } from './barrier'
-import { circleObsRadius, DISK_RADIUS, STEP_DURATION, valueScale } from './constants'
+import { circleObsPath, circleObsRadius, DISK_RADIUS, STEP_DURATION, valueScale } from './constants'
 import { Disk } from './disk'
 import { Graphics } from './graphics'
 import { collideDisks } from './luts/imp/disk-disk-lut'
@@ -42,13 +42,9 @@ const _barriers = [
 ] as const
 
 // const path = 'M0,0 H100000 V100000 H0 Z'
-const path
-  = `M0,${-circleObsRadius} `
-    + `A${circleObsRadius},${circleObsRadius} 0 1,0 0,${circleObsRadius} `
-    + `A${circleObsRadius},${circleObsRadius} 0 1,0 0,${-circleObsRadius} Z`
 const _obstacles = [
-  [[70 * valueScale, 70 * valueScale] as Vec2, path],
-  [[85 * valueScale, 70 * valueScale] as Vec2, path],
+  [[70 * valueScale, 70 * valueScale] as Vec2, circleObsPath],
+  [[85 * valueScale, 70 * valueScale] as Vec2, circleObsPath],
 ] as const
 
 export class Simulation {

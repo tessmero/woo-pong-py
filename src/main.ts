@@ -53,8 +53,8 @@ async function main() {
   // await DiskDiskCollisions.loadAll()
 
   for (const lutName of LUT.NAMES) {
-    // Lut.create(lutName).computeAll()
-    await Lut.create(lutName).loadAll()
+    Lut.create(lutName).computeAll()
+    // await Lut.create(lutName).loadAll()
   }
 
   await pinballWizard.init()
