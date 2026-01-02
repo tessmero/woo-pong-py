@@ -7,6 +7,7 @@
 import { circleObsRadius, DISK_RADIUS } from 'simulation/constants'
 import { Lut } from '../lut'
 import { angleToIndex } from './disk-normal-lut'
+import { OBSTACLE_LUT_BLOB_HASH, OBSTACLE_LUT_BLOB_URL } from 'set-by-build'
 
 export type ObstacleCollision = null | [number, number, number] // x adjust, y adjust, normal index
 
@@ -17,9 +18,10 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
   static {
     Lut.register('obstacle-lut', {
       factory: () => new ObstacleLut(),
-      blobHash: '',
-      blobUrl: '',
+      blobHash: OBSTACLE_LUT_BLOB_HASH,
+      blobUrl: OBSTACLE_LUT_BLOB_URL,
       depth: 2,
+      leafLength: 3,
       detail: [
         obsOffsetDetail * 2 + 1,
         obsOffsetDetail * 2 + 1,

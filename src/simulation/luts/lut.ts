@@ -5,11 +5,12 @@
  */
 
 import type { LutName } from '../../imp-names'
-import { CollisionEncoder } from '../../simulation/collision-encoder'
+import { LutEncoder } from '../lut-encoder'
 
 export type RegisteredLut<TLeaf> = {
   factory: () => Lut<TLeaf>
   depth: number
+  leafLength: number
   detail: Array<number>
   blobUrl: string
   blobHash: string
@@ -21,15 +22,15 @@ export abstract class Lut<TLeaf> {
   private readonly name: LutName = null
 
   // @ts-expect-error forcefully assigned on register
-  private readonly reg: RegisteredLut<TLeaf> = null
+  public readonly reg: RegisteredLut<TLeaf> = null
 
   public readonly tree: Tree<TLeaf> = [] as Tree<TLeaf>
 
   abstract computeLeaf(index: Array<number>)
 
   public loadFromBlob(intArr: Int16Array) {
-    // @ts-expect-error forcefully re-assign tree
-    this.tree = CollisionEncoder.decode(intArr)
+    this.tree.length = 0
+    LutEncoder.decode(intArr, this)
   }
 
   public async loadAll() {
@@ -45,8 +46,8 @@ export abstract class Lut<TLeaf> {
 
     // Decode the binary data into the collision cache structure
 
-    // @ts-expect-error forcefully re-assign tree
-    this.tree = CollisionEncoder.decode(intArr)
+    this.tree.length = 0
+    LutEncoder.decode(intArr, this)
 
     // }
     // catch (error) {
@@ -92,20 +93,22 @@ export abstract class Lut<TLeaf> {
   }
 }
 
-async function fetchBlobWithIntegrityCheck(url: string, expectedHash: string): Promise<Int16Array> {
+async function fetchBlobWithIntegrityCheck(url: string, expectedHash?: string): Promise<Int16Array> {
   const response = await fetch(url)
   if (!response.ok) {
     throw new Error(`Failed to fetch blob: ${response.statusText}`)
   }
   const arrayBuffer = await response.arrayBuffer()
 
+  if (expectedHash) {
   // Compute hash for integrity check
-  const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
-  if (hashHex !== expectedHash) {
-    throw new Error(`Integrity check failed: expected ${expectedHash}, got ${hashHex}`)
+    if (hashHex !== expectedHash) {
+      throw new Error(`Integrity check failed: expected ${expectedHash}, got ${hashHex}`)
+    }
   }
 
   return new Int16Array(arrayBuffer)
@@ -124,7 +127,7 @@ export function* allIndices(reg: RegisteredLut<any>): Generator<Array<number>> {
   }
 }
 
-function assignIndex<TLeaf>(tree: Tree<TLeaf>, index: Array<number>, value: TLeaf) {
+export function assignIndex<TLeaf>(tree: Tree<TLeaf>, index: Array<number>, value: TLeaf) {
   if (index.length === 0) throw new Error('poop')
 
   if (index.length === 1) {

@@ -6,6 +6,7 @@
 
 import { pio2, twopi } from 'util/math-util'
 import { Lut } from '../lut'
+import { DISK_NORMAL_LUT_BLOB_HASH, DISK_NORMAL_LUT_BLOB_URL } from 'set-by-build'
 
 export type DiskNormalBounce = [number, number] // dx,dy
 
@@ -25,13 +26,14 @@ export class DiskNormalLut extends Lut<DiskNormalBounce> {
     Lut.register('disk-normal-lut', {
       factory: () => new DiskNormalLut(),
       depth: 3,
+      leafLength: 2,
       detail: [
         speedDetail * 2 + 1,
         speedDetail * 2 + 1,
         normalDetail,
       ],
-      blobHash: '',
-      blobUrl: '',
+      blobHash: DISK_NORMAL_LUT_BLOB_HASH,
+      blobUrl: DISK_NORMAL_LUT_BLOB_URL,
     })
   }
 

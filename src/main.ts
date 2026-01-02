@@ -13,6 +13,7 @@ import { getTestSupport } from 'test-support'
 import { applyDevMode, isDevMode } from 'configs/imp/top-config'
 import type { Vec2 } from 'util/math-util'
 import { Lut } from 'simulation/luts/lut'
+import { LUT } from 'imp-names'
 
 async function main() {
   // const layeredViewport = new LayeredViewport()
@@ -51,11 +52,11 @@ async function main() {
   // DiskDiskCollisions.computeAll()
   // await DiskDiskCollisions.loadAll()
 
-  Lut.create('obstacle-lut').computeAll()
-  Lut.create('disk-normal-lut').computeAll()
+  for (const lutName of LUT.NAMES) {
+    // Lut.create(lutName).computeAll()
+    await Lut.create(lutName).loadAll()
+  }
 
-  // Lut.create('disk-disk-lut').computeAll()
-  await Lut.create('disk-disk-lut').loadAll()
   await pinballWizard.init()
 
   if (isDevMode) {

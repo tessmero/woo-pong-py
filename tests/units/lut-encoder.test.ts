@@ -1,12 +1,12 @@
 /**
- * @file collision-encoder.test.ts
+ * @file lut-encoder.test.ts
  *
  * Test encoding and decoding computed collisions.
  */
 
-import { CollisionEncoder, DDCollisionTree } from '../../src/simulation/collision-encoder'
+import { LutEncoder, DDCollisionTree } from '../../src/simulation/lut-encoder'
 import { ok, strictEqual } from 'assert'
-import { randomDDIndex } from '../test-util'
+import { randomDiskDiskIndex } from '../test-util'
 import { readFileSync, writeFileSync } from 'fs'
 import { Buffer } from 'buffer' // Ensure Buffer is imported explicitly
 import { Lut } from '../../src/simulation/luts/lut'
@@ -19,14 +19,16 @@ describe('collision data encoder/decoder', function () {
   it('correctly encodes and decodes cache in memory', function () {
     const lut = Lut.create('disk-disk-lut')
     lut.computeAll()
-    const encodedBlob = CollisionEncoder.encode(lut.tree)
-    const decodedCache = CollisionEncoder.decode(encodedBlob)
+    const encodedBlob = LutEncoder.encode(lut.tree)
+    lut.tree.length = 0
+    LutEncoder.decode(encodedBlob, lut)
+    const decodedCache = lut.tree
     assertCachesMatch(lut.tree, decodedCache)
   })
   it('correctly encodes and decodes blob in file system', function () {
     const lut = Lut.create('disk-disk-lut')
     lut.computeAll()
-    const encodedBlob = CollisionEncoder.encode(lut.tree)
+    const encodedBlob = LutEncoder.encode(lut.tree)
 
     // Write the encoded blob to a file in raw binary format
     const filePath = './encoded-collision-cache.bin'
@@ -37,7 +39,9 @@ describe('collision data encoder/decoder', function () {
       readBuffer.buffer, readBuffer.byteOffset,
       readBuffer.byteLength / Int16Array.BYTES_PER_ELEMENT,
     )
-    const decodedCache = CollisionEncoder.decode(readEncodedBlob)
+    lut.tree.length = 0
+    LutEncoder.decode(readEncodedBlob, lut)
+    const decodedCache = lut.tree
 
     assertCachesMatch(lut.tree, decodedCache)
   })
@@ -45,7 +49,7 @@ describe('collision data encoder/decoder', function () {
 
 function assertCachesMatch(originalCache: DDCollisionTree, decodedCache: DDCollisionTree) {
   // Compare random indices before and after
-  const randomIndices = Array.from({ length: 100 }).map(() => randomDDIndex())
+  const randomIndices = Array.from({ length: 100 }).map(randomDiskDiskIndex)
 
   for (const [dxi, dyi, vxi, vyi] of randomIndices) {
     const original = originalCache[dxi][dyi][vxi][vyi]

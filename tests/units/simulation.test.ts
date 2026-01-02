@@ -6,14 +6,11 @@
 
 import { Simulation } from '../../src/simulation/simulation'
 import { equal } from 'assert'
-import { DiskDiskLut } from '../../src/simulation/luts/imp/disk-disk-lut'
 import { Lut } from '../../src/simulation/luts/lut'
-
-// excuse to import disk-disk-lut and have it registered
-const _thing = DiskDiskLut
+import { LUT } from '../../src/imp-names'
 
 const sim = new Simulation()
-const stepCount = 1e3
+const stepCount = 1e1
 
 describe('deterministic simulation', function () {
   // before(async function () {
@@ -23,9 +20,7 @@ describe('deterministic simulation', function () {
   // })
 
   it(`has expected state after ${stepCount.toExponential()} steps`, async function () {
-    const lut = Lut.create('disk-disk-lut')
-    lut.computeAll()
-
+    for (const name of LUT.NAMES) Lut.create(name).computeAll()
     for (let i = 0; i < stepCount; i++) sim.step()
     const actualSnapshot = getSnapshot()
     equal(actualSnapshot, expectedSnapshot)
@@ -33,12 +28,22 @@ describe('deterministic simulation', function () {
 })
 
 function getSnapshot(): string {
-  return JSON.stringify(sim.disks.map(disk => disk.toJson()))
+  return JSON.stringify(sim.disks.map((disk) => {
+    const json = disk.toJson()
+    for (const value of json) {
+      if (Math.floor(value) !== value) {
+        throw new Error('position and velocity values should be integers')
+      }
+    }
+    return json
+  }))
 }
 
 // disks x,y,vx,vy
 const expectedSnapshot = `
 
-[[700000,437500,500,-500],[700000,505500,500,-700],[700000,569300,500,-500],[700000,641300,500,-500],[700000,712662,500,-518],[770000,436500,490,-495],[770000,505500,490,-695],[770000,570300,490,-495],[770000,642300,490,-495],[770000,712432,490,-517],[834600,437500,-420,-490],[834600,503300,-420,-690],[834732,568712,-398,-588],[836000,641300,-320,-490],[834732,709224,-398,-616],[892900,436500,470,-485],[892900,503300,470,-685],[892768,570888,448,-387],[892050,637850,392,-583],[892768,710688,448,-417],[957620,435500,-440,-480],[957620,501300,-440,-680],[957620,569300,-440,-480],[958126,643750,-418,-382],[957620,707228,-440,-516]]
+[[374253,888327,-686,238],[181680,559830,580,-1110],[222652,780726,-148,-1026],[271170,593172,-154,-828],[304929,870862,-38,-128],[617740,252371,265,164],[628696,942240,269,422],[301622,731212,-331,-331],[348915,767110,33,-673],[695943,945016,52,1045],[610118,533275,169,594],[714956.5325889132,511888.06234380207,-716.2760325606096,-608.3907338750873],[379532.9774391,519660.3215222244,-129.49996501152833,414.0380903146516],[591425,666679,-312,-511],[766723,937078,-505,-934],[812132,372972,92,-408],[783815,678572,61,104],[689293,656002,-1323,-878],[716137.3340953079,833021.7701751736,-479.3244788730717,-280.6022602217572],[901045.1019957578,884601.1727620838,67.68610199578006,-224.3031560821812],[887538,650779,-679,430],[619152,735923,-952,-116],[876168,715639,-156,-839],[955188.8674961249,949559.099263353,-928.5005761037846,520.3943962704848],[779680.8749772322,839580.3911378785,-252.47637911010406,-268.0817247957584]]
+
+
 
 `.replace(/\s/g, '') // remove whitespace

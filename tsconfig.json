@@ -2,7 +2,10 @@
   "compilerOptions": {
     "skipLibCheck": true,
     "outDir": "dist",
-    "baseUrl": "src",
+    "baseUrl": "./src",
+    "paths": {
+      "*": ["*"]
+    },
     "rootDir": "src",
     "target": "es2022",
     "moduleResolution": "nodenext",

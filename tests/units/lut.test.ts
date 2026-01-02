@@ -9,6 +9,7 @@ import { allIndices, Lut, RegisteredLut } from '../../src/simulation/luts/lut'
 
 const reg: RegisteredLut<any> = { // eslint-disable-line @typescript-eslint/no-explicit-any
   depth: 4,
+  leafLength: 4,
   detail: [10, 10, 10, 10],
   factory: () => ({}) as Lut<any>, // eslint-disable-line @typescript-eslint/no-explicit-any
   blobUrl: '',
