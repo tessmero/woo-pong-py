@@ -4,15 +4,14 @@
  * Used to check for collisions with obstacles and get normal angles.
  */
 
-import { DISK_RADIUS } from 'simulation/constants'
+import { circleObsRadius, DISK_RADIUS } from 'simulation/constants'
 import { Lut } from '../lut'
 import { angleToIndex } from './disk-normal-lut'
-import { pi } from 'util/math-util'
 
 export type ObstacleCollision = null | [number, number, number] // x adjust, y adjust, normal index
 
-export const offsetDetail = 10 // half size of cache along dx and dy
-const maxOffset = 20 * DISK_RADIUS
+export const obsOffsetDetail = 100 // half size of cache along dx and dy
+const maxOffset = circleObsRadius + DISK_RADIUS
 
 export class ObstacleLut extends Lut<ObstacleCollision> {
   static {
@@ -22,23 +21,33 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
       blobUrl: '',
       depth: 2,
       detail: [
-        offsetDetail * 2 + 1,
-        offsetDetail * 2 + 1,
+        obsOffsetDetail * 2 + 1,
+        obsOffsetDetail * 2 + 1,
       ],
     })
   }
 
-  offsetToIndex = offset => Math.floor(offset * offsetDetail / maxOffset)
-  indexToOffset = i => i * maxOffset / offsetDetail
+  offsetToIndex = offset => Math.floor(offset * obsOffsetDetail / maxOffset)
+  indexToOffset = i => i * maxOffset / obsOffsetDetail
 
   computeLeaf(index: Array<number>) {
-    const dx = this.indexToOffset(index[0] - offsetDetail)
-    const dy = this.indexToOffset(index[1] - offsetDetail)
+    const dx = this.indexToOffset(index[0] - obsOffsetDetail)
+    const dy = this.indexToOffset(index[1] - obsOffsetDetail)
     return computeCollision(dx, dy)
   }
 }
 
 function computeCollision(dx: number, dy: number): ObstacleCollision {
-  const angle = Math.atan2(dy, dx) + pi
-  return [0, 0, angleToIndex(angle)]
+  const angle = Math.atan2(dy, dx)
+  const radius = Math.hypot(dx, dy)
+  if (radius > maxOffset) {
+    return null // not colliding
+  }
+
+  const radAdj = maxOffset - radius
+  return [
+    Math.round(Math.cos(angle) * radAdj),
+    Math.round(Math.sin(angle) * radAdj),
+    angleToIndex(angle),
+  ]
 }

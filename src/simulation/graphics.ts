@@ -57,7 +57,12 @@ export class Graphics {
   static drawObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
     ctx.fillStyle = 'black'
 
-    const { pos, points } = obstacle
+    const { pos, points, boundingRect } = obstacle
+
+    // debug
+    ctx.strokeStyle = 'red'
+    ctx.lineWidth = 1 * valueScale
+    ctx.strokeRect(...boundingRect)
 
     ctx.beginPath()
     for (const [x, y] of points) {
