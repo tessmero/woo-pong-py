@@ -4,12 +4,14 @@
  * Used to check for collisions with obstacles and get normal angles.
  */
 
-import { circleObsPath, circleObsRadius, DISK_RADIUS } from 'simulation/constants'
+import { circleObsRadius, DISK_RADIUS } from 'simulation/constants'
 import { Lut } from '../lut'
 import { angleToIndex } from './disk-normal-lut'
 import { OBSTACLE_LUT_BLOB_HASH, OBSTACLE_LUT_BLOB_URL } from 'set-by-build'
 import { pio2, type Vec2 } from 'util/math-util'
 import { pointsOnPath } from 'points-on-path'
+import type { ShapeName } from 'simulation/shapes'
+import { SHAPE_PATHS } from 'simulation/shapes'
 
 export type ObstacleCollision = null | [number, number, number] // x adjust, y adjust, normal index
 
@@ -20,8 +22,8 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
   static {
     Lut.register('obstacle-lut', {
       factory: () => new ObstacleLut(),
-      blobHash: OBSTACLE_LUT_BLOB_HASH,
-      blobUrl: OBSTACLE_LUT_BLOB_URL,
+      // blobHash: OBSTACLE_LUT_BLOB_HASH,
+      // blobUrl: OBSTACLE_LUT_BLOB_URL,
       depth: 2,
       leafLength: 3,
       // detail: [
@@ -31,10 +33,14 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
     })
   }
 
+  blobHash = OBSTACLE_LUT_BLOB_HASH
+  blobUrl = OBSTACLE_LUT_BLOB_URL
   detail = [
     obsOffsetDetail * 2 + 1,
     obsOffsetDetail * 2 + 1,
   ]
+
+  shape: ShapeName = 'square'
 
   offsetToIndex = offset => Math.floor(offset * obsOffsetDetail / maxOffset)
   indexToOffset = i => i * maxOffset / obsOffsetDetail
@@ -42,7 +48,7 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
   computeLeaf(index: Array<number>) {
     const dx = this.indexToOffset(index[0] - obsOffsetDetail)
     const dy = this.indexToOffset(index[1] - obsOffsetDetail)
-    return computeCollision([dx, dy])
+    return computeCollision(this.shape, [dx, dy])
   }
 }
 
@@ -61,14 +67,20 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
 //   ]
 // }
 
-const path = circleObsPath
-const points = detailedPointsOnPath(path)
-console.log('obstacle lut points: ', points.length)
+const detailedPointsCache: Partial<Record<ShapeName, ReadonlyArray<Vec2>>> = {}
+function getDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
+  if (!Object.hasOwn(detailedPointsCache, shape)) {
+    const points = computeDetailedPointsOnPath(SHAPE_PATHS[shape])
+    detailedPointsCache[shape] = points
+    console.log('obstacle lut points: ', shape, points.length)
+  }
+  return detailedPointsCache[shape] as ReadonlyArray<Vec2>
+}
 
-function detailedPointsOnPath(path: string): Array<Vec2> {
+function computeDetailedPointsOnPath(path: string): ReadonlyArray<Vec2> {
   let points = pointsOnPath(path)[0]
   // points.push(points[0])
-  const threshold = DISK_RADIUS/10 // Distance threshold to add midpoints
+  const threshold = DISK_RADIUS / 10 // Distance threshold to add midpoints
   let addedPoints = true
 
   while (addedPoints) {
@@ -101,9 +113,10 @@ function detailedPointsOnPath(path: string): Array<Vec2> {
   return points
 }
 
-function computeCollision(pos: Vec2): ObstacleCollision {
+function computeCollision(shape: ShapeName, pos: Vec2): ObstacleCollision {
   // check if inside of obstacle
   // const isInside = this.path.contains(...pos)
+  const points = getDetailedPoints(shape)
   const isInside = isPointInPolygon(pos, points)
 
   // locate nearest point

@@ -14,6 +14,8 @@ import { applyDevMode, isDevMode } from 'configs/imp/top-config'
 import type { Vec2 } from 'util/math-util'
 import { Lut } from 'simulation/luts/lut'
 import { LUT } from 'imp-names'
+import type { ShapeName } from 'simulation/shapes'
+import { SHAPE_PATHS } from 'simulation/shapes'
 
 async function main() {
   // const layeredViewport = new LayeredViewport()
@@ -53,8 +55,16 @@ async function main() {
   // await DiskDiskCollisions.loadAll()
 
   for (const lutName of LUT.NAMES) {
-    Lut.create(lutName).computeAll()
+    if (lutName === 'obstacle-lut') {
+      for (const shapeName of Object.keys(SHAPE_PATHS)) {
+        Lut.create(lutName, shapeName as ShapeName).computeAll()
+        // Lut.create(lutName, shapeName as ShapeName).loadAll()
+      }
+    }
+    else {
+      Lut.create(lutName).computeAll()
     // await Lut.create(lutName).loadAll()
+    }
   }
 
   await pinballWizard.init()

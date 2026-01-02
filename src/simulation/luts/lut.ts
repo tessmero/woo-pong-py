@@ -4,16 +4,18 @@
  * Base class for lookup tables.
  */
 
+import type { ShapeName } from 'simulation/shapes'
 import type { LutName } from '../../imp-names'
 import { LutEncoder } from '../lut-encoder'
+import type { ObstacleLut } from './imp/obstacle-lut'
 
 export type RegisteredLut<TLeaf> = {
   factory: () => Lut<TLeaf>
   depth: number
   leafLength: number
   // detail: Array<number>
-  blobUrl: string
-  blobHash: string
+  // blobUrl: string
+  // blobHash: string
 }
 export type Tree<TLeaf> = Array<TLeaf | Tree<TLeaf>>
 
@@ -27,6 +29,8 @@ export abstract class Lut<TLeaf> {
   public readonly tree: Tree<TLeaf> = [] as Tree<TLeaf>
 
   abstract detail: Array<number>
+  abstract blobUrl: string
+  abstract blobHash: string
 
   abstract computeLeaf(index: Array<number>)
 
@@ -40,8 +44,8 @@ export abstract class Lut<TLeaf> {
 
     // Fetch the binary blob from the URL
     const intArr = await fetchBlobWithIntegrityCheck(
-      this.reg.blobUrl,
-      this.reg.blobHash,
+      this.blobUrl,
+      this.blobHash,
     )
 
     // const intArr = await DiskDiskCollisions.fetchBlob('/luts/working.bin')
@@ -67,7 +71,10 @@ export abstract class Lut<TLeaf> {
   }
 
   // static registry pattern
-  static _registry: Partial<Record<LutName, Lut<any>>> = {} // eslint-disable-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static _registry: Partial<Record<LutName, RegisteredLut<any>>> = {}
+  static _singletons: Partial<Record<LutName, Lut<any>>> = {} // eslint-disable-line @typescript-eslint/no-explicit-any
+  static _obstacles: Record<string, ObstacleLut> = {}
 
   protected constructor() {}
 
@@ -75,6 +82,10 @@ export abstract class Lut<TLeaf> {
   static register(name: LutName, reg: RegisteredLut<any>): void {
     if (name in this._registry) {
       throw new Error(`configurable already registered: '${name}'`)
+    }
+    this._registry[name] = reg
+    if (name === 'obstacle-lut') {
+      return
     }
     const lut = reg.factory()
 
@@ -84,14 +95,48 @@ export abstract class Lut<TLeaf> {
     // @ts-expect-error assign readonly member
     lut.name = name
 
-    this._registry[name] = lut
+    this._singletons[name] = lut
   }
 
-  static create(name: LutName): Lut<any> { // eslint-disable-line @typescript-eslint/no-explicit-any
-    if (!Object.hasOwn(this._registry, name)) {
-      throw new Error(`lut not registered: ${name}`)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static create(name: LutName, shapeName?: ShapeName): Lut<any> {
+    if (name === 'obstacle-lut') {
+      // lut is specific to obstacle shape
+      if (!shapeName) {
+        throw new Error('shapeName argument is required to create obstacle-lut')
+      }
+      const reg = this._registry['obstacle-lut']
+      if (!reg) {
+        throw new Error('obstacle-lut not registered')
+      }
+      if (!Object.hasOwn(Lut._obstacles, shapeName)) {
+        // first time creating lut for this shape
+        const { factory } = reg
+        const lut = factory() as ObstacleLut
+        // set url,hash,detail for lut
+
+        // @ts-expect-error assign readonly member
+        lut.reg = reg
+
+        // @ts-expect-error assign readonly member
+        lut.name = name
+
+        lut.shape = shapeName
+
+        Lut._obstacles[shapeName] = lut
+      }
+      return Lut._obstacles[shapeName]
     }
-    return this._registry[name] as Lut<any> // eslint-disable-line @typescript-eslint/no-explicit-any
+    else {
+      // lut is singleton
+      if (shapeName) {
+        throw new Error('shapeName argument should only be used to create obstacle-lut')
+      }
+      if (!Object.hasOwn(this._singletons, name)) {
+        throw new Error(`singleton lut not registered: ${name}`)
+      }
+      return this._singletons[name] as Lut<any> // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
   }
 }
 

@@ -32,11 +32,13 @@ export class DiskNormalLut extends Lut<DiskNormalBounce> {
       //   speedDetail * 2 + 1,
       //   normalDetail,
       // ],
-      blobHash: DISK_NORMAL_LUT_BLOB_HASH,
-      blobUrl: DISK_NORMAL_LUT_BLOB_URL,
+      // blobHash: DISK_NORMAL_LUT_BLOB_HASH,
+      // blobUrl: DISK_NORMAL_LUT_BLOB_URL,
     })
   }
 
+      blobHash= DISK_NORMAL_LUT_BLOB_HASH
+      blobUrl= DISK_NORMAL_LUT_BLOB_URL
   detail = [
     speedDetail * 2 + 1,
     speedDetail * 2 + 1,

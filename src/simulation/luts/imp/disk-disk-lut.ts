@@ -34,12 +34,14 @@ export class DiskDiskLut extends Lut<DiskDiskBounce> {
       //   speedDetail * 2 + 1,
       //   speedDetail * 2 + 1,
       // ],
-      blobUrl: DISK_DISK_LUT_BLOB_URL,
-      blobHash: DISK_DISK_LUT_BLOB_HASH,
+      // blobUrl: DISK_DISK_LUT_BLOB_URL,
+      // blobHash: DISK_DISK_LUT_BLOB_HASH,
       factory: () => new DiskDiskLut(),
     })
   }
 
+  blobUrl = DISK_DISK_LUT_BLOB_URL
+  blobHash = DISK_DISK_LUT_BLOB_HASH
   detail = [
     offsetDetail * 2 + 1,
     offsetDetail * 2 + 1,

@@ -6,14 +6,15 @@
 
 import { topConfig } from 'configs/imp/top-config'
 import { Barrier } from './barrier'
-import { circleObsPath, circleObsRadius, DISK_RADIUS, STEP_DURATION, valueScale } from './constants'
+import { STEP_DURATION, valueScale } from './constants'
 import { Disk } from './disk'
 import { Graphics } from './graphics'
 import { collideDisks } from './luts/imp/disk-disk-lut'
 import { Obstacle } from './obstacle'
-import type { Rectangle, Vec2 } from 'util/math-util'
+import type { Vec2 } from 'util/math-util'
 import { Lut } from './luts/lut'
 import type { ObstacleLut } from './luts/imp/obstacle-lut'
+import { SHAPE_PATHS } from './shapes'
 
 const thick = 1 * valueScale // thickness of walls
 
@@ -43,8 +44,9 @@ const _barriers = [
 
 // const path = 'M0,0 H100000 V100000 H0 Z'
 const _obstacles = [
-  [[70 * valueScale, 70 * valueScale] as Vec2, circleObsPath],
-  [[85 * valueScale, 70 * valueScale] as Vec2, circleObsPath],
+  [[70 * valueScale, 70 * valueScale] as Vec2, 'circle'],
+  [[85 * valueScale, 70 * valueScale] as Vec2, 'square'],
+  [[95 * valueScale, 70 * valueScale] as Vec2, 'triangle'],
 ] as const
 
 export class Simulation {
@@ -53,8 +55,11 @@ export class Simulation {
   barriers: Array<Barrier>
   constructor() {
     this.disks = _disks.map(pars => Disk.fromJson(pars))
-    this.obstacles = _obstacles.map(pars => new Obstacle(...pars,
-      Lut.create('obstacle-lut') as ObstacleLut))
+    this.obstacles = _obstacles.map(([pos, shapeName]) => new Obstacle(
+      pos,
+      SHAPE_PATHS[shapeName],
+      Lut.create('obstacle-lut', shapeName) as ObstacleLut,
+    ))
     this.barriers = _barriers.map(([x, y, w, h]) => new Barrier(x, y, w, h))
   }
 
