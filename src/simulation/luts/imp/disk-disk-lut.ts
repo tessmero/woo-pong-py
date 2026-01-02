@@ -28,17 +28,24 @@ export class DiskDiskLut extends Lut<DiskDiskBounce> {
     Lut.register('disk-disk-lut', {
       depth: 4,
       leafLength: 4,
-      detail: [
-        offsetDetail * 2 + 1,
-        offsetDetail * 2 + 1,
-        speedDetail * 2 + 1,
-        speedDetail * 2 + 1,
-      ],
+      // detail: [
+      //   offsetDetail * 2 + 1,
+      //   offsetDetail * 2 + 1,
+      //   speedDetail * 2 + 1,
+      //   speedDetail * 2 + 1,
+      // ],
       blobUrl: DISK_DISK_LUT_BLOB_URL,
       blobHash: DISK_DISK_LUT_BLOB_HASH,
       factory: () => new DiskDiskLut(),
     })
   }
+
+  detail = [
+    offsetDetail * 2 + 1,
+    offsetDetail * 2 + 1,
+    speedDetail * 2 + 1,
+    speedDetail * 2 + 1,
+  ]
 
   computeLeaf(index: Array<number>) {
     const dx = indexToOffset(index[0] - offsetDetail)

@@ -80,7 +80,7 @@ export class Disk {
     let oi = 0
     for (; oi < obstacles.length; oi++) {
       const obs = obstacles[oi]
-      if (rectContainsPoint(obs.boundingRect, nx, ny)) {
+      if (rectContainsPoint(obs.collisionRect, nx, ny)) {
         let i0 = obs.lut.offsetToIndex(nx - obs.pos[0])
         let i1 = obs.lut.offsetToIndex(ny - obs.pos[1])
         if (Math.abs(i0) > obsOffsetDetail) {

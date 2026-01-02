@@ -46,16 +46,9 @@ const path
   = `M0,${-circleObsRadius} `
     + `A${circleObsRadius},${circleObsRadius} 0 1,0 0,${circleObsRadius} `
     + `A${circleObsRadius},${circleObsRadius} 0 1,0 0,${-circleObsRadius} Z`
-const pos: Vec2 = [50 * valueScale, 50 * valueScale]
-// const { left, top, width, height } = path.bounds
-const boundingRect: Rectangle = [
-  pos[0] - circleObsRadius - DISK_RADIUS,
-  pos[1] - circleObsRadius - DISK_RADIUS,
-  2 * (circleObsRadius + DISK_RADIUS),
-  2 * (circleObsRadius + DISK_RADIUS),
-]
 const _obstacles = [
-  [pos, path, boundingRect],
+  [[70 * valueScale, 70 * valueScale] as Vec2, path],
+  [[85 * valueScale, 70 * valueScale] as Vec2, path],
 ] as const
 
 export class Simulation {

@@ -11,7 +11,7 @@ export type RegisteredLut<TLeaf> = {
   factory: () => Lut<TLeaf>
   depth: number
   leafLength: number
-  detail: Array<number>
+  // detail: Array<number>
   blobUrl: string
   blobHash: string
 }
@@ -25,6 +25,8 @@ export abstract class Lut<TLeaf> {
   public readonly reg: RegisteredLut<TLeaf> = null
 
   public readonly tree: Tree<TLeaf> = [] as Tree<TLeaf>
+
+  abstract detail: Array<number>
 
   abstract computeLeaf(index: Array<number>)
 
@@ -58,7 +60,7 @@ export abstract class Lut<TLeaf> {
 
   public computeAll() {
     this.tree.length = 0 // clear tree
-    for (const index of allIndices(this.reg)) {
+    for (const index of allIndices(this)) {
       const leaf = this.computeLeaf(index)
       assignIndex(this.tree, index, leaf)
     }
@@ -115,14 +117,14 @@ async function fetchBlobWithIntegrityCheck(url: string, expectedHash?: string): 
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function* allIndices(reg: RegisteredLut<any>): Generator<Array<number>> {
-  const nLevels = reg.depth
+export function* allIndices(lut: Lut<any>): Generator<Array<number>> {
+  const nLevels = lut.reg.depth
   const index: Array<number> = Array.from({ length: nLevels }, () => 0)
 
   while (true) {
     yield [...index]
 
-    const didFinish = advance(index, reg, index.length - 1)
+    const didFinish = advance(index, lut, index.length - 1)
     if (didFinish) return
   }
 }
@@ -145,17 +147,17 @@ export function assignIndex<TLeaf>(tree: Tree<TLeaf>, index: Array<number>, valu
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function advance(index: Array<number>, reg: RegisteredLut<any>, i: number): boolean {
+function advance(index: Array<number>, lut: Lut<any>, i: number): boolean {
   // let i = index.length - 1
 
   const newVal = index[i] + 1
-  if (newVal >= reg.detail[i]) {
+  if (newVal >= lut.detail[i]) {
     if (i === 0) {
       // reached end
       return true
     }
     index[i] = 0
-    return advance(index, reg, i - 1)
+    return advance(index, lut, i - 1)
   }
   else {
     index[i] = newVal

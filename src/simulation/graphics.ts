@@ -18,7 +18,7 @@ export class Graphics {
    * @param {object} disk The Disk instance to draw
    */
   static drawDisk(ctx: CanvasRenderingContext2D, disk: Disk) {
-    const [_cx, _cy, _dx, _dy] = disk.currentState
+    const [cx, cy, _dx, _dy] = disk.currentState
 
     // ctx.strokeStyle = 'black'
     // ctx.beginPath()
@@ -28,6 +28,8 @@ export class Graphics {
     ctx.fillStyle = 'black'
     ctx.beginPath()
     let i = 0
+    ctx.moveTo(cx, cy)
+    ctx.arc(cx, cy, DISK_RADIUS * (1 - i / tailLength / 2), 0, twopi)
     for (const [x, y] of disk.history()) {
       // draw point in tail
       ctx.moveTo(x, y)
@@ -40,6 +42,8 @@ export class Graphics {
     ctx.fillStyle = 'white'
     ctx.beginPath()
     i = 0
+    ctx.moveTo(cx, cy)
+    ctx.arc(cx, cy, Math.max(0, DISK_RADIUS * (1 - i / tailLength / 2) - edgeThickness), 0, twopi)
     for (const [x, y] of disk.history()) {
       // draw point in tail
       ctx.moveTo(x, y)
@@ -57,12 +61,15 @@ export class Graphics {
   static drawObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
     ctx.fillStyle = 'black'
 
-    const { pos, points, boundingRect } = obstacle
+    const { pos, points, boundingRect, collisionRect } = obstacle
 
     // debug
     ctx.strokeStyle = 'red'
     ctx.lineWidth = 1 * valueScale
     ctx.strokeRect(...boundingRect)
+    ctx.strokeStyle = 'green'
+    ctx.lineWidth = 1 * valueScale
+    ctx.strokeRect(...collisionRect)
 
     ctx.beginPath()
     for (const [x, y] of points) {

@@ -39,7 +39,7 @@ export class LutEncoder {
   ) {
     let indexInBlob = 0
 
-    for (const index of allIndices(lut.reg)) {
+    for (const index of allIndices(lut)) {
       const marker = blob[indexInBlob++]
 
       let value: Array<number> | null = null

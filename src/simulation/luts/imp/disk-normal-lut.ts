@@ -4,7 +4,7 @@
  * Lookup table for disk hitting solid line.
  */
 
-import { pio2, twopi } from 'util/math-util'
+import { twopi } from 'util/math-util'
 import { Lut } from '../lut'
 import { DISK_NORMAL_LUT_BLOB_HASH, DISK_NORMAL_LUT_BLOB_URL } from 'set-by-build'
 
@@ -27,15 +27,21 @@ export class DiskNormalLut extends Lut<DiskNormalBounce> {
       factory: () => new DiskNormalLut(),
       depth: 3,
       leafLength: 2,
-      detail: [
-        speedDetail * 2 + 1,
-        speedDetail * 2 + 1,
-        normalDetail,
-      ],
+      // detail: [
+      //   speedDetail * 2 + 1,
+      //   speedDetail * 2 + 1,
+      //   normalDetail,
+      // ],
       blobHash: DISK_NORMAL_LUT_BLOB_HASH,
       blobUrl: DISK_NORMAL_LUT_BLOB_URL,
     })
   }
+
+  detail = [
+    speedDetail * 2 + 1,
+    speedDetail * 2 + 1,
+    normalDetail,
+  ]
 
   computeLeaf(index: Array<number>) {
     const vx = indexToSpeed(index[0] - speedDetail)
@@ -53,5 +59,5 @@ function computeCollision(vx: number, vy: number, normal: number): DiskNormalBou
   const newVx = vx - 2 * dotProduct * cos
   const newVy = vy - 2 * dotProduct * sin
 
-  return [newVx-vx, newVy-vy]
+  return [newVx - vx, newVy - vy]
 }

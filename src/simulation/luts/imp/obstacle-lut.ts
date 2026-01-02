@@ -22,12 +22,17 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
       blobUrl: OBSTACLE_LUT_BLOB_URL,
       depth: 2,
       leafLength: 3,
-      detail: [
-        obsOffsetDetail * 2 + 1,
-        obsOffsetDetail * 2 + 1,
-      ],
+      // detail: [
+      //   obsOffsetDetail * 2 + 1,
+      //   obsOffsetDetail * 2 + 1,
+      // ],
     })
   }
+
+  detail = [
+    obsOffsetDetail * 2 + 1,
+    obsOffsetDetail * 2 + 1,
+  ]
 
   offsetToIndex = offset => Math.floor(offset * obsOffsetDetail / maxOffset)
   indexToOffset = i => i * maxOffset / obsOffsetDetail
