@@ -6,8 +6,9 @@
 
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { DISK_RADIUS } from './constants'
-import type { Path2D } from '@julusian/skia-canvas'
-import { Normals } from './normals'
+import { angleToIndex } from './luts/imp/disk-normal-lut'
+import type { ObstacleCollision, ObstacleLut } from './luts/imp/obstacle-lut'
+import { pointsOnPath } from 'points-on-path'
 
 // // dummy context to call isPointInPath
 // const canvas = document.createElement('canvas')
@@ -15,23 +16,26 @@ import { Normals } from './normals'
 
 export class Obstacle {
   readonly collisionRect: Rectangle
-  readonly points: ReadonlyArray<[x: number, y: number]>
+  readonly points: ReadonlyArray<Vec2>
 
   constructor(
-    readonly path: Path2D,
+    readonly pos: Vec2,
+    readonly path: string,
     readonly boundingRect: Rectangle,
+    readonly lut: ObstacleLut,
   ) {
     const [x, y, w, h] = boundingRect
     this.collisionRect = [
       x - DISK_RADIUS, y - DISK_RADIUS,
       w + 2 * DISK_RADIUS, h + 2 * DISK_RADIUS,
     ]
-    this.points = path.points(0.5)
+    this.points = pointsOnPath(path)[0]
   }
 
-  computeCollision(pos: Vec2): null | { pos: Vec2, normIndex: number } {
+  computeCollision(pos: Vec2): ObstacleCollision {
     // check if inside of obstacle
-    const isInside = this.path.contains(...pos)
+    // const isInside = this.path.contains(...pos)
+    const isInside = isPointInPolygon(pos, this.points)
 
     // locate nearest point
     let minDistSquared = Infinity
@@ -62,14 +66,44 @@ export class Obstacle {
         offsetDist * Math.sin(normAngle),
       ]
 
-      return {
-        normIndex: Normals.getIndex(normAngle),
-        pos: offset,
-      }
+      return [
+        offset[0], offset[1],
+        angleToIndex(normAngle),
+      ]
     }
     else {
       // not colliding
       return null
     }
   }
+}
+
+function isPointInPolygon(point: Vec2, verts: ReadonlyArray<Vec2>) {
+  const [x, y] = point
+
+  // ray casting algorithm
+  // we cast a ray from the point (direction doesn't matter)
+  // and count how many times the ray crosses the edge of the polygon
+
+  // assume the point is outside until we find an intersection
+  let isInside = false
+
+  // iterate over polygon line segments
+  for (let i = 0; i < verts.length; i++) {
+    const j = (i + 1) % verts.length
+    const xi = verts[i][0]
+    const yi = verts[i][1]
+    const xj = verts[j][0]
+    const yj = verts[j][1]
+
+    // check if ray intersects this line segment
+    const isIntersecting = ((yi > y) !== (yj > y))
+      && (x < ((xj - xi) * (y - yi)) / (yj - yi) + xi)
+
+    if (isIntersecting) {
+      isInside = !isInside
+    }
+  }
+
+  return isInside
 }

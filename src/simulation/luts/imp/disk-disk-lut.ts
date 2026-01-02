@@ -9,7 +9,7 @@ import { Lut } from '../lut'
 import type { Disk } from 'simulation/disk'
 import { DISK_RADIUS } from 'simulation/constants'
 
-export type CachedCollision = null | [number, number, number, number] // x,y,dx,dy
+export type DiskDiskBounce = null | [number, number, number, number] // x,y,dx,dy
 
 const cacheScale = 1e2
 
@@ -23,7 +23,7 @@ const maxOffset = 2 * DISK_RADIUS
 export const offsetToIndex = offset => Math.floor(offset * offsetDetail / maxOffset)
 export const indexToOffset = i => i * maxOffset / offsetDetail
 
-export class DiskDiskLut extends Lut<CachedCollision> {
+export class DiskDiskLut extends Lut<DiskDiskBounce> {
   static {
     Lut.register('disk-disk-lut', {
       depth: 4,
@@ -95,7 +95,7 @@ export function collideDisks(a: Disk, b: Disk) {
   b.nextState[3] += cdy
 }
 
-function computeCollision(dx, dy, relativeVelocityX, relativeVelocityY): CachedCollision {
+function computeCollision(dx, dy, relativeVelocityX, relativeVelocityY): DiskDiskBounce {
   const distanceSquared = dx * dx + dy * dy
   const radiusSum = DISK_RADIUS * 2
 

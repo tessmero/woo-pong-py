@@ -10,6 +10,10 @@ import { STEP_DURATION, valueScale } from './constants'
 import { Disk } from './disk'
 import { Graphics } from './graphics'
 import { collideDisks } from './luts/imp/disk-disk-lut'
+import { Obstacle } from './obstacle'
+import type { Rectangle, Vec2 } from 'util/math-util'
+import { Lut } from './luts/lut'
+import type { ObstacleLut } from './luts/imp/obstacle-lut'
 
 const thick = 1 * valueScale // thickness of walls
 
@@ -37,13 +41,26 @@ const _barriers = [
   [0, 100 * valueScale - thick, 100 * valueScale, thick], // bottom
 ] as const
 
+// const path = 'M0,0 H100000 V100000 H0 Z'
+const path
+  = 'M50000,0 ' // move to top of circle
+    + 'A50000,50000 0 1,0 50000,100000 ' // first half
+    + 'A50000,50000 0 1,0 50000,0 Z' // second half
+
+// const { left, top, width, height } = path.bounds
+const boundingRect: Rectangle = [500000, 500000, 100000, 100000]
+const _obstacles = [
+  [[500000, 500000] as Vec2, path, boundingRect],
+] as const
+
 export class Simulation {
   disks: Array<Disk>
-  // obstacles: Array<Obstacle>
+  obstacles: Array<Obstacle>
   barriers: Array<Barrier>
   constructor() {
     this.disks = _disks.map(pars => Disk.fromJson(pars))
-    // this.obstacles = _obstacles.map(pars => new Obstacle(pars))
+    this.obstacles = _obstacles.map(pars => new Obstacle(...pars,
+      Lut.create('obstacle-lut') as ObstacleLut))
     this.barriers = _barriers.map(([x, y, w, h]) => new Barrier(x, y, w, h))
   }
 
@@ -61,7 +78,7 @@ export class Simulation {
 
     // collide disks with barriers
     for (const disk of this.disks) {
-      disk.advance(this.barriers)
+      disk.advance(this.barriers, this.obstacles)
       disk.nextState[3] += 1 // gravity
     }
 
@@ -92,9 +109,9 @@ export class Simulation {
     for (const disk of this.disks) {
       Graphics.drawDisk(ctx, disk)
     }
-    // for (const obstacle of this.obstacles) {
-    //   Graphics.drawObstacle(ctx, obstacle)
-    // }
+    for (const obstacle of this.obstacles) {
+      Graphics.drawObstacle(ctx, obstacle)
+    }
     for (const barrier of this.barriers) {
       Graphics.drawBarrier(ctx, barrier)
     }

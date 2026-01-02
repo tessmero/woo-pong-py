@@ -11,7 +11,7 @@ import { randomDDIndex } from '../test-util'
 import { ok } from 'assert'
 import { Lut } from '../../src/simulation/luts/lut'
 
-describe('collision data blobs in public/collisions', function () {
+describe('collision data blobs in public/luts', function () {
   it('loads as valid disk-disk -> bounce tree', function () {
     const blobPath = join(__dirname, `../../public/${DDCOLLISION_BLOB_URL}`)
     const readBuffer = readFileSync(blobPath)

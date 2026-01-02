@@ -23,7 +23,7 @@ export abstract class Lut<TLeaf> {
   // @ts-expect-error forcefully assigned on register
   private readonly reg: RegisteredLut<TLeaf> = null
 
-  public readonly tree: Tree<TLeaf> = []
+  public readonly tree: Tree<TLeaf> = [] as Tree<TLeaf>
 
   abstract computeLeaf(index: Array<number>)
 
@@ -41,7 +41,7 @@ export abstract class Lut<TLeaf> {
       this.reg.blobHash,
     )
 
-    // const intArr = await DiskDiskCollisions.fetchBlob('/collisions/working.bin')
+    // const intArr = await DiskDiskCollisions.fetchBlob('/luts/working.bin')
 
     // Decode the binary data into the collision cache structure
 

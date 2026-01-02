@@ -9,6 +9,7 @@ import { twopi } from 'util/math-util'
 import type { Barrier } from './barrier'
 import { DISK_RADIUS, valueScale } from './constants'
 import { tailLength, type Disk } from './disk'
+import type { Obstacle } from './obstacle'
 
 export class Graphics {
   /**
@@ -53,20 +54,17 @@ export class Graphics {
     ctx.fillRect(...barrier.xywh)
   }
 
-  // /**
-  //  * Draw a solid obstacle.
-  //  * @param {object} ctx The graphics context
-  //  * @param {object} obstacle The Obstacle instance to draw
-  //  */
-  // static drawObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
-  //   ctx.fillStyle = 'black'
+  static drawObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
+    ctx.fillStyle = 'black'
 
-  //   ctx.beginPath()
-  //   for (const { x, y } of obstacle.getVertices()) {
-  //     ctx.lineTo(x, y)
-  //   }
-  //   ctx.closePath()
+    const { pos, points } = obstacle
 
-  //   ctx.fill()
-  // }
+    ctx.beginPath()
+    for (const [x, y] of points) {
+      ctx.lineTo(pos[0] + x, pos[1] + y)
+    }
+    ctx.closePath()
+
+    ctx.fill()
+  }
 }

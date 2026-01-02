@@ -51,6 +51,9 @@ async function main() {
   // DiskDiskCollisions.computeAll()
   // await DiskDiskCollisions.loadAll()
 
+  Lut.create('obstacle-lut').computeAll()
+  Lut.create('disk-normal-lut').computeAll()
+
   // Lut.create('disk-disk-lut').computeAll()
   await Lut.create('disk-disk-lut').loadAll()
   await pinballWizard.init()

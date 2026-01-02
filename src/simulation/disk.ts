@@ -4,8 +4,12 @@
  * Sliding circle on airhockey table.
  */
 
-import type { Vec2 } from 'util/math-util'
+import { rectContainsPoint, type Vec2 } from 'util/math-util'
 import type { Barrier } from './barrier'
+import type { Obstacle } from './obstacle'
+import type { ObstacleCollision } from './luts/imp/obstacle-lut'
+import { Lut } from './luts/lut'
+import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/disk-normal-lut'
 
 export type DiskState = [number, number, number, number] // x,y,dx,dy
 
@@ -64,16 +68,55 @@ export class Disk {
   }
 
   // move one tick
-  advance(barriers: Array<Barrier>) {
+  advance(barriers: Array<Barrier>, obstacles: Array<Obstacle>) {
     const [x, y, dx, dy] = this.currentState
     const nx = x + dx
     const ny = y + dy
-
-    // check for collision
-    let bi = 0
-    let hasNoHits = true
     let ndx = dx
     let ndy = dy
+    let hasNoHits = true
+
+    // check for collisions with obstacles
+    let oi = 0
+    for (; oi < obstacles.length; oi++) {
+      const obs = obstacles[oi]
+      if (rectContainsPoint(obs.boundingRect, nx, ny)) {
+        const i0 = obs.lut.offsetToIndex(nx - obs.pos[0])
+        const i1 = obs.lut.offsetToIndex(ny - obs.pos[1])
+        const col = obs.lut.tree[i0]![i1] as null | ObstacleCollision
+        if (col) {
+          // collided with obstacle
+          const [xAdj, yAdj, normIndex] = col
+
+          let vxi = speedToIndex(ndx)
+          let vyi = speedToIndex(ndy)
+          if (Math.abs(vxi) > speedDetail) {
+            vxi = speedDetail * Math.sign(vxi)
+          }
+          if (Math.abs(vyi) > speedDetail) {
+            vyi = speedDetail * Math.sign(vyi)
+          }
+
+          const dnl = Lut.create('disk-normal-lut')
+          const bounce = dnl
+            .tree[vxi + speedDetail][vyi + speedDetail][normIndex] as DiskNormalBounce
+          const [vxAdj, vyAdj] = bounce
+          ndx += vxAdj
+          ndy += vyAdj
+
+          this.nextState[0] += ndx
+          this.nextState[1] += ndy
+          this.nextState[2] = ndx
+          this.nextState[3] = ndy
+
+          hasNoHits = false
+          return
+        }
+      }
+    }
+
+    // check for collisions with barriers
+    let bi = 0
     for (; bi < barriers.length; bi++) {
       const bar = barriers[bi]
       if (bar.isTouchingDisk(nx, ny)) {

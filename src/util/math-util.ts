@@ -14,9 +14,8 @@ export const twopi = 2 * pi
 export const pio2 = pi / 2
 export const pio4 = pi / 4
 
-export function rectContainsPoint(rect: Rectangle, point: Vec2) {
+export function rectContainsPoint(rect: Rectangle, px: number, py: number) {
   const [x, y, w, h] = rect
-  const [px, py] = point
   return (px >= x) && (px < (x + w)) && (py >= y) && (py < (y + h))
 }
 

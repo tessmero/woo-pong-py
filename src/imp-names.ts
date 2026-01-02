@@ -27,7 +27,9 @@ export type ConfigurableName = (typeof CONFIGURABLE.NAMES)[number]
 // lookup tables
 export const LUT = {
   NAMES: [
-    'disk-disk-lut',
+    'disk-disk-lut', // bounce two colliding disks
+    'obstacle-lut', // identify solid edge when disk collides with obstacle
+    'disk-normal-lut', // bounce disk off of solid edge
   ],
   SOURCES: ['src/simulation/luts/imp/**/*.ts'],
 } as const satisfies ImpManifest

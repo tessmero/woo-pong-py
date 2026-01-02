@@ -36,7 +36,7 @@ const hash = createHash('sha256').update(buffer).digest('hex')
 
 // Define the output filename and path
 const filename = `disk-disk-${hash.slice(0, 16)}.bin`
-const outputPath = join(__dirname, '../public/collisions', filename)
+const outputPath = join(__dirname, '../public/luts', filename)
 
 // Validate that the encoded data length is a multiple of 2
 if (encodedBlob.length % 2 !== 0) {
@@ -54,7 +54,7 @@ let sourceCode = readFileSync(sourceFilePath, 'utf-8')
 // Replace the constants for blob URL and hash
 sourceCode = sourceCode.replace(
   /export const DDCOLLISION_BLOB_URL = ['"`].*?['"`];/,
-  `export const DDCOLLISION_BLOB_URL = '/collisions/${filename}';`,
+  `export const DDCOLLISION_BLOB_URL = '/luts/${filename}';`,
 )
 sourceCode = sourceCode.replace(
   /export const DDCOLLISION_BLOB_HASH = ['"`].*?['"`];/,

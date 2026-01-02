@@ -17,7 +17,7 @@ const stepCount = 1e3
 
 describe('deterministic simulation', function () {
   // before(async function () {
-  //   const blobPath = join(__dirname, '../../public/collisions/disk-disk.bin')
+  //   const blobPath = join(__dirname, '../../public/luts/disk-disk.bin')
   //   const blobData = new Int16Array(readFileSync(blobPath).buffer)
   //   Collisions.loadFromBlob(blobData)
   // })
