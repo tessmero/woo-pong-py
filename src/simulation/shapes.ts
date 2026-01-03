@@ -4,7 +4,10 @@
  * List of shape names and paths.
  */
 
+import { valueScale } from "./constants"
+
 import { circleObsRadius } from './constants'
+// const circleObsRadius = 10 * valueScale
 
 export const SHAPE_NAMES = ['square', 'circle', 'triangle'] as const
 export type ShapeName = (typeof SHAPE_NAMES)[number]

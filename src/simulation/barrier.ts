@@ -6,6 +6,9 @@
 import { DISK_RADIUS } from './constants'
 
 export class Barrier {
+
+  isHidden = false // set in pertuerbations.ts
+
   xr: [number, number]
   yr: [number, number]
   xywh: [number, number, number, number]

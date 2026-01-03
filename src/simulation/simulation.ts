@@ -11,7 +11,7 @@ import { Disk } from './disk'
 import { Graphics } from './graphics'
 import { collideDisks } from './luts/imp/disk-disk-lut'
 import { Obstacle } from './obstacle'
-import type { Vec2 } from 'util/math-util'
+import type { Rectangle, Vec2 } from 'util/math-util'
 import { Lut } from './luts/lut'
 import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import { SHAPE_PATHS } from './shapes'
@@ -23,25 +23,46 @@ const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 5; i++) {
   for (let j = 0; j < 5; j++) {
     _disks.push([
-      (20 + i * 8) * valueScale, // x position increases by 20 units per disk
-      (20 + j * 8) * valueScale, // y position increases by 10 units per disk
+      (35 + i * 4) * valueScale, // x position increases by 20 units per disk
+      (10 + j * 4) * valueScale, // y position increases by 10 units per disk
       500 - i * 10, // dx decreases by 10 units per disk
       500 + i * 5, // dy increases by 5 units per disk
     ])
   }
 }
 
+const outerWallWidth = 40 * valueScale
+const outerWallHeight = 70 * valueScale
+const outerWallXOffset = 30 * valueScale
+const outerWallYOffset = 5 * valueScale
+const innerWallWidth = 40 * valueScale
+const innerWallXOffset = 30 * valueScale
+const innerWallSpacing = 20 * valueScale
+const innerWallStartY = 30 * valueScale
+const innerWallCount = 3
+
 const _barriers = [
+  // outer walls (smaller shape centered in the original 100x100 square)
+  [outerWallXOffset, outerWallYOffset, thick, outerWallHeight], // left
+  [outerWallXOffset + outerWallWidth, outerWallYOffset, thick, outerWallHeight], // right
+  [outerWallXOffset, outerWallYOffset, outerWallWidth, thick], // top
+  [outerWallXOffset, outerWallYOffset + outerWallHeight, outerWallWidth, thick], // bottom
 
-  // test
-  // [40 * valueScale, 40 * valueScale, 20 * valueScale, 20 * valueScale],
-
-  // outer walls
-  [0, 0, thick, 100 * valueScale], // left
-  [100 * valueScale - thick, 0, thick, 100 * valueScale], // right
-  [0, 0, 100 * valueScale, thick], // top
-  [0, 100 * valueScale - thick, 100 * valueScale, thick], // bottom
+  // horizontal inner walls at regular intervals
+  ...Array.from({ length: innerWallCount }, (_, i) => [
+    innerWallXOffset,
+    innerWallStartY + i * innerWallSpacing,
+    innerWallWidth,
+    thick,
+  ]),
 ] as const
+
+const _bottomWall = _barriers[3]
+const finishThickness = 30 * valueScale
+const _finish: Rectangle = [
+  _bottomWall[0], _bottomWall[1] - finishThickness,
+  _bottomWall[2], finishThickness,
+]
 
 const _obstacles = [
   [[70 * valueScale, 70 * valueScale] as Vec2, 'circle'],
@@ -53,6 +74,10 @@ export class Simulation {
   disks: Array<Disk>
   obstacles: Array<Obstacle>
   barriers: Array<Barrier>
+  finish: Barrier
+
+  winningDiskIndex = -1 // index of first disk to hit finish
+
   constructor() {
     this.disks = _disks.map(pars => Disk.fromJson(pars))
     this.obstacles = _obstacles.map(([pos, shapeName]) => new Obstacle(
@@ -61,6 +86,7 @@ export class Simulation {
       Lut.create('obstacle-lut', shapeName) as ObstacleLut,
     ))
     this.barriers = _barriers.map(([x, y, w, h]) => new Barrier(x, y, w, h))
+    this.finish = new Barrier(..._finish)
   }
 
   private _stepCount = 0
@@ -76,10 +102,23 @@ export class Simulation {
     }
 
     // collide disks with barriers
-    for (const disk of this.disks) {
+    for (const [diskIndex, disk] of this.disks.entries()) {
       disk.advance(this.barriers, this.obstacles)
       disk.nextState[3] += 1 // gravity
-      Perturbations.perturb(disk.nextState) // add slight adjustments to facilitate branching
+
+      if ((this.winningDiskIndex === -1)
+        && this.finish.isTouchingDisk(disk.nextState[0], disk.nextState[1])
+      ) {
+        this.winningDiskIndex = diskIndex
+      }
+
+      Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
+    }
+
+    // randomly blink inner walls
+    for (let i = 4; i < this.barriers.length; i++) {
+      const barrier = this.barriers[i]
+      Perturbations.blinkBarrier(barrier)
     }
 
     Disk.flushStates(this.disks) // commit updates after collisions
@@ -106,8 +145,10 @@ export class Simulation {
     ctx.save()
     ctx.scale(10 / valueScale, 10 / valueScale)
     ctx.lineWidth = valueScale
-    for (const disk of this.disks) {
-      Graphics.drawDisk(ctx, disk)
+    for (const [diskIndex,disk] of this.disks.entries() ) {
+      const isSelected = false
+      const isWinner = (diskIndex === this.winningDiskIndex)
+      Graphics.drawDisk(ctx, disk, isSelected, isWinner)
     }
     for (const obstacle of this.obstacles) {
       Graphics.drawObstacle(ctx, obstacle)
@@ -115,6 +156,7 @@ export class Simulation {
     for (const barrier of this.barriers) {
       Graphics.drawBarrier(ctx, barrier)
     }
+    Graphics.drawFinish(ctx, this.finish)
     ctx.restore()
   }
 }

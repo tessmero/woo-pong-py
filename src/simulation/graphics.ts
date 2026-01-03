@@ -17,7 +17,8 @@ export class Graphics {
    * @param {object} ctx The graphics context
    * @param {object} disk The Disk instance to draw
    */
-  static drawDisk(ctx: CanvasRenderingContext2D, disk: Disk) {
+  static drawDisk(ctx: CanvasRenderingContext2D, disk: Disk,
+    isSelected = false, isWinner = false) {
     const [cx, cy, _dx, _dy] = disk.currentState
 
     // ctx.strokeStyle = 'black'
@@ -38,8 +39,11 @@ export class Graphics {
     }
     ctx.fill()
 
-    const edgeThickness = valueScale * 1
+    const edgeThickness = valueScale * 0.2
     ctx.fillStyle = 'white'
+    if (isWinner) {
+      ctx.fillStyle = 'black'
+    }
     ctx.beginPath()
     i = 0
     ctx.moveTo(cx, cy)
@@ -53,7 +57,13 @@ export class Graphics {
     ctx.fill()
   }
 
+  static drawFinish(ctx: CanvasRenderingContext2D, finish: Barrier) {
+    ctx.fillStyle = 'rgba(0,255,0,0.5)'
+    ctx.fillRect(...finish.xywh)
+  }
+
   static drawBarrier(ctx: CanvasRenderingContext2D, barrier: Barrier) {
+    if (barrier.isHidden) return
     ctx.fillStyle = 'black'
     ctx.fillRect(...barrier.xywh)
   }

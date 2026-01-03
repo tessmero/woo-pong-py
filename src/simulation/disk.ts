@@ -82,8 +82,8 @@ export class Disk {
     for (; oi < obstacles.length; oi++) {
       const obs = obstacles[oi]
       if (rectContainsPoint(obs.collisionRect, nx, ny)) {
-        let i0 = obs.lut.offsetToIndex(nx - obs.pos[0])
-        let i1 = obs.lut.offsetToIndex(ny - obs.pos[1])
+        let i0 = obs.lut.offsetToXIndex(nx - obs.pos[0])
+        let i1 = obs.lut.offsetToYIndex(ny - obs.pos[1])
         if (Math.abs(i0) > obsOffsetDetail) {
           i0 = obsOffsetDetail * Math.sign(i0)
         }
@@ -126,6 +126,7 @@ export class Disk {
     let bi = 0
     for (; bi < barriers.length; bi++) {
       const bar = barriers[bi]
+      if (bar.isHidden) continue
       if (bar.isTouchingDisk(nx, ny)) {
         // // check if hitting exposed corner
         // if( bar.isCornerTouchingDisk(nx,ny) ){

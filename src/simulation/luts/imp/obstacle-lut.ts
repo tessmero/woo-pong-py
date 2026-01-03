@@ -19,8 +19,6 @@ const indexToAngle = i => i * twopi / normalDetail
 
 export type ObstacleCollision = null | [number, number, number] // x adjust, y adjust, normal index
 
-const obsOffsetDetail = 100 // half size of cache along dx and dy
-const maxOffset = circleObsRadius + DISK_RADIUS
 
 export class ObstacleLut extends Lut<ObstacleCollision> {
   static {
@@ -37,22 +35,29 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
     })
   }
 
+  obsOffsetDetailX = 100 // half size of cache along dx and dy
+  obsOffsetDetailY = 100 // half size of cache along dx and dy
+  maxOffsetX = circleObsRadius + DISK_RADIUS // in-simulation distance at edge of bounds
+  maxOffsetY = circleObsRadius + DISK_RADIUS // in-simulation distance at edge of bounds
+
   // assigned with shape-specific values in create
   blobHash = ''
   blobUrl = ''
   detail = [
-    obsOffsetDetail * 2 + 1,
-    obsOffsetDetail * 2 + 1,
+    this.obsOffsetDetailX * 2 + 1,
+    this.obsOffsetDetailY * 2 + 1,
   ]
 
   shape: ShapeName = 'square'
 
-  offsetToIndex = offset => Math.floor(offset * obsOffsetDetail / maxOffset)
-  indexToOffset = i => i * maxOffset / obsOffsetDetail
+  offsetToXIndex = offset => Math.floor(offset * this.obsOffsetDetailX / this.maxOffsetX)
+  offsetToYIndex = offset => Math.floor(offset * this.obsOffsetDetailY / this.maxOffsetY)
+  indexToXOffset = i => i * this.maxOffsetX / this.obsOffsetDetailX
+  indexToYOffset = i => i * this.maxOffsetY / this.obsOffsetDetailY
 
   computeLeaf(index: Array<number>) {
-    const dx = this.indexToOffset(index[0] - obsOffsetDetail)
-    const dy = this.indexToOffset(index[1] - obsOffsetDetail)
+    const dx = this.indexToXOffset(index[0] - this.obsOffsetDetailX)
+    const dy = this.indexToYOffset(index[1] - this.obsOffsetDetailY)
     return computeCollision(this.shape, [dx, dy])
   }
 }

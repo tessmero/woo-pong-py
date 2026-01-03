@@ -4,11 +4,11 @@
  * Pseudo-random adjustments to velocity used for branching.
  */
 
+import type { Barrier } from './barrier'
 import type { DiskState } from './disk'
 
 const minSpeed = 10 // only perterb vel along axes greater than this magnitude
 const velAxes = [2, 3]
-
 
 export class Perturbations {
   private static nextInt = _makePRNG(_randomSeed())
@@ -20,7 +20,14 @@ export class Perturbations {
     Perturbations.nextInt = _makePRNG(seed)
   }
 
-  static perturb(state: DiskState) {
+  static blinkBarrier(barrier: Barrier) {
+    const modVal = (Perturbations.nextInt() >>> 0) % 1000
+    if (modVal === 0) {
+      barrier.isHidden = !barrier.isHidden
+    }
+  }
+
+  static perturbDisk(state: DiskState) {
     for (const ax of velAxes) {
       if (Math.abs(state[ax]) > minSpeed) {
         const d6 = (Perturbations.nextInt() >>> 0) % 6
@@ -47,7 +54,7 @@ function _makePRNG(seed) {
     state ^= state << 13
     state ^= state >>> 17
     state ^= state << 5
-    return state | 0 
+    return state | 0
   }
 }
 
