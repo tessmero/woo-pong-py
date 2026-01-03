@@ -54,16 +54,28 @@ async function main() {
   // DiskDiskCollisions.computeAll()
   // await DiskDiskCollisions.loadAll()
 
+  const isComputing = false
   for (const lutName of LUT.NAMES) {
     if (lutName === 'obstacle-lut') {
       for (const shapeName of Object.keys(SHAPE_PATHS)) {
-        Lut.create(lutName, shapeName as ShapeName).computeAll()
-        // Lut.create(lutName, shapeName as ShapeName).loadAll()
+        const lut = Lut.create(lutName, shapeName as ShapeName)
+        if (isComputing) {
+          lut.computeAll()
+        }
+        else {
+          await lut.loadAll()
+        }
       }
     }
     else {
-      Lut.create(lutName).computeAll()
-    // await Lut.create(lutName).loadAll()
+      // Lut.create(lutName).computeAll()
+      const lut = Lut.create(lutName)
+      if (isComputing) {
+        lut.computeAll()
+      }
+      else {
+        await lut.loadAll()
+      }
     }
   }
 

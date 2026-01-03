@@ -6,16 +6,20 @@
 
 import { circleObsRadius, DISK_RADIUS } from 'simulation/constants'
 import { Lut } from '../lut'
-import { angleToIndex } from './disk-normal-lut'
-import { OBSTACLE_LUT_BLOB_HASH, OBSTACLE_LUT_BLOB_URL } from 'set-by-build'
-import { pio2, type Vec2 } from 'util/math-util'
+import { pio2, twopi, type Vec2 } from 'util/math-util'
 import { pointsOnPath } from 'points-on-path'
 import type { ShapeName } from 'simulation/shapes'
 import { SHAPE_PATHS } from 'simulation/shapes'
 
+export const normalDetail = 100 // number of angle steps
+export const angleToIndex = (angle) => {
+  return (Math.floor(angle * normalDetail / twopi) % normalDetail + normalDetail) % normalDetail
+}
+const indexToAngle = i => i * twopi / normalDetail
+
 export type ObstacleCollision = null | [number, number, number] // x adjust, y adjust, normal index
 
-export const obsOffsetDetail = 100 // half size of cache along dx and dy
+const obsOffsetDetail = 100 // half size of cache along dx and dy
 const maxOffset = circleObsRadius + DISK_RADIUS
 
 export class ObstacleLut extends Lut<ObstacleCollision> {
@@ -33,8 +37,9 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
     })
   }
 
-  blobHash = OBSTACLE_LUT_BLOB_HASH
-  blobUrl = OBSTACLE_LUT_BLOB_URL
+  // assigned with shape-specific values in create
+  blobHash = ''
+  blobUrl = ''
   detail = [
     obsOffsetDetail * 2 + 1,
     obsOffsetDetail * 2 + 1,

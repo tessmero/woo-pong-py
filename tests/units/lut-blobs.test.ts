@@ -6,27 +6,11 @@
 
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { DISK_DISK_LUT_BLOB_URL } from '../../src/set-by-build'
-import { randomDiskDiskIndex } from '../test-util'
+import { lookupIndex, lutSpecs } from '../test-util'
 import { ok } from 'assert'
 import { Lut } from '../../src/simulation/luts/lut'
-import { LutName } from '../../src/imp-names'
 
-type Spec = {
-  lutName: LutName
-  blobUrl: string
-  indexer: () => Array<number>
-}
-
-const specs = [
-  {
-    lutName: 'disk-disk-lut',
-    blobUrl: DISK_DISK_LUT_BLOB_URL,
-    indexer: randomDiskDiskIndex,
-  },
-] as const satisfies Array<Spec>
-
-for (const { lutName, blobUrl, indexer } of specs) {
+for (const { lutName, shapeName, blobUrl, indexer } of lutSpecs) {
   describe(`${lutName} data blob in public`, function () {
     it('loads as valid disk-disk -> bounce tree', function () {
       const blobPath = join(__dirname, `../../public/${blobUrl}`)
@@ -39,19 +23,21 @@ for (const { lutName, blobUrl, indexer } of specs) {
         && (blobData[0] === Math.floor(blobData[0])),
       'blobData values should be integers')
 
-      const lut = Lut.create(lutName)
+      const lut = Lut.create(lutName, shapeName)
       lut.loadFromBlob(blobData)
 
       // Compare random indices before and after
       const randomIndices = Array.from({ length: 100 }).map(indexer)
 
-      for (const [dxi, dyi, vxi, vyi] of randomIndices) {
+      for (const index of randomIndices) {
       // const bounce = DiskDiskCollisions.cache[dxi][dyi][vxi][vyi]
-        const leaf = lut.tree[dxi][dyi][vxi][vyi]
+        const leaf = lookupIndex(lut.tree, index)
         if (leaf !== null) {
-          ok(typeof leaf[0] === 'number'
-            && (leaf[0] === Math.floor(leaf[0])),
-          'leaf values should be integers')
+          ok(leaf.every(val =>
+            typeof val === 'number'
+            && (val === Math.floor(val)),
+          ),
+          `leaf values should be integers: ${JSON.stringify(index)} -> ${JSON.stringify(leaf)}`)
         }
       }
     })

@@ -7,10 +7,11 @@
 import { rectContainsPoint, type Vec2 } from 'util/math-util'
 import type { Barrier } from './barrier'
 import type { Obstacle } from './obstacle'
-import { obsOffsetDetail, type ObstacleCollision } from './luts/imp/obstacle-lut'
+import { type ObstacleCollision } from './luts/imp/obstacle-lut'
 import { Lut } from './luts/lut'
 import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/disk-normal-lut'
 
+const obsOffsetDetail = 100 // half size of cache along dx and dy
 export type DiskState = [number, number, number, number] // x,y,dx,dy
 
 function copy(from: DiskState, to: DiskState) {

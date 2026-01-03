@@ -11,8 +11,6 @@ const reg: RegisteredLut<any> = { // eslint-disable-line @typescript-eslint/no-e
   depth: 4,
   leafLength: 4,
   factory: () => ({}) as Lut<any>, // eslint-disable-line @typescript-eslint/no-explicit-any
-  blobUrl: '',
-  blobHash: '',
 }
 
 const lut = {

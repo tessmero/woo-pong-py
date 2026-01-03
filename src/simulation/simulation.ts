@@ -42,7 +42,6 @@ const _barriers = [
   [0, 100 * valueScale - thick, 100 * valueScale, thick], // bottom
 ] as const
 
-// const path = 'M0,0 H100000 V100000 H0 Z'
 const _obstacles = [
   [[70 * valueScale, 70 * valueScale] as Vec2, 'circle'],
   [[85 * valueScale, 70 * valueScale] as Vec2, 'square'],

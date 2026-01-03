@@ -6,8 +6,7 @@
 
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { DISK_RADIUS } from './constants'
-import { angleToIndex } from './luts/imp/disk-normal-lut'
-import type { ObstacleCollision, ObstacleLut } from './luts/imp/obstacle-lut'
+import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import { pointsOnPath } from 'points-on-path'
 
 // // dummy context to call isPointInPath
@@ -40,7 +39,7 @@ export class Obstacle {
     const y = pos[1] + minY
     const w = maxX - minX
     const h = maxY - minY
-    this.boundingRect = [x,y,w,h]
+    this.boundingRect = [x, y, w, h]
     this.collisionRect = [
       x - DISK_RADIUS, y - DISK_RADIUS,
       w + 2 * DISK_RADIUS, h + 2 * DISK_RADIUS,

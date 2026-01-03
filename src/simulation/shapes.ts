@@ -6,7 +6,10 @@
 
 import { circleObsRadius } from './constants'
 
-export const SHAPE_PATHS = {
+export const SHAPE_NAMES = ['square', 'circle', 'triangle'] as const
+export type ShapeName = (typeof SHAPE_NAMES)[number]
+
+export const SHAPE_PATHS: Record<ShapeName, string> = {
 
   square: `M${-circleObsRadius},${circleObsRadius} `
     + `L${circleObsRadius},${circleObsRadius} `
@@ -20,6 +23,4 @@ export const SHAPE_PATHS = {
   triangle: `M0,${-circleObsRadius} `
     + `L${-circleObsRadius},${circleObsRadius} `
     + `L${circleObsRadius},${circleObsRadius} Z`,
-} as const
-
-export type ShapeName = keyof typeof SHAPE_PATHS
+}

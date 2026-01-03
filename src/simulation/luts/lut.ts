@@ -7,7 +7,10 @@
 import type { ShapeName } from 'simulation/shapes'
 import type { LutName } from '../../imp-names'
 import { LutEncoder } from '../lut-encoder'
-import type { ObstacleLut } from './imp/obstacle-lut'
+import { type ObstacleLut } from './imp/obstacle-lut'
+import { LUT_BLOBS } from 'set-by-build'
+
+const obsOffsetDetail = 100 // half size of cache along dx and dy
 
 export type RegisteredLut<TLeaf> = {
   factory: () => Lut<TLeaf>
@@ -73,8 +76,9 @@ export abstract class Lut<TLeaf> {
   // static registry pattern
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static _registry: Partial<Record<LutName, RegisteredLut<any>>> = {}
-  static _singletons: Partial<Record<LutName, Lut<any>>> = {} // eslint-disable-line @typescript-eslint/no-explicit-any
-  static _obstacles: Record<string, ObstacleLut> = {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static _singletonLuts: Partial<Record<LutName, Lut<any>>> = {}
+  static _obstacleLuts: Record<string, ObstacleLut> = {}
 
   protected constructor() {}
 
@@ -95,7 +99,7 @@ export abstract class Lut<TLeaf> {
     // @ts-expect-error assign readonly member
     lut.name = name
 
-    this._singletons[name] = lut
+    this._singletonLuts[name] = lut
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,7 +113,7 @@ export abstract class Lut<TLeaf> {
       if (!reg) {
         throw new Error('obstacle-lut not registered')
       }
-      if (!Object.hasOwn(Lut._obstacles, shapeName)) {
+      if (!Object.hasOwn(Lut._obstacleLuts, shapeName)) {
         // first time creating lut for this shape
         const { factory } = reg
         const lut = factory() as ObstacleLut
@@ -123,19 +127,26 @@ export abstract class Lut<TLeaf> {
 
         lut.shape = shapeName
 
-        Lut._obstacles[shapeName] = lut
+        const { url, hash } = LUT_BLOBS[shapeName.toUpperCase()]
+        lut.blobUrl = url
+        lut.blobHash = hash
+        lut.detail = [
+          obsOffsetDetail * 2 + 1,
+          obsOffsetDetail * 2 + 1,
+        ]
+        Lut._obstacleLuts[shapeName] = lut
       }
-      return Lut._obstacles[shapeName]
+      return Lut._obstacleLuts[shapeName]
     }
     else {
       // lut is singleton
       if (shapeName) {
         throw new Error('shapeName argument should only be used to create obstacle-lut')
       }
-      if (!Object.hasOwn(this._singletons, name)) {
+      if (!Object.hasOwn(this._singletonLuts, name)) {
         throw new Error(`singleton lut not registered: ${name}`)
       }
-      return this._singletons[name] as Lut<any> // eslint-disable-line @typescript-eslint/no-explicit-any
+      return this._singletonLuts[name] as Lut<any> // eslint-disable-line @typescript-eslint/no-explicit-any
     }
   }
 }

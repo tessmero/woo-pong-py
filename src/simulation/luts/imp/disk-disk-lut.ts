@@ -4,7 +4,7 @@
  * Lookup table for disk-disk collisions.
  */
 
-import { DISK_DISK_LUT_BLOB_URL, DISK_DISK_LUT_BLOB_HASH } from 'set-by-build'
+import { LUT_BLOBS } from 'set-by-build'
 import { Lut } from '../lut'
 import type { Disk } from 'simulation/disk'
 import { DISK_RADIUS } from 'simulation/constants'
@@ -40,8 +40,8 @@ export class DiskDiskLut extends Lut<DiskDiskBounce> {
     })
   }
 
-  blobUrl = DISK_DISK_LUT_BLOB_URL
-  blobHash = DISK_DISK_LUT_BLOB_HASH
+  blobUrl = LUT_BLOBS.DISK_DISK_LUT.url
+  blobHash = LUT_BLOBS.DISK_DISK_LUT.hash
   detail = [
     offsetDetail * 2 + 1,
     offsetDetail * 2 + 1,

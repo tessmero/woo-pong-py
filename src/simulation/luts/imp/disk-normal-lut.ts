@@ -6,14 +6,16 @@
 
 import { twopi } from 'util/math-util'
 import { Lut } from '../lut'
-import { DISK_NORMAL_LUT_BLOB_HASH, DISK_NORMAL_LUT_BLOB_URL } from 'set-by-build'
+import { LUT_BLOBS } from 'set-by-build'
 
 export type DiskNormalBounce = [number, number] // dx,dy
 
 const cacheScale = 1e2
 
 export const normalDetail = 100 // number of angle steps
-export const angleToIndex = angle => (Math.floor(angle * normalDetail / twopi) % normalDetail + normalDetail) % normalDetail
+export const angleToIndex = (angle) => {
+  return (Math.floor(angle * normalDetail / twopi) % normalDetail + normalDetail) % normalDetail
+}
 const indexToAngle = i => i * twopi / normalDetail
 
 export const speedDetail = 20 // half size of cache along relative vx and vy
@@ -37,8 +39,8 @@ export class DiskNormalLut extends Lut<DiskNormalBounce> {
     })
   }
 
-      blobHash= DISK_NORMAL_LUT_BLOB_HASH
-      blobUrl= DISK_NORMAL_LUT_BLOB_URL
+  blobHash = LUT_BLOBS.DISK_NORMAL_LUT.hash
+  blobUrl = LUT_BLOBS.DISK_NORMAL_LUT.url
   detail = [
     speedDetail * 2 + 1,
     speedDetail * 2 + 1,
