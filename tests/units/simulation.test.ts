@@ -9,6 +9,7 @@ import { equal } from 'assert'
 import { Lut } from '../../src/simulation/luts/lut'
 import { LUT } from '../../src/imp-names'
 import { SHAPE_NAMES } from '../../src/simulation/shapes'
+import { Perturbations } from '../../src/simulation/perturbations'
 
 const sim = new Simulation()
 const stepCount = 1e1
@@ -21,6 +22,7 @@ describe('deterministic simulation', function () {
   // })
 
   it(`has expected state after ${stepCount.toExponential()} steps`, async function () {
+    // init simulation
     for (const name of LUT.NAMES) {
       if (name === 'obstacle-lut') {
         for (const shape of SHAPE_NAMES) {
@@ -31,7 +33,13 @@ describe('deterministic simulation', function () {
         Lut.create(name).computeAll()
       }
     }
+
+    // run simulation
+    Perturbations.setSeed(12345) // correct seed
+    // Perturbations.setSeed(666) // wrong seed
     for (let i = 0; i < stepCount; i++) sim.step()
+
+    // check final state of simulation
     const actualSnapshot = getSnapshot()
     equal(actualSnapshot, expectedSnapshot)
   })
@@ -52,9 +60,7 @@ function getSnapshot(): string {
 // disks x,y,vx,vy
 const expectedSnapshot = `
 
-
-[[205000,205045,500,510],[205000,285045,500,510],[205000,365045,500,510],[205000,445045,500,510],[205000,525045,500,510],[284900,205095,490,515],[284900,285095,490,515],[284900,365095,490,515],[284900,445095,490,515],[284900,525095,490,515],[364800,205145,480,520],[364800,285145,480,520],[364800,365145,480,520],[364800,445145,480,520],[364800,525145,480,520],[444700,205195,470,525],[444700,285195,470,525],[444700,365195,470,525],[444700,445195,470,525],[444700,525195,470,525],[524600,205245,460,530],[524600,285245,460,530],[524600,365245,460,530],[524600,445245,460,530],[524600,525245,460,530]]
-
+[[205011,205042,501,509],[205006,285044,499,509],[205001,365061,500,511],[205011,445041,502,510],[205003,525047,499,510],[284912,205077,492,512],[284913,285106,491,516],[284885,365091,488,513],[284888,445080,488,511],[284890,525098,487,515],[364799,205138,481,518],[364801,285132,479,515],[364788,365142,479,518],[364802,445132,480,519],[364802,525131,481,518],[444691,205195,469,525],[444699,285200,471,526],[444706,365187,471,524],[444687,445193,468,525],[444716,525201,474,526],[524591,205231,457,528],[524597,285245,458,530],[524593,365260,457,532],[524591,445239,458,529],[524605,525256,463,532]]
 
 
 `.replace(/\s/g, '') // remove whitespace

@@ -15,6 +15,7 @@ import type { Vec2 } from 'util/math-util'
 import { Lut } from './luts/lut'
 import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import { SHAPE_PATHS } from './shapes'
+import { Perturbations } from './perturbations'
 
 const thick = 1 * valueScale // thickness of walls
 
@@ -78,6 +79,7 @@ export class Simulation {
     for (const disk of this.disks) {
       disk.advance(this.barriers, this.obstacles)
       disk.nextState[3] += 1 // gravity
+      Perturbations.perturb(disk.nextState) // add slight adjustments to facilitate branching
     }
 
     Disk.flushStates(this.disks) // commit updates after collisions
