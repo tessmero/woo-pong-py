@@ -5,24 +5,28 @@
  */
 
 export const LUT_BLOBS = {
+  SQUARE: {
+    url: '/luts/square-0d3e4565a0287822.bin',
+    hash: '0d3e4565a0287822d77e525e730e681006687c712fbb42413f4f26572f001ef4',
+  },
+  CIRCLE: {
+    url: '/luts/circle-d1efb1518dc82e8a.bin',
+    hash: 'd1efb1518dc82e8a2919b6fae75ac59600e244c5084903fd4ee2a5dec1c3ca27',
+  },
+  TRIANGLE: {
+    url: '/luts/triangle-e9c0efd2ae459c01.bin',
+    hash: 'e9c0efd2ae459c0180e9e3344d2c75ccc191b34545a675422534c24eca917323',
+  },
   DISK_DISK_LUT: {
-    url: '/luts/disk-disk-lut-e9cd18aa3e3da17a.bin',
-    hash: 'e9cd18aa3e3da17a07ed2d5fbe3559e39c81868b0f54a103ec98c96b1210d902',
+    url: '/luts/disk-disk-lut-f6c053e06ae9fe21.bin',
+    hash: 'f6c053e06ae9fe217f68e0e00a89f4c702f9a47b763d128e8b429afb6b221fbf',
   },
   DISK_NORMAL_LUT: {
     url: '/luts/disk-normal-lut-705377676ab3d42c.bin',
     hash: '705377676ab3d42cd2e6ffcb1f5c3298f1df3018910f934c553c0ee2096e27de',
   },
-  SQUARE: {
-    url: '/luts/square-524844fbb717cf16.bin',
-    hash: '524844fbb717cf162936c75fcc0c22293f6c7582ec03b94230c873d6e3db6881',
-  },
-  CIRCLE: {
-    url: '/luts/circle-ec9a50e3390316c0.bin',
-    hash: 'ec9a50e3390316c0ad17b3b33636508c57708a5bd82a3974b6346efd6a24ecc3',
-  },
-  TRIANGLE: {
-    url: '/luts/triangle-2980c0efdceb4db8.bin',
-    hash: '2980c0efdceb4db86002c15e089790795497afda761d0e09d036a17a18a88d14',
+  RACE_LUT: {
+    url: '/luts/race-lut-7d86b27b4531af00.bin',
+    hash: '7d86b27b4531af00fe64741f5d229a653603cc83919d42ede2f83f1d2f509b64',
   },
 }

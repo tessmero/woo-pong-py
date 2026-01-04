@@ -30,6 +30,8 @@ export const LUT = {
     'disk-disk-lut', // bounce two colliding disks
     'obstacle-lut', // identify solid edge when disk collides with obstacle
     'disk-normal-lut', // bounce disk off of solid edge
+
+    'race-lut', // precomputed races (start seed + midpoint seeds for each disk to win)
   ],
   SOURCES: ['src/simulation/luts/imp/**/*.ts'],
 } as const satisfies ImpManifest

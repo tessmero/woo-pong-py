@@ -43,7 +43,7 @@ export class Perturbations {
 }
 
 function _randomSeed() {
-  return Math.floor(Math.random() * 1e6)
+  return Math.floor(Math.random() * 1e8)
 }
 
 // Seedable 32-bit integer-only PRNG (xorshift32)

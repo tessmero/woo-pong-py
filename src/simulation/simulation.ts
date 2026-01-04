@@ -6,7 +6,7 @@
 
 import { topConfig } from 'configs/imp/top-config'
 import { Barrier } from './barrier'
-import { STEP_DURATION, valueScale } from './constants'
+import { DISK_COUNT, STEP_DURATION, valueScale } from './constants'
 import { Disk } from './disk'
 import { Graphics } from './graphics'
 import { collideDisks } from './luts/imp/disk-disk-lut'
@@ -20,8 +20,8 @@ import { Perturbations } from './perturbations'
 const thick = 1 * valueScale // thickness of walls
 
 const _disks: Array<[number, number, number, number]> = []
-for (let i = 0; i < 5; i++) {
-  for (let j = 0; j < 5; j++) {
+for (let i = 0; i < 2; i++) {
+  for (let j = 0; j < 2; j++) {
     _disks.push([
       (35 + i * 4) * valueScale, // x position increases by 20 units per disk
       (10 + j * 4) * valueScale, // y position increases by 10 units per disk
@@ -30,6 +30,7 @@ for (let i = 0; i < 5; i++) {
     ])
   }
 }
+if (_disks.length !== DISK_COUNT) throw new Error('wrong disk count')
 
 const outerWallWidth = 40 * valueScale
 const outerWallHeight = 70 * valueScale
@@ -58,7 +59,7 @@ const _barriers = [
 ] as const
 
 const _bottomWall = _barriers[3]
-const finishThickness = 30 * valueScale
+const finishThickness = 10 * valueScale
 const _finish: Rectangle = [
   _bottomWall[0], _bottomWall[1] - finishThickness,
   _bottomWall[2], finishThickness,
@@ -145,7 +146,7 @@ export class Simulation {
     ctx.save()
     ctx.scale(10 / valueScale, 10 / valueScale)
     ctx.lineWidth = valueScale
-    for (const [diskIndex,disk] of this.disks.entries() ) {
+    for (const [diskIndex, disk] of this.disks.entries()) {
       const isSelected = false
       const isWinner = (diskIndex === this.winningDiskIndex)
       Graphics.drawDisk(ctx, disk, isSelected, isWinner)

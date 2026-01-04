@@ -54,7 +54,7 @@ async function main() {
   // DiskDiskCollisions.computeAll()
   // await DiskDiskCollisions.loadAll()
 
-  const isComputing = true
+  const isComputing = false
   for (const lutName of LUT.NAMES) {
     if (lutName === 'obstacle-lut') {
       for (const shapeName of Object.keys(SHAPE_PATHS)) {
