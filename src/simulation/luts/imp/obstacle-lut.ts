@@ -4,7 +4,7 @@
  * Used to check for collisions with obstacles and get normal angles.
  */
 
-import { DISK_RADIUS, OBSTACLE_DETAIL_SCALE, VALUE_SCALE } from 'simulation/constants'
+import { DISK_RADIUS, OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
 import { Lut } from '../lut'
 import { pio2, twopi, type Vec2 } from 'util/math-util'
 import { pointsOnPath } from 'points-on-path'

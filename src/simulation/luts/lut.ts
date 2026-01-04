@@ -9,7 +9,7 @@ import type { LutName } from '../../imp-names'
 import { LutEncoder } from '../lut-encoder'
 import { type ObstacleLut } from './imp/obstacle-lut'
 import { LUT_BLOBS } from 'set-by-build'
-import { DISK_RADIUS, OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
+import { OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
 
 export type RegisteredLut<TLeaf> = {
   factory: () => Lut<TLeaf>
@@ -126,7 +126,7 @@ export abstract class Lut<TLeaf> {
 
         // assign shape-specific values (obstacle-lut.ts)
         lut.shape = shapeName
-        const { url, hash, xRad=100, yRad=100 } = LUT_BLOBS[shapeName.toUpperCase()]
+        const { url, hash, xRad = 100, yRad = 100 } = LUT_BLOBS[shapeName.toUpperCase()]
         lut.blobUrl = url
         lut.blobHash = hash
         lut.obsOffsetDetailX = xRad // half size of cache along dx and dy

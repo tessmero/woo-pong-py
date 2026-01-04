@@ -7,14 +7,15 @@
 import { topConfig } from 'configs/imp/top-config'
 import { Barrier } from './barrier'
 import { DISK_COUNT, STEP_DURATION, VALUE_SCALE } from './constants'
-import { Disk } from './disk'
+import { Disk, DISK_STYLES } from './disk'
 import { Graphics } from './graphics'
 import { collideDisks } from './luts/imp/disk-disk-lut'
 import { Obstacle } from './obstacle'
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { Lut } from './luts/lut'
 import type { ObstacleLut } from './luts/imp/obstacle-lut'
-import { SHAPE_PATHS, ShapeName } from './shapes'
+import type { ShapeName } from './shapes'
+import { SHAPE_PATHS } from './shapes'
 import { Perturbations } from './perturbations'
 
 const thick = 1 // thickness of walls
@@ -69,7 +70,7 @@ const _obstacles = [
   [[40, 40] as Vec2, 'roundrect'],
   [[85, 70] as Vec2, 'square'],
   [[95, 70] as Vec2, 'triangle'],
-] as const satisfies Array<[Vec2,ShapeName]>
+] as const satisfies Array<[Vec2, ShapeName]>
 
 export class Simulation {
   disks: Array<Disk>
@@ -80,11 +81,15 @@ export class Simulation {
   winningDiskIndex = -1 // index of first disk to hit finish
 
   constructor() {
+    let diskIndex = 0
     this.disks = _disks.map((pars) => {
       const scaledPars = [...pars]
       scaledPars[0] *= VALUE_SCALE
       scaledPars[1] *= VALUE_SCALE
-      return Disk.fromJson(scaledPars)
+      const disk = Disk.fromJson(scaledPars)
+      disk.style = DISK_STYLES[diskIndex % DISK_STYLES.length]
+      diskIndex++
+      return disk
     })
     this.obstacles = _obstacles.map(([pos, shapeName]) => new Obstacle(
       pos.map(val => val * VALUE_SCALE) as Vec2,

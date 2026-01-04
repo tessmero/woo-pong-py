@@ -13,12 +13,21 @@ export type ImpManifest = {
   SOURCES: Array<string> // source file patterns used in tools and tests
 }
 
+// guis
+export const GUI = {
+  NAMES: [
+    'playing-gui',
+  ],
+  SOURCES: ['src/guis/imp/**/*.ts'],
+} as const satisfies ImpManifest
+export type GuiName = (typeof GUI.NAMES)[number]
+
 // configurables
 export const CONFIGURABLE = {
   NAMES: [
     'pinball-wizard-config', // combined tree shown in debug ui
+    'layout-config',
     'top-config', 'gfx-config', 'physics-config',
-    'layout-config', // adjust gui layouts at runtime
   ],
   SOURCES: ['src/configs/imp/**/*.ts'],
 } as const satisfies ImpManifest

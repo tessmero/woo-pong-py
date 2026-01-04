@@ -13,9 +13,10 @@ import { getTestSupport } from 'test-support'
 import { applyDevMode, isDevMode } from 'configs/imp/top-config'
 import type { Vec2 } from 'util/math-util'
 import { Lut } from 'simulation/luts/lut'
-import { LUT } from 'imp-names'
+import { GUI, LUT } from 'imp-names'
 import type { ShapeName } from 'simulation/shapes'
 import { SHAPE_PATHS } from 'simulation/shapes'
+import { Gui } from 'guis/gui'
 
 async function main() {
   // const layeredViewport = new LayeredViewport()
@@ -51,12 +52,14 @@ async function main() {
     pinballWizard.up(rawMousePos)
   })
 
-  // DiskDiskCollisions.computeAll()
-  // await DiskDiskCollisions.loadAll()
+  for (const guiName of GUI.NAMES) {
+    Gui.preload(pinballWizard, guiName)
+  }
+  pinballWizard.gui = Gui.create('playing-gui')
 
   const isComputing = true
   for (const lutName of LUT.NAMES) {
-    if( lutName === 'race-lut' ) continue
+    if (lutName === 'race-lut') continue
     if (lutName === 'obstacle-lut') {
       for (const shapeName of Object.keys(SHAPE_PATHS)) {
         const lut = Lut.create(lutName, shapeName as ShapeName)

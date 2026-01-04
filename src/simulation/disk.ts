@@ -12,6 +12,9 @@ import { type ObstacleCollision } from './luts/imp/obstacle-lut'
 import { Lut } from './luts/lut'
 import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/disk-normal-lut'
 
+export const DISK_STYLES = ['red', 'green', 'blue', 'yellow'] as const
+export type DiskStyle = (typeof DISK_STYLES)[number]
+
 export type DiskState = [number, number, number, number] // x,y,dx,dy
 
 function copy(from: DiskState, to: DiskState) {
@@ -26,6 +29,8 @@ export const tailLength = 10 // number of past positions to remember
 const dummy: Vec2 = [0, 0]
 
 export class Disk {
+  style: DiskStyle = 'blue'
+
   private readonly _history: Float32Array = new Float32Array(tailLength * 2) // positions along tail
   readonly currentState: DiskState = [0, 0, 0, 0]
   readonly nextState: DiskState = [0, 0, 0, 0]

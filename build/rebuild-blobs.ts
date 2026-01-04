@@ -71,7 +71,7 @@ for (const shapeName of SHAPE_NAMES) {
 
 // write singleton luts' blobs
 for (const lutName of LUT.NAMES) {
-  if( lutName === 'race-lut') continue
+  if (lutName === 'race-lut') continue
   if (lutName === 'obstacle-lut') continue
   const lut = Lut.create(lutName)
   lut.computeAll()

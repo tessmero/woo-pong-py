@@ -40,7 +40,7 @@ export class Graphics {
     ctx.fill()
 
     const edgeThickness = VALUE_SCALE * 0.2
-    ctx.fillStyle = 'white'
+    ctx.fillStyle = disk.style// 'white'
     if (isWinner) {
       ctx.fillStyle = 'black'
     }

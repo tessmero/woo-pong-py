@@ -6,13 +6,11 @@
 
 import { LUT_BLOBS } from 'set-by-build'
 import { Lut } from '../lut'
-import { DISK_COUNT } from 'simulation/constants'
+import { DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
 
 export type RaceLeaf = Array<number>
-
-const commonStartSteps = 1e3 // number of steps before branching
 
 const nRaces = 1
 
@@ -45,7 +43,7 @@ export class RaceLut extends Lut<RaceLeaf> {
       // run common start
       Perturbations.setSeed(commonStartSeed)
       const sim = new Simulation()
-      for (let i = 0; i < commonStartSteps; i++) {
+      for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
         sim.step()
         stepCount++
       }

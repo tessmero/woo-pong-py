@@ -6,7 +6,6 @@
 import { Configurable } from '../configurable'
 import type { ConfigTree } from '../config-tree'
 // import { topConfig } from './top-config'
-import { layoutConfig } from './layout-config'
 import { gfxConfig } from './gfx-config'
 import { topConfig } from './top-config'
 
@@ -15,7 +14,6 @@ const pinballWizardConfigTree = {
   children: {
     ...topConfig.tree.children, // unpack children at top level
     ...gfxConfig.tree.children,
-    guiLayout: layoutConfig.tree,
   },
 } satisfies ConfigTree
 

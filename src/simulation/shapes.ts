@@ -30,7 +30,7 @@ export const SHAPE_PATHS: Record<ShapeName, string> = {
     + `L${mediumRadius},${mediumRadius} Z`,
 
   roundrect: generateRoundedRectPath(
-    2 * mediumRadius, .5 * mediumRadius, cornerRadius),
+    2 * mediumRadius, 0.5 * mediumRadius, cornerRadius),
 }
 
 export function generateRoundedRectPath(width: number, height: number, cornerRadius: number): string {

@@ -5,7 +5,11 @@
  */
 
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
-import { PinballWizardState } from 'pinball-wizard-state'
+import type { ElementId } from 'guis/gui'
+import { Gui } from 'guis/gui'
+import { toggleElement } from 'guis/gui-html-elements'
+import { GUI } from 'imp-names'
+import { STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
 import type { Vec2 } from 'util/math-util'
@@ -18,10 +22,12 @@ const cvs = document.getElementById('sim-canvas') as HTMLCanvasElement
 const ctx = cvs.getContext('2d') as CanvasRenderingContext2D
 
 export class PinballWizard {
-  public readonly state: PinballWizardState = new PinballWizardState()
-
   // sim for live toppling/rewind
   public readonly activeSim = new Simulation()
+
+  public gui!: Gui // assigned in init
+
+  public isPaused = false
 
   constructor() {
     if (didConstruct) {
@@ -36,19 +42,30 @@ export class PinballWizard {
     }
     didInit = true
 
-    function updateCvs() {
-      cvs.width = cvs.clientWidth * window.devicePixelRatio
-      cvs.height = cvs.clientHeight * window.devicePixelRatio
-    }
-    window.addEventListener('resize', () => updateCvs())
-    updateCvs()
+    this.gui = Gui.create('playing-gui')
+
+    window.addEventListener('resize', () => this.onResize())
+    this.onResize()
   }
 
   update(dt: number) {
-    // if (this.state.isActive) {
-    this.activeSim.update(dt)
-    // }
+    if (!this.isPaused) {
+      this.activeSim.update(dt)
+    }
     this.activeSim.draw(ctx, cvs.width, cvs.height)
+
+    this.debugBranchCountdown(ctx, cvs.width, cvs.height)
+  }
+
+  private debugBranchCountdown(ctx: CanvasRenderingContext2D, w: number, h: number) {
+    const thickness = 100
+    const progress = Math.min(1, this.activeSim.stepCount / STEPS_BEFORE_BRANCH)
+
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, w, thickness)
+
+    ctx.fillStyle = 'black'
+    ctx.fillRect(0, 0, w * progress, thickness)
   }
 
   public drawOffset: Vec2 = [0, 0] // set in draw
@@ -85,5 +102,33 @@ export class PinballWizard {
   public rebuildControls() {
     this.didBuildControls = true
     showControls(this, pinballWizardConfig.tree)
+  }
+
+  public onResize() {
+    cvs.width = cvs.clientWidth * window.devicePixelRatio
+    cvs.height = cvs.clientHeight * window.devicePixelRatio
+
+    // console.log('onResize')
+    // console.log('this.gui is ', this.gui.constructor.name)
+    for (const guiName of GUI.NAMES) {
+      const gui = Gui.create(guiName)
+      const isVisible = (gui === this.gui)
+
+      // game hud and dialogs
+      for (const id in gui.elements) {
+        // console.log('toggle element', gui.elements[id]!.htmlElem.innerHTML)
+        toggleElement(id as ElementId, isVisible)
+      }
+      if (this.gui) this.gui.refreshLayout(this)
+    }
+
+    if (this.gui) this.gui.showHideElements(this)
+
+    // // update 3d renderer viewport
+    // OverlayLayer.onResize()
+    // this.graphics.onResize(this)
+    // SceneElements.reset(this)
+    // GroundGrid.reset(this)
+    // SkyGrid.reset(this)
   }
 }
