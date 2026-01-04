@@ -7,7 +7,7 @@
 
 import { twopi } from 'util/math-util'
 import type { Barrier } from './barrier'
-import { DISK_RADIUS, valueScale } from './constants'
+import { DISK_RADIUS, VALUE_SCALE } from './constants'
 import { tailLength, type Disk } from './disk'
 import type { Obstacle } from './obstacle'
 
@@ -39,7 +39,7 @@ export class Graphics {
     }
     ctx.fill()
 
-    const edgeThickness = valueScale * 0.2
+    const edgeThickness = VALUE_SCALE * 0.2
     ctx.fillStyle = 'white'
     if (isWinner) {
       ctx.fillStyle = 'black'
@@ -75,10 +75,10 @@ export class Graphics {
 
     // debug
     ctx.strokeStyle = 'red'
-    ctx.lineWidth = 1 * valueScale
+    ctx.lineWidth = 1 * VALUE_SCALE
     ctx.strokeRect(...boundingRect)
     ctx.strokeStyle = 'green'
-    ctx.lineWidth = 1 * valueScale
+    ctx.lineWidth = 1 * VALUE_SCALE
     ctx.strokeRect(...collisionRect)
 
     ctx.beginPath()

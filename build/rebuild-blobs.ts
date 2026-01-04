@@ -39,7 +39,7 @@ const jsdocComment = `/**
  * This file gets modified by npm scripts in build folder.
  */`
 
-const lutBlobs: Record<string, { url: string, hash: string }> = {}
+const lutBlobs: Record<string, { url: string, hash: string, xRad?: number, yRad?: number }> = {}
 
 // write obstacle luts' blobs
 for (const shapeName of SHAPE_NAMES) {
@@ -64,11 +64,14 @@ for (const shapeName of SHAPE_NAMES) {
   lutBlobs[varPrefix] = {
     url: `/luts/${filename}`,
     hash: hash,
+    xRad: (lut as ObstacleLut).obsOffsetDetailX,
+    yRad: (lut as ObstacleLut).obsOffsetDetailY,
   }
 }
 
 // write singleton luts' blobs
 for (const lutName of LUT.NAMES) {
+  if( lutName === 'race-lut') continue
   if (lutName === 'obstacle-lut') continue
   const lut = Lut.create(lutName)
   lut.computeAll()

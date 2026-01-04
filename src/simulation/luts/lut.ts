@@ -9,8 +9,7 @@ import type { LutName } from '../../imp-names'
 import { LutEncoder } from '../lut-encoder'
 import { type ObstacleLut } from './imp/obstacle-lut'
 import { LUT_BLOBS } from 'set-by-build'
-
-const obsOffsetDetail = 100 // half size of cache along dx and dy
+import { DISK_RADIUS, OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
 
 export type RegisteredLut<TLeaf> = {
   factory: () => Lut<TLeaf>
@@ -89,7 +88,7 @@ export abstract class Lut<TLeaf> {
     }
     this._registry[name] = reg
     if (name === 'obstacle-lut') {
-      return
+      return // obstacle-lut is not singleton - it has an instance for each distinct shape
     }
     const lut = reg.factory()
 
@@ -125,17 +124,23 @@ export abstract class Lut<TLeaf> {
         // @ts-expect-error assign readonly member
         lut.name = name
 
+        // assign shape-specific values (obstacle-lut.ts)
         lut.shape = shapeName
-
-        const { url, hash } = LUT_BLOBS[shapeName.toUpperCase()]
+        const { url, hash, xRad=100, yRad=100 } = LUT_BLOBS[shapeName.toUpperCase()]
         lut.blobUrl = url
         lut.blobHash = hash
+        lut.obsOffsetDetailX = xRad // half size of cache along dx and dy
+        lut.obsOffsetDetailY = yRad // half size of cache along dx and dy
         lut.detail = [
-          obsOffsetDetail * 2 + 1,
-          obsOffsetDetail * 2 + 1,
+          lut.obsOffsetDetailX * 2 + 1,
+          lut.obsOffsetDetailY * 2 + 1,
         ]
-        Lut._obstacleLuts[shapeName] = lut
+        lut.maxOffsetX = xRad * OBSTACLE_DETAIL_SCALE // in-simulation distance at edge of bounds
+        lut.maxOffsetY = yRad * OBSTACLE_DETAIL_SCALE // in-simulation distance at edge of bounds
+
+        Lut._obstacleLuts[shapeName] = lut // finish once-per-shape setup
       }
+
       return Lut._obstacleLuts[shapeName]
     }
     else {

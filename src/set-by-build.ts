@@ -5,28 +5,36 @@
  */
 
 export const LUT_BLOBS = {
-  SQUARE: {
-    url: '/luts/square-0d3e4565a0287822.bin',
-    hash: '0d3e4565a0287822d77e525e730e681006687c712fbb42413f4f26572f001ef4',
+  "SQUARE": {
+    "url": "/luts/square-af495a1ae9e0903b.bin",
+    "hash": "af495a1ae9e0903bf6be429cc59e7859581bfd9a5722b0c7530d2a31f21497b1",
+    "xRad": 60,
+    "yRad": 60
   },
-  CIRCLE: {
-    url: '/luts/circle-d1efb1518dc82e8a.bin',
-    hash: 'd1efb1518dc82e8a2919b6fae75ac59600e244c5084903fd4ee2a5dec1c3ca27',
+  "CIRCLE": {
+    "url": "/luts/circle-68888ffb21b00ca6.bin",
+    "hash": "68888ffb21b00ca6897ef1cb932a48e0a8297e0f2be6bc208665f5635615026a",
+    "xRad": 60,
+    "yRad": 60
   },
-  TRIANGLE: {
-    url: '/luts/triangle-e9c0efd2ae459c01.bin',
-    hash: 'e9c0efd2ae459c0180e9e3344d2c75ccc191b34545a675422534c24eca917323',
+  "TRIANGLE": {
+    "url": "/luts/triangle-a467df022287048c.bin",
+    "hash": "a467df022287048c2985e1f6b5a105478ae31c05c97c9f9ee1a42147822e6f3f",
+    "xRad": 60,
+    "yRad": 60
   },
-  DISK_DISK_LUT: {
-    url: '/luts/disk-disk-lut-f6c053e06ae9fe21.bin',
-    hash: 'f6c053e06ae9fe217f68e0e00a89f4c702f9a47b763d128e8b429afb6b221fbf',
+  "ROUNDRECT": {
+    "url": "/luts/roundrect-2279e15501939cbe.bin",
+    "hash": "2279e15501939cbe37e39292baf102cd8926e65dc62734e2ff0fe5924c0b6fd7",
+    "xRad": 60,
+    "yRad": 22
   },
-  DISK_NORMAL_LUT: {
-    url: '/luts/disk-normal-lut-705377676ab3d42c.bin',
-    hash: '705377676ab3d42cd2e6ffcb1f5c3298f1df3018910f934c553c0ee2096e27de',
+  "DISK_DISK_LUT": {
+    "url": "/luts/disk-disk-lut-f6c053e06ae9fe21.bin",
+    "hash": "f6c053e06ae9fe217f68e0e00a89f4c702f9a47b763d128e8b429afb6b221fbf"
   },
-  RACE_LUT: {
-    url: '/luts/race-lut-7d86b27b4531af00.bin',
-    hash: '7d86b27b4531af00fe64741f5d229a653603cc83919d42ede2f83f1d2f509b64',
-  },
-}
+  "DISK_NORMAL_LUT": {
+    "url": "/luts/disk-normal-lut-705377676ab3d42c.bin",
+    "hash": "705377676ab3d42cd2e6ffcb1f5c3298f1df3018910f934c553c0ee2096e27de"
+  }
+};

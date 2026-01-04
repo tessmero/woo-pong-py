@@ -31,25 +31,5 @@ export class Obstacle {
       2 * lut.maxOffsetY,
     ]
     this.boundingRect = this.collisionRect
-
-    // let minX = Infinity
-    // let maxX = -Infinity
-    // let minY = Infinity
-    // let maxY = -Infinity
-    // for (const [px, py] of this.points) {
-    //   if (px < minX) minX = px
-    //   if (px > maxX) maxX = px
-    //   if (py < minY) minY = py
-    //   if (py > maxY) maxY = py
-    // }
-    // const x = pos[0] + minX
-    // const y = pos[1] + minY
-    // const w = maxX - minX
-    // const h = maxY - minY
-    // this.boundingRect = [x, y, w, h]
-    // this.collisionRect = [
-    //   x - DISK_RADIUS, y - DISK_RADIUS,
-    //   w + 2 * DISK_RADIUS, h + 2 * DISK_RADIUS,
-    // ]
   }
 }

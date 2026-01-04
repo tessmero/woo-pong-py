@@ -6,7 +6,7 @@
 
 import { topConfig } from 'configs/imp/top-config'
 import { Barrier } from './barrier'
-import { DISK_COUNT, STEP_DURATION, valueScale } from './constants'
+import { DISK_COUNT, STEP_DURATION, VALUE_SCALE } from './constants'
 import { Disk } from './disk'
 import { Graphics } from './graphics'
 import { collideDisks } from './luts/imp/disk-disk-lut'
@@ -14,17 +14,17 @@ import { Obstacle } from './obstacle'
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { Lut } from './luts/lut'
 import type { ObstacleLut } from './luts/imp/obstacle-lut'
-import { SHAPE_PATHS } from './shapes'
+import { SHAPE_PATHS, ShapeName } from './shapes'
 import { Perturbations } from './perturbations'
 
-const thick = 1 * valueScale // thickness of walls
+const thick = 1 // thickness of walls
 
 const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 2; i++) {
   for (let j = 0; j < 2; j++) {
     _disks.push([
-      (35 + i * 4) * valueScale, // x position increases by 20 units per disk
-      (10 + j * 4) * valueScale, // y position increases by 10 units per disk
+      (35 + i * 4), // x position increases by 20 units per disk
+      (10 + j * 4), // y position increases by 10 units per disk
       500 - i * 10, // dx decreases by 10 units per disk
       500 + i * 5, // dy increases by 5 units per disk
     ])
@@ -32,14 +32,14 @@ for (let i = 0; i < 2; i++) {
 }
 if (_disks.length !== DISK_COUNT) throw new Error('wrong disk count')
 
-const outerWallWidth = 40 * valueScale
-const outerWallHeight = 70 * valueScale
-const outerWallXOffset = 30 * valueScale
-const outerWallYOffset = 5 * valueScale
-const innerWallWidth = 40 * valueScale
-const innerWallXOffset = 30 * valueScale
-const innerWallSpacing = 20 * valueScale
-const innerWallStartY = 30 * valueScale
+const outerWallWidth = 40
+const outerWallHeight = 70
+const outerWallXOffset = 30
+const outerWallYOffset = 5
+const innerWallWidth = 40
+const innerWallXOffset = 30
+const innerWallSpacing = 20
+const innerWallStartY = 30
 const innerWallCount = 3
 
 const _barriers = [
@@ -59,17 +59,17 @@ const _barriers = [
 ] as const
 
 const _bottomWall = _barriers[3]
-const finishThickness = 10 * valueScale
+const finishThickness = 10
 const _finish: Rectangle = [
   _bottomWall[0], _bottomWall[1] - finishThickness,
   _bottomWall[2], finishThickness,
 ]
 
 const _obstacles = [
-  [[70 * valueScale, 70 * valueScale] as Vec2, 'circle'],
-  [[85 * valueScale, 70 * valueScale] as Vec2, 'square'],
-  [[95 * valueScale, 70 * valueScale] as Vec2, 'triangle'],
-] as const
+  [[40, 40] as Vec2, 'roundrect'],
+  [[85, 70] as Vec2, 'square'],
+  [[95, 70] as Vec2, 'triangle'],
+] as const satisfies Array<[Vec2,ShapeName]>
 
 export class Simulation {
   disks: Array<Disk>
@@ -80,14 +80,20 @@ export class Simulation {
   winningDiskIndex = -1 // index of first disk to hit finish
 
   constructor() {
-    this.disks = _disks.map(pars => Disk.fromJson(pars))
+    this.disks = _disks.map((pars) => {
+      const scaledPars = [...pars]
+      scaledPars[0] *= VALUE_SCALE
+      scaledPars[1] *= VALUE_SCALE
+      return Disk.fromJson(scaledPars)
+    })
     this.obstacles = _obstacles.map(([pos, shapeName]) => new Obstacle(
-      pos,
+      pos.map(val => val * VALUE_SCALE) as Vec2,
       SHAPE_PATHS[shapeName],
       Lut.create('obstacle-lut', shapeName) as ObstacleLut,
     ))
-    this.barriers = _barriers.map(([x, y, w, h]) => new Barrier(x, y, w, h))
-    this.finish = new Barrier(..._finish)
+    this.barriers = _barriers.map(rect =>
+      new Barrier(...rect.map(val => val * VALUE_SCALE) as Rectangle))
+    this.finish = new Barrier(..._finish.map(val => val * VALUE_SCALE) as Rectangle)
   }
 
   private _stepCount = 0
@@ -144,8 +150,8 @@ export class Simulation {
   // draw the updated scene
     ctx.clearRect(0, 0, w, h)
     ctx.save()
-    ctx.scale(10 / valueScale, 10 / valueScale)
-    ctx.lineWidth = valueScale
+    ctx.scale(10 / VALUE_SCALE, 10 / VALUE_SCALE)
+    ctx.lineWidth = VALUE_SCALE
     for (const [diskIndex, disk] of this.disks.entries()) {
       const isSelected = false
       const isWinner = (diskIndex === this.winningDiskIndex)

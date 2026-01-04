@@ -4,7 +4,7 @@
  * Used to check for collisions with obstacles and get normal angles.
  */
 
-import { circleObsRadius, DISK_RADIUS } from 'simulation/constants'
+import { DISK_RADIUS, OBSTACLE_DETAIL_SCALE, VALUE_SCALE } from 'simulation/constants'
 import { Lut } from '../lut'
 import { pio2, twopi, type Vec2 } from 'util/math-util'
 import { pointsOnPath } from 'points-on-path'
@@ -18,7 +18,6 @@ export const angleToIndex = (angle) => {
 const indexToAngle = i => i * twopi / normalDetail
 
 export type ObstacleCollision = null | [number, number, number] // x adjust, y adjust, normal index
-
 
 export class ObstacleLut extends Lut<ObstacleCollision> {
   static {
@@ -35,25 +34,60 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
     })
   }
 
-  obsOffsetDetailX = 100 // half size of cache along dx and dy
-  obsOffsetDetailY = 100 // half size of cache along dx and dy
-  maxOffsetX = circleObsRadius + DISK_RADIUS // in-simulation distance at edge of bounds
-  maxOffsetY = circleObsRadius + DISK_RADIUS // in-simulation distance at edge of bounds
-
-  // assigned with shape-specific values in create
+  // assigned with shape-specific values in create and computeAll
+  shape: ShapeName = 'square'
   blobHash = ''
   blobUrl = ''
+  obsOffsetDetailX = 1// 00 // half size of cache along dx and dy
+  obsOffsetDetailY = 1// 00 // half size of cache along dx and dy
+  maxOffsetX = 1// circleObsRadius + DISK_RADIUS // in-simulation distance at edge of bounds
+  maxOffsetY = 1// circleObsRadius + DISK_RADIUS // in-simulation distance at edge of bounds
   detail = [
     this.obsOffsetDetailX * 2 + 1,
     this.obsOffsetDetailY * 2 + 1,
   ]
 
-  shape: ShapeName = 'square'
+  offsetToXIndex = offset => Math.floor(offset / OBSTACLE_DETAIL_SCALE)
+  offsetToYIndex = offset => Math.floor(offset / OBSTACLE_DETAIL_SCALE)
+  indexToXOffset = i => i * OBSTACLE_DETAIL_SCALE
+  indexToYOffset = i => i * OBSTACLE_DETAIL_SCALE
 
-  offsetToXIndex = offset => Math.floor(offset * this.obsOffsetDetailX / this.maxOffsetX)
-  offsetToYIndex = offset => Math.floor(offset * this.obsOffsetDetailY / this.maxOffsetY)
-  indexToXOffset = i => i * this.maxOffsetX / this.obsOffsetDetailX
-  indexToYOffset = i => i * this.maxOffsetY / this.obsOffsetDetailY
+  // extend lut.ts
+  public computeAll(): void {
+    // compute shape-specific members
+
+    let xRad = 0
+    let yRad = 0
+    for (const p of pointsOnPath(SHAPE_PATHS[this.shape])[0]) {
+      const [dx, dy] = p.map(val => Math.abs(val))
+      if (dx > xRad) xRad = dx
+      if (dy > yRad) yRad = dy
+    }
+    xRad += DISK_RADIUS
+    yRad += DISK_RADIUS
+    xRad = Math.floor(xRad / OBSTACLE_DETAIL_SCALE)
+    yRad = Math.floor(yRad / OBSTACLE_DETAIL_SCALE)
+
+    console.log(`shape ${this.shape} has xRad,yRad ${xRad}, ${yRad}`)
+
+    this.obsOffsetDetailX = xRad // half size of cache along dx and dy
+    this.obsOffsetDetailY = yRad // half size of cache along dx and dy
+    this.maxOffsetX = xRad * OBSTACLE_DETAIL_SCALE // in-simulation distance at edge of bounds
+    this.maxOffsetY = yRad * OBSTACLE_DETAIL_SCALE // in-simulation distance at edge of bounds
+    this.detail = [
+      this.obsOffsetDetailX * 2 + 1,
+      this.obsOffsetDetailY * 2 + 1,
+    ]
+
+    super.computeAll() // uses this.detail to iterate over indices
+  }
+
+  // extend lut.ts
+  public async loadAll(): Promise<void> {
+    // use shape-specific members already assigned in create (lut.ts)
+
+    await super.loadAll() // uses this.detail to iterate over indices
+  }
 
   computeLeaf(index: Array<number>) {
     const dx = this.indexToXOffset(index[0] - this.obsOffsetDetailX)
@@ -61,21 +95,6 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
     return computeCollision(this.shape, [dx, dy])
   }
 }
-
-// function computeCollision(dx: number, dy: number): ObstacleCollision {
-//   const angle = Math.atan2(dy, dx)
-//   const radius = Math.hypot(dx, dy)
-//   if (radius > maxOffset) {
-//     return null // not colliding
-//   }
-
-//   const radAdj = maxOffset - radius
-//   return [
-//     Math.round(Math.cos(angle) * radAdj),
-//     Math.round(Math.sin(angle) * radAdj),
-//     angleToIndex(angle),
-//   ]
-// }
 
 const detailedPointsCache: Partial<Record<ShapeName, ReadonlyArray<Vec2>>> = {}
 function getDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {

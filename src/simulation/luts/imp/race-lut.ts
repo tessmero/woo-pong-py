@@ -26,8 +26,12 @@ export class RaceLut extends Lut<RaceLeaf> {
   }
 
   detail = [nRaces]
-  blobUrl = LUT_BLOBS.RACE_LUT.url
-  blobHash = LUT_BLOBS.RACE_LUT.hash
+
+  // @ts-expect-error race lut
+  blobUrl = LUT_BLOBS.RACE_LUT?.url ?? ''
+
+  // @ts-expect-error race lut
+  blobHash = LUT_BLOBS.RACE_LUT?.hash ?? ''
   computeLeaf(_index: Array<number>) {
     const commonStartSeed = Perturbations.randomSeed()
     const midSeeds = Array.from({ length: DISK_COUNT }, () => -1)

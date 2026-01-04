@@ -7,11 +7,11 @@
 import { rectContainsPoint, type Vec2 } from 'util/math-util'
 import type { Barrier } from './barrier'
 import type { Obstacle } from './obstacle'
+import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import { type ObstacleCollision } from './luts/imp/obstacle-lut'
 import { Lut } from './luts/lut'
 import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/disk-normal-lut'
 
-const obsOffsetDetail = 100 // half size of cache along dx and dy
 export type DiskState = [number, number, number, number] // x,y,dx,dy
 
 function copy(from: DiskState, to: DiskState) {
@@ -84,13 +84,15 @@ export class Disk {
       if (rectContainsPoint(obs.collisionRect, nx, ny)) {
         let i0 = obs.lut.offsetToXIndex(nx - obs.pos[0])
         let i1 = obs.lut.offsetToYIndex(ny - obs.pos[1])
-        if (Math.abs(i0) > obsOffsetDetail) {
-          i0 = obsOffsetDetail * Math.sign(i0)
+        const xRad = (obs.lut as ObstacleLut).obsOffsetDetailX
+        const yRad = (obs.lut as ObstacleLut).obsOffsetDetailY
+        if (Math.abs(i0) > xRad) {
+          i0 = xRad * Math.sign(i0)
         }
-        if (Math.abs(i1) > obsOffsetDetail) {
-          i1 = obsOffsetDetail * Math.sign(i1)
+        if (Math.abs(i1) > yRad) {
+          i1 = yRad * Math.sign(i1)
         }
-        const col = obs.lut.tree[i0 + obsOffsetDetail]![i1 + obsOffsetDetail] as null | ObstacleCollision
+        const col = obs.lut.tree[i0 + xRad]![i1 + yRad] as null | ObstacleCollision
         if (col) {
           // collided with obstacle
           const [xAdj, yAdj, normIndex] = col
