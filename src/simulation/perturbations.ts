@@ -6,6 +6,7 @@
 
 import type { Barrier } from './barrier'
 import type { DiskState } from './disk'
+import { Obstacle } from './obstacle'
 
 const minSpeed = 10 // only perterb vel along axes greater than this magnitude
 const velAxes = [2, 3]
@@ -27,6 +28,14 @@ export class Perturbations {
     }
   }
 
+
+  static blinkObstacle(obstacle: Obstacle) {
+    const modVal = (Perturbations.nextInt() >>> 0) % 1000
+    if (modVal === 0) {
+      obstacle.isHidden = !obstacle.isHidden
+    }
+  }
+
   static perturbDisk(state: DiskState) {
     for (const ax of velAxes) {
       if (Math.abs(state[ax]) > minSpeed) {
@@ -43,7 +52,7 @@ export class Perturbations {
 }
 
 function _randomSeed() {
-  return Math.floor(Math.random() * 1e8)
+  return Math.floor(Math.random() * 1e3)
 }
 
 // Seedable 32-bit integer-only PRNG (xorshift32)

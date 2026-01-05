@@ -57,9 +57,8 @@ async function main() {
   }
   pinballWizard.gui = Gui.create('playing-gui')
 
-  const isComputing = true
+  const isComputing = false
   for (const lutName of LUT.NAMES) {
-    if (lutName === 'race-lut') continue
     if (lutName === 'obstacle-lut') {
       for (const shapeName of Object.keys(SHAPE_PATHS)) {
         const lut = Lut.create(lutName, shapeName as ShapeName)

@@ -6,40 +6,15 @@
 
 import type { GuiElement } from 'guis/gui'
 import { Gui } from 'guis/gui'
+import { toggleElement } from 'guis/gui-html-elements'
 import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
 import type { PinballWizard } from 'pinball-wizard'
+import { DISK_COUNT } from 'simulation/constants'
+import { Lut } from 'simulation/luts/lut'
 import type { Vec2 } from 'util/math-util'
 
 type PlayingElem = GuiElement<PlayingLayoutKey>
-
-// export const playArea: ZeroElem = {
-//   layoutKey: 'screen',
-//   display: {
-//     type: 'diagram',
-//   },
-//   down: ({ pinballWizard, pointerEvent }) => {
-//     const { clientX, clientY } = pointerEvent
-//     const dpr = window.devicePixelRatio
-//     const pos: Vec2 = [clientX * dpr, clientY * dpr]
-//     // console.log(`down play area at ${pos}`)
-//     pinballWizard.down(pos)
-//   },
-//   up: ({ pinballWizard, pointerEvent }) => {
-//     const { clientX, clientY } = pointerEvent
-//     const dpr = window.devicePixelRatio
-//     const pos: Vec2 = [clientX * dpr, clientY * dpr]
-//     // console.log(`up play area at ${pos}`)
-//     pinballWizard.up(pos)
-//   },
-//   move: ({ pinballWizard, pointerEvent }) => {
-//     const { clientX, clientY } = pointerEvent
-//     const dpr = window.devicePixelRatio
-//     const pos: Vec2 = [clientX * dpr, clientY * dpr]
-//     // console.log(`move play area at ${pos}`)
-//     pinballWizard.move(pos)
-//   },
-// }
 
 export const topLabel: PlayingElem = {
   layoutKey: 'topLabel',
@@ -57,10 +32,24 @@ export const playPauseBtn: PlayingElem = {
     type: 'button',
     label: 'play/pause',
   },
-  click: ({pinballWizard}) => {
+  click: ({ pinballWizard }) => {
     pinballWizard.isPaused = !pinballWizard.isPaused
-  }
+  },
 }
+
+export const diskBtns: Array<PlayingElem> = Array.from({ length: DISK_COUNT }, (_, i) => ({
+  layoutKey: `disk${i}` as PlayingLayoutKey,
+  display: {
+    type: 'button',
+    label: `${i}`,
+  },
+  click: ({ pinballWizard }) => {
+    pinballWizard.selectedDiskIndex = i
+
+    const raceSeeds = Lut.create('race-lut').tree[0]
+    pinballWizard.activeSim.branchSeed = raceSeeds[i + 1]
+  },
+}))
 
 export class PlayingGui extends Gui<PlayingLayoutKey> {
   static {
@@ -70,6 +59,7 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
       elements: [
         topLabel,
         playPauseBtn,
+        ...diskBtns,
       ],
     })
   }
@@ -85,7 +75,10 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
   down(_pinballWizard: PinballWizard, _mousePos: Vec2) {
   }
 
-  showHideElements(_pinballWizard: PinballWizard) {
-    //
+  showHideElements(pinballWizard: PinballWizard) {
+    const hasBranched = pinballWizard.hasBranched
+    for (const btn of diskBtns) {
+      toggleElement(btn, !hasBranched)
+    }
   }
 }

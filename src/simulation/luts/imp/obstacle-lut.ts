@@ -35,7 +35,7 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
   }
 
   // assigned with shape-specific values in create and computeAll
-  shape: ShapeName = 'square'
+  shape: ShapeName = 'roundrect'
   blobHash = ''
   blobUrl = ''
   obsOffsetDetailX = 1// 00 // half size of cache along dx and dy

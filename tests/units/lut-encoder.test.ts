@@ -17,8 +17,8 @@ import { tmpdir } from 'os'
 // excuse to import disk-disk-lut and have it registered
 const _thing = DiskDiskLut
 
-describe('collision data encoder/decoder', function () {
-  it('correctly encodes and decodes cache in memory', function () {
+describe('LUT encoder/decoder', function () {
+  it('correctly encodes and decodes trees in memory', function () {
     for (const { lutName, shapeName, indexer } of lutSpecs) {
       const lut = Lut.create(lutName, shapeName)
       lut.computeAll()

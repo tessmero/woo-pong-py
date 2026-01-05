@@ -17,6 +17,8 @@ export class Obstacle {
   readonly collisionRect: Rectangle
   readonly points: ReadonlyArray<Vec2>
 
+  isHidden = false
+
   constructor(
     readonly pos: Vec2,
     readonly path: string,

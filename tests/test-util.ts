@@ -10,7 +10,7 @@ import { offsetDetail, speedDetail } from '../src/simulation/luts/imp/disk-disk-
 import { Tree } from '../src/simulation/luts/lut'
 import { ShapeName } from '../src/simulation/shapes'
 
-const obsOffsetDetail = 100 // half size of cache along dx and dy
+const obsOffsetDetail = 10 // half size of cache along dx and dy
 
 // generate random lookup key in disk-disk coliision data
 const nOffsets = 2 * offsetDetail + 1
@@ -32,6 +32,10 @@ function randomObstacleOffsetIndex() {
   ]
 }
 
+function randomRaceIndex() {
+  return [0]
+}
+
 type LutSpec = {
   lutName: LutName
   shapeName?: ShapeName
@@ -47,10 +51,15 @@ export const lutSpecs: Array<LutSpec> = [
   },
   {
     lutName: 'obstacle-lut',
-    shapeName: 'circle',
-    blobUrl: LUT_BLOBS.CIRCLE.url,
+    shapeName: 'roundrect',
+    blobUrl: LUT_BLOBS.ROUNDRECT.url,
     indexer: randomObstacleOffsetIndex,
   },
+  // {
+  //   lutName: 'race-lut',
+  //   blobUrl: LUT_BLOBS.RACE_LUT.url,
+  //   indexer: randomRaceIndex,
+  // },
 ]
 
 export function lookupIndex(tree: Tree<any>, index: Array<number>): Array<number> {

@@ -11,11 +11,13 @@ import { RuleTester } from '@typescript-eslint/rule-tester'
 import { DiskDiskLut } from '../src/simulation/luts/imp/disk-disk-lut'
 import { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 import { DiskNormalLut } from '../src/simulation/luts/imp/disk-normal-lut'
+import { RaceLut} from '../src/simulation/luts/imp/race-lut'
 
 // excuse to import luts and have them registered
 const _thing0 = DiskDiskLut
 const _thing1 = ObstacleLut
 const _thing2 = DiskNormalLut
+const _thing3 = RaceLut
 
 RuleTester.afterAll = mocha.after
 

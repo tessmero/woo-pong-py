@@ -10,6 +10,8 @@ import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
 import { GUI } from 'imp-names'
 import { STEPS_BEFORE_BRANCH } from 'simulation/constants'
+import { Lut } from 'simulation/luts/lut'
+import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
 import type { Vec2 } from 'util/math-util'
@@ -23,11 +25,11 @@ const ctx = cvs.getContext('2d') as CanvasRenderingContext2D
 
 export class PinballWizard {
   // sim for live toppling/rewind
-  public readonly activeSim = new Simulation()
-
+  public activeSim!: Simulation // assigned in init
   public gui!: Gui // assigned in init
 
   public isPaused = false
+  public selectedDiskIndex = -1
 
   constructor() {
     if (didConstruct) {
@@ -42,7 +44,14 @@ export class PinballWizard {
     }
     didInit = true
 
+    const seeds = Lut.create('race-lut').tree[0]
+    const commonStartSeed = seeds[0]
+
+    this.activeSim = new Simulation(commonStartSeed)
+    this.activeSim.branchSeed = seeds[1]
+
     this.gui = Gui.create('playing-gui')
+
 
     window.addEventListener('resize', () => this.onResize())
     this.onResize()
@@ -50,15 +59,26 @@ export class PinballWizard {
 
   update(dt: number) {
     if (!this.isPaused) {
+      const wasBranched = this.hasBranched
+
       this.activeSim.update(dt)
+
+      if (this.hasBranched && !wasBranched) {
+        // just branched
+        this.onResize()
+      }
     }
-    this.activeSim.draw(ctx, cvs.width, cvs.height)
+    this.activeSim.draw(ctx, cvs.width, cvs.height, this.selectedDiskIndex)
 
     this.debugBranchCountdown(ctx, cvs.width, cvs.height)
   }
 
+  public get hasBranched() {
+    return this.activeSim.stepCount >= STEPS_BEFORE_BRANCH
+  }
+
   private debugBranchCountdown(ctx: CanvasRenderingContext2D, w: number, h: number) {
-    const thickness = 100
+    const thickness = 20
     const progress = Math.min(1, this.activeSim.stepCount / STEPS_BEFORE_BRANCH)
 
     ctx.fillStyle = 'white'

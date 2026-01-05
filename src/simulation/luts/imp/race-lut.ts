@@ -9,6 +9,7 @@ import { Lut } from '../lut'
 import { DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
+import { DISK_STYLES } from 'simulation/disk'
 
 export type RaceLeaf = Array<number>
 
@@ -25,10 +26,10 @@ export class RaceLut extends Lut<RaceLeaf> {
 
   detail = [nRaces]
 
-  // @ts-expect-error race lut
+  // ts-expect-error race lut
   blobUrl = LUT_BLOBS.RACE_LUT?.url ?? ''
 
-  // @ts-expect-error race lut
+  // ts-expect-error race lut
   blobHash = LUT_BLOBS.RACE_LUT?.hash ?? ''
   computeLeaf(_index: Array<number>) {
     const commonStartSeed = Perturbations.randomSeed()
@@ -41,8 +42,7 @@ export class RaceLut extends Lut<RaceLeaf> {
       simCount++
 
       // run common start
-      Perturbations.setSeed(commonStartSeed)
-      const sim = new Simulation()
+      const sim = new Simulation(commonStartSeed)
       for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
         sim.step()
         stepCount++
@@ -54,16 +54,30 @@ export class RaceLut extends Lut<RaceLeaf> {
       // branch, find winning disk, and set the mid seed for that disk
       const branchSeed = Perturbations.randomSeed()
       Perturbations.setSeed(branchSeed)
+      console.log(`set branch seed ${branchSeed} for sim with step count ${sim.stepCount}`)
       while (sim.winningDiskIndex === -1) {
         sim.step()
         stepCount++
       }
+
+      console.log(`got winning disk ${sim.winningDiskIndex}`
+        + ` (${DISK_STYLES[sim.winningDiskIndex]}) after ${stepCount} steps`)
+
       midSeeds[sim.winningDiskIndex] = branchSeed
     }
 
     console.log(`found seeds for race with ${DISK_COUNT} disks`
       + ` after ${simCount} simulations and ${stepCount} total steps`)
 
-    return [commonStartSeed, ...midSeeds]
+    const result = [commonStartSeed, ...midSeeds]
+
+    console.log(result)
+    return result
+  }
+
+  public async loadAll(): Promise<void> {
+    await super.loadAll()
+
+    console.log('race-lut loadAll:', this.tree)
   }
 }

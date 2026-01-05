@@ -21,6 +21,10 @@ export class LutEncoder {
    * @returns A Int16Array representing the encoded binary data.
    */
   static encode(tree: Tree<any>): Int16Array {
+    if (tree.length === 1) {
+      console.log('ENCODING length-1 tree', JSON.stringify(tree))
+    }
+
     const chunks: Array<number> = []
 
     encodeChunks(tree, chunks)
@@ -55,6 +59,10 @@ export class LutEncoder {
         // value = [cx, cy, cdx, cdy]
       }
       assignIndex(lut.tree, index, value)
+    }
+
+    if (lut.tree.length === 1) {
+      console.log('DECODED length-1 tree', JSON.stringify(lut.tree))
     }
   }
 }

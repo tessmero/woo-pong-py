@@ -37,34 +37,6 @@ export const PLAYING_LAYOUT = {
     bottom: 0,
   },
 
-  nextLevelBtn: {
-    parent: '_outerMargin',
-    width: () => bw(),
-    height: () => bh(),
-    right: 0,
-    bottom: 0,
-  },
-
-  campaignBtn: {
-    parent: '_outerMargin',
-    width: () => bw(),
-    height: () => bh(),
-  },
-
-  musicBtn: {
-    parent: 'campaignBtn',
-    width: () => bh(),
-    left: () => bw() + im(),
-  },
-
-  resetBtn: {
-    parent: '_outerMargin',
-    width: () => bw(),
-    height: () => bh(),
-    right: 0,
-    top: 0,
-  },
-
   bottomBar: {
     parent: '_outerMargin',
     width: () => bw(),
@@ -73,61 +45,37 @@ export const PLAYING_LAYOUT = {
     bottom: 0,
   },
 
-  rotateLeft: {
-    parent: 'bottomBar',
-    width: '50%',
-  },
-
-  rotateRight: {
-    parent: 'bottomBar',
-    width: '50%',
+  rightBar: {
+    parent: '_outerMargin',
+    width: 100,
+    height: 400,
     right: 0,
-  },
-
-  editBtn: {
-    parent: 'resetBtn',
-  },
-
-  winPanel: {
-    'width': 600,
-    'height': 600,
-    'max-width': '90%',
-    'max-height': '90%',
-    'left': 'auto',
-    'top': 'auto',
-  },
-
-  _innerWinPanel: {
-    parent: 'winPanel',
-    margin: () => layoutConfig.flatConfig.innerMargin,
-  },
-
-  winTitle: {
-    parent: '_innerWinPanel',
-    height: 50,
-    width: -50,
-  },
-
-  winCloseBtn: {
-    parent: '_innerWinPanel',
-    height: 50,
-    right: 0,
-  },
-
-  winDiagram: {
-    parent: '_innerWinPanel',
-    width: 300,
-    height: 200,
-    left: 'auto',
     top: 'auto',
   },
 
-  winNextLevelBtn: {
-    parent: '_innerWinPanel',
-    width: 200,
-    height: 50,
-    left: 'auto',
-    bottom: 0,
+  _innerRightBar: {
+    parent: 'rightBar',
+    margin: () => im(),
+  },
+
+  disk0: {
+    parent: '_innerRightBar',
+    height: 100,
+  },
+
+  disk1: {
+    parent: 'disk0',
+    top: () => 100 + im(),
+  },
+
+  disk2: {
+    parent: 'disk1',
+    top: () => 100 + im(),
+  },
+
+  disk3: {
+    parent: 'disk2',
+    top: () => 100 + im(),
   },
 
 } as const satisfies CssLayout

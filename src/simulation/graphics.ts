@@ -21,6 +21,8 @@ export class Graphics {
     isSelected = false, isWinner = false) {
     const [cx, cy, _dx, _dy] = disk.currentState
 
+    const edgeRad = VALUE_SCALE * 0.1 * (isSelected ? 2 : 1)
+    const tailShrinkRatio = 2
     // ctx.strokeStyle = 'black'
     // ctx.beginPath()
     // ctx.arc(cx, cy, DISK_RADIUS, 0, twopi)
@@ -30,16 +32,15 @@ export class Graphics {
     ctx.beginPath()
     let i = 0
     ctx.moveTo(cx, cy)
-    ctx.arc(cx, cy, DISK_RADIUS * (1 - i / tailLength / 2), 0, twopi)
+    ctx.arc(cx, cy, DISK_RADIUS * (1 - i * tailShrinkRatio / tailLength) + edgeRad, 0, twopi)
     for (const [x, y] of disk.history()) {
       // draw point in tail
       ctx.moveTo(x, y)
-      ctx.arc(x, y, DISK_RADIUS * (1 - i / tailLength / 2), 0, twopi)
+      ctx.arc(x, y, DISK_RADIUS * (1 - i * tailShrinkRatio / tailLength) + edgeRad, 0, twopi)
       i++
     }
     ctx.fill()
 
-    const edgeThickness = VALUE_SCALE * 0.2
     ctx.fillStyle = disk.style// 'white'
     if (isWinner) {
       ctx.fillStyle = 'black'
@@ -47,11 +48,11 @@ export class Graphics {
     ctx.beginPath()
     i = 0
     ctx.moveTo(cx, cy)
-    ctx.arc(cx, cy, Math.max(0, DISK_RADIUS * (1 - i / tailLength / 2) - edgeThickness), 0, twopi)
+    ctx.arc(cx, cy, Math.max(0, DISK_RADIUS * (1 - i * tailShrinkRatio / tailLength) - edgeRad), 0, twopi)
     for (const [x, y] of disk.history()) {
       // draw point in tail
       ctx.moveTo(x, y)
-      ctx.arc(x, y, Math.max(0, DISK_RADIUS * (1 - i / tailLength / 2) - edgeThickness), 0, twopi)
+      ctx.arc(x, y, Math.max(0, DISK_RADIUS * (1 - i * tailShrinkRatio / tailLength) - edgeRad), 0, twopi)
       i++
     }
     ctx.fill()
@@ -71,15 +72,17 @@ export class Graphics {
   static drawObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
     ctx.fillStyle = 'black'
 
-    const { pos, points, boundingRect, collisionRect } = obstacle
+    const { isHidden, pos, points, boundingRect, collisionRect } = obstacle
 
-    // debug
-    ctx.strokeStyle = 'red'
-    ctx.lineWidth = 1 * VALUE_SCALE
-    ctx.strokeRect(...boundingRect)
-    ctx.strokeStyle = 'green'
-    ctx.lineWidth = 1 * VALUE_SCALE
-    ctx.strokeRect(...collisionRect)
+    if (isHidden) return
+
+    // // debug
+    // ctx.strokeStyle = 'red'
+    // ctx.lineWidth = 1 * VALUE_SCALE
+    // ctx.strokeRect(...boundingRect)
+    // ctx.strokeStyle = 'green'
+    // ctx.lineWidth = 1 * VALUE_SCALE
+    // ctx.strokeRect(...collisionRect)
 
     ctx.beginPath()
     for (const [x, y] of points) {

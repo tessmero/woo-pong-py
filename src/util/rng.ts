@@ -7,15 +7,6 @@
  * to consistently produce the same results.
  */
 
-export class SeedablePRNG {
-  constructor(private seed: number) {}
-
-  next(): number {
-    this.seed = (this.seed * 9301 + 49297) % 233280
-    return this.seed / 233280
-  }
-}
-
 // randomly choose element from list and maintain types
 export function randChoice<TOption>(options: Array<TOption>): TOption {
   return options[Math.floor(Math.random() * options.length)]

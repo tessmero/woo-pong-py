@@ -24,7 +24,7 @@ function copy(from: DiskState, to: DiskState) {
   to[3] = from[3]
 }
 
-export const tailLength = 10 // number of past positions to remember
+export const tailLength = 30 // number of past positions to remember
 
 const dummy: Vec2 = [0, 0]
 
@@ -37,12 +37,20 @@ export class Disk {
 
   static flushStates(disks: Array<Disk>) {
     for (const d of disks) {
+      
+      for (let i = 0; i < 4; i++) {
+        d.nextState[i] = Math.round(d.nextState[i])
+      }
+
       copy(d.nextState, d.currentState)
+
+      
+
     }
   }
 
   * history(): Generator<Vec2> {
-    for (let i = 0; i < tailLength; i++) {
+    for (let i = 0; i < tailLength; i += 3) {
       const realIndex = 2 * ((Disk.historyIndex + tailLength - i) % tailLength)
       // yield [this._history[realIndex], this._history[realIndex+1]]
       dummy[0] = this._history[realIndex]
@@ -86,6 +94,7 @@ export class Disk {
     let oi = 0
     for (; oi < obstacles.length; oi++) {
       const obs = obstacles[oi]
+      if (obs.isHidden) continue
       if (rectContainsPoint(obs.collisionRect, nx, ny)) {
         let i0 = obs.lut.offsetToXIndex(nx - obs.pos[0])
         let i1 = obs.lut.offsetToYIndex(ny - obs.pos[1])
@@ -96,6 +105,9 @@ export class Disk {
         }
         if (Math.abs(i1) > yRad) {
           i1 = yRad * Math.sign(i1)
+        }
+        if( obs.lut.tree.length === 0 ){
+          throw new Error('obs.lut.tree has length 0')
         }
         const col = obs.lut.tree[i0 + xRad]![i1 + yRad] as null | ObstacleCollision
         if (col) {
