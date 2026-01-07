@@ -7,8 +7,8 @@
 import { topConfig } from 'configs/imp/top-config'
 import { Barrier } from './barrier'
 import { DISK_COUNT, STEP_DURATION, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './constants'
-import { Disk, DISK_STYLES } from './disk'
-import { Graphics } from './graphics'
+import { Disk } from './disk'
+import { Graphics } from '../gfx/graphics'
 import { collideDisks } from './luts/imp/disk-disk-lut'
 import { Obstacle } from './obstacle'
 import type { Rectangle, Vec2 } from 'util/math-util'
@@ -17,6 +17,7 @@ import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import type { ShapeName } from './shapes'
 import { SHAPE_PATHS } from './shapes'
 import { Perturbations } from './perturbations'
+import { DISK_PATTERNS } from 'gfx/disk-gfx'
 
 const thick = 1 // thickness of walls
 
@@ -83,7 +84,8 @@ export class Simulation {
       scaledPars[0] *= VALUE_SCALE
       scaledPars[1] *= VALUE_SCALE
       const disk = Disk.fromJson(scaledPars)
-      disk.style = DISK_STYLES[diskIndex % DISK_STYLES.length]
+      // disk.style = DISK_STYLES[diskIndex % DISK_STYLES.length]
+      disk.pattern = DISK_PATTERNS[diskIndex % DISK_PATTERNS.length]
       diskIndex++
       return disk
     })

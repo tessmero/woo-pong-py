@@ -11,9 +11,10 @@ import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import { type ObstacleCollision } from './luts/imp/obstacle-lut'
 import { Lut } from './luts/lut'
 import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/disk-normal-lut'
+import type { DiskPattern } from 'gfx/disk-gfx'
 
-export const DISK_STYLES = ['red', 'green', 'blue', 'yellow'] as const
-export type DiskStyle = (typeof DISK_STYLES)[number]
+// export const DISK_STYLES = ['red', 'green', 'blue', 'yellow'] as const
+// export type DiskStyle = (typeof DISK_STYLES)[number]
 
 export type DiskState = [number, number, number, number] // x,y,dx,dy
 
@@ -29,7 +30,7 @@ export const tailLength = 30 // number of past positions to remember
 const dummy: Vec2 = [0, 0]
 
 export class Disk {
-  style: DiskStyle = 'blue'
+  pattern: DiskPattern = 'white'
 
   private readonly _history: Float32Array = new Float32Array(tailLength * 2) // positions along tail
   readonly currentState: DiskState = [0, 0, 0, 0]
@@ -37,15 +38,11 @@ export class Disk {
 
   static flushStates(disks: Array<Disk>) {
     for (const d of disks) {
-      
       for (let i = 0; i < 4; i++) {
         d.nextState[i] = Math.round(d.nextState[i])
       }
 
       copy(d.nextState, d.currentState)
-
-      
-
     }
   }
 
@@ -106,7 +103,7 @@ export class Disk {
         if (Math.abs(i1) > yRad) {
           i1 = yRad * Math.sign(i1)
         }
-        if( obs.lut.tree.length === 0 ){
+        if (obs.lut.tree.length === 0) {
           throw new Error('obs.lut.tree has length 0')
         }
         const col = obs.lut.tree[i0 + xRad]![i1 + yRad] as null | ObstacleCollision

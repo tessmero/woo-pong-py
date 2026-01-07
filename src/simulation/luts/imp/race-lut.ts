@@ -9,7 +9,7 @@ import { Lut } from '../lut'
 import { DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
-import { DISK_STYLES } from 'simulation/disk'
+import { DISK_PATTERNS } from 'gfx/disk-gfx'
 
 export type RaceLeaf = Array<number>
 
@@ -61,7 +61,7 @@ export class RaceLut extends Lut<RaceLeaf> {
       }
 
       console.log(`got winning disk ${sim.winningDiskIndex}`
-        + ` (${DISK_STYLES[sim.winningDiskIndex]}) after ${stepCount} steps`)
+        + ` (${DISK_PATTERNS[sim.winningDiskIndex]}) after ${stepCount} steps`)
 
       midSeeds[sim.winningDiskIndex] = branchSeed
     }
