@@ -5,6 +5,7 @@
  */
 
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
+import { topConfig } from 'configs/imp/top-config'
 import { Graphics } from 'gfx/graphics'
 import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
@@ -88,14 +89,20 @@ export class PinballWizard {
     ctx.fillRect(0, 0, w * progress, thickness)
   }
 
-  public drawOffset: Vec2 = [0, 0] // set in draw
-  public drawScale: number = 1 // set in draw
   private readonly mousePos: Vec2 = [0, 0]
   move(mousePos: Vec2): Vec2 {
-    // idleCountdown = IDLE_DELAY
+    if (this.isMouseDown) {
+      const y = mousePos[1]
+      const delta = y - this.dragY
+      Graphics.drawOffset[1] += delta * window.devicePixelRatio
+      this.dragY = y
+    }
 
-    this.mousePos[0] = (mousePos[0] - this.drawOffset[0]) / this.drawScale
-    this.mousePos[1] = (mousePos[1] - this.drawOffset[1]) / this.drawScale
+    // idleCountdown = IDLE_DELAY
+    const { drawOffset, drawScale } = Graphics
+
+    this.mousePos[0] = (mousePos[0] - drawOffset[0]) / drawScale
+    this.mousePos[1] = (mousePos[1] - drawOffset[1]) / drawScale
 
     // this.gui.move(this, this.mousePos)
 
@@ -103,18 +110,20 @@ export class PinballWizard {
   }
 
   private isMouseDown = false
+  private dragY = 0
   down(rawPos: Vec2) {
     const _mousePos = this.move(rawPos)
     this.isMouseDown = true
-
-    // this.gui.down(this, mousePos)
-
-    // const { selectedBoxIndex, hoveredBoxIndex } = this.graphics.boxes
-    // console.log('tt down(): ', selectedBoxIndex, hoveredBoxIndex)
+    this.dragY = rawPos[1]
   }
 
-  up(_mousePos: Vec2) {
+  up(rawPos: Vec2) {
     this.isMouseDown = false
+  }
+
+  scroll(delta: number) {
+    const { scrollSpeed } = topConfig.flatConfig
+    Graphics.drawOffset[1] += delta * scrollSpeed
   }
 
   public didBuildControls = false // set to true after first build

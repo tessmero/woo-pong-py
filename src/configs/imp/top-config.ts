@@ -35,6 +35,15 @@ const topConfigTree = {
       onChange: () => topConfig.refreshConfig(),
     },
 
+    // speed up sim for automated testing
+    scrollSpeed: {
+      value: 1,
+      min: 1,
+      max: 100,
+      step: 1,
+      onChange: () => topConfig.refreshConfig(),
+    },
+
     // stepCount:{
     //   action: (pinballWizard) => {
     //     const count = pinballWizard.activeSim.stepCount

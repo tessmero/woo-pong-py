@@ -21,8 +21,8 @@ export class Graphics {
   static ctx = ctx
 
   static drawCursor(pos: Vec2) {
-    const x = pos[0] * window.devicePixelRatio
-    const y = pos[1] * window.devicePixelRatio
+    const x = (Graphics.drawOffset[0] + pos[0]) * window.devicePixelRatio
+    const y = (Graphics.drawOffset[1] + pos[1]) * window.devicePixelRatio
     ctx.fillStyle = 'rgba(100,100,100,.5)'
     ctx.beginPath()
     ctx.moveTo(x, y)
@@ -68,15 +68,28 @@ export class Graphics {
     ctx.fill()
   }
 
+  static innerWidth = 1
   static onResize() {
-    cvs.width = cvs.clientWidth * window.devicePixelRatio
-    cvs.height = cvs.clientHeight * window.devicePixelRatio
+    const dpr = window.devicePixelRatio
+    cvs.width = cvs.clientWidth * dpr
+    cvs.height = cvs.clientHeight * dpr
+
+    const maxWidth = 600 * dpr
+    Graphics.innerWidth = Math.min(maxWidth, cvs.width)
+
+    Graphics.drawOffset[0] = (cvs.width - Graphics.innerWidth) / 2
   }
 
-  static drawSim(sim: Simulation, selectedDiskIndex: number) {
+  static drawOffset: Vec2 = [0, 0] // set in draw
+  static drawScale: number = 1 // set in draw
+  static drawSim(sim: Simulation,  selectedDiskIndex: number) {
+
+    const scale = Graphics.innerWidth / 100 / VALUE_SCALE
+
     ctx.clearRect(0, 0, cvs.width, cvs.height)
     ctx.save()
-    ctx.scale(10 / VALUE_SCALE, 10 / VALUE_SCALE)
+    ctx.translate(...Graphics.drawOffset)
+    ctx.scale(scale,scale)
     ctx.lineWidth = VALUE_SCALE
     for (const [diskIndex, disk] of sim.disks.entries()) {
       const isSelected = (diskIndex === selectedDiskIndex)
@@ -90,6 +103,12 @@ export class Graphics {
       Graphics.drawBarrier(barrier)
     }
     Graphics.drawFinish(sim.finish)
+
     ctx.restore()
+
+    // debug inner width
+    ctx.strokeStyle = 'red'
+    ctx.lineWidth = 1
+    ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
   }
 }

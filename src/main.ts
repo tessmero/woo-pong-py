@@ -52,6 +52,11 @@ async function main() {
     pinballWizard.up(rawMousePos)
   })
 
+
+  window.addEventListener('wheel', (e) => {
+    pinballWizard.scroll(e.deltaY)
+  })
+
   for (const guiName of GUI.NAMES) {
     Gui.preload(pinballWizard, guiName)
   }

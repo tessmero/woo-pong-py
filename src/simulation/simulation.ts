@@ -33,15 +33,15 @@ for (let i = 0; i < 2; i++) {
 }
 if (_disks.length !== DISK_COUNT) throw new Error('wrong disk count')
 
-const outerWallWidth = 40
-const outerWallHeight = 70
-const outerWallXOffset = 30
+const outerWallWidth = 100
+const outerWallHeight = 700
+const outerWallXOffset = 0
 const outerWallYOffset = 5
 
 const _barriers = [
   // outer walls (smaller shape centered in the original 100x100 square)
   [outerWallXOffset, outerWallYOffset, thick, outerWallHeight], // left
-  [outerWallXOffset + outerWallWidth, outerWallYOffset, thick, outerWallHeight], // right
+  [outerWallXOffset + outerWallWidth - thick, outerWallYOffset, thick, outerWallHeight], // right
   [outerWallXOffset, outerWallYOffset, outerWallWidth, thick], // top
   [outerWallXOffset, outerWallYOffset + outerWallHeight, outerWallWidth, thick], // bottom
 ] as const
@@ -122,7 +122,7 @@ export class Simulation {
         this.winningDiskIndex = diskIndex
       }
 
-      Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
+      // Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
     }
 
     // // randomly blink inner walls
