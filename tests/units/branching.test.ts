@@ -11,7 +11,6 @@ import { Lut } from '../../src/simulation/luts/lut'
 import { LUT } from '../../src/imp-names'
 import { SHAPE_NAMES } from '../../src/simulation/shapes'
 import { STEPS_BEFORE_BRANCH } from '../../src/simulation/constants'
-import { Perturbations } from '../../src/simulation/perturbations'
 
 const halfStepCount = STEPS_BEFORE_BRANCH
 let sim: Simulation

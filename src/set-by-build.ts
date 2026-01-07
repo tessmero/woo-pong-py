@@ -20,7 +20,7 @@ export const LUT_BLOBS = {
     "hash": "705377676ab3d42cd2e6ffcb1f5c3298f1df3018910f934c553c0ee2096e27de"
   },
   "RACE_LUT": {
-    "url": "/luts/race-lut-82e2de3eb30e6d86.bin",
-    "hash": "82e2de3eb30e6d868d5808dbf4a3fd99a686355bc678008993ac9636f7eeb2bf"
+    "url": "/luts/race-lut-7780020bae703999.bin",
+    "hash": "7780020bae703999e697363f59f7d36e3f2e879ffb0e8bd66a4fc3b75862d850"
   }
 };

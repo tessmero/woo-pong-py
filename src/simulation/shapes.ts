@@ -7,7 +7,7 @@
 import { VALUE_SCALE } from './constants'
 
 export const SHAPE_NAMES = [
-  // 'square', 'circle', 'triangle', 
+  // 'square', 'circle', 'triangle',
   'roundrect',
 ] as const
 export type ShapeName = (typeof SHAPE_NAMES)[number]

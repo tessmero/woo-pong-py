@@ -15,7 +15,7 @@ export const normalDetail = 100 // number of angle steps
 export const angleToIndex = (angle) => {
   return (Math.floor(angle * normalDetail / twopi) % normalDetail + normalDetail) % normalDetail
 }
-const indexToAngle = i => i * twopi / normalDetail
+// const indexToAngle = i => i * twopi / normalDetail
 
 export type ObstacleCollision = null | [number, number, number] // x adjust, y adjust, normal index
 
@@ -68,7 +68,7 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
     xRad = Math.floor(xRad / OBSTACLE_DETAIL_SCALE)
     yRad = Math.floor(yRad / OBSTACLE_DETAIL_SCALE)
 
-    console.log(`shape ${this.shape} has xRad,yRad ${xRad}, ${yRad}`)
+    // console.log(`shape ${this.shape} has xRad,yRad ${xRad}, ${yRad}`)
 
     this.obsOffsetDetailX = xRad // half size of cache along dx and dy
     this.obsOffsetDetailY = yRad // half size of cache along dx and dy
@@ -101,7 +101,7 @@ function getDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
   if (!Object.hasOwn(detailedPointsCache, shape)) {
     const points = computeDetailedPointsOnPath(SHAPE_PATHS[shape])
     detailedPointsCache[shape] = points
-    console.log('obstacle lut points: ', shape, points.length)
+    // console.log('obstacle lut points: ', shape, points.length)
   }
   return detailedPointsCache[shape] as ReadonlyArray<Vec2>
 }
@@ -110,10 +110,10 @@ function computeDetailedPointsOnPath(path: string): ReadonlyArray<Vec2> {
   let points = pointsOnPath(path)[0]
   // points.push(points[0])
   const threshold = DISK_RADIUS / 10 // Distance threshold to add midpoints
-  let addedPoints = true
+  let hasAddedPoints = true
 
-  while (addedPoints) {
-    addedPoints = false
+  while (hasAddedPoints) {
+    hasAddedPoints = false
     const newPoints: Array<Vec2> = []
 
     for (let i = 0; i < points.length; i++) {
@@ -132,7 +132,7 @@ function computeDetailedPointsOnPath(path: string): ReadonlyArray<Vec2> {
           (current[1] + next[1]) / 2,
         ]
         newPoints.push(midPoint)
-        addedPoints = true
+        hasAddedPoints = true
       }
     }
 

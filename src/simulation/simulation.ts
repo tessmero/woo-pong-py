@@ -8,7 +8,6 @@ import { topConfig } from 'configs/imp/top-config'
 import { Barrier } from './barrier'
 import { DISK_COUNT, STEP_DURATION, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './constants'
 import { Disk } from './disk'
-import { Graphics } from '../gfx/graphics'
 import { collideDisks } from './luts/imp/disk-disk-lut'
 import { Obstacle } from './obstacle'
 import type { Rectangle, Vec2 } from 'util/math-util'
@@ -74,7 +73,7 @@ export class Simulation {
   winningDiskIndex = -1 // index of first disk to hit finish
 
   constructor(seed: number) {
-    console.log(`construct simulation with starting seed ${seed}`)
+    // console.log(`construct simulation with starting seed ${seed}`)
 
     Perturbations.setSeed(seed)
 
@@ -119,7 +118,7 @@ export class Simulation {
       if ((this.winningDiskIndex === -1)
         && this.finish.isTouchingDisk(disk.nextState[0], disk.nextState[1])
       ) {
-        console.log(`disk index ${diskIndex} won after ${this._stepCount} steps`)
+        // console.log(`disk index ${diskIndex} won after ${this._stepCount} steps`)
         this.winningDiskIndex = diskIndex
       }
 
@@ -145,9 +144,9 @@ export class Simulation {
     // }
 
     if (this._stepCount === (STEPS_BEFORE_BRANCH) && this.branchSeed !== -1) {
-      console.log('set mid seed')
+      // console.log('set mid seed')
       Perturbations.setSeed(this.branchSeed)
-      console.log(`set branch seed ${this.branchSeed} for sim with step count ${this.stepCount}`)
+      // console.log(`set branch seed ${this.branchSeed} for sim with step count ${this.stepCount}`)
     }
   }
 
@@ -160,26 +159,5 @@ export class Simulation {
 
       // sanityCheck();
     }
-  }
-
-  draw(ctx: CanvasRenderingContext2D, w: number, h: number, selectedDiskIndex: number) {
-  // draw the updated scene
-    ctx.clearRect(0, 0, w, h)
-    ctx.save()
-    ctx.scale(10 / VALUE_SCALE, 10 / VALUE_SCALE)
-    ctx.lineWidth = VALUE_SCALE
-    for (const [diskIndex, disk] of this.disks.entries()) {
-      const isSelected = (diskIndex === selectedDiskIndex)
-      const isWinner = (diskIndex === this.winningDiskIndex)
-      Graphics.drawDisk(ctx, disk, isSelected, isWinner)
-    }
-    for (const obstacle of this.obstacles) {
-      Graphics.drawObstacle(ctx, obstacle)
-    }
-    for (const barrier of this.barriers) {
-      Graphics.drawBarrier(ctx, barrier)
-    }
-    Graphics.drawFinish(ctx, this.finish)
-    ctx.restore()
   }
 }

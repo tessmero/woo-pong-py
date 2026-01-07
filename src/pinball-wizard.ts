@@ -5,13 +5,13 @@
  */
 
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
+import { Graphics } from 'gfx/graphics'
 import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
 import { GUI } from 'imp-names'
 import { STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
-import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
 import type { Vec2 } from 'util/math-util'
@@ -19,9 +19,6 @@ import type { Vec2 } from 'util/math-util'
 // can only be constructed once
 let didConstruct = false
 let didInit = false
-
-const cvs = document.getElementById('sim-canvas') as HTMLCanvasElement
-const ctx = cvs.getContext('2d') as CanvasRenderingContext2D
 
 export class PinballWizard {
   // sim for live toppling/rewind
@@ -52,7 +49,6 @@ export class PinballWizard {
 
     this.gui = Gui.create('playing-gui')
 
-
     window.addEventListener('resize', () => this.onResize())
     this.onResize()
   }
@@ -68,16 +64,20 @@ export class PinballWizard {
         this.onResize()
       }
     }
-    this.activeSim.draw(ctx, cvs.width, cvs.height, this.selectedDiskIndex)
 
-    this.debugBranchCountdown(ctx, cvs.width, cvs.height)
+    Graphics.drawSim(this.activeSim, this.selectedDiskIndex)
+
+    // draw mouse pose
+    Graphics.drawCursor(this.mousePos)
+
+    this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)
   }
 
   public get hasBranched() {
     return this.activeSim.stepCount >= STEPS_BEFORE_BRANCH
   }
 
-  private debugBranchCountdown(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  private debugBranchCountdown(ctx: CanvasRenderingContext2D, w: number, _h: number) {
     const thickness = 20
     const progress = Math.min(1, this.activeSim.stepCount / STEPS_BEFORE_BRANCH)
 
@@ -125,8 +125,7 @@ export class PinballWizard {
   }
 
   public onResize() {
-    cvs.width = cvs.clientWidth * window.devicePixelRatio
-    cvs.height = cvs.clientHeight * window.devicePixelRatio
+    Graphics.onResize()
 
     // console.log('onResize')
     // console.log('this.gui is ', this.gui.constructor.name)

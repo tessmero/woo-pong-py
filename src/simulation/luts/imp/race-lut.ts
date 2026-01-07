@@ -9,7 +9,6 @@ import { Lut } from '../lut'
 import { DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
-import { DISK_PATTERNS } from 'gfx/disk-gfx'
 
 export type RaceLeaf = Array<number>
 
@@ -35,17 +34,17 @@ export class RaceLut extends Lut<RaceLeaf> {
     const commonStartSeed = Perturbations.randomSeed()
     const midSeeds = Array.from({ length: DISK_COUNT }, () => -1)
 
-    let simCount = 0
-    let stepCount = 0
+    let _simCount = 0
+    let _stepCount = 0
 
     while (midSeeds.some(val => val === -1)) {
-      simCount++
+      _simCount++
 
       // run common start
       const sim = new Simulation(commonStartSeed)
       for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
         sim.step()
-        stepCount++
+        _stepCount++
       }
       if (sim.winningDiskIndex !== -1) {
         throw new Error('sim already has winning disk before branching')
@@ -54,30 +53,30 @@ export class RaceLut extends Lut<RaceLeaf> {
       // branch, find winning disk, and set the mid seed for that disk
       const branchSeed = Perturbations.randomSeed()
       Perturbations.setSeed(branchSeed)
-      console.log(`set branch seed ${branchSeed} for sim with step count ${sim.stepCount}`)
+      // console.log(`set branch seed ${branchSeed} for sim with step count ${sim.stepCount}`)
       while (sim.winningDiskIndex === -1) {
         sim.step()
-        stepCount++
+        _stepCount++
       }
 
-      console.log(`got winning disk ${sim.winningDiskIndex}`
-        + ` (${DISK_PATTERNS[sim.winningDiskIndex]}) after ${stepCount} steps`)
+      // console.log(`got winning disk ${sim.winningDiskIndex}`
+      //   + ` (${DISK_PATTERNS[sim.winningDiskIndex]}) after ${stepCount} steps`)
 
       midSeeds[sim.winningDiskIndex] = branchSeed
     }
 
-    console.log(`found seeds for race with ${DISK_COUNT} disks`
-      + ` after ${simCount} simulations and ${stepCount} total steps`)
+    // console.log(`found seeds for race with ${DISK_COUNT} disks`
+    //   + ` after ${simCount} simulations and ${stepCount} total steps`)
 
     const result = [commonStartSeed, ...midSeeds]
 
-    console.log(result)
+    // console.log(result)
     return result
   }
 
   public async loadAll(): Promise<void> {
     await super.loadAll()
 
-    console.log('race-lut loadAll:', this.tree)
+    // console.log('race-lut loadAll:', this.tree)
   }
 }

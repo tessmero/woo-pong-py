@@ -15,15 +15,11 @@ export const offsetDetail = 10 // hald size of cache along dx and dy
 export type DDCollisionTree = Array<Array<Array<Array<CachedCollision>>>>
 
 export class LutEncoder {
-  /**
-   * Encodes the collision cache into a binary blob.
-   * @param cache The collision cache to encode.
-   * @returns A Int16Array representing the encoded binary data.
-   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static encode(tree: Tree<any>): Int16Array {
-    if (tree.length === 1) {
-      console.log('ENCODING length-1 tree', JSON.stringify(tree))
-    }
+    // if (tree.length === 1) {
+    //   console.log('ENCODING length-1 tree', JSON.stringify(tree))
+    // }
 
     const chunks: Array<number> = []
 
@@ -39,7 +35,7 @@ export class LutEncoder {
 
   static decode(
     blob: Int16Array,
-    lut: Lut<any>,
+    lut: Lut<any>, // eslint-disable-line @typescript-eslint/no-explicit-any
   ) {
     let indexInBlob = 0
 
@@ -61,12 +57,13 @@ export class LutEncoder {
       assignIndex(lut.tree, index, value)
     }
 
-    if (lut.tree.length === 1) {
-      console.log('DECODED length-1 tree', JSON.stringify(lut.tree))
-    }
+    // if (lut.tree.length === 1) {
+    //   console.log('DECODED length-1 tree', JSON.stringify(lut.tree))
+    // }
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function encodeChunks(tree: Tree<any>, chunks: Array<number>) {
   for (const value of tree) {
     if (value === null) {

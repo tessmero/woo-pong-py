@@ -6,7 +6,7 @@
 
 import type { Barrier } from './barrier'
 import type { DiskState } from './disk'
-import { Obstacle } from './obstacle'
+import type { Obstacle } from './obstacle'
 
 const minSpeed = 10 // only perterb vel along axes greater than this magnitude
 const velAxes = [2, 3]
@@ -27,7 +27,6 @@ export class Perturbations {
       barrier.isHidden = !barrier.isHidden
     }
   }
-
 
   static blinkObstacle(obstacle: Obstacle) {
     const modVal = (Perturbations.nextInt() >>> 0) % 1000

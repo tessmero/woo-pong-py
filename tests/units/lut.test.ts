@@ -15,7 +15,7 @@ const reg: RegisteredLut<any> = { // eslint-disable-line @typescript-eslint/no-e
 
 const lut = {
   reg, detail: [10, 10, 10, 10],
-} as Lut<any>
+} as Lut<any> // eslint-disable-line @typescript-eslint/no-explicit-any
 
 describe(`Lut allIndices`, function () {
   it(`returns unique indices`, function () {
