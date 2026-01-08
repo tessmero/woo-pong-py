@@ -9,6 +9,7 @@ import { Lut } from '../lut'
 import { DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
+import { DISK_PATTERNS } from 'gfx/disk-gfx'
 
 export type RaceLeaf = Array<number>
 
@@ -59,10 +60,14 @@ export class RaceLut extends Lut<RaceLeaf> {
         _stepCount++
       }
 
-      // console.log(`got winning disk ${sim.winningDiskIndex}`
-      //   + ` (${DISK_PATTERNS[sim.winningDiskIndex]}) after ${stepCount} steps`)
+      console.log(`got winning disk ${sim.winningDiskIndex}`
+        + ` (${DISK_PATTERNS[sim.winningDiskIndex % DISK_PATTERNS.length]}) after ${_stepCount} steps`)
 
       midSeeds[sim.winningDiskIndex] = branchSeed
+
+      if( _stepCount > 1e7 ){
+        break
+      }
     }
 
     // console.log(`found seeds for race with ${DISK_COUNT} disks`

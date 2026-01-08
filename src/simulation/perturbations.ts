@@ -28,10 +28,16 @@ export class Perturbations {
     }
   }
 
-  static blinkObstacle(obstacle: Obstacle) {
+  // static blinkObstacle(obstacle: Obstacle) {
+  //   const modVal = (Perturbations.nextInt() >>> 0) % 1000
+  //   if (modVal === 0) {
+  //     obstacle.isHidden = !obstacle.isHidden
+  //   }
+  // }
+  static reverseObstacle(obstacle: Obstacle) {
     const modVal = (Perturbations.nextInt() >>> 0) % 1000
     if (modVal === 0) {
-      obstacle.isHidden = !obstacle.isHidden
+      obstacle.vel[0] *= -1
     }
   }
 

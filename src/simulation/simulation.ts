@@ -21,11 +21,12 @@ import { DISK_PATTERNS } from 'gfx/disk-gfx'
 const thick = 1 // thickness of walls
 
 const _disks: Array<[number, number, number, number]> = []
-for (let i = 0; i < 2; i++) {
+for (let i = 0; i < 5; i++) {
   for (let j = 0; j < 2; j++) {
+    if( _disks.length === DISK_COUNT ) continue
     _disks.push([
-      (35 + i * 4), // x position increases by 20 units per disk
-      (10 + j * 4), // y position increases by 10 units per disk
+      (20 + i * 10), // x position increases by 20 units per disk
+      (20 + j * 10), // y position increases by 10 units per disk
       500 - i * 10, // dx decreases by 10 units per disk
       500 + i * 5, // dy increases by 5 units per disk
     ])
@@ -54,13 +55,9 @@ const _finish: Rectangle = [
 ]
 
 const _obstacles = [
-  [[40, 40] as Vec2, 'roundrect'],
-  [[60, 40] as Vec2, 'roundrect'],
-
-  [[50, 50] as Vec2, 'roundrect'],
-
-  [[40, 60] as Vec2, 'roundrect'],
-  [[60, 60] as Vec2, 'roundrect'],
+  [[50, 100] as Vec2, 'roundrect'],
+  [[50, 200] as Vec2, 'roundrect'],
+  [[50, 300] as Vec2, 'roundrect'],
 ] as const satisfies Array<[Vec2, ShapeName]>
 
 export class Simulation {
@@ -103,6 +100,12 @@ export class Simulation {
   step() {
     this._stepCount++
 
+    // udpate inner obstacles
+    for( const obs of this.obstacles ){
+      obs.step()
+      // Perturbations.blinkObstacle(obs)
+    }
+
     // collide disks with disks
     for (let a = 1; a < this.disks.length; a++) {
       for (let b = 0; b < a; b++) {
@@ -131,11 +134,6 @@ export class Simulation {
     //   Perturbations.blinkBarrier(barrier)
     // }
 
-    // randomly blink inner obstacles
-    for (let i = 0; i < this.obstacles.length; i++) {
-      const obstacle = this.obstacles[i]
-      Perturbations.blinkObstacle(obstacle)
-    }
 
     Disk.flushStates(this.disks) // commit updates after collisions
 

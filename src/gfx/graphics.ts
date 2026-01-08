@@ -82,14 +82,13 @@ export class Graphics {
 
   static drawOffset: Vec2 = [0, 0] // set in draw
   static drawScale: number = 1 // set in draw
-  static drawSim(sim: Simulation,  selectedDiskIndex: number) {
-
+  static drawSim(sim: Simulation, selectedDiskIndex: number) {
     const scale = Graphics.innerWidth / 100 / VALUE_SCALE
 
     ctx.clearRect(0, 0, cvs.width, cvs.height)
     ctx.save()
     ctx.translate(...Graphics.drawOffset)
-    ctx.scale(scale,scale)
+    ctx.scale(scale, scale)
     ctx.lineWidth = VALUE_SCALE
     for (const [diskIndex, disk] of sim.disks.entries()) {
       const isSelected = (diskIndex === selectedDiskIndex)

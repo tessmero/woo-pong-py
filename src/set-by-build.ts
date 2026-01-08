@@ -6,21 +6,21 @@
 
 export const LUT_BLOBS = {
   "ROUNDRECT": {
-    "url": "/luts/roundrect-dd07593a9f24c032.bin",
-    "hash": "dd07593a9f24c032b826fd9f5e878cf503257e42c6370ce316c5af5c2e3d569a",
-    "xRad": 85,
-    "yRad": 22
+    "url": "/luts/roundrect-6cc245b4a70ac981.bin",
+    "hash": "6cc245b4a70ac981bc6d26f33b7e16cbc5b7fdcc96c95d71a64b9193026ac97d",
+    "xRad": 280,
+    "yRad": 42
   },
   "DISK_DISK_LUT": {
-    "url": "/luts/disk-disk-lut-f6c053e06ae9fe21.bin",
-    "hash": "f6c053e06ae9fe217f68e0e00a89f4c702f9a47b763d128e8b429afb6b221fbf"
+    "url": "/luts/disk-disk-lut-e9cd18aa3e3da17a.bin",
+    "hash": "e9cd18aa3e3da17a07ed2d5fbe3559e39c81868b0f54a103ec98c96b1210d902"
   },
   "DISK_NORMAL_LUT": {
     "url": "/luts/disk-normal-lut-705377676ab3d42c.bin",
     "hash": "705377676ab3d42cd2e6ffcb1f5c3298f1df3018910f934c553c0ee2096e27de"
   },
   "RACE_LUT": {
-    "url": "/luts/race-lut-7854263712da2a30.bin",
-    "hash": "7854263712da2a309e796cb2a9135e3a44999252a5ff9e39b457aa92cab850bb"
+    "url": "/luts/race-lut-7bc5f64175f9f2cd.bin",
+    "hash": "7bc5f64175f9f2cd88a6999c71ba97bd9364cf8deea01f24168adb4e775f67c6"
   }
 };
