@@ -27,13 +27,29 @@ export const topLabel: PlayingElem = {
 }
 
 export const playPauseBtn: PlayingElem = {
-  layoutKey: 'bottomLabel',
+  layoutKey: 'playPauseBtn',
   display: {
     type: 'button',
     label: 'play/pause',
   },
   click: ({ pinballWizard }) => {
-    pinballWizard.isPaused = !pinballWizard.isPaused
+    if (pinballWizard.speed === 'normal') {
+      pinballWizard.speed = 'paused'
+    }
+    else {
+      pinballWizard.speed = 'normal'
+    }
+  },
+}
+
+export const speedUpBtn: PlayingElem = {
+  layoutKey: 'speedUpBtn',
+  display: {
+    type: 'button',
+    label: 'speed up',
+  },
+  click: ({ pinballWizard }) => {
+    pinballWizard.speed = 'fast'
   },
 }
 
@@ -59,6 +75,7 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
       elements: [
         topLabel,
         playPauseBtn,
+        speedUpBtn,
         ...diskBtns,
       ],
     })

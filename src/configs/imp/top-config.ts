@@ -27,15 +27,6 @@ const topConfigTree = {
   children: {
 
     // speed up sim for automated testing
-    speedMultiplier: {
-      value: 1,
-      min: 1,
-      max: 100,
-      step: 1,
-      onChange: () => topConfig.refreshConfig(),
-    },
-
-    // speed up sim for automated testing
     scrollSpeed: {
       value: 1,
       min: 1,

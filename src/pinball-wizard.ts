@@ -21,12 +21,21 @@ import type { Vec2 } from 'util/math-util'
 let didConstruct = false
 let didInit = false
 
+export type Speed
+  = 'normal' | 'paused' | 'fast'
+
+const speedMultipliers: Record<Speed, number> = {
+  normal: 1,
+  paused: .1,
+  fast: 3,
+}
+
 export class PinballWizard {
   // sim for live toppling/rewind
   public activeSim!: Simulation // assigned in init
   public gui!: Gui // assigned in init
 
-  public isPaused = false
+  public speed: Speed = 'normal'
   public selectedDiskIndex = -1
 
   constructor() {
@@ -54,16 +63,25 @@ export class PinballWizard {
     this.onResize()
   }
 
+  private _speedMult = 1
+
   update(dt: number) {
-    if (!this.isPaused) {
-      const wasBranched = this.hasBranched
+    const wasBranched = this.hasBranched
 
-      this.activeSim.update(dt)
+    const targetSpeed = speedMultipliers[this.speed]
+    const delta = dt * 1e-3
+    if (this._speedMult < targetSpeed) {
+      this._speedMult = Math.min(targetSpeed, this._speedMult + delta)
+    }
+    if (this._speedMult > targetSpeed) {
+      this._speedMult = Math.max(targetSpeed, this._speedMult - delta)
+    }
 
-      if (this.hasBranched && !wasBranched) {
-        // just branched
-        this.onResize()
-      }
+    this.activeSim.update(dt * this._speedMult)
+
+    if (this.hasBranched && !wasBranched) {
+      // just branched
+      this.onResize()
     }
 
     Graphics.drawSim(this.activeSim, this.selectedDiskIndex)

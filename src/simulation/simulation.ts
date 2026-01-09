@@ -4,7 +4,6 @@
  * Disks and obstacles 2D simulation.
  */
 
-import { topConfig } from 'configs/imp/top-config'
 import { Barrier } from './barrier'
 import { DISK_COUNT, STEP_DURATION, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './constants'
 import { Disk } from './disk'
@@ -23,7 +22,7 @@ const thick = 1 // thickness of walls
 const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 5; i++) {
   for (let j = 0; j < 2; j++) {
-    if( _disks.length === DISK_COUNT ) continue
+    if (_disks.length === DISK_COUNT) continue
     _disks.push([
       (20 + i * 10), // x position increases by 20 units per disk
       (20 + j * 10), // y position increases by 10 units per disk
@@ -101,7 +100,7 @@ export class Simulation {
     this._stepCount++
 
     // udpate inner obstacles
-    for( const obs of this.obstacles ){
+    for (const obs of this.obstacles) {
       obs.step()
       // Perturbations.blinkObstacle(obs)
     }
@@ -134,7 +133,6 @@ export class Simulation {
     //   Perturbations.blinkBarrier(barrier)
     // }
 
-
     Disk.flushStates(this.disks) // commit updates after collisions
 
     // if (this._stepCount % 3 === 0) {
@@ -148,8 +146,12 @@ export class Simulation {
     }
   }
 
+  private t = 0
   update(dt: number) {
-    const nSteps = Math.round(dt / STEP_DURATION) * topConfig.flatConfig.speedMultiplier
+    const oldStepIndex = Math.floor(this.t / STEP_DURATION)
+    this.t += dt
+    const stepIndex = Math.floor(this.t / STEP_DURATION)
+    const nSteps = stepIndex - oldStepIndex
 
     // advance the simulation by n steps
     for (let i = 0; i < nSteps; i++) {

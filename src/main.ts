@@ -57,10 +57,6 @@ async function main() {
     pinballWizard.scroll(e.deltaY)
   })
 
-  for (const guiName of GUI.NAMES) {
-    Gui.preload(pinballWizard, guiName)
-  }
-  pinballWizard.gui = Gui.create('playing-gui')
 
   const isComputing = false
   for (const lutName of LUT.NAMES) {
@@ -87,6 +83,11 @@ async function main() {
     }
   }
 
+  for (const guiName of GUI.NAMES) {
+    Gui.preload(pinballWizard, guiName)
+  }
+  pinballWizard.gui = Gui.create('playing-gui')
+  
   await pinballWizard.init()
 
   if (isDevMode) {

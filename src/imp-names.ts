@@ -16,6 +16,8 @@ export type ImpManifest = {
 // guis
 export const GUI = {
   NAMES: [
+    // 'title-screen-gui',
+    // 'warning-gui',
     'playing-gui',
   ],
   SOURCES: ['src/guis/imp/**/*.ts'],

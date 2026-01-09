@@ -45,6 +45,16 @@ export const PLAYING_LAYOUT = {
     bottom: 0,
   },
 
+  playPauseBtn: {
+    parent: 'bottomBar',
+    width: '50%',
+  },
+  speedUpBtn: {
+    parent: 'bottomBar',
+    width: '50%',
+    right: 0,
+  },
+
   rightBar: {
     parent: '_outerMargin',
     width: 100,
