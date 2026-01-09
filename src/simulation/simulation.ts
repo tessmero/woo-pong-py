@@ -9,7 +9,7 @@ import { DISK_COUNT, STEP_DURATION, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './c
 import { Disk } from './disk'
 import { collideDisks } from './luts/imp/disk-disk-lut'
 import { Obstacle } from './obstacle'
-import type { Rectangle, Vec2 } from 'util/math-util'
+import { lerp, type Rectangle, type Vec2 } from 'util/math-util'
 import { Lut } from './luts/lut'
 import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import type { ShapeName } from './shapes'
@@ -135,9 +135,7 @@ export class Simulation {
 
     Disk.flushStates(this.disks) // commit updates after collisions
 
-    // if (this._stepCount % 3 === 0) {
-    Disk.updateHistory(this.disks) // add to graphical tail
-    // }
+    // Disk.updateHistory(this.disks) // add to graphical tail
 
     if (this._stepCount === (STEPS_BEFORE_BRANCH) && this.branchSeed !== -1) {
       // console.log('set mid seed')
@@ -148,16 +146,24 @@ export class Simulation {
 
   private t = 0
   update(dt: number) {
-    const oldStepIndex = Math.floor(this.t / STEP_DURATION)
     this.t += dt
-    const stepIndex = Math.floor(this.t / STEP_DURATION)
-    const nSteps = stepIndex - oldStepIndex
+    const stepIndex = Math.ceil(this.t / STEP_DURATION)
+
+    // fraction of last step
+    const stepFrac = (this.t - ((stepIndex - 1) * STEP_DURATION)) / STEP_DURATION
 
     // advance the simulation by n steps
-    for (let i = 0; i < nSteps; i++) {
+    while (this._stepCount < stepIndex) {
       this.step()
 
       // sanityCheck();
+    }
+
+    // compute interpolated positions
+    for (const disk of this.disks) {
+      disk.stepFrac = stepFrac
+      disk.interpolatedPos[0] = lerp(disk.lastStepPos[0], disk.currentState[0], stepFrac)
+      disk.interpolatedPos[1] = lerp(disk.lastStepPos[1], disk.currentState[1], stepFrac)
     }
   }
 }

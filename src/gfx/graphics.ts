@@ -12,6 +12,7 @@ import type { Obstacle } from '../simulation/obstacle'
 import { drawDisk } from './disk-gfx'
 import type { Simulation } from 'simulation/simulation'
 import { VALUE_SCALE } from 'simulation/constants'
+import { Disk } from 'simulation/disk'
 
 const cvs = document.getElementById('sim-canvas') as HTMLCanvasElement
 const ctx = cvs.getContext('2d') as CanvasRenderingContext2D
@@ -90,6 +91,10 @@ export class Graphics {
     ctx.translate(...Graphics.drawOffset)
     ctx.scale(scale, scale)
     ctx.lineWidth = VALUE_SCALE
+
+
+    Disk.updateHistory(sim.disks) // add to graphical tail
+
     for (const [diskIndex, disk] of sim.disks.entries()) {
       const isSelected = (diskIndex === selectedDiskIndex)
       const isWinner = (diskIndex === sim.winningDiskIndex)

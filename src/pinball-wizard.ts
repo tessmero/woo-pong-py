@@ -26,7 +26,7 @@ export type Speed
 
 const speedMultipliers: Record<Speed, number> = {
   normal: 1,
-  paused: .1,
+  paused: .01,
   fast: 3,
 }
 

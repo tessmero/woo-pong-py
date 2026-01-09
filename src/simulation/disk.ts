@@ -27,7 +27,7 @@ function copy(from: DiskState, to: DiskState) {
 
 export const tailLength = 30 // number of past positions to remember
 
-const dummy: Vec2 = [0, 0]
+const dummy: [number, number, number] = [0, 0, 0]
 
 export class Disk {
   pattern: DiskPattern = 'white'
@@ -36,8 +36,16 @@ export class Disk {
   readonly currentState: DiskState = [0, 0, 0, 0]
   readonly nextState: DiskState = [0, 0, 0, 0]
 
+  stepFrac = 0
+  readonly lastStepPos: Vec2 = [0, 0]
+  readonly interpolatedPos: Vec2 = [0, 0]
+
+  // called once at end of step
   static flushStates(disks: Array<Disk>) {
     for (const d of disks) {
+      d.lastStepPos[0] = d.currentState[0]
+      d.lastStepPos[1] = d.currentState[1]
+
       for (let i = 0; i < 4; i++) {
         d.nextState[i] = Math.round(d.nextState[i])
       }
@@ -46,12 +54,27 @@ export class Disk {
     }
   }
 
-  * history(): Generator<Vec2> {
+  * history(): Generator<[number, number, number]> {
+    let lastX = 0
+    let lastY = 0
+    let cumulativeDistance = 0
     for (let i = 0; i < tailLength; i += 3) {
       const realIndex = 2 * ((Disk.historyIndex + tailLength - i) % tailLength)
       // yield [this._history[realIndex], this._history[realIndex+1]]
-      dummy[0] = this._history[realIndex]
-      dummy[1] = this._history[realIndex + 1]
+
+      const x = this._history[realIndex]
+      const y = this._history[realIndex + 1]
+
+      if (i > 0) {
+        cumulativeDistance += Math.hypot(x - lastX, y - lastY)
+      }
+      lastX = x
+      lastY = y
+
+      dummy[0] = x
+      dummy[1] = y
+      dummy[2] = cumulativeDistance
+
       yield dummy
     }
   }
@@ -62,8 +85,8 @@ export class Disk {
     const realIndex = Disk.historyIndex * 2
     for (const d of disks) {
       // push current position to history
-      d._history[realIndex] = d.currentState[0]
-      d._history[realIndex + 1] = d.currentState[1]
+      d._history[realIndex] = d.interpolatedPos[0]
+      d._history[realIndex + 1] = d.interpolatedPos[1]
     }
   }
 
