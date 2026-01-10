@@ -12,7 +12,7 @@ import { Lut } from '../../src/simulation/luts/lut'
 
 for (const { lutName, shapeName, blobUrl, indexer } of lutSpecs) {
   describe(`${lutName} data blob in public`, function () {
-    it('loads as valid disk-disk -> bounce tree', function () {
+    it('loads as valid tree', function () {
       const blobPath = join(__dirname, `../../public/${blobUrl}`)
       const readBuffer = readFileSync(blobPath)
       const blobData = new Int16Array(

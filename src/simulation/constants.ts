@@ -12,4 +12,4 @@ export const OBSTACLE_DETAIL_SCALE = 1e3
 
 export const DISK_RADIUS = 3 * VALUE_SCALE
 
-export const STEPS_BEFORE_BRANCH = 1e3 // number of steps before branching
+export const STEPS_BEFORE_BRANCH = 1e4 // number of steps before branching

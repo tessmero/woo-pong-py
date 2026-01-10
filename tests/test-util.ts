@@ -4,11 +4,14 @@
  * Test util.
  */
 
+import { ok } from 'assert'
 import { LutName } from '../src/imp-names'
 import { LUT_BLOBS } from '../src/set-by-build'
 import { offsetDetail, speedDetail } from '../src/simulation/luts/imp/disk-disk-lut'
 import { Tree } from '../src/simulation/luts/lut'
 import { ShapeName } from '../src/simulation/shapes'
+import { Simulation } from '../src/simulation/simulation'
+import { rectContainsPoint } from '../src/util/math-util'
 
 const obsOffsetDetail = 10 // half size of cache along dx and dy
 
@@ -68,4 +71,12 @@ export function lookupIndex(tree: Tree<any>, index: Array<number>): Array<number
     return tree[index[0]]
   }
   return lookupIndex(tree[index[0]], index.slice(1))
+}
+
+
+export function assertDisksInBounds(sim: Simulation) {
+  const { bounds, disks } = sim
+  for (const { currentState: [x, y] } of disks) {
+    ok(rectContainsPoint(bounds, x, y), `disk should be in bounds (step ${sim.stepCount})`)
+  }
 }

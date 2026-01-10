@@ -4,14 +4,15 @@
  * Sliding circle on airhockey table.
  */
 
+import type { Rectangle } from 'util/math-util'
 import { rectContainsPoint, type Vec2 } from 'util/math-util'
-import type { Barrier } from './barrier'
 import type { Obstacle } from './obstacle'
 import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import { type ObstacleCollision } from './luts/imp/obstacle-lut'
 import { Lut } from './luts/lut'
 import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/disk-normal-lut'
 import type { DiskPattern } from 'gfx/disk-gfx'
+import { DISK_RADIUS } from './constants'
 
 // export const DISK_STYLES = ['red', 'green', 'blue', 'yellow'] as const
 // export type DiskStyle = (typeof DISK_STYLES)[number]
@@ -102,7 +103,7 @@ export class Disk {
   }
 
   // move one tick
-  advance(barriers: Array<Barrier>, obstacles: Array<Obstacle>) {
+  advance(obstacles: Array<Obstacle>) {
     const [x, y, dx, dy] = this.currentState
     const nx = x + dx
     const ny = y + dy
@@ -161,51 +162,48 @@ export class Disk {
       }
     }
 
-    // check for collisions with barriers
-    let bi = 0
-    for (; bi < barriers.length; bi++) {
-      const bar = barriers[bi]
-      if (bar.isHidden) continue
-      if (bar.isTouchingDisk(nx, ny)) {
-        // // check if hitting exposed corner
-        // if( bar.isCornerTouchingDisk(nx,ny) ){
-
-        // }
-
-        // bounce off wall
-        if (bar.isTouchingDisk(x - dx, ny)) {
-          ndy *= -1
-        }
-        else {
-          ndx *= -1
-        }
-        hasNoHits = false
-        break
-      }
-    }
     if (hasNoHits) {
       // move forward without changing velocity
       this.nextState[0] = nx
       this.nextState[1] = ny
-      return
     }
+    else {
+      // apply changed velocity
+      this.nextState[0] += ndx
+      this.nextState[1] += ndy
 
-    // check for second collision (hit corner)
-    bi++
-    for (; bi < barriers.length; bi++) {
-      if (barriers[bi].isTouchingDisk(nx, ny)) {
-        // reverse direction
-        ndx = -dx
-        ndy = -dy
+      // update velocity
+      this.nextState[2] = ndx
+      this.nextState[3] = ndy
+    }
+  }
+
+  pushInBounds(bounds: Rectangle){
+    
+    if ((this.nextState[0] - DISK_RADIUS) < bounds[0]) {
+      this.nextState[0] = bounds[0] + DISK_RADIUS
+      if (this.nextState[2] < 0) {
+        this.nextState[2] *= -1
+      }
+    }
+    if ((this.nextState[1] - DISK_RADIUS) < bounds[1]) {
+      this.nextState[1] = bounds[1] + DISK_RADIUS
+      if (this.nextState[3] < 0) {
+        this.nextState[3] *= -1
       }
     }
 
-    // apply changed velocity
-    this.nextState[0] += ndx
-    this.nextState[1] += ndy
-
-    // update velocity
-    this.nextState[2] = ndx
-    this.nextState[3] = ndy
+    if ((this.nextState[0] + DISK_RADIUS) > (bounds[0] + bounds[2])) {
+      this.nextState[0] = bounds[0] + bounds[2] - DISK_RADIUS
+      if (this.nextState[2] > 0) {
+        this.nextState[2] *= -1
+      }
+    }
+    if ((this.nextState[1] + DISK_RADIUS) > (bounds[1] + bounds[3])) {
+      this.nextState[1] = bounds[1] + bounds[3] - DISK_RADIUS
+      if (this.nextState[3] > 0) {
+        this.nextState[3] *= -1
+      }
+    }
   }
 }

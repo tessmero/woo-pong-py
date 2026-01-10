@@ -108,11 +108,17 @@ export class Graphics {
     }
     Graphics.drawFinish(sim.finish)
 
+    // debug bounds
+    ctx.strokeStyle = 'red'
+    ctx.lineWidth = .2 * VALUE_SCALE
+    ctx.strokeRect( ...sim.bounds )
+
     ctx.restore()
 
-    // debug inner width
-    ctx.strokeStyle = 'red'
-    ctx.lineWidth = 1
-    ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
+
+    // // debug inner width
+    // ctx.strokeStyle = 'red'
+    // ctx.lineWidth = 1
+    // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
   }
 }

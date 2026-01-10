@@ -34,9 +34,9 @@ for (let i = 0; i < 5; i++) {
 if (_disks.length !== DISK_COUNT) throw new Error('wrong disk count')
 
 const outerWallWidth = 100
-const outerWallHeight = 700
+const outerWallHeight = 2000
 const outerWallXOffset = 0
-const outerWallYOffset = 5
+const outerWallYOffset = 0
 
 const _barriers = [
   // outer walls (smaller shape centered in the original 100x100 square)
@@ -53,13 +53,21 @@ const _finish: Rectangle = [
   _bottomWall[2], finishThickness,
 ]
 
-const _obstacles = [
-  [[50, 100] as Vec2, 'roundrect'],
-  [[50, 200] as Vec2, 'roundrect'],
-  [[50, 300] as Vec2, 'roundrect'],
-] as const satisfies Array<[Vec2, ShapeName]>
+const _obstacles: Array<[Vec2, ShapeName]> = []
+const obsSpace = 100
+let y = 100
+while (y < outerWallHeight) {
+  _obstacles.push([[50, y] as Vec2, 'roundrect'])
+  y += obsSpace
+}
 
 export class Simulation {
+  bounds: Rectangle = ([
+    thick, thick,
+    outerWallWidth - 2 * thick,
+    outerWallHeight - 2 * thick,
+  ]).map(v => v * VALUE_SCALE) as Rectangle
+
   disks: Array<Disk>
   obstacles: Array<Obstacle>
   barriers: Array<Barrier>
@@ -114,7 +122,8 @@ export class Simulation {
 
     // collide disks with barriers
     for (const [diskIndex, disk] of this.disks.entries()) {
-      disk.advance(this.barriers, this.obstacles)
+      disk.advance(this.obstacles)
+      disk.pushInBounds(this.bounds)
       disk.nextState[3] += 1 // gravity
 
       if ((this.winningDiskIndex === -1)

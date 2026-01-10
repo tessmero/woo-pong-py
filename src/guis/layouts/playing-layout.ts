@@ -39,20 +39,25 @@ export const PLAYING_LAYOUT = {
 
   bottomBar: {
     parent: '_outerMargin',
-    width: () => bw(),
+    width: () => 4 * bw() + 2 * im(),
     height: () => bh(),
     left: 'auto',
     bottom: 0,
   },
 
-  playPauseBtn: {
+  clock: {
     parent: 'bottomBar',
-    width: '50%',
+    width: () => 2 * bw(),
+  },
+  playPauseBtn: {
+    parent: 'clock',
+    width: () => bw(),
+    left: () => 2 * bw() + im(),
   },
   speedUpBtn: {
-    parent: 'bottomBar',
-    width: '50%',
-    right: 0,
+    parent: 'playPauseBtn',
+    width: () => bw(),
+    left: () => bw() + im(),
   },
 
   rightBar: {

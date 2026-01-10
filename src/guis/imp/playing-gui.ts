@@ -26,6 +26,14 @@ export const topLabel: PlayingElem = {
   },
 }
 
+export const clock: PlayingElem = {
+  layoutKey: 'clock',
+  display: {
+    type: 'panel',
+    label: '00:00',
+  }
+}
+
 export const playPauseBtn: PlayingElem = {
   layoutKey: 'playPauseBtn',
   display: {
@@ -74,6 +82,7 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
       layoutFactory: () => PLAYING_LAYOUT,
       elements: [
         topLabel,
+        clock,
         playPauseBtn,
         speedUpBtn,
         ...diskBtns,

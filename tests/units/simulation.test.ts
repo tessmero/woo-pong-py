@@ -5,14 +5,16 @@
  */
 
 import { Simulation } from '../../src/simulation/simulation'
-import { equal } from 'assert'
+import { ok, equal } from 'assert'
 import { Lut } from '../../src/simulation/luts/lut'
 import { LUT } from '../../src/imp-names'
 import { SHAPE_NAMES } from '../../src/simulation/shapes'
 import { Perturbations } from '../../src/simulation/perturbations'
+import { rectContainsPoint } from '../../src/util/math-util'
+import { assertDisksInBounds } from '../test-util'
 
 const sim = new Simulation(0)
-const stepCount = 1e1
+const stepCount = 5e3
 
 describe('deterministic simulation', function () {
   // before(async function () {
@@ -24,6 +26,7 @@ describe('deterministic simulation', function () {
   it(`has expected state after ${stepCount.toExponential()} steps`, async function () {
     // init simulation
     for (const name of LUT.NAMES) {
+      if (name === 'race-lut') continue
       if (name === 'obstacle-lut') {
         for (const shape of SHAPE_NAMES) {
           Lut.create(name, shape).computeAll()
@@ -37,13 +40,17 @@ describe('deterministic simulation', function () {
     // run simulation
     Perturbations.setSeed(12345) // correct seed
     // Perturbations.setSeed(666) // wrong seed
-    for (let i = 0; i < stepCount; i++) sim.step()
+    for (let i = 0; i < stepCount; i++) {
+      sim.step()
+      assertDisksInBounds(sim)
+    }
 
     // check final state of simulation
     const actualSnapshot = getSnapshot()
     equal(actualSnapshot, expectedSnapshot)
   })
 })
+
 
 function getSnapshot(): string {
   return JSON.stringify(sim.disks.map((disk) => {
@@ -60,7 +67,10 @@ function getSnapshot(): string {
 // disks x,y,vx,vy
 const expectedSnapshot = `
 
-[[355003,105027,500,507],[354997,145041,499,511],[394911,105092,493,514],[394902,145098,489,516]]
+
+
+[[612318,2474021,-26,1165],[764068,1981058,-803,438],[215322,1738456,1789,0],[340103,2227455,85,-519],[255923,2125235,-114,506],[737480,6850537,1855,-1860],[326110,2455461,990,1432],[951990,1726794,-9,1665],[318883,3146828,891,-599],[610096,3709394,856,944]]
+
 
 
 `.replace(/\s/g, '') // remove whitespace
