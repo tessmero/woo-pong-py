@@ -34,7 +34,7 @@ for (let i = 0; i < 5; i++) {
 if (_disks.length !== DISK_COUNT) throw new Error('wrong disk count')
 
 const outerWallWidth = 100
-const outerWallHeight = 2000
+const outerWallHeight = 300
 const outerWallXOffset = 0
 const outerWallYOffset = 0
 
@@ -54,7 +54,7 @@ const _finish: Rectangle = [
 ]
 
 const _obstacles: Array<[Vec2, ShapeName]> = []
-const obsSpace = 100
+const obsSpace = 40
 let y = 100
 while (y < outerWallHeight) {
   _obstacles.push([[50, y] as Vec2, 'roundrect'])
@@ -124,10 +124,10 @@ export class Simulation {
     for (const [diskIndex, disk] of this.disks.entries()) {
       disk.advance(this.obstacles)
       disk.pushInBounds(this.bounds)
-      disk.nextState[3] += 1 // gravity
+      disk.nextState.dy += 1 // gravity
 
       if ((this.winningDiskIndex === -1)
-        && this.finish.isTouchingDisk(disk.nextState[0], disk.nextState[1])
+        && this.finish.isTouchingDisk(disk.nextState.x, disk.nextState.y)
       ) {
         // console.log(`disk index ${diskIndex} won after ${this._stepCount} steps`)
         this.winningDiskIndex = diskIndex
@@ -171,8 +171,8 @@ export class Simulation {
     // compute interpolated positions
     for (const disk of this.disks) {
       disk.stepFrac = stepFrac
-      disk.interpolatedPos[0] = lerp(disk.lastStepPos[0], disk.currentState[0], stepFrac)
-      disk.interpolatedPos[1] = lerp(disk.lastStepPos[1], disk.currentState[1], stepFrac)
+      disk.interpolatedPos[0] = lerp(disk.lastStepPos[0], disk.currentState.x, stepFrac)
+      disk.interpolatedPos[1] = lerp(disk.lastStepPos[1], disk.currentState.y, stepFrac)
     }
   }
 }

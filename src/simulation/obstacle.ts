@@ -19,7 +19,7 @@ export class Obstacle {
   readonly collisionRect: Rectangle
   readonly points: ReadonlyArray<Vec2>
 
-  readonly vel: Vec2 = [1000, 0]
+  readonly vel: Vec2 = [100, 0]
   readonly minX = 25 * VALUE_SCALE
   readonly maxX = 75 * VALUE_SCALE
 

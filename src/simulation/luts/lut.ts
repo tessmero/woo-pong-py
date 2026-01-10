@@ -34,7 +34,7 @@ export abstract class Lut<TLeaf> {
   abstract blobUrl: string
   abstract blobHash: string
 
-  abstract computeLeaf(index: Array<number>)
+  abstract computeLeaf(index: Array<number>): TLeaf
 
   public loadFromBlob(intArr: Int16Array) {
     this.tree.length = 0
@@ -68,6 +68,13 @@ export abstract class Lut<TLeaf> {
     this.tree.length = 0 // clear tree
     for (const index of allIndices(this)) {
       const leaf = this.computeLeaf(index)
+      if (leaf !== null) {
+        for (const value of (leaf as Array<number>)) {
+          if (!Number.isInteger(value)) {
+            throw new Error(`computed leaf includes non-integer: ${leaf}`)
+          }
+        }
+      }
       assignIndex(this.tree, index, leaf)
     }
   }

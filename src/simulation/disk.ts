@@ -13,17 +13,66 @@ import { Lut } from './luts/lut'
 import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/disk-normal-lut'
 import type { DiskPattern } from 'gfx/disk-gfx'
 import { DISK_RADIUS } from './constants'
+import { applyFrictionX, applyFrictionY } from './luts/imp/disk-friction-lut'
 
 // export const DISK_STYLES = ['red', 'green', 'blue', 'yellow'] as const
 // export type DiskStyle = (typeof DISK_STYLES)[number]
 
-export type DiskState = [number, number, number, number] // x,y,dx,dy
+export class DiskState {
+  private _x!: number
+  private _y!: number
+  private _dx!: number
+  private _dy!: number
 
-function copy(from: DiskState, to: DiskState) {
-  to[0] = from[0]
-  to[1] = from[1]
-  to[2] = from[2]
-  to[3] = from[3]
+  constructor(x: number, y: number, dx: number, dy: number) {
+    this.x = x
+    this.y = y
+    this.dx = dx
+    this.dy = dy
+  }
+
+  get x() { return this._x }
+  set x(value: number) {
+    if (!Number.isInteger(value)) throw new Error('x must be an integer')
+    this._x = value
+  }
+
+  get y() { return this._y }
+  set y(value: number) {
+    if (!Number.isInteger(value)) throw new Error('y must be an integer')
+    this._y = value
+  }
+
+  get dx() { return this._dx }
+  set dx(value: number) {
+    if (!Number.isInteger(value)) throw new Error('dx must be an integer')
+    this._dx = value
+  }
+
+  get dy() { return this._dy }
+  set dy(value: number) {
+    if (!Number.isInteger(value)) throw new Error('dy must be an integer')
+    this._dy = value
+  }
+
+  setAll(x: number, y: number, dx: number, dy: number) {
+    this.x = x
+    this.y = y
+    this.dx = dx
+    this.dy = dy
+  }
+
+  copy(other: DiskState) {
+    this.setAll(other.x, other.y, other.dx, other.dy)
+  }
+
+  toArray(): [number, number, number, number] {
+    return [this._x, this._y, this._dx, this._dy]
+  }
+
+  static fromArray(arr: [number, number, number, number]): DiskState {
+    return new DiskState(arr[0], arr[1], arr[2], arr[3])
+  }
 }
 
 export const tailLength = 30 // number of past positions to remember
@@ -34,8 +83,8 @@ export class Disk {
   pattern: DiskPattern = 'white'
 
   private readonly _history: Float32Array = new Float32Array(tailLength * 2) // positions along tail
-  readonly currentState: DiskState = [0, 0, 0, 0]
-  readonly nextState: DiskState = [0, 0, 0, 0]
+  readonly currentState: DiskState = new DiskState(0, 0, 0, 0)
+  readonly nextState: DiskState = new DiskState(0, 0, 0, 0)
 
   stepFrac = 0
   readonly lastStepPos: Vec2 = [0, 0]
@@ -44,14 +93,9 @@ export class Disk {
   // called once at end of step
   static flushStates(disks: Array<Disk>) {
     for (const d of disks) {
-      d.lastStepPos[0] = d.currentState[0]
-      d.lastStepPos[1] = d.currentState[1]
-
-      for (let i = 0; i < 4; i++) {
-        d.nextState[i] = Math.round(d.nextState[i])
-      }
-
-      copy(d.nextState, d.currentState)
+      d.lastStepPos[0] = d.currentState.x
+      d.lastStepPos[1] = d.currentState.y
+      d.currentState.copy(d.nextState)
     }
   }
 
@@ -61,8 +105,6 @@ export class Disk {
     let cumulativeDistance = 0
     for (let i = 0; i < tailLength; i += 3) {
       const realIndex = 2 * ((Disk.historyIndex + tailLength - i) % tailLength)
-      // yield [this._history[realIndex], this._history[realIndex+1]]
-
       const x = this._history[realIndex]
       const y = this._history[realIndex + 1]
 
@@ -72,9 +114,9 @@ export class Disk {
       lastX = x
       lastY = y
 
-      dummy[0] = x
-      dummy[1] = y
-      dummy[2] = cumulativeDistance
+      dummy[0] = Math.round(x)
+      dummy[1] = Math.round(y)
+      dummy[2] = Math.round(cumulativeDistance)
 
       yield dummy
     }
@@ -86,25 +128,29 @@ export class Disk {
     const realIndex = Disk.historyIndex * 2
     for (const d of disks) {
       // push current position to history
-      d._history[realIndex] = d.interpolatedPos[0]
-      d._history[realIndex + 1] = d.interpolatedPos[1]
+      d._history[realIndex] = Math.round(d.interpolatedPos[0])
+      d._history[realIndex + 1] = Math.round(d.interpolatedPos[1])
     }
   }
 
   static fromJson(obj: object) {
     const d = new Disk()
-    copy(obj as DiskState, d.currentState)
-    copy(obj as DiskState, d.nextState)
+    const arr = obj as [number, number, number, number]
+    d.currentState.setAll(arr[0], arr[1], arr[2], arr[3])
+    d.nextState.setAll(arr[0], arr[1], arr[2], arr[3])
     return d
   }
 
   toJson() {
-    return this.currentState
+    return this.currentState.toArray()
   }
 
   // move one tick
   advance(obstacles: Array<Obstacle>) {
-    const [x, y, dx, dy] = this.currentState
+    const x = this.currentState.x
+    const y = this.currentState.y
+    const dx = this.currentState.dx
+    const dy = this.currentState.dy
     const nx = x + dx
     const ny = y + dy
     let ndx = dx
@@ -151,10 +197,10 @@ export class Disk {
           ndx += vxAdj
           ndy += vyAdj
 
-          this.nextState[0] += xAdj
-          this.nextState[1] += yAdj
-          this.nextState[2] = ndx
-          this.nextState[3] = ndy
+          this.nextState.x += xAdj
+          this.nextState.y += yAdj
+          this.nextState.dx = ndx
+          this.nextState.dy = ndy
 
           hasNoHits = false
           return
@@ -164,45 +210,48 @@ export class Disk {
 
     if (hasNoHits) {
       // move forward without changing velocity
-      this.nextState[0] = nx
-      this.nextState[1] = ny
+      this.nextState.x = nx
+      this.nextState.y = ny
     }
     else {
       // apply changed velocity
-      this.nextState[0] += ndx
-      this.nextState[1] += ndy
+      this.nextState.x += ndx
+      this.nextState.y += ndy
 
       // update velocity
-      this.nextState[2] = ndx
-      this.nextState[3] = ndy
+      this.nextState.dx = ndx
+      this.nextState.dy = ndy
     }
   }
 
-  pushInBounds(bounds: Rectangle){
-    
-    if ((this.nextState[0] - DISK_RADIUS) < bounds[0]) {
-      this.nextState[0] = bounds[0] + DISK_RADIUS
-      if (this.nextState[2] < 0) {
-        this.nextState[2] *= -1
+  pushInBounds(bounds: Rectangle) {
+    if ((this.nextState.x - DISK_RADIUS) < bounds[0]) {
+      this.nextState.x = bounds[0] + DISK_RADIUS
+      if (this.nextState.dx < 0) {
+        this.nextState.dx *= -1
+        applyFrictionX(this.nextState)
       }
     }
-    if ((this.nextState[1] - DISK_RADIUS) < bounds[1]) {
-      this.nextState[1] = bounds[1] + DISK_RADIUS
-      if (this.nextState[3] < 0) {
-        this.nextState[3] *= -1
+    if ((this.nextState.y - DISK_RADIUS) < bounds[1]) {
+      this.nextState.y = bounds[1] + DISK_RADIUS
+      if (this.nextState.dy < 0) {
+        this.nextState.dy *= -1
+        applyFrictionY(this.nextState)
       }
     }
 
-    if ((this.nextState[0] + DISK_RADIUS) > (bounds[0] + bounds[2])) {
-      this.nextState[0] = bounds[0] + bounds[2] - DISK_RADIUS
-      if (this.nextState[2] > 0) {
-        this.nextState[2] *= -1
+    if ((this.nextState.x + DISK_RADIUS) > (bounds[0] + bounds[2])) {
+      this.nextState.x = bounds[0] + bounds[2] - DISK_RADIUS
+      if (this.nextState.dx > 0) {
+        this.nextState.dx *= -1
+        applyFrictionX(this.nextState)
       }
     }
-    if ((this.nextState[1] + DISK_RADIUS) > (bounds[1] + bounds[3])) {
-      this.nextState[1] = bounds[1] + bounds[3] - DISK_RADIUS
-      if (this.nextState[3] > 0) {
-        this.nextState[3] *= -1
+    if ((this.nextState.y + DISK_RADIUS) > (bounds[1] + bounds[3])) {
+      this.nextState.y = bounds[1] + bounds[3] - DISK_RADIUS
+      if (this.nextState.dy > 0) {
+        this.nextState.dy *= -1
+        applyFrictionY(this.nextState)
       }
     }
   }

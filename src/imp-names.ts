@@ -38,10 +38,10 @@ export type ConfigurableName = (typeof CONFIGURABLE.NAMES)[number]
 // lookup tables
 export const LUT = {
   NAMES: [
+    'disk-friction-lut', //
     'disk-disk-lut', // bounce two colliding disks
     'obstacle-lut', // identify solid edge when disk collides with obstacle
     'disk-normal-lut', // bounce disk off of solid edge
-
     'race-lut', // precomputed races (start seed + midpoint seeds for each disk to win)
   ],
   SOURCES: ['src/simulation/luts/imp/**/*.ts'],

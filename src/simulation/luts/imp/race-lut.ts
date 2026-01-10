@@ -14,6 +14,7 @@ import { DISK_PATTERNS } from 'gfx/disk-gfx'
 export type RaceLeaf = Array<number>
 
 const nRaces = 1
+const maxStepsTotal = 1e6
 
 export class RaceLut extends Lut<RaceLeaf> {
   static {
@@ -32,6 +33,8 @@ export class RaceLut extends Lut<RaceLeaf> {
   // ts-expect-error race lut
   blobHash = LUT_BLOBS.RACE_LUT?.hash ?? ''
   computeLeaf(_index: Array<number>) {
+    console.log('race-lut comput eleaf')
+
     const commonStartSeed = Perturbations.randomSeed()
     const midSeeds = Array.from({ length: DISK_COUNT }, () => -1)
 
@@ -42,11 +45,13 @@ export class RaceLut extends Lut<RaceLeaf> {
       _simCount++
 
       // run common start
+      console.log('race-lut reset sim')
       const sim = new Simulation(commonStartSeed)
       for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
         sim.step()
         _stepCount++
       }
+      console.log('race-lut finish common start')
       if (sim.winningDiskIndex !== -1) {
         throw new Error('sim already has winning disk before branching')
       }
@@ -54,8 +59,9 @@ export class RaceLut extends Lut<RaceLeaf> {
       // branch, find winning disk, and set the mid seed for that disk
       const branchSeed = Perturbations.randomSeed()
       Perturbations.setSeed(branchSeed)
+      console.log('race-lut set branch seed')
       // console.log(`set branch seed ${branchSeed} for sim with step count ${sim.stepCount}`)
-      while (sim.winningDiskIndex === -1) {
+      while (sim.winningDiskIndex === -1 && _stepCount < maxStepsTotal) {
         sim.step()
         _stepCount++
       }
@@ -65,7 +71,7 @@ export class RaceLut extends Lut<RaceLeaf> {
 
       midSeeds[sim.winningDiskIndex] = branchSeed
 
-      if( _stepCount > 1e7 ){
+      if (_stepCount > maxStepsTotal) {
         break
       }
     }

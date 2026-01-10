@@ -89,7 +89,7 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
     await super.loadAll() // uses this.detail to iterate over indices
   }
 
-  computeLeaf(index: Array<number>) {
+  computeLeaf(index: Array<number>): ObstacleCollision {
     const dx = this.indexToXOffset(index[0] - this.obsOffsetDetailX)
     const dy = this.indexToYOffset(index[1] - this.obsOffsetDetailY)
     return computeCollision(this.shape, [dx, dy])
@@ -173,8 +173,8 @@ function computeCollision(shape: ShapeName, pos: Vec2): ObstacleCollision {
     // compute offset for disk to stop overlapping
     const offsetDist = DISK_RADIUS - distToNearestPoint
     const offset: Vec2 = [
-      offsetDist * Math.cos(normAngle),
-      offsetDist * Math.sin(normAngle),
+      Math.round( offsetDist * Math.cos(normAngle) ),
+      Math.round( offsetDist * Math.sin(normAngle) ),
     ]
 
     return [

@@ -10,6 +10,8 @@ import { twopi } from 'util/math-util'
 
 const maxTailDistance = 10 * DISK_RADIUS
 
+const isShowingTails = false
+
 export function drawDisk(
   ctx: CanvasRenderingContext2D, disk: Disk,
   isSelected = false, isWinner = false,
@@ -30,12 +32,14 @@ export function drawDisk(
   let i = 0
   ctx.moveTo(cx, cy)
   ctx.arc(cx, cy, DISK_RADIUS * (1 - i * tailShrinkRatio / tailLength) + edgeRad, 0, twopi)
-  for (const [x, y, distance] of disk.history()) {
-    // draw point in tail
-    ctx.moveTo(x, y)
-    const rad = DISK_RADIUS * (1 - (Math.min(distance, maxTailDistance) / maxTailDistance)) + edgeRad
-    ctx.arc(x, y, rad, 0, twopi)
-    i++
+  if (isShowingTails) {
+    for (const [x, y, distance] of disk.history()) {
+      // draw point in tail
+      ctx.moveTo(x, y)
+      const rad = DISK_RADIUS * (1 - (Math.min(distance, maxTailDistance) / maxTailDistance)) + edgeRad
+      ctx.arc(x, y, rad, 0, twopi)
+      i++
+    }
   }
   ctx.lineWidth = edgeRad
   ctx.stroke()
@@ -48,13 +52,15 @@ export function drawDisk(
   i = 0
   const headRadius = Math.max(0, DISK_RADIUS * (1 - i * tailShrinkRatio / tailLength) - edgeRad)
   fillDiskPattern(ctx, cx, cy, headRadius, disk.pattern)
-  for (const [x, y, distance] of disk.history()) {
+  if (isShowingTails) {
+    for (const [x, y, distance] of disk.history()) {
     // draw point in tail
-    const tailRadius = Math.max(0,
-      DISK_RADIUS * (1 - (Math.min(distance, maxTailDistance) / maxTailDistance)) - edgeRad,
-    )
-    fillDiskPattern(ctx, x, y, tailRadius, disk.pattern)
-    i++
+      const tailRadius = Math.max(0,
+        DISK_RADIUS * (1 - (Math.min(distance, maxTailDistance) / maxTailDistance)) - edgeRad,
+      )
+      fillDiskPattern(ctx, x, y, tailRadius, disk.pattern)
+      i++
+    }
   }
 //   ctx.fill()
 }

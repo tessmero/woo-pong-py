@@ -7,6 +7,7 @@
 import { twopi } from 'util/math-util'
 import { Lut } from '../lut'
 import { LUT_BLOBS } from 'set-by-build'
+import { RESTITUTION } from 'simulation/constants'
 
 export type DiskNormalBounce = [number, number] // dx,dy
 
@@ -60,8 +61,11 @@ function computeCollision(vx: number, vy: number, normal: number): DiskNormalBou
   const sin = Math.sin(normal)
 
   const dotProduct = vx * cos + vy * sin
-  const newVx = vx - 2 * dotProduct * cos
-  const newVy = vy - 2 * dotProduct * sin
+  const newVx = (vx - 2 * dotProduct * cos)
+  const newVy = (vy - 2 * dotProduct * sin)
 
-  return [newVx - vx, newVy - vy]
+  return [
+    Math.round((newVx - vx) * RESTITUTION),
+    Math.round((newVy - vy) * RESTITUTION),
+  ]
 }

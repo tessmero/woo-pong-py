@@ -58,53 +58,6 @@ export class DiskDiskLut extends Lut<DiskDiskBounce> {
   }
 }
 
-export function collideDisks(a: Disk, b: Disk) {
-  // index based on relative position
-  const dxi = offsetToIndex(b.currentState[0] - a.currentState[0])
-  const dyi = offsetToIndex(b.currentState[1] - a.currentState[1])
-
-  if (Math.abs(dxi) > offsetDetail) {
-    return // disks are not colliding
-    // dxi = offsetDetail * Math.sign(dxi)
-  }
-  if (Math.abs(dyi) > offsetDetail) {
-    return // disks are not colliding
-    // dyi = offsetDetail * Math.sign(dyi)
-  }
-
-  // index based on relative velcoity
-  let vxi = speedToIndex(b.currentState[2] - a.currentState[2])
-  let vyi = speedToIndex(b.currentState[3] - a.currentState[3])
-
-  if (Math.abs(vxi) > speedDetail) {
-    // throw new Error(`dx ${dx} or of range (${maxAxisSpeed}) in collisions`)
-    vxi = speedDetail * Math.sign(vxi)
-  }
-  if (Math.abs(vyi) > speedDetail) {
-    // throw new Error(`dy ${dy} or of range (${maxAxisSpeed}) in collisions`)
-    vyi = speedDetail * Math.sign(vyi)
-  }
-
-  const col = Lut.create('disk-disk-lut').tree[
-    dxi + offsetDetail][dyi + offsetDetail][vxi + speedDetail][vyi + speedDetail]
-
-  if (!col) return
-  const [cx, cy, cdx, cdy] = col // change in pos, change in vel
-
-  if (col.some(val => isNaN(val))) {
-    throw new Error('collisions has nan bounce value')
-  }
-
-  a.nextState[0] -= cx
-  a.nextState[1] -= cy
-  b.nextState[0] += cx
-  b.nextState[1] += cy
-  a.nextState[2] -= cdx
-  a.nextState[3] -= cdy
-  b.nextState[2] += cdx
-  b.nextState[3] += cdy
-}
-
 function computeCollision(dx, dy, relativeVelocityX, relativeVelocityY): DiskDiskBounce {
   const distanceSquared = dx * dx + dy * dy
   const radiusSum = DISK_RADIUS * 2
@@ -127,6 +80,9 @@ function computeCollision(dx, dy, relativeVelocityX, relativeVelocityY): DiskDis
     const impulse = 2 * dotProduct / 2 // Equal mass assumption
     // impulse = Math.max(impulse,-100)
 
+    // restitution?
+    // impulse *= RESTITUTION
+
     return [
       Math.round(nx * separation), // dx
       Math.round(ny * separation), // dy
@@ -136,4 +92,52 @@ function computeCollision(dx, dy, relativeVelocityX, relativeVelocityY): DiskDis
     ]
   }
   return null
+}
+
+export function collideDisks(a: Disk, b: Disk): boolean {
+  // index based on relative position
+  const dxi = offsetToIndex(b.currentState.x - a.currentState.x)
+  const dyi = offsetToIndex(b.currentState.y - a.currentState.y)
+
+  if (Math.abs(dxi) > offsetDetail) {
+    return false // disks are not colliding
+    // dxi = offsetDetail * Math.sign(dxi)
+  }
+  if (Math.abs(dyi) > offsetDetail) {
+    return false // disks are not colliding
+    // dyi = offsetDetail * Math.sign(dyi)
+  }
+
+  // index based on relative velcoity
+  let vxi = speedToIndex(b.currentState.dx - a.currentState.dx)
+  let vyi = speedToIndex(b.currentState.dy - a.currentState.dy)
+
+  if (Math.abs(vxi) > speedDetail) {
+    // throw new Error(`dx ${dx} or of range (${maxAxisSpeed}) in collisions`)
+    vxi = speedDetail * Math.sign(vxi)
+  }
+  if (Math.abs(vyi) > speedDetail) {
+    // throw new Error(`dy ${dy} or of range (${maxAxisSpeed}) in collisions`)
+    vyi = speedDetail * Math.sign(vyi)
+  }
+
+  const col = Lut.create('disk-disk-lut').tree[
+    dxi + offsetDetail][dyi + offsetDetail][vxi + speedDetail][vyi + speedDetail]
+
+  if (!col) return false // disks are not colliding (near-miss)
+  const [cx, cy, cdx, cdy] = col // change in pos, change in vel
+
+  if (col.some(val => isNaN(val))) {
+    throw new Error('collisions has nan bounce value')
+  }
+
+  a.nextState.x -= cx
+  a.nextState.y -= cy
+  b.nextState.x += cx
+  b.nextState.y += cy
+  a.nextState.dx -= cdx
+  a.nextState.dy -= cdy
+  b.nextState.dx += cdx
+  b.nextState.dy += cdy
+  return true
 }

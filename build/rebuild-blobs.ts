@@ -13,6 +13,7 @@ import { SHAPE_NAMES } from '../src/simulation/shapes'
 import { DiskDiskLut } from '../src/simulation/luts/imp/disk-disk-lut'
 import { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 import { DiskNormalLut } from '../src/simulation/luts/imp/disk-normal-lut'
+import { DiskFrictionLut } from '../src/simulation/luts/imp/disk-friction-lut'
 import { RaceLut } from '../src/simulation/luts/imp/race-lut'
 import { LUT } from '../src/imp-names'
 
@@ -20,7 +21,8 @@ import { LUT } from '../src/imp-names'
 const _thing0 = DiskDiskLut
 const _thing1 = ObstacleLut
 const _thing2 = DiskNormalLut
-const _thing3 = RaceLut
+const _thing3 = DiskFrictionLut
+const _thing4 = RaceLut
 
 // Remove existing files in public/luts
 const collisionsDir = join(__dirname, '../public/luts')
@@ -72,9 +74,12 @@ for (const shapeName of SHAPE_NAMES) {
 // write singleton luts' blobs
 for (const lutName of LUT.NAMES) {
   if (lutName === 'obstacle-lut') continue
+  console.log('A')
   const lut = Lut.create(lutName)
+  console.log('B')
   lut.computeAll()
 
+  console.log('encoding', lutName)
   const encodedBlob = LutEncoder.encode(lut.tree)
   const buffer = Buffer.from(encodedBlob.buffer, encodedBlob.byteOffset, encodedBlob.byteLength)
 
@@ -94,6 +99,7 @@ for (const lutName of LUT.NAMES) {
     url: `/luts/${filename}`,
     hash: hash,
   }
+  console.log('C')
 }
 
 // Write the updated source code back to the file

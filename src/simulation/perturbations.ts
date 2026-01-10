@@ -9,7 +9,6 @@ import type { DiskState } from './disk'
 import type { Obstacle } from './obstacle'
 
 const minSpeed = 10 // only perterb vel along axes greater than this magnitude
-const velAxes = [2, 3]
 
 export class Perturbations {
   private static nextInt = _makePRNG(_randomSeed())
@@ -42,15 +41,18 @@ export class Perturbations {
   }
 
   static perturbDisk(state: DiskState) {
-    for (const ax of velAxes) {
-      if (Math.abs(state[ax]) > minSpeed) {
-        const d6 = (Perturbations.nextInt() >>> 0) % 6
-        if (d6 === 0) {
-          state[ax] += 1
-        }
-        else if (d6 === 1) {
-          state[ax] -= 1
-        }
+    // dx
+    if (Math.abs(state.dx) > minSpeed) {
+      const d6 = (Perturbations.nextInt() >>> 0) % 6;
+      if (d6 === 0) {
+        state.dx += 1;
+      }
+    }
+    // dy
+    if (Math.abs(state.dy) > minSpeed) {
+      const d6 = (Perturbations.nextInt() >>> 0) % 6;
+      if (d6 === 0) {
+        state.dy += 1;
       }
     }
   }
