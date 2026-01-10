@@ -4,8 +4,8 @@
  * Main object constructed once in main.ts.
  */
 
+import { Camera } from 'camera'
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
-import { topConfig } from 'configs/imp/top-config'
 import { Graphics } from 'gfx/graphics'
 import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
@@ -26,7 +26,7 @@ export type Speed
 
 const speedMultipliers: Record<Speed, number> = {
   normal: 1,
-  paused: .01,
+  paused: 0.01,
   fast: 3,
 }
 
@@ -37,6 +37,8 @@ export class PinballWizard {
 
   public speed: Speed = 'normal'
   public selectedDiskIndex = -1
+
+  public readonly camera = new Camera()
 
   constructor() {
     if (didConstruct) {
@@ -63,8 +65,7 @@ export class PinballWizard {
     this.onResize()
   }
 
-  private _speedMult = 1
-
+  private _speedMult = 1 // real simulation speed
   update(dt: number) {
     const wasBranched = this.hasBranched
 
@@ -84,6 +85,8 @@ export class PinballWizard {
       this.onResize()
     }
 
+    this.camera.update(dt)
+    Graphics.drawOffset[1] = this.camera.drawOffset
     Graphics.drawSim(this.activeSim, this.selectedDiskIndex)
 
     // draw mouse pose
@@ -110,10 +113,8 @@ export class PinballWizard {
   private readonly mousePos: Vec2 = [0, 0]
   move(mousePos: Vec2): Vec2 {
     if (this.isMouseDown) {
-      const y = mousePos[1]
-      const delta = y - this.dragY
-      Graphics.drawOffset[1] += delta * window.devicePixelRatio
-      this.dragY = y
+      this.camera.drag(this.dragY, mousePos[1])
+      this.dragY = mousePos[1]
     }
 
     // idleCountdown = IDLE_DELAY
@@ -137,11 +138,7 @@ export class PinballWizard {
 
   up(rawPos: Vec2) {
     this.isMouseDown = false
-  }
-
-  scroll(delta: number) {
-    const { scrollSpeed } = topConfig.flatConfig
-    Graphics.drawOffset[1] += delta * scrollSpeed
+    this.camera.endDrag()
   }
 
   public didBuildControls = false // set to true after first build

@@ -30,10 +30,18 @@ const topConfigTree = {
     scrollSpeed: {
       value: 1,
       min: 1,
-      max: 100,
+      max: 1000,
       step: 1,
       onChange: () => topConfig.refreshConfig(),
     },
+
+    roomIndex: {
+      value: 0,
+      min: 0,
+      max: 10,
+      step: 1,
+      onChange: () => topConfig.refreshConfig(),
+    }
 
     // stepCount:{
     //   action: (pinballWizard) => {

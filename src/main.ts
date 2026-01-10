@@ -54,7 +54,7 @@ async function main() {
 
 
   window.addEventListener('wheel', (e) => {
-    pinballWizard.scroll(e.deltaY)
+    pinballWizard.camera.scroll(e.deltaY)
   })
 
 
