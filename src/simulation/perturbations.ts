@@ -11,7 +11,7 @@ import type { Obstacle } from './obstacle'
 const minSpeed = 10 // only perterb vel along axes greater than this magnitude
 
 export class Perturbations {
-  private static nextInt = _makePRNG(_randomSeed())
+  public static nextInt = _makePRNG(_randomSeed())
 
   // expose helper publically
   static randomSeed = _randomSeed
@@ -43,16 +43,16 @@ export class Perturbations {
   static perturbDisk(state: DiskState) {
     // dx
     if (Math.abs(state.dx) > minSpeed) {
-      const d6 = (Perturbations.nextInt() >>> 0) % 6;
+      const d6 = (Perturbations.nextInt() >>> 0) % 6
       if (d6 === 0) {
-        state.dx += 1;
+        state.dx += 1
       }
     }
     // dy
     if (Math.abs(state.dy) > minSpeed) {
-      const d6 = (Perturbations.nextInt() >>> 0) % 6;
+      const d6 = (Perturbations.nextInt() >>> 0) % 6
       if (d6 === 0) {
-        state.dy += 1;
+        state.dy += 1
       }
     }
   }

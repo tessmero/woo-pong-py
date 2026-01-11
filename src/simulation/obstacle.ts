@@ -9,6 +9,7 @@ import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import { pointsOnPath } from 'points-on-path'
 import { VALUE_SCALE } from './constants'
 import { Perturbations } from './perturbations'
+import type { Room } from 'rooms/room'
 
 // // dummy context to call isPointInPath
 // const canvas = document.createElement('canvas')
@@ -24,11 +25,13 @@ export class Obstacle {
   readonly maxX = 75 * VALUE_SCALE
 
   isHidden = false
+  isStatic = true
 
   constructor(
     readonly pos: Vec2,
     readonly path: string,
     readonly lut: ObstacleLut,
+    readonly room: Room,
   ) {
     this.points = pointsOnPath(path)[0]
 
@@ -42,6 +45,8 @@ export class Obstacle {
   }
 
   step() {
+    if (this.isStatic) return
+
     Perturbations.reverseObstacle(this)
 
     const { pos, vel, minX, maxX, lut } = this

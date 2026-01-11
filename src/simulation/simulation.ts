@@ -8,16 +8,12 @@ import { Barrier } from './barrier'
 import { DISK_COUNT, STEP_DURATION, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './constants'
 import { Disk } from './disk'
 import { collideDisks } from './luts/imp/disk-disk-lut'
-import { Obstacle } from './obstacle'
+import type { Obstacle } from './obstacle'
 import { lerp, type Rectangle, type Vec2 } from 'util/math-util'
-import { Lut } from './luts/lut'
-import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import type { ShapeName } from './shapes'
-import { SHAPE_PATHS } from './shapes'
 import { Perturbations } from './perturbations'
 import { DISK_PATTERNS } from 'gfx/disk-gfx'
-
-const thick = 1 // thickness of walls
+import { Level } from 'level'
 
 const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 5; i++) {
@@ -35,23 +31,16 @@ if (_disks.length !== DISK_COUNT) throw new Error('wrong disk count')
 
 const outerWallWidth = 100
 const outerWallHeight = 300
-const outerWallXOffset = 0
-const outerWallYOffset = 0
+// const outerWallXOffset = 0
+// const outerWallYOffset = 0
 
-const _barriers = [
-  // outer walls (smaller shape centered in the original 100x100 square)
-  [outerWallXOffset, outerWallYOffset, thick, outerWallHeight], // left
-  [outerWallXOffset + outerWallWidth - thick, outerWallYOffset, thick, outerWallHeight], // right
-  [outerWallXOffset, outerWallYOffset, outerWallWidth, thick], // top
-  [outerWallXOffset, outerWallYOffset + outerWallHeight, outerWallWidth, thick], // bottom
-] as const
-
-const _bottomWall = _barriers[3]
-const finishThickness = 10
-const _finish: Rectangle = [
-  _bottomWall[0], _bottomWall[1] - finishThickness,
-  _bottomWall[2], finishThickness,
-]
+// const _barriers = [
+//   // outer walls (smaller shape centered in the original 100x100 square)
+//   [outerWallXOffset, outerWallYOffset, thick, outerWallHeight], // left
+//   [outerWallXOffset + outerWallWidth - thick, outerWallYOffset, thick, outerWallHeight], // right
+//   [outerWallXOffset, outerWallYOffset, outerWallWidth, thick], // top
+//   [outerWallXOffset, outerWallYOffset + outerWallHeight, outerWallWidth, thick], // bottom
+// ] as const
 
 const _obstacles: Array<[Vec2, ShapeName]> = []
 const obsSpace = 40
@@ -62,16 +51,11 @@ while (y < outerWallHeight) {
 }
 
 export class Simulation {
-  bounds: Rectangle = ([
-    thick, thick,
-    outerWallWidth - 2 * thick,
-    outerWallHeight - 2 * thick,
-  ]).map(v => v * VALUE_SCALE) as Rectangle
-
-  disks: Array<Disk>
-  obstacles: Array<Obstacle>
-  barriers: Array<Barrier>
-  finish: Barrier
+  readonly level: Level
+  readonly disks: Array<Disk>
+  readonly obstacles: Array<Obstacle>
+  // readonly barriers: Array<Barrier>
+  readonly finish: Barrier
 
   branchSeed = -1
   winningDiskIndex = -1 // index of first disk to hit finish
@@ -80,6 +64,8 @@ export class Simulation {
     // console.log(`construct simulation with starting seed ${seed}`)
 
     Perturbations.setSeed(seed)
+
+    this.level = new Level()
 
     let diskIndex = 0
     this.disks = _disks.map((pars) => {
@@ -92,14 +78,18 @@ export class Simulation {
       diskIndex++
       return disk
     })
-    this.obstacles = _obstacles.map(([pos, shapeName]) => new Obstacle(
-      pos.map(val => val * VALUE_SCALE) as Vec2,
-      SHAPE_PATHS[shapeName],
-      Lut.create('obstacle-lut', shapeName) as ObstacleLut,
-    ))
-    this.barriers = _barriers.map(rect =>
-      new Barrier(...rect.map(val => val * VALUE_SCALE) as Rectangle))
-    this.finish = new Barrier(..._finish.map(val => val * VALUE_SCALE) as Rectangle)
+
+    // this.obstacles = _obstacles.map(([pos, shapeName]) => new Obstacle(
+    //   pos.map(val => val * VALUE_SCALE) as Vec2,
+    //   SHAPE_PATHS[shapeName],
+    //   Lut.create('obstacle-lut', shapeName) as ObstacleLut,
+    // ))
+
+    this.obstacles = this.level.buildObstacles()
+
+    // this.barriers = _barriers.map(rect =>
+    //   new Barrier(...rect.map(val => val * VALUE_SCALE) as Rectangle))
+    this.finish = new Barrier(...this.level.finish.map(val => val * VALUE_SCALE) as Rectangle)
   }
 
   private _stepCount = 0
@@ -123,7 +113,7 @@ export class Simulation {
     // collide disks with barriers
     for (const [diskIndex, disk] of this.disks.entries()) {
       disk.advance(this.obstacles)
-      disk.pushInBounds(this.bounds)
+      disk.pushInBounds(this.level.bounds)
       disk.nextState.dy += 1 // gravity
 
       if ((this.winningDiskIndex === -1)

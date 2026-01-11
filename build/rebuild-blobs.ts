@@ -17,12 +17,18 @@ import { DiskFrictionLut } from '../src/simulation/luts/imp/disk-friction-lut'
 import { RaceLut } from '../src/simulation/luts/imp/race-lut'
 import { LUT } from '../src/imp-names'
 
+import { BasicRoom } from '../src/rooms/imp/basic-room'
+import { PongRoom } from '../src/rooms/imp/pong-room'
+import { BreakoutRoom } from '../src/rooms/imp/breakout-room'
+import { SorterRoom } from '../src/rooms/imp/sorter-room'
+
 // excuse to import luts and have them registered
-const _thing0 = DiskDiskLut
-const _thing1 = ObstacleLut
-const _thing2 = DiskNormalLut
-const _thing3 = DiskFrictionLut
-const _thing4 = RaceLut
+const _luts = [
+  DiskDiskLut, ObstacleLut, DiskNormalLut, DiskFrictionLut, RaceLut,
+]
+const _rooms = [
+  BasicRoom, PongRoom, BreakoutRoom, SorterRoom,
+]
 
 // Remove existing files in public/luts
 const collisionsDir = join(__dirname, '../public/luts')

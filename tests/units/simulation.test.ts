@@ -5,12 +5,11 @@
  */
 
 import { Simulation } from '../../src/simulation/simulation'
-import { ok, equal } from 'assert'
+import { equal } from 'assert'
 import { Lut } from '../../src/simulation/luts/lut'
 import { LUT } from '../../src/imp-names'
 import { SHAPE_NAMES } from '../../src/simulation/shapes'
 import { Perturbations } from '../../src/simulation/perturbations'
-import { rectContainsPoint } from '../../src/util/math-util'
 import { assertDisksInBounds } from '../test-util'
 
 const sim = new Simulation(0)
@@ -50,7 +49,6 @@ describe('deterministic simulation', function () {
     equal(actualSnapshot, expectedSnapshot)
   })
 })
-
 
 function getSnapshot(): string {
   return JSON.stringify(sim.disks.map((disk) => {

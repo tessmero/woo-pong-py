@@ -6,7 +6,7 @@
 
 export const DISK_COUNT = 10
 
-export const RESTITUTION = .9
+export const RESTITUTION = 0.9
 
 export const STEP_DURATION = 4
 export const VALUE_SCALE = 1e4

@@ -52,11 +52,9 @@ async function main() {
     pinballWizard.up(rawMousePos)
   })
 
-
   window.addEventListener('wheel', (e) => {
     pinballWizard.camera.scroll(e.deltaY)
   })
-
 
   const isComputing = false
   for (const lutName of LUT.NAMES) {
@@ -87,7 +85,7 @@ async function main() {
     Gui.preload(pinballWizard, guiName)
   }
   pinballWizard.gui = Gui.create('playing-gui')
-  
+
   await pinballWizard.init()
 
   if (isDevMode) {

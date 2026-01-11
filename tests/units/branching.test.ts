@@ -116,4 +116,3 @@ const expectedFinalSnapshots: Record<(typeof BRANCH_SEEDS)[number], string> = {
 
 `.replace(/\s/g, ''),
 }
-

@@ -173,8 +173,8 @@ function computeCollision(shape: ShapeName, pos: Vec2): ObstacleCollision {
     // compute offset for disk to stop overlapping
     const offsetDist = DISK_RADIUS - distToNearestPoint
     const offset: Vec2 = [
-      Math.round( offsetDist * Math.cos(normAngle) ),
-      Math.round( offsetDist * Math.sin(normAngle) ),
+      Math.round(offsetDist * Math.cos(normAngle)),
+      Math.round(offsetDist * Math.sin(normAngle)),
     ]
 
     return [

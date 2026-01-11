@@ -178,6 +178,8 @@ export class Disk {
         }
         const col = obs.lut.tree[i0 + xRad]![i1 + yRad] as null | ObstacleCollision
         if (col) {
+          obs.room.obstacleHit(obs)
+
           // collided with obstacle
           const [xAdj, yAdj, normIndex] = col
 

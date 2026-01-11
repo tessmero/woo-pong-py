@@ -41,7 +41,7 @@ const topConfigTree = {
       max: 10,
       step: 1,
       onChange: () => topConfig.refreshConfig(),
-    }
+    },
 
     // stepCount:{
     //   action: (pinballWizard) => {

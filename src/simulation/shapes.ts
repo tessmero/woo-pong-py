@@ -9,6 +9,7 @@ import { VALUE_SCALE } from './constants'
 export const SHAPE_NAMES = [
   // 'square', 'circle', 'triangle',
   'roundrect',
+  'breakoutbrick',
 ] as const
 export type ShapeName = (typeof SHAPE_NAMES)[number]
 
@@ -32,6 +33,9 @@ export const SHAPE_PATHS: Record<ShapeName, string> = {
 
   roundrect: generateRoundedRectPath(
     10 * mediumRadius, 0.5 * mediumRadius, cornerRadius),
+
+  breakoutbrick: generateRoundedRectPath(
+    3 * mediumRadius, 1 * mediumRadius, cornerRadius),
 }
 
 export function generateRoundedRectPath(width: number, height: number, cornerRadius: number): string {

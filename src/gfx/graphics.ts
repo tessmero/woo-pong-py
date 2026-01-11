@@ -92,7 +92,6 @@ export class Graphics {
     ctx.scale(scale, scale)
     ctx.lineWidth = VALUE_SCALE
 
-
     Disk.updateHistory(sim.disks) // add to graphical tail
 
     for (const [diskIndex, disk] of sim.disks.entries()) {
@@ -103,18 +102,30 @@ export class Graphics {
     for (const obstacle of sim.obstacles) {
       Graphics.drawObstacle(obstacle)
     }
-    for (const barrier of sim.barriers) {
-      Graphics.drawBarrier(barrier)
-    }
+    // for (const barrier of sim.barriers) {
+    //   Graphics.drawBarrier(barrier)
+    // }
     Graphics.drawFinish(sim.finish)
 
     // debug bounds
     ctx.strokeStyle = 'red'
-    ctx.lineWidth = .2 * VALUE_SCALE
-    ctx.strokeRect( ...sim.bounds )
+    ctx.lineWidth = 0.4 * VALUE_SCALE
+    ctx.strokeRect(...sim.level.bounds)
+
+    // debug room bounds
+    ctx.strokeStyle = 'blue'
+    ctx.fillStyle = 'blue'
+    const textScale = 10
+    ctx.scale(textScale, textScale)
+    ctx.font = `${1 * VALUE_SCALE}px serif`
+    ctx.lineWidth = 0.2 * VALUE_SCALE / textScale
+    for (const room of sim.level.rooms) {
+      const [x, y, w, h] = room.bounds
+      ctx.strokeRect(x / textScale, y / textScale, w / textScale, h / textScale)
+      ctx.fillText(room.name, x / textScale, y / textScale)
+    }
 
     ctx.restore()
-
 
     // // debug inner width
     // ctx.strokeStyle = 'red'
