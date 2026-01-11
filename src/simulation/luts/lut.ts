@@ -170,7 +170,10 @@ async function fetchBlobWithIntegrityCheck(url: string, expectedHash?: string): 
   }
   const arrayBuffer = await response.arrayBuffer()
 
-  if (expectedHash) {
+  if (!crypto.subtle) {
+    console.log('skipping integrity check because crypto.subtle is not availabtl')
+  }
+  else if (expectedHash) {
   // Compute hash for integrity check
     const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
     const hashArray = Array.from(new Uint8Array(hashBuffer))
