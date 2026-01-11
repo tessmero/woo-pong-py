@@ -4,11 +4,9 @@
  * Construct level composed of rooms using prng.
  */
 
-import { ROOM } from 'imp-names'
 import { Room } from 'rooms/room'
 import { VALUE_SCALE } from 'simulation/constants'
 import type { Obstacle } from 'simulation/obstacle'
-import { Perturbations } from 'simulation/perturbations'
 import type { Rectangle } from 'util/math-util'
 
 const nRooms = 4
@@ -38,15 +36,21 @@ const _bounds: Rectangle = ([
 export class Level {
   public readonly rooms: Array<Room>
   constructor() {
-    this.rooms = Array.from({ length: nRooms }, (_,roomIndex) => {
-      
+    this.rooms = Array.from({ length: nRooms }, (_, roomIndex) => {
       const roomOffset = VALUE_SCALE * (
         startPadding
         + (100 + roomPadding) * roomIndex
       )
       const roomBounds: Rectangle = [
-        0, roomOffset, 100 * VALUE_SCALE, 100 * VALUE_SCALE
+        0, roomOffset, 100 * VALUE_SCALE, 100 * VALUE_SCALE,
       ]
+
+      if (roomIndex === (nRooms - 1)) {
+        return Room.create('breakout-room', roomBounds)
+      }
+      else {
+        return Room.create('pong-room', roomBounds)
+      }
       return randomRoom(roomBounds)
     })
   }

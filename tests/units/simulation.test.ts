@@ -12,6 +12,26 @@ import { SHAPE_NAMES } from '../../src/simulation/shapes'
 import { Perturbations } from '../../src/simulation/perturbations'
 import { assertDisksInBounds } from '../test-util'
 
+import { DiskDiskLut } from '../../src/simulation/luts/imp/disk-disk-lut'
+import { ObstacleLut } from '../../src/simulation/luts/imp/obstacle-lut'
+import { DiskNormalLut } from '../../src/simulation/luts/imp/disk-normal-lut'
+import { DiskFrictionLut } from '../../src/simulation/luts/imp/disk-friction-lut'
+import { RaceLut } from '../../src/simulation/luts/imp/race-lut'
+
+import { BasicRoom } from '../../src/rooms/imp/basic-room'
+import { PongRoom } from '../../src/rooms/imp/pong-room'
+import { BreakoutRoom } from '../../src/rooms/imp/breakout-room'
+import { SorterRoom } from '../../src/rooms/imp/sorter-room'
+
+// excuse to import luts and have them registered
+const _luts = [
+  DiskDiskLut, ObstacleLut, DiskNormalLut, DiskFrictionLut, RaceLut,
+]
+const _rooms = [
+  BasicRoom, PongRoom, BreakoutRoom, SorterRoom,
+]
+
+
 const sim = new Simulation(0)
 const stepCount = 5e3
 
@@ -67,7 +87,7 @@ const expectedSnapshot = `
 
 
 
-[[612318,2474021,-26,1165],[764068,1981058,-803,438],[215322,1738456,1789,0],[340103,2227455,85,-519],[255923,2125235,-114,506],[737480,6850537,1855,-1860],[326110,2455461,990,1432],[951990,1726794,-9,1665],[318883,3146828,891,-599],[610096,3709394,856,944]]
+[[342940,3283317,180,-758],[960000,1047379,-810,121],[59800,1042708,360,614],[790470,781061,325,-123],[176987,677588,-310,677],[120820,1328400,180,720],[512217,457848,-107,82],[749130,455182,-90,37],[57100,2297829,450,-702],[258540,1615465,-180,685]]
 
 
 

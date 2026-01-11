@@ -10,11 +10,17 @@ import { DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
 import { DISK_PATTERNS } from 'gfx/disk-gfx'
+import { BreakoutRoom } from 'rooms/imp/breakout-room'
 
 export type RaceLeaf = Array<number>
 
 const nRaces = 1
 const maxStepsTotal = 1e6
+
+export type BranchDatum = {
+  midSeed: number
+  roomSeqs: Array<Array<number> | null>
+}
 
 export class RaceLut extends Lut<RaceLeaf> {
   static {
@@ -36,12 +42,15 @@ export class RaceLut extends Lut<RaceLeaf> {
     console.log('race-lut comput eleaf')
 
     const commonStartSeed = Perturbations.randomSeed()
-    const midSeeds = Array.from({ length: DISK_COUNT }, () => -1)
+    const branches: Array<BranchDatum> = Array.from(
+      { length: DISK_COUNT },
+      () => ({ midSeed: -1, roomSeqs: [] }),
+    )
 
     let _simCount = 0
     let _stepCount = 0
 
-    while (midSeeds.some(val => val === -1)) {
+    while (branches.some(({ midSeed }) => midSeed === -1)) {
       _simCount++
 
       // run common start
@@ -69,17 +78,39 @@ export class RaceLut extends Lut<RaceLeaf> {
       console.log(`got winning disk ${sim.winningDiskIndex}`
         + ` (${DISK_PATTERNS[sim.winningDiskIndex % DISK_PATTERNS.length]}) after ${_stepCount} steps`)
 
-      midSeeds[sim.winningDiskIndex] = branchSeed
+      // get breakout sequences
+      const roomSeqs: Array<Array<number> | null> = []
+      for (const [roomIndex, room] of sim.level.rooms.entries()) {
+        if (room instanceof BreakoutRoom) {
+          console.log(`breakout room at index ${roomIndex} had sequence ${room.hitSequence}`)
+          roomSeqs.push(room.hitSequence)
+        }
+        else {
+          roomSeqs.push(null)
+        }
+      }
+
+      branches[sim.winningDiskIndex] = {
+        midSeed: branchSeed,
+        roomSeqs: roomSeqs,
+      }
 
       if (_stepCount > maxStepsTotal) {
         break
       }
     }
 
+    // solve breakout room
+    const roomIndex = 3
+    const branchSequences = branches.map( branch => branch.roomSeqs[roomIndex] as Array<number>)
+    const breakoutSolution = BreakoutRoom.solve(branchSequences)
+    console.log(branchSequences)
+    console.log('solution:', breakoutSolution)
+
     // console.log(`found seeds for race with ${DISK_COUNT} disks`
     //   + ` after ${simCount} simulations and ${stepCount} total steps`)
 
-    const result = [commonStartSeed, ...midSeeds]
+    const result = [commonStartSeed, ...branches.map(({ midSeed }) => midSeed)]
 
     // console.log(result)
     return result

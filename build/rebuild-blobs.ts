@@ -10,6 +10,7 @@ import { LutEncoder } from '../src/simulation/lut-encoder'
 import { createHash } from 'crypto'
 import { Lut } from '../src/simulation/luts/lut'
 import { SHAPE_NAMES } from '../src/simulation/shapes'
+
 import { DiskDiskLut } from '../src/simulation/luts/imp/disk-disk-lut'
 import { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 import { DiskNormalLut } from '../src/simulation/luts/imp/disk-normal-lut'

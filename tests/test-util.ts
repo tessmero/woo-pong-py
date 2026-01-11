@@ -74,7 +74,8 @@ export function lookupIndex(tree: Tree<any>, index: Array<number>): Array<number
 }
 
 export function assertDisksInBounds(sim: Simulation) {
-  const { bounds, disks } = sim
+  const { disks, level } = sim
+  const { bounds } = level
   for (const { currentState } of disks) {
     const x = currentState.x
     const y = currentState.y
