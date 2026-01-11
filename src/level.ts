@@ -55,21 +55,6 @@ export class Level {
 
   get bounds(): Rectangle { return _bounds }
 
-  get roomBounds(): Array<Rectangle> {
-    const result: Array<Rectangle> = []
-    for (const [roomIndex, room] of this.rooms.entries()) {
-      const roomOffset = VALUE_SCALE * (
-        startPadding
-        + (100 + roomPadding) * roomIndex
-      )
-      result.push([
-        0, roomOffset,
-        100 * VALUE_SCALE, 100 * VALUE_SCALE,
-      ])
-    }
-    return result
-  }
-
   buildObstacles(): Array<Obstacle> {
     const result: Array<Obstacle> = []
     for (const [_roomIndex, room] of this.rooms.entries()) {
@@ -80,7 +65,8 @@ export class Level {
 }
 
 function randomRoom(bounds: Rectangle) {
-  const i = Perturbations.nextInt() >>> 0
-  const roomName = ROOM.NAMES[i % ROOM.NAMES.length]
-  return Room.create(roomName, bounds)
+  return Room.create('breakout-room', bounds)
+  // const i = Perturbations.nextInt() >>> 0
+  // const roomName = ROOM.NAMES[i % ROOM.NAMES.length]
+  // return Room.create(roomName, bounds)
 }

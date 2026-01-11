@@ -6,10 +6,13 @@
  */
 
 import { topConfig } from 'configs/imp/top-config'
+import { Graphics } from 'gfx/graphics'
+import { PinballWizard } from 'pinball-wizard'
+import { VALUE_SCALE } from 'simulation/constants'
 import { lerp } from 'util/math-util'
 
 export class Camera {
-  private pos = 0
+  public pos = 0
   private vel = 0
 
   public get drawOffset(): number {
@@ -20,7 +23,7 @@ export class Camera {
   private _idleCountdown = 0
   private _cameraFriction = 1e-3 // fraction of speed lost per ms
 
-  update(dt: number) {
+  update(dt: number, pinballWizard: PinballWizard) {
     if (this.isDragging) {
       // do nothing
     }
@@ -29,7 +32,8 @@ export class Camera {
     }
     else {
       // camera is idle
-      const targetPos = 100 * topConfig.flatConfig.roomIndex
+      const room = pinballWizard.activeSim.level.rooms[topConfig.flatConfig.roomIndex]
+      const targetPos = -room.bounds[1] / VALUE_SCALE
       this.pos = lerp(this.pos, targetPos, 1e-3 * dt)
     }
 

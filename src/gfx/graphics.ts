@@ -21,16 +21,6 @@ export class Graphics {
   static cvs = cvs
   static ctx = ctx
 
-  static drawCursor(pos: Vec2) {
-    const x = (Graphics.drawOffset[0] + pos[0]) * window.devicePixelRatio
-    const y = (Graphics.drawOffset[1] + pos[1]) * window.devicePixelRatio
-    ctx.fillStyle = 'rgba(100,100,100,.5)'
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.arc(x, y, 10, 0, twopi)
-    ctx.fill()
-  }
-
   static drawFinish(finish: Barrier) {
     ctx.fillStyle = 'rgba(0,255,0,0.5)'
     ctx.fillRect(...finish.xywh)
@@ -82,9 +72,12 @@ export class Graphics {
   }
 
   static drawOffset: Vec2 = [0, 0] // set in draw
-  static drawScale: number = 1 // set in draw
+
+  static drawSimScale: number = 1 // set in drawSim
   static drawSim(sim: Simulation, selectedDiskIndex: number) {
     const scale = Graphics.innerWidth / 100 / VALUE_SCALE
+    Graphics.drawSimScale = scale
+    // Graphics.drawScale = scale
 
     ctx.clearRect(0, 0, cvs.width, cvs.height)
     ctx.save()
@@ -107,6 +100,12 @@ export class Graphics {
     // }
     Graphics.drawFinish(sim.finish)
 
+    // // debug camera target height
+    // ctx.strokeStyle = 'green'
+    // ctx.lineWidth = 0.4 * VALUE_SCALE
+    // const camY = Graphics.drawOf
+    // ctx.strokeRect(...sim.level.bounds)
+
     // debug bounds
     ctx.strokeStyle = 'red'
     ctx.lineWidth = 0.4 * VALUE_SCALE
@@ -115,14 +114,15 @@ export class Graphics {
     // debug room bounds
     ctx.strokeStyle = 'blue'
     ctx.fillStyle = 'blue'
-    const textScale = 10
-    ctx.scale(textScale, textScale)
+    const gfxScale = 1 / 10 // extra scale factor needed to support text
+    ctx.scale(1 / gfxScale, 1 / gfxScale)
     ctx.font = `${1 * VALUE_SCALE}px serif`
-    ctx.lineWidth = 0.2 * VALUE_SCALE / textScale
+    ctx.lineWidth = 0.2 * VALUE_SCALE * gfxScale
     for (const room of sim.level.rooms) {
       const [x, y, w, h] = room.bounds
-      ctx.strokeRect(x / textScale, y / textScale, w / textScale, h / textScale)
-      ctx.fillText(room.name, x / textScale, y / textScale)
+      //console.log(`room bounds: ${JSON.stringify(room.bounds)}`)
+      ctx.strokeRect(x * gfxScale, y * gfxScale, w * gfxScale, h * gfxScale)
+      ctx.fillText(room.name, x * gfxScale, y * gfxScale)
     }
 
     ctx.restore()
@@ -131,5 +131,16 @@ export class Graphics {
     // ctx.strokeStyle = 'red'
     // ctx.lineWidth = 1
     // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
+  }
+
+  static drawCursor(pos: Vec2) {
+    //console.log(`cursor: ${JSON.stringify(pos.map(val => val * VALUE_SCALE))}`)
+    const x = (Graphics.drawOffset[0] + pos[0]) * window.devicePixelRatio
+    const y = (Graphics.drawOffset[1] + pos[1]) * window.devicePixelRatio
+    ctx.fillStyle = 'rgba(100,100,100,.5)'
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    ctx.arc(x, y, 10, 0, twopi)
+    ctx.fill()
   }
 }

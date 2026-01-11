@@ -26,6 +26,7 @@ export class Obstacle {
 
   isHidden = false
   isStatic = true
+  label: string | null = null
 
   constructor(
     readonly pos: Vec2,

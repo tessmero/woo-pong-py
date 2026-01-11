@@ -11,11 +11,11 @@ import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
 import { GUI } from 'imp-names'
-import { STEPS_BEFORE_BRANCH } from 'simulation/constants'
+import { STEPS_BEFORE_BRANCH, VALUE_SCALE } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
-import type { Vec2 } from 'util/math-util'
+import { rectContainsPoint, type Vec2 } from 'util/math-util'
 
 // can only be constructed once
 let didConstruct = false
@@ -85,7 +85,7 @@ export class PinballWizard {
       this.onResize()
     }
 
-    this.camera.update(dt)
+    this.camera.update(dt, this)
     Graphics.drawOffset[1] = this.camera.drawOffset
     Graphics.drawSim(this.activeSim, this.selectedDiskIndex)
 
@@ -118,10 +118,29 @@ export class PinballWizard {
     }
 
     // idleCountdown = IDLE_DELAY
-    const { drawOffset, drawScale } = Graphics
+    const { drawOffset, drawSimScale } = Graphics
 
-    this.mousePos[0] = (mousePos[0] - drawOffset[0]) / drawScale
-    this.mousePos[1] = (mousePos[1] - drawOffset[1]) / drawScale
+    this.mousePos[0] = (mousePos[0] - drawOffset[0])
+    this.mousePos[1] = (mousePos[1] - drawOffset[1])
+
+    // compute mouse pos in terms of simulation units
+    const simMouseX = mousePos[0] / drawSimScale * window.devicePixelRatio
+    const simMouseY = mousePos[1] / drawSimScale * window.devicePixelRatio - drawOffset[1] / drawSimScale
+
+    // add adjustment to simMouseY based on this.camera.pos
+
+    // // debug, position obstacle on mouse
+    // const obs = this.activeSim.obstacles.at(-1) as Obstacle
+    // obs.pos[0] = simMouseX
+    // obs.pos[1] = simMouseY
+
+    // debug identify hovered room
+    for (const [roomIndex, room] of this.activeSim.level.rooms.entries()) {
+      const bounds = room.bounds
+      if (rectContainsPoint(bounds, simMouseX, simMouseY)) {
+        console.log(`hoevered room ${roomIndex}`)
+      }
+    }
 
     // this.gui.move(this, this.mousePos)
 

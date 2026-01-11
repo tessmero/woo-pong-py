@@ -4,6 +4,7 @@
  * List of shape names and paths.
  */
 
+import { BOBRICK_HEIGHT, BOBRICK_WIDTH } from 'rooms/imp/breakout-room'
 import { VALUE_SCALE } from './constants'
 
 export const SHAPE_NAMES = [
@@ -35,7 +36,7 @@ export const SHAPE_PATHS: Record<ShapeName, string> = {
     10 * mediumRadius, 0.5 * mediumRadius, cornerRadius),
 
   breakoutbrick: generateRoundedRectPath(
-    3 * mediumRadius, 1 * mediumRadius, cornerRadius),
+    BOBRICK_WIDTH, BOBRICK_HEIGHT, cornerRadius),
 }
 
 export function generateRoundedRectPath(width: number, height: number, cornerRadius: number): string {
