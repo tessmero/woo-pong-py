@@ -33,7 +33,7 @@ export class Camera {
     else {
       // camera is idle
       const room = pinballWizard.activeSim.level.rooms[topConfig.flatConfig.roomIndex]
-      const targetPos = -room.bounds[1] / VALUE_SCALE
+      const targetPos = -room.bounds[1]
       this.pos = lerp(this.pos, targetPos, 1e-3 * dt)
     }
 

@@ -11,8 +11,10 @@ import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
 import { GUI } from 'imp-names'
-import { STEPS_BEFORE_BRANCH, VALUE_SCALE } from 'simulation/constants'
+import type { BreakoutRoom } from 'rooms/imp/breakout-room'
+import { DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
+import { Obstacle } from 'simulation/obstacle'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
 import { rectContainsPoint, type Vec2 } from 'util/math-util'
@@ -53,11 +55,17 @@ export class PinballWizard {
     }
     didInit = true
 
-    const seeds = Lut.create('race-lut').tree[0]
-    const commonStartSeed = seeds[0]
+    const race = Lut.create('race-lut').tree[0]
+    const commonStartSeed = race[0]
 
     this.activeSim = new Simulation(commonStartSeed)
-    this.activeSim.branchSeed = seeds[1]
+    this.activeSim.branchSeed = race[1]
+
+    const brickValuesStartIndex = 1 + DISK_COUNT
+    const room = this.activeSim.level.rooms.at(-1) as BreakoutRoom
+    for (let i = 0; i < 30; i++) {
+      room.breakoutBricks[i].label = `${race[i + brickValuesStartIndex]}`
+    }
 
     this.gui = Gui.create('playing-gui')
 
@@ -86,7 +94,7 @@ export class PinballWizard {
     }
 
     this.camera.update(dt, this)
-    Graphics.drawOffset[1] = this.camera.drawOffset
+    Graphics.drawOffset[1] = this.camera.drawOffset * Graphics.drawSimScale
     Graphics.drawSim(this.activeSim, this.selectedDiskIndex)
 
     // draw mouse pose
@@ -124,15 +132,15 @@ export class PinballWizard {
     this.mousePos[1] = (mousePos[1] - drawOffset[1])
 
     // compute mouse pos in terms of simulation units
-    const simMouseX = mousePos[0] / drawSimScale * window.devicePixelRatio
+    const simMouseX = mousePos[0] / drawSimScale * window.devicePixelRatio - drawOffset[0] / drawSimScale
     const simMouseY = mousePos[1] / drawSimScale * window.devicePixelRatio - drawOffset[1] / drawSimScale
 
     // add adjustment to simMouseY based on this.camera.pos
 
     // // debug, position obstacle on mouse
-    // const obs = this.activeSim.obstacles.at(-1) as Obstacle
-    // obs.pos[0] = simMouseX
-    // obs.pos[1] = simMouseY
+    const obs = this.activeSim.obstacles.at(-1) as Obstacle
+    obs.pos[0] = simMouseX
+    obs.pos[1] = simMouseY
 
     // debug identify hovered room
     for (const [roomIndex, room] of this.activeSim.level.rooms.entries()) {

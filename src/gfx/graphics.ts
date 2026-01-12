@@ -120,9 +120,16 @@ export class Graphics {
     ctx.lineWidth = 0.2 * VALUE_SCALE * gfxScale
     for (const room of sim.level.rooms) {
       const [x, y, w, h] = room.bounds
-      //console.log(`room bounds: ${JSON.stringify(room.bounds)}`)
+      // console.log(`room bounds: ${JSON.stringify(room.bounds)}`)
       ctx.strokeRect(x * gfxScale, y * gfxScale, w * gfxScale, h * gfxScale)
       ctx.fillText(room.name, x * gfxScale, y * gfxScale)
+    }
+
+    for (const obstacle of sim.obstacles) {
+      if (obstacle.label) {
+        const [x, y] = obstacle.pos
+        ctx.fillText(obstacle.label, x * gfxScale, y * gfxScale)
+      }
     }
 
     ctx.restore()
@@ -134,7 +141,7 @@ export class Graphics {
   }
 
   static drawCursor(pos: Vec2) {
-    //console.log(`cursor: ${JSON.stringify(pos.map(val => val * VALUE_SCALE))}`)
+    // console.log(`cursor: ${JSON.stringify(pos.map(val => val * VALUE_SCALE))}`)
     const x = (Graphics.drawOffset[0] + pos[0]) * window.devicePixelRatio
     const y = (Graphics.drawOffset[1] + pos[1]) * window.devicePixelRatio
     ctx.fillStyle = 'rgba(100,100,100,.5)'

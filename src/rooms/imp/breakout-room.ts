@@ -66,7 +66,7 @@ export class BreakoutRoom extends Room {
     this.hitSequence.push(brickIndex)
   }
 
-  private breakoutBricks: Array<Obstacle> = []
+  public breakoutBricks: Array<Obstacle> = []
 
   buildObstacles(): Array<Obstacle> {
     this.breakoutBricks = _obstacles.map(([pos, shapeName]) => new Obstacle(

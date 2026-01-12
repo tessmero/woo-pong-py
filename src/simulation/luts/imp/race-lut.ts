@@ -22,12 +22,17 @@ export type BranchDatum = {
   roomSeqs: Array<Array<number> | null>
 }
 
+const leafLength
+  = 1 // start seed
+    + DISK_COUNT // mid seed for each disk
+    + 30 // value for each breakout brick
+
 export class RaceLut extends Lut<RaceLeaf> {
   static {
     Lut.register('race-lut', {
       factory: () => new RaceLut(),
       depth: 1,
-      leafLength: 1 + DISK_COUNT, // 1 start seed + mid seed for each disk
+      leafLength,
     })
   }
 
@@ -102,7 +107,7 @@ export class RaceLut extends Lut<RaceLeaf> {
 
     // solve breakout room
     const roomIndex = 3
-    const branchSequences = branches.map( branch => branch.roomSeqs[roomIndex] as Array<number>)
+    const branchSequences = branches.map(branch => branch.roomSeqs[roomIndex] as Array<number>)
     const breakoutSolution = BreakoutRoom.solve(branchSequences)
     console.log(branchSequences)
     console.log('solution:', breakoutSolution)
@@ -110,7 +115,15 @@ export class RaceLut extends Lut<RaceLeaf> {
     // console.log(`found seeds for race with ${DISK_COUNT} disks`
     //   + ` after ${simCount} simulations and ${stepCount} total steps`)
 
-    const result = [commonStartSeed, ...branches.map(({ midSeed }) => midSeed)]
+    const result = [
+      commonStartSeed,
+      ...branches.map(({ midSeed }) => midSeed),
+      ...breakoutSolution,
+    ]
+
+    if (result.length !== leafLength) {
+      throw new Error(`result length (${result.length}) doesn't match leaf length ${leafLength}`)
+    }
 
     // console.log(result)
     return result
