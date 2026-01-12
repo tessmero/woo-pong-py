@@ -28,16 +28,16 @@ const topConfigTree = {
 
     // speed up sim for automated testing
     scrollSpeed: {
-      value: 1,
-      min: 1,
-      max: 1000,
+      value: -2000,
+      min: -10000,
+      max: 10000,
       step: 1,
       onChange: () => topConfig.refreshConfig(),
     },
 
     roomIndex: {
       value: 0,
-      min: 0,
+      min: -1,
       max: 10,
       step: 1,
       onChange: () => topConfig.refreshConfig(),

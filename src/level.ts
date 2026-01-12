@@ -5,18 +5,17 @@
  */
 
 import { Room } from 'rooms/room'
-import { VALUE_SCALE } from 'simulation/constants'
+import { ROOM_COUNT, VALUE_SCALE } from 'simulation/constants'
 import type { Obstacle } from 'simulation/obstacle'
 import type { Rectangle } from 'util/math-util'
 
-const nRooms = 4
 const roomPadding = 10 // space between 100x100 rooms
 const startPadding = 10
 const endPadding = 10
 
 const totalHeight = startPadding
-  + 100 * nRooms
-  + roomPadding * (nRooms - 1)
+  + 100 * ROOM_COUNT
+  + roomPadding * (ROOM_COUNT - 1)
   + endPadding
 
 const finishThickness = 10
@@ -36,7 +35,7 @@ const _bounds: Rectangle = ([
 export class Level {
   public readonly rooms: Array<Room>
   constructor() {
-    this.rooms = Array.from({ length: nRooms }, (_, roomIndex) => {
+    this.rooms = Array.from({ length: ROOM_COUNT }, (_, roomIndex) => {
       const roomOffset = VALUE_SCALE * (
         startPadding
         + (100 + roomPadding) * roomIndex
@@ -45,7 +44,7 @@ export class Level {
         0, roomOffset, 100 * VALUE_SCALE, 100 * VALUE_SCALE,
       ]
 
-      if (roomIndex === (nRooms - 1)) {
+      if (roomIndex === (ROOM_COUNT - 1)) {
         return Room.create('breakout-room', roomBounds)
       }
       else {

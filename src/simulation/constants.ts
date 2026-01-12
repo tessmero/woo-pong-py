@@ -6,6 +6,8 @@
 
 export const DISK_COUNT = 10
 
+export const ROOM_COUNT = 4
+
 export const RESTITUTION = 0.9
 
 export const STEP_DURATION = 4

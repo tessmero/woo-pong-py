@@ -14,7 +14,6 @@ import { GUI } from 'imp-names'
 import type { BreakoutRoom } from 'rooms/imp/breakout-room'
 import { DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
-import { Obstacle } from 'simulation/obstacle'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
 import { rectContainsPoint, type Vec2 } from 'util/math-util'
@@ -94,7 +93,8 @@ export class PinballWizard {
     }
 
     this.camera.update(dt, this)
-    Graphics.drawOffset[1] = this.camera.drawOffset * Graphics.drawSimScale
+    Graphics.drawOffset[1] = this.camera.pos * Graphics.drawSimScale
+      + Graphics.cvs.height / 2
     Graphics.drawSim(this.activeSim, this.selectedDiskIndex)
 
     // draw mouse pose
@@ -135,18 +135,16 @@ export class PinballWizard {
     const simMouseX = mousePos[0] / drawSimScale * window.devicePixelRatio - drawOffset[0] / drawSimScale
     const simMouseY = mousePos[1] / drawSimScale * window.devicePixelRatio - drawOffset[1] / drawSimScale
 
-    // add adjustment to simMouseY based on this.camera.pos
-
-    // // debug, position obstacle on mouse
-    const obs = this.activeSim.obstacles.at(-1) as Obstacle
-    obs.pos[0] = simMouseX
-    obs.pos[1] = simMouseY
+    // // // debug, position obstacle on mouse
+    // const obs = this.activeSim.obstacles.at(-1) as Obstacle
+    // obs.pos[0] = simMouseX
+    // obs.pos[1] = simMouseY
 
     // debug identify hovered room
     for (const [roomIndex, room] of this.activeSim.level.rooms.entries()) {
       const bounds = room.bounds
       if (rectContainsPoint(bounds, simMouseX, simMouseY)) {
-        console.log(`hoevered room ${roomIndex}`)
+        console.log(`hovered room ${roomIndex}`)
       }
     }
 

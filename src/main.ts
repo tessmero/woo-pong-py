@@ -17,6 +17,7 @@ import { GUI, LUT } from 'imp-names'
 import type { ShapeName } from 'simulation/shapes'
 import { SHAPE_PATHS } from 'simulation/shapes'
 import { Gui } from 'guis/gui'
+import { Graphics } from 'gfx/graphics'
 
 async function main() {
   // const layeredViewport = new LayeredViewport()
@@ -34,25 +35,31 @@ async function main() {
   // })
 
   const rawMousePos: Vec2 = [0, 0]
-  window.addEventListener('pointermove', (e) => {
+  Graphics.cvs.addEventListener('pointermove', (e) => {
     rawMousePos[0] = e.clientX
     rawMousePos[1] = e.clientY
     pinballWizard.move(rawMousePos)
   })
 
-  window.addEventListener('pointerdown', (e) => {
+  Graphics.cvs.addEventListener('pointerdown', (e) => {
     rawMousePos[0] = e.clientX
     rawMousePos[1] = e.clientY
     pinballWizard.down(rawMousePos)
   })
 
-  window.addEventListener('pointerup', (e) => {
+  Graphics.cvs.addEventListener('pointerup', (e) => {
     rawMousePos[0] = e.clientX
     rawMousePos[1] = e.clientY
     pinballWizard.up(rawMousePos)
   })
 
-  window.addEventListener('wheel', (e) => {
+  Graphics.cvs.addEventListener('pointerleave', (e) => {
+    rawMousePos[0] = e.clientX
+    rawMousePos[1] = e.clientY
+    pinballWizard.up(rawMousePos)
+  })
+
+  Graphics.cvs.addEventListener('wheel', (e) => {
     pinballWizard.camera.scroll(e.deltaY)
   })
 
