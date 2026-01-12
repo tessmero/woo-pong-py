@@ -29,6 +29,12 @@ export const LUT_BLOBS = {
     "xRad": 100,
     "yRad": 280
   },
+  "WEDGE": {
+    "url": "/luts/wedge-c6dbc1de72580cda.bin",
+    "hash": "c6dbc1de72580cdaed1a9aa568cbe767b6758fa16c993440816fdd8a66b4e710",
+    "xRad": 110,
+    "yRad": 70
+  },
   "DISK_FRICTION_LUT": {
     "url": "/luts/disk-friction-lut-aea0a0c6df6bd93f.bin",
     "hash": "aea0a0c6df6bd93fab5ff1e6a94629554cedcf9bd27e34358318a92b22e8a5c5"
@@ -42,7 +48,7 @@ export const LUT_BLOBS = {
     "hash": "3e09f6ca518cc5bd24bf59a642dd802718959b4ba1d465a04be26efa5976edd9"
   },
   "RACE_LUT": {
-    "url": "/luts/race-lut-9d911161f719b2d9.bin",
-    "hash": "9d911161f719b2d96270f90e9bae35adc7991980559816f8aa90124e3f62f9c9"
+    "url": "/luts/race-lut-b35f7fad37dcd777.bin",
+    "hash": "b35f7fad37dcd77786653080e52b2f59c8cc4311bbd8888670ff499c016d3170"
   }
 };

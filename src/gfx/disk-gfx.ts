@@ -71,17 +71,11 @@ export const DISK_PATTERNS = [
 
 export type DiskPattern = (typeof DISK_PATTERNS)[number]
 
-type Filler = (
-  ctx: CanvasRenderingContext2D,
-  x: number, y: number, radius: number,
-) => void
-
-const stripeThickness = DISK_RADIUS / 2
-
 function createHorizontalStripePattern(
-  stripeColor = '#000', bgColor = '#fff', 
-  stripeHeight = 1 * VALUE_SCALE, gapHeight = 1 * VALUE_SCALE
+  stripeColor = '#000', bgColor = '#fff',
+  stripeHeight = 1 * VALUE_SCALE, gapHeight = 1 * VALUE_SCALE,
 ) {
+  if(typeof document === 'undefined') return 'white'
   const patternCanvas = document.createElement('canvas')
   const totalHeight = stripeHeight + gapHeight
 
@@ -102,7 +96,6 @@ function createHorizontalStripePattern(
   return pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
 }
 
-
 // NEW: vertical stripes for v-stripe
 function createVerticalStripePattern(
   stripeColor = '#000',
@@ -110,6 +103,7 @@ function createVerticalStripePattern(
   stripeWidth = 1 * VALUE_SCALE,
   gapWidth = 1 * VALUE_SCALE,
 ) {
+  if(typeof document === 'undefined') return 'white'
   const patternCanvas = document.createElement('canvas')
   const totalWidth = stripeWidth + gapWidth
 
@@ -130,7 +124,6 @@ function createVerticalStripePattern(
   return pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
 }
 
-
 const PATTERN_FILLERS: Record<DiskPattern, CanvasPattern | string> = {
   'black': 'black',
   'white': 'white',
@@ -143,10 +136,9 @@ function fillDiskPattern(
   x: number, y: number, radius: number,
   pattern: DiskPattern,
 ) {
-    ctx.fillStyle = PATTERN_FILLERS[pattern]
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.arc(x, y, radius, 0, twopi)
-    ctx.fill()
-  
+  ctx.fillStyle = PATTERN_FILLERS[pattern]
+  ctx.beginPath()
+  ctx.moveTo(x, y)
+  ctx.arc(x, y, radius, 0, twopi)
+  ctx.fill()
 }

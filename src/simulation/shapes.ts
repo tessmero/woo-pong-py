@@ -13,6 +13,7 @@ export const SHAPE_NAMES = [
   'breakoutbrick',
   'diamond',
   'sine',
+  'wedge',
 ] as const
 export type ShapeName = (typeof SHAPE_NAMES)[number]
 
@@ -59,6 +60,24 @@ export const SHAPE_PATHS: Record<ShapeName, string> = {
     mediumRadius * 0.4, // horizontal amplitude of the sine
     5                   // number of wave periods along vertical axis
   ),
+  // Wide right triangle wedge with rounded corners,
+  // aligned/centered similarly to breakoutbrick.
+  wedge: generateRoundedRightTrianglePath(
+    BOBRICK_WIDTH,
+    BOBRICK_HEIGHT,
+    cornerRadius
+  ),
+}
+
+export function generateRoundedRightTrianglePath(width: number, height: number, r: number): string {
+  const hw = width / 2, hh = height / 2
+  return `M${-hw + r},${hh} `
+    + `L${hw - r},${hh} `
+    + `Q${hw},${hh} ${hw},${hh - r} `
+    + `L${hw},${-hh + r} `
+    + `Q${hw},${-hh} ${hw - r},${-hh} `
+    + `L${-hw + r},${hh - r} `
+    + `Q${-hw},${hh} ${-hw + r},${hh} Z`
 }
 
 export function generateRoundedRectPath(width: number, height: number, cornerRadius: number): string {
