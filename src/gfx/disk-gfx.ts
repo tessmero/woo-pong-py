@@ -78,111 +78,64 @@ type Filler = (
 
 const stripeThickness = DISK_RADIUS / 2
 
-const PATTERN_FILLERS: Record<DiskPattern, Filler> = {
-  'black': (ctx, x, y, radius) => {
-    ctx.fillStyle = 'black'
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.arc(x, y, radius, 0, twopi)
-    ctx.fill()
-  },
-  'white': (ctx, x, y, radius) => {
-    ctx.fillStyle = 'white'
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.arc(x, y, radius, 0, twopi)
-    ctx.fill()
-  },
-  'v-stripe': (ctx, x, y, radius) => {
-    // // Draw a white circle background
-    // ctx.fillStyle = 'white'
-    // ctx.beginPath()
-    // ctx.moveTo(x, y)
-    // ctx.arc(x, y, radius, 0, twopi)
-    // ctx.fill()
+function createHorizontalStripePattern(
+  stripeColor = '#000', bgColor = '#fff', 
+  stripeHeight = 1 * VALUE_SCALE, gapHeight = 1 * VALUE_SCALE
+) {
+  const patternCanvas = document.createElement('canvas')
+  const totalHeight = stripeHeight + gapHeight
 
-    // Draw vertical black stripes, anchored to world coordinates
-    const stripeWidth = stripeThickness
-    const left = x - radius
-    // const top = y - radius
-    const right = x + radius
-    // const bottom = y + radius
-    // Anchor stripes to world coordinates (stripe origin at x=0)
-    const firstStripeX = left - ((left % (2 * stripeWidth) + 2 * stripeWidth) % (2 * stripeWidth))
-    for (let sx = firstStripeX; sx < right; sx += 2 * stripeWidth) {
-      ctx.fillStyle = 'black'
-      // For each vertical stripe, clip the corners to the circle
-      // For each y (top and bottom), find the intersection with the circle for sx and sx+stripeWidth
-      // Only draw if the intersection exists (inside the circle)
-      const x0 = Math.max(sx, left)
-      const x1 = Math.min(sx + stripeWidth, right)
-      // For each x0, x1, compute the y-range inside the circle
-      ctx.beginPath()
-      for (const xi of [x0, x1]) {
-        // Top intersection
-        const dx = xi - x
-        if (Math.abs(dx) <= radius) {
-          const dy = Math.sqrt(radius * radius - dx * dx)
-          ctx.moveTo(xi, y - dy)
-          ctx.lineTo(xi, y + dy)
-        }
-      }
-      // Connect the four corners (top x0, top x1, bottom x1, bottom x0)
-      // Only if both x0 and x1 are inside the circle
-      const dx0 = x0 - x
-      const dx1 = x1 - x
-      if (Math.abs(dx0) <= radius && Math.abs(dx1) <= radius) {
-        const dy0 = Math.sqrt(radius * radius - dx0 * dx0)
-        const dy1 = Math.sqrt(radius * radius - dx1 * dx1)
-        ctx.beginPath()
-        ctx.moveTo(x0, y - dy0)
-        ctx.lineTo(x1, y - dy1)
-        ctx.lineTo(x1, y + dy1)
-        ctx.lineTo(x0, y + dy0)
-        ctx.closePath()
-        ctx.fill()
-      }
-    }
-  },
-  'h-stripe': (ctx, x, y, radius) => {
-    // // Draw a white circle background
-    // ctx.fillStyle = 'white'
-    // ctx.beginPath()
-    // ctx.moveTo(x, y)
-    // ctx.arc(x, y, radius, 0, twopi)
-    // ctx.fill()
+  patternCanvas.width = 1 // Only need 1px width for horizontal stripes
+  patternCanvas.height = totalHeight
 
-    // Draw horizontal black stripes, anchored to world coordinates
-    const stripeWidth = stripeThickness
-    // const left = x - radius
-    const top = y - radius
-    // const right = x + radius
-    const bottom = y + radius
-    // Anchor stripes to world coordinates (stripe origin at y=0)
-    const firstStripeY = top - ((top % (2 * stripeWidth) + 2 * stripeWidth) % (2 * stripeWidth))
-    for (let sy = firstStripeY; sy < bottom; sy += 2 * stripeWidth) {
-      ctx.fillStyle = 'black'
-      // For each horizontal stripe, clip the corners to the circle
-      // For each x (left and right), find the intersection with the circle for sy and sy+stripeWidth
-      // Only draw if the intersection exists (inside the circle)
-      const y0 = Math.max(sy, top)
-      const y1 = Math.min(sy + stripeWidth, bottom)
-      // For each y0, y1, compute the x-range inside the circle
-      const dy0 = y0 - y
-      const dy1 = y1 - y
-      if (Math.abs(dy0) <= radius && Math.abs(dy1) <= radius) {
-        const dx0 = Math.sqrt(radius * radius - dy0 * dy0)
-        const dx1 = Math.sqrt(radius * radius - dy1 * dy1)
-        ctx.beginPath()
-        ctx.moveTo(x - dx0, y0)
-        ctx.lineTo(x + dx0, y0)
-        ctx.lineTo(x + dx1, y1)
-        ctx.lineTo(x - dx1, y1)
-        ctx.closePath()
-        ctx.fill()
-      }
-    }
-  },
+  const pctx = patternCanvas.getContext('2d') as CanvasRenderingContext2D
+
+  // Background (gap)
+  pctx.fillStyle = bgColor
+  pctx.fillRect(0, 0, patternCanvas.width, patternCanvas.height)
+
+  // Stripe at the top
+  pctx.fillStyle = stripeColor
+  pctx.fillRect(0, 0, patternCanvas.width, stripeHeight)
+
+  // Use this canvas as a repeating pattern
+  return pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
+}
+
+
+// NEW: vertical stripes for v-stripe
+function createVerticalStripePattern(
+  stripeColor = '#000',
+  bgColor = '#fff',
+  stripeWidth = 1 * VALUE_SCALE,
+  gapWidth = 1 * VALUE_SCALE,
+) {
+  const patternCanvas = document.createElement('canvas')
+  const totalWidth = stripeWidth + gapWidth
+
+  // Only need full pattern width; 1px height is enough
+  patternCanvas.width = totalWidth
+  patternCanvas.height = 1
+
+  const pctx = patternCanvas.getContext('2d') as CanvasRenderingContext2D
+
+  // Background (gap)
+  pctx.fillStyle = bgColor
+  pctx.fillRect(0, 0, patternCanvas.width, patternCanvas.height)
+
+  // Stripe on the left
+  pctx.fillStyle = stripeColor
+  pctx.fillRect(0, 0, stripeWidth, patternCanvas.height)
+
+  return pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
+}
+
+
+const PATTERN_FILLERS: Record<DiskPattern, CanvasPattern | string> = {
+  'black': 'black',
+  'white': 'white',
+  'v-stripe': createVerticalStripePattern(),
+  'h-stripe': createHorizontalStripePattern(),
 }
 
 function fillDiskPattern(
@@ -190,5 +143,10 @@ function fillDiskPattern(
   x: number, y: number, radius: number,
   pattern: DiskPattern,
 ) {
-  PATTERN_FILLERS[pattern](ctx, x, y, radius)
+    ctx.fillStyle = PATTERN_FILLERS[pattern]
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    ctx.arc(x, y, radius, 0, twopi)
+    ctx.fill()
+  
 }
