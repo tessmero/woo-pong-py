@@ -14,10 +14,10 @@ import type { Vec2 } from 'util/math-util'
 
 const _obstacles: Array<[Vec2, ShapeName]> = []
 const obsSpace = 40
-let y = 0
-while (y < 100) {
-  _obstacles.push([[50, y] as Vec2, 'roundrect'])
-  y += obsSpace
+let x = 0
+while (x < 100) {
+  _obstacles.push([[x, 50] as Vec2, 'sine'])
+  x += obsSpace
 }
 
 export class BasicRoom extends Room {

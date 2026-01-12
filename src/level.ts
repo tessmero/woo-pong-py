@@ -4,9 +4,11 @@
  * Construct level composed of rooms using prng.
  */
 
+import { ROOM } from 'imp-names'
 import { Room } from 'rooms/room'
 import { ROOM_COUNT, VALUE_SCALE } from 'simulation/constants'
 import type { Obstacle } from 'simulation/obstacle'
+import { Perturbations } from 'simulation/perturbations'
 import type { Rectangle } from 'util/math-util'
 
 const roomPadding = 10 // space between 100x100 rooms
@@ -44,13 +46,7 @@ export class Level {
         0, roomOffset, 100 * VALUE_SCALE, 100 * VALUE_SCALE,
       ]
 
-      if (roomIndex === (ROOM_COUNT - 1)) {
-        return Room.create('breakout-room', roomBounds)
-      }
-      else {
-        return Room.create('pong-room', roomBounds)
-      }
-      return randomRoom(roomBounds)
+      return randomRoom(roomIndex, roomBounds)
     })
   }
 
@@ -67,9 +63,18 @@ export class Level {
   }
 }
 
-function randomRoom(bounds: Rectangle) {
-  return Room.create('breakout-room', bounds)
-  // const i = Perturbations.nextInt() >>> 0
-  // const roomName = ROOM.NAMES[i % ROOM.NAMES.length]
-  // return Room.create(roomName, bounds)
+function randomRoom(roomIndex: number, bounds: Rectangle) {
+  // second-to-last room is always breakout
+  if (roomIndex === ROOM_COUNT - 2) {
+    return Room.create('breakout-room', bounds)
+  }
+
+  const i = Perturbations.nextInt() >>> 0
+  let roomName = ROOM.NAMES[i % ROOM.NAMES.length]
+
+  // prevent multiple breakout rooms
+  if (roomName === 'breakout-room') {
+    roomName = 'basic-room'
+  }
+  return Room.create(roomName, bounds)
 }

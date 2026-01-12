@@ -11,12 +11,12 @@ import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
 import { GUI } from 'imp-names'
-import type { BreakoutRoom } from 'rooms/imp/breakout-room'
+import { BreakoutRoom } from 'rooms/imp/breakout-room'
 import { DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
-import { rectContainsPoint, type Vec2 } from 'util/math-util'
+import { type Vec2 } from 'util/math-util'
 
 // can only be constructed once
 let didConstruct = false
@@ -61,9 +61,11 @@ export class PinballWizard {
     this.activeSim.branchSeed = race[1]
 
     const brickValuesStartIndex = 1 + DISK_COUNT
-    const room = this.activeSim.level.rooms.at(-1) as BreakoutRoom
-    for (let i = 0; i < 30; i++) {
-      room.breakoutBricks[i].label = `${race[i + brickValuesStartIndex]}`
+    const room = this.activeSim.level.rooms.find(room => 'breakoutBricks' in room) as BreakoutRoom
+    if (room) {
+      for (let i = 0; i < 30; i++) {
+        room.breakoutBricks[i].label = `${race[i + brickValuesStartIndex]}`
+      }
     }
 
     this.gui = Gui.create('playing-gui')
@@ -140,13 +142,13 @@ export class PinballWizard {
     // obs.pos[0] = simMouseX
     // obs.pos[1] = simMouseY
 
-    // debug identify hovered room
-    for (const [roomIndex, room] of this.activeSim.level.rooms.entries()) {
-      const bounds = room.bounds
-      if (rectContainsPoint(bounds, simMouseX, simMouseY)) {
-        console.log(`hovered room ${roomIndex}`)
-      }
-    }
+    // // debug identify hovered room
+    // for (const [roomIndex, room] of this.activeSim.level.rooms.entries()) {
+    //   const bounds = room.bounds
+    //   if (rectContainsPoint(bounds, simMouseX, simMouseY)) {
+    //     console.log(`hovered room ${roomIndex}`)
+    //   }
+    // }
 
     // this.gui.move(this, this.mousePos)
 

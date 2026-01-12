@@ -11,14 +11,23 @@ export const SHAPE_NAMES = [
   // 'square', 'circle', 'triangle',
   'roundrect',
   'breakoutbrick',
+  'diamond',
+  'sine',
 ] as const
 export type ShapeName = (typeof SHAPE_NAMES)[number]
 
 const mediumRadius = 5 * VALUE_SCALE
 const cornerRadius = 1 * VALUE_SCALE
 
-export const SHAPE_PATHS: Record<ShapeName, string> = {
+function scaleSvgPath(path: string, scale: number): string {
+  // This function scales all numbers in the SVG path by the given scale factor.
+  // It matches numbers (including decimals, negatives, and exponents) and multiplies them.
+  return path.replace(/-?\d*\.?\d+(?:e[+-]?\d+)?/gi, (num) => {
+    return String(parseFloat(num) * scale)
+  })
+}
 
+export const SHAPE_PATHS: Record<ShapeName, string> = {
   // square: `M${-mediumRadius},${mediumRadius} `
   //   + `L${mediumRadius},${mediumRadius} `
   //   + `L${mediumRadius},${-mediumRadius} `
@@ -37,6 +46,19 @@ export const SHAPE_PATHS: Record<ShapeName, string> = {
 
   breakoutbrick: generateRoundedRectPath(
     BOBRICK_WIDTH, BOBRICK_HEIGHT, cornerRadius),
+
+  diamond: scaleSvgPath(
+    `M197.6 42.4 42.4 197.6a60 60 0 0 0 0 84.8l155.2 155.2a60 60 0 0 0 84.8 0l155.2-155.2a60 60 0 0 0 0-84.8L282.4 42.4a60 60 0 0 0-84.8 0Z`,
+    VALUE_SCALE / 40
+  ),
+
+  // Long vertical capsule with 5 sine periods along its length.
+  sine: generateSineCapsulePath(
+    2 * mediumRadius,   // approximate width
+    10 * mediumRadius,  // approximate height
+    mediumRadius * 0.4, // horizontal amplitude of the sine
+    5                   // number of wave periods along vertical axis
+  ),
 }
 
 export function generateRoundedRectPath(width: number, height: number, cornerRadius: number): string {
@@ -52,4 +74,68 @@ export function generateRoundedRectPath(width: number, height: number, cornerRad
     + `Q${-halfWidth},${-halfHeight} ${-halfWidth},${-halfHeight + cornerRadius} `
     + `L${-halfWidth},${halfHeight - cornerRadius} `
     + `Q${-halfWidth},${halfHeight} ${-halfWidth + cornerRadius},${halfHeight} Z`
+}
+
+/**
+ * Generate a vertical capsule where the left and right sides are sine waves.
+ * The capsule is centered at (0,0) and extends from -height/2 to +height/2 in y.
+ * There are `periods` full sine periods along the height.
+ */
+export function generateSineCapsulePath(
+  width: number,
+  height: number,
+  amplitude: number,
+  periods: number,
+  segmentsPerPeriod: number = 16,
+): string {
+  const halfWidth = width / 2
+  const halfHeight = height / 2
+
+  // Total segments along one side.
+  const totalSegments = periods * segmentsPerPeriod
+  const dy = height / totalSegments
+  const omega = 2 * Math.PI * periods / height
+
+  const leftPoints: { x: number; y: number }[] = []
+  const rightPoints: { x: number; y: number }[] = []
+
+  // Generate points from bottom (-halfHeight) to top (+halfHeight).
+  for (let i = 0; i <= totalSegments; i++) {
+    const y = -halfHeight + i * dy
+    const phase = omega * (y + halfHeight) // 0 at bottom, 2π*periods at top
+
+    const offset = Math.sin(phase) * amplitude
+
+    // Left side is centered at -halfWidth, right side at +halfWidth.
+    leftPoints.push({ x: -halfWidth + offset, y })
+    rightPoints.push({ x: halfWidth + offset, y })
+  }
+
+  // Build path: start at bottom of left side, go up, then across top, down right, and across bottom.
+  const parts: string[] = []
+
+  // Move to first left point.
+  const firstLeft = leftPoints[0]
+  parts.push(`M${firstLeft.x},${firstLeft.y}`)
+
+  // Left side up.
+  for (let i = 1; i < leftPoints.length; i++) {
+    const p = leftPoints[i]
+    parts.push(`L${p.x},${p.y}`)
+  }
+
+  // Top connection: from last left to last right.
+  const lastRight = rightPoints[rightPoints.length - 1]
+  parts.push(`L${lastRight.x},${lastRight.y}`)
+
+  // Right side down.
+  for (let i = rightPoints.length - 2; i >= 0; i--) {
+    const p = rightPoints[i]
+    parts.push(`L${p.x},${p.y}`)
+  }
+
+  // Close along bottom (implicit line back to firstLeft).
+  parts.push('Z')
+
+  return parts.join(' ')
 }

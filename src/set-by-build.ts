@@ -17,6 +17,18 @@ export const LUT_BLOBS = {
     "xRad": 110,
     "yRad": 70
   },
+  "DIAMOND": {
+    "url": "/luts/diamond-f6cea1844d983884.bin",
+    "hash": "f6cea1844d983884a9503197cad197c44a6029b290a6c9d0ec67f5810325a497",
+    "xRad": 143,
+    "yRad": 143
+  },
+  "SINE": {
+    "url": "/luts/sine-61b3b9c76a611f22.bin",
+    "hash": "61b3b9c76a611f229688a18678d31681073c3f831b3e645e7c8ffed5b8144f4e",
+    "xRad": 100,
+    "yRad": 280
+  },
   "DISK_FRICTION_LUT": {
     "url": "/luts/disk-friction-lut-aea0a0c6df6bd93f.bin",
     "hash": "aea0a0c6df6bd93fab5ff1e6a94629554cedcf9bd27e34358318a92b22e8a5c5"
@@ -30,7 +42,7 @@ export const LUT_BLOBS = {
     "hash": "3e09f6ca518cc5bd24bf59a642dd802718959b4ba1d465a04be26efa5976edd9"
   },
   "RACE_LUT": {
-    "url": "/luts/race-lut-2c819471c00cf179.bin",
-    "hash": "2c819471c00cf1795439528b602919db5f1fab8b6dfd750190afe4d905c68091"
+    "url": "/luts/race-lut-9d911161f719b2d9.bin",
+    "hash": "9d911161f719b2d96270f90e9bae35adc7991980559816f8aa90124e3f62f9c9"
   }
 };
