@@ -16,7 +16,7 @@ const _obstacles: Array<[Vec2, ShapeName]> = []
 const obsSpace = 40
 let x = 0
 while (x < 100) {
-  _obstacles.push([[x, 50] as Vec2, 'diamond'])
+  _obstacles.push([[x, 50] as Vec2, 'star'])
   x += obsSpace
 }
 

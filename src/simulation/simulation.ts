@@ -114,6 +114,12 @@ export class Simulation {
     for (const [diskIndex, disk] of this.disks.entries()) {
       disk.advance(this.obstacles)
       disk.pushInBounds(this.level.bounds)
+
+      // check if bounced
+      //if (disk.currentState[2] !== disk.nextState[2] || disk.currentState[3] !== disk.nextState[3]) {
+        Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
+      //}
+
       disk.nextState.dy += 1 // gravity
 
       if ((this.winningDiskIndex === -1)
@@ -122,8 +128,6 @@ export class Simulation {
         // console.log(`disk index ${diskIndex} won after ${this._stepCount} steps`)
         this.winningDiskIndex = diskIndex
       }
-
-      // Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
     }
 
     // // randomly blink inner walls
@@ -134,7 +138,7 @@ export class Simulation {
 
     Disk.flushStates(this.disks) // commit updates after collisions
 
-    // Disk.updateHistory(this.disks) // add to graphical tail
+    Disk.updateHistory(this.disks) // add to graphical tail
 
     if (this._stepCount === (STEPS_BEFORE_BRANCH) && this.branchSeed !== -1) {
       // console.log('set mid seed')

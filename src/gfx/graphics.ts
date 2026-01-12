@@ -86,7 +86,7 @@ export class Graphics {
     ctx.scale(scale, scale)
     ctx.lineWidth = VALUE_SCALE
 
-    Disk.updateHistory(sim.disks) // add to graphical tail
+    // Disk.updateHistory(sim.disks) // add to graphical tail
 
     for (const [diskIndex, disk] of sim.disks.entries()) {
       const isSelected = (diskIndex === selectedDiskIndex)
@@ -112,32 +112,33 @@ export class Graphics {
     ctx.lineWidth = 0.4 * VALUE_SCALE
     ctx.strokeRect(...sim.level.bounds)
 
-    // debug room bounds
-    ctx.strokeStyle = 'blue'
-    ctx.fillStyle = 'blue'
-    const gfxScale = 1 / 10 // extra scale factor needed to support text
-    ctx.scale(1 / gfxScale, 1 / gfxScale)
-    ctx.font = `${1 * VALUE_SCALE}px serif`
-    ctx.lineWidth = 0.2 * VALUE_SCALE * gfxScale
-    for (const room of sim.level.rooms) {
-      const [x, y, w, h] = room.bounds
-      // console.log(`room bounds: ${JSON.stringify(room.bounds)}`)
-      ctx.strokeRect(x * gfxScale, y * gfxScale, w * gfxScale, h * gfxScale)
+    // // debug room bounds
+    // ctx.strokeStyle = 'blue'
+    // ctx.fillStyle = 'blue'
+    // const gfxScale = 1 / 10 // extra scale factor needed to support text
+    // ctx.scale(1 / gfxScale, 1 / gfxScale)
+    // ctx.font = `${1 * VALUE_SCALE}px serif`
+    // ctx.lineWidth = 0.2 * VALUE_SCALE * gfxScale
+    // for (const room of sim.level.rooms) {
+    //   const [x, y, w, h] = room.bounds
+    //   // console.log(`room bounds: ${JSON.stringify(room.bounds)}`)
+    //   ctx.strokeRect(x * gfxScale, y * gfxScale, w * gfxScale, h * gfxScale)
 
-      if (room.name === 'breakout-room') {
-        ctx.fillText(`SCORE: ${(room as BreakoutRoom).score}`, x * gfxScale, y * gfxScale)
-      }
-      else {
-        ctx.fillText(room.name, x * gfxScale, y * gfxScale)
-      }
-    }
+    //   if (room.name === 'breakout-room') {
+    //     ctx.fillText(`SCORE: ${(room as BreakoutRoom).score}`, x * gfxScale, y * gfxScale)
+    //   }
+    //   else {
+    //     ctx.fillText(room.name, x * gfxScale, y * gfxScale)
+    //   }
+    // }
 
-    for (const obstacle of sim.obstacles) {
-      if (obstacle.label && !obstacle.isHidden) {
-        const [x, y] = obstacle.pos
-        ctx.fillText(obstacle.label, x * gfxScale, y * gfxScale)
-      }
-    }
+    // // draw labels on breakout bricks
+    // for (const obstacle of sim.obstacles) {
+    //   if (obstacle.label && !obstacle.isHidden) {
+    //     const [x, y] = obstacle.pos
+    //     ctx.fillText(obstacle.label, x * gfxScale, y * gfxScale)
+    //   }
+    // }
 
     ctx.restore()
 

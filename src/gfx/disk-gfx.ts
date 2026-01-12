@@ -10,7 +10,9 @@ import { twopi } from 'util/math-util'
 
 const maxTailDistance = 10 * DISK_RADIUS
 
-const isShowingTails = false
+const tailEps = 0.2 * DISK_RADIUS // skip drawing tail segments within eps of neighbors
+
+const isShowingTails = true
 
 export function drawDisk(
   ctx: CanvasRenderingContext2D, disk: Disk,
@@ -19,7 +21,7 @@ export function drawDisk(
   // const [cx, cy, _dx, _dy] = disk.currentState
   const [cx, cy] = disk.interpolatedPos
 
-  const edgeRad = VALUE_SCALE * 0.1 * (isSelected ? 2 : 1)
+  const edgeRad = VALUE_SCALE * 0.5 * (isSelected ? 2 : 1)
   const tailShrinkRatio = 2
   // ctx.strokeStyle = 'black'
   // ctx.beginPath()
@@ -43,25 +45,10 @@ export function drawDisk(
   }
   ctx.lineWidth = edgeRad
   ctx.stroke()
+  ctx.fillStyle = PATTERN_FILLERS[disk.pattern]
+  ctx.imageSmoothingEnabled = false;
+  ctx.fill()
 
-  // fill disk
-  i = 0
-  const headRadius = Math.max(0, DISK_RADIUS * (1 - i * tailShrinkRatio / tailLength) - edgeRad)
-  if (isWinner) {
-    fillDiskPattern(ctx, cx, cy, headRadius * 1.5, 'green')
-  }
-  fillDiskPattern(ctx, cx, cy, headRadius, PATTERN_FILLERS[disk.pattern])
-  if (isShowingTails) {
-    for (const [x, y, distance] of disk.history()) {
-    // draw point in tail
-      const tailRadius = Math.max(0,
-        DISK_RADIUS * (1 - (Math.min(distance, maxTailDistance) / maxTailDistance)) - edgeRad,
-      )
-      fillDiskPattern(ctx, x, y, tailRadius, PATTERN_FILLERS[disk.pattern])
-      i++
-    }
-  }
-//   ctx.fill()
 }
 
 export const DISK_PATTERNS = [
@@ -72,7 +59,7 @@ export type DiskPattern = (typeof DISK_PATTERNS)[number]
 
 function createHorizontalStripePattern(
   stripeColor = '#000', bgColor = '#fff',
-  stripeHeight = 1 * VALUE_SCALE, gapHeight = 1 * VALUE_SCALE,
+  stripeHeight = 1, gapHeight = 1,
 ) {
   if (typeof document === 'undefined') return 'white'
   const patternCanvas = document.createElement('canvas')
@@ -91,16 +78,17 @@ function createHorizontalStripePattern(
   pctx.fillStyle = stripeColor
   pctx.fillRect(0, 0, patternCanvas.width, stripeHeight)
 
-  // Use this canvas as a repeating pattern
-  return pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
+  const pattern = pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
+  pattern.setTransform(new DOMMatrix().scale(VALUE_SCALE, VALUE_SCALE ))
+  return pattern
 }
 
 // NEW: vertical stripes for v-stripe
 function createVerticalStripePattern(
   stripeColor = '#000',
   bgColor = '#fff',
-  stripeWidth = 1 * VALUE_SCALE,
-  gapWidth = 1 * VALUE_SCALE,
+  stripeWidth = 1,
+  gapWidth = 1,
 ) {
   if (typeof document === 'undefined') return 'white'
   const patternCanvas = document.createElement('canvas')
@@ -120,7 +108,9 @@ function createVerticalStripePattern(
   pctx.fillStyle = stripeColor
   pctx.fillRect(0, 0, stripeWidth, patternCanvas.height)
 
-  return pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
+  const pattern = pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
+  pattern.setTransform(new DOMMatrix().scale(VALUE_SCALE, VALUE_SCALE ))
+  return pattern
 }
 
 const PATTERN_FILLERS: Record<DiskPattern, CanvasPattern | string> = {

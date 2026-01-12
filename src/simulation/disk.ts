@@ -14,6 +14,7 @@ import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/dis
 import type { DiskPattern } from 'gfx/disk-gfx'
 import { DISK_RADIUS } from './constants'
 import { applyFrictionX, applyFrictionY } from './luts/imp/disk-friction-lut'
+import { resourceLimits } from 'worker_threads'
 
 // export const DISK_STYLES = ['red', 'green', 'blue', 'yellow'] as const
 // export type DiskStyle = (typeof DISK_STYLES)[number]
@@ -75,7 +76,9 @@ export class DiskState {
   }
 }
 
-export const tailLength = 30 // number of past positions to remember
+export const tailLength = 100 // number of past positions to remember
+
+const tailEps = .2 * DISK_RADIUS // skip drawing tail segments within eps of neighbors
 
 const dummy: [number, number, number] = [0, 0, 0]
 
@@ -99,27 +102,41 @@ export class Disk {
     }
   }
 
-  * history(): Generator<[number, number, number]> {
+  history(): Array<[number,number,number]> {
+    const result: Array<[number,number,number]>  = []
     let lastX = 0
     let lastY = 0
     let cumulativeDistance = 0
+    let lastDrawnCumDist = 0
     for (let i = 0; i < tailLength; i += 3) {
       const realIndex = 2 * ((Disk.historyIndex + tailLength - i) % tailLength)
       const x = this._history[realIndex]
       const y = this._history[realIndex + 1]
 
       if (i > 0) {
-        cumulativeDistance += Math.hypot(x - lastX, y - lastY)
+        const segLen = Math.hypot(x - lastX, y - lastY)
+        cumulativeDistance += segLen
       }
       lastX = x
       lastY = y
 
-      dummy[0] = Math.round(x)
-      dummy[1] = Math.round(y)
-      dummy[2] = Math.round(cumulativeDistance)
+      if( 
+        ((cumulativeDistance - lastDrawnCumDist) < tailEps) 
+        && (i < (tailLength-1)) 
+      ){
+        // skip drawing small segment
 
-      yield dummy
+      } else {
+        dummy[0] = Math.round(x)
+        dummy[1] = Math.round(y)
+        dummy[2] = Math.round(cumulativeDistance)
+
+        result.push([...dummy])
+        lastDrawnCumDist = cumulativeDistance
+      }
+
     }
+    return result
   }
 
   static historyIndex = 0 // rolling index in history arrays

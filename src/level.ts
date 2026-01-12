@@ -69,7 +69,7 @@ function randomRoom(roomIndex: number, bounds: Rectangle) {
     return Room.create('breakout-room', bounds)
   } 
 
-  return Room.create('pong-room', bounds)
+  // return Room.create('pong-room', bounds)
 
   const i = Perturbations.nextInt() >>> 0
   let roomName = ROOM.NAMES[i % ROOM.NAMES.length]

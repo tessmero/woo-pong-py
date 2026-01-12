@@ -47,12 +47,18 @@ export class Perturbations {
       if (d6 === 0) {
         state.dx += 1
       }
+      else if (d6 === 1) {
+        state.dx -= 1
+      }
     }
     // dy
     if (Math.abs(state.dy) > minSpeed) {
       const d6 = (Perturbations.nextInt() >>> 0) % 6
       if (d6 === 0) {
         state.dy += 1
+      }
+      else if (d6 === 1) {
+        state.dy -= 1
       }
     }
   }
