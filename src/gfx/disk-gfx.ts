@@ -45,20 +45,19 @@ export function drawDisk(
   ctx.stroke()
 
   // fill disk
-  ctx.fillStyle = 'white'
-  if (isWinner) {
-    ctx.fillStyle = 'black'
-  }
   i = 0
   const headRadius = Math.max(0, DISK_RADIUS * (1 - i * tailShrinkRatio / tailLength) - edgeRad)
-  fillDiskPattern(ctx, cx, cy, headRadius, disk.pattern)
+  if (isWinner) {
+    fillDiskPattern(ctx, cx, cy, headRadius * 1.5, 'green')
+  }
+  fillDiskPattern(ctx, cx, cy, headRadius, PATTERN_FILLERS[disk.pattern])
   if (isShowingTails) {
     for (const [x, y, distance] of disk.history()) {
     // draw point in tail
       const tailRadius = Math.max(0,
         DISK_RADIUS * (1 - (Math.min(distance, maxTailDistance) / maxTailDistance)) - edgeRad,
       )
-      fillDiskPattern(ctx, x, y, tailRadius, disk.pattern)
+      fillDiskPattern(ctx, x, y, tailRadius, PATTERN_FILLERS[disk.pattern])
       i++
     }
   }
@@ -75,7 +74,7 @@ function createHorizontalStripePattern(
   stripeColor = '#000', bgColor = '#fff',
   stripeHeight = 1 * VALUE_SCALE, gapHeight = 1 * VALUE_SCALE,
 ) {
-  if(typeof document === 'undefined') return 'white'
+  if (typeof document === 'undefined') return 'white'
   const patternCanvas = document.createElement('canvas')
   const totalHeight = stripeHeight + gapHeight
 
@@ -103,7 +102,7 @@ function createVerticalStripePattern(
   stripeWidth = 1 * VALUE_SCALE,
   gapWidth = 1 * VALUE_SCALE,
 ) {
-  if(typeof document === 'undefined') return 'white'
+  if (typeof document === 'undefined') return 'white'
   const patternCanvas = document.createElement('canvas')
   const totalWidth = stripeWidth + gapWidth
 
@@ -134,9 +133,9 @@ const PATTERN_FILLERS: Record<DiskPattern, CanvasPattern | string> = {
 function fillDiskPattern(
   ctx: CanvasRenderingContext2D,
   x: number, y: number, radius: number,
-  pattern: DiskPattern,
+  pattern: CanvasPattern | string,
 ) {
-  ctx.fillStyle = PATTERN_FILLERS[pattern]
+  ctx.fillStyle = pattern
   ctx.beginPath()
   ctx.moveTo(x, y)
   ctx.arc(x, y, radius, 0, twopi)

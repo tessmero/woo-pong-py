@@ -12,7 +12,7 @@ import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
 import { GUI } from 'imp-names'
 import { BreakoutRoom } from 'rooms/imp/breakout-room'
-import { DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
+import { BOBRICK_COUNT, DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
@@ -63,7 +63,7 @@ export class PinballWizard {
     const brickValuesStartIndex = 1 + DISK_COUNT
     const room = this.activeSim.level.rooms.find(room => 'breakoutBricks' in room) as BreakoutRoom
     if (room) {
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < BOBRICK_COUNT; i++) {
         room.breakoutBricks[i].label = `${race[i + brickValuesStartIndex]}`
       }
     }

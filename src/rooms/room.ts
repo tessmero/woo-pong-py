@@ -9,7 +9,7 @@ import type { Obstacle } from 'simulation/obstacle'
 import type { Rectangle } from 'util/math-util'
 
 export abstract class Room {
-  readonly name = '' // re-assigned in create
+  readonly name: RoomName = '' as RoomName // re-assigned in create
   readonly bounds: Rectangle = {} as Rectangle // re-assigned in create
 
   abstract buildObstacles(): Array<Obstacle>

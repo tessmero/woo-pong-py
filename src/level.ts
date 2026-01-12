@@ -67,7 +67,9 @@ function randomRoom(roomIndex: number, bounds: Rectangle) {
   // second-to-last room is always breakout
   if (roomIndex === ROOM_COUNT - 2) {
     return Room.create('breakout-room', bounds)
-  }
+  } 
+
+  return Room.create('pong-room', bounds)
 
   const i = Perturbations.nextInt() >>> 0
   let roomName = ROOM.NAMES[i % ROOM.NAMES.length]

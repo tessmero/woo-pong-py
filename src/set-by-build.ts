@@ -29,26 +29,32 @@ export const LUT_BLOBS = {
     "xRad": 100,
     "yRad": 280
   },
-  "WEDGE": {
-    "url": "/luts/wedge-c6dbc1de72580cda.bin",
-    "hash": "c6dbc1de72580cdaed1a9aa568cbe767b6758fa16c993440816fdd8a66b4e710",
-    "xRad": 110,
+  "RIGHTWEDGE": {
+    "url": "/luts/rightwedge-4b877a5d81585923.bin",
+    "hash": "4b877a5d8158592306b52f4205c45e5f7b145a33822f7b325787c5e5da95f90d",
+    "xRad": 255,
+    "yRad": 70
+  },
+  "LEFTWEDGE": {
+    "url": "/luts/leftwedge-c2bf9ece830f9ba4.bin",
+    "hash": "c2bf9ece830f9ba4e8d7dbe67cc194503396e1b6f8f7900379f509bc11c83746",
+    "xRad": 255,
     "yRad": 70
   },
   "DISK_FRICTION_LUT": {
-    "url": "/luts/disk-friction-lut-aea0a0c6df6bd93f.bin",
-    "hash": "aea0a0c6df6bd93fab5ff1e6a94629554cedcf9bd27e34358318a92b22e8a5c5"
+    "url": "/luts/disk-friction-lut-7c9824fcfd9687fe.bin",
+    "hash": "7c9824fcfd9687fefd69a2e79f3888fdf2407a7f2a9cffeceed239f8efb6867c"
   },
   "DISK_DISK_LUT": {
     "url": "/luts/disk-disk-lut-e9cd18aa3e3da17a.bin",
     "hash": "e9cd18aa3e3da17a07ed2d5fbe3559e39c81868b0f54a103ec98c96b1210d902"
   },
   "DISK_NORMAL_LUT": {
-    "url": "/luts/disk-normal-lut-3e09f6ca518cc5bd.bin",
-    "hash": "3e09f6ca518cc5bd24bf59a642dd802718959b4ba1d465a04be26efa5976edd9"
+    "url": "/luts/disk-normal-lut-6aba1ec4b7c13477.bin",
+    "hash": "6aba1ec4b7c13477353d0021af13138723b1181c1ef1db1df0c14f707c19abd1"
   },
   "RACE_LUT": {
-    "url": "/luts/race-lut-b35f7fad37dcd777.bin",
-    "hash": "b35f7fad37dcd77786653080e52b2f59c8cc4311bbd8888670ff499c016d3170"
+    "url": "/luts/race-lut-9a97c153057e0477.bin",
+    "hash": "9a97c153057e0477421ff254b9165e892b0d96295b93383b927c0bc7f83cef62"
   }
 };

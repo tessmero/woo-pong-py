@@ -6,7 +6,7 @@
 
 import { LUT_BLOBS } from 'set-by-build'
 import { Lut } from '../lut'
-import { DISK_COUNT, ROOM_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
+import { BOBRICK_COUNT, DISK_COUNT, ROOM_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
 import { DISK_PATTERNS } from 'gfx/disk-gfx'
@@ -15,7 +15,7 @@ import { BreakoutRoom } from 'rooms/imp/breakout-room'
 export type RaceLeaf = Array<number>
 
 const nRaces = 1
-const maxStepsTotal = 1e6
+const maxStepsTotal = 1e7
 
 export type BranchDatum = {
   midSeed: number
@@ -25,7 +25,7 @@ export type BranchDatum = {
 const leafLength
   = 1 // start seed
     + DISK_COUNT // mid seed for each disk
-    + 30 // value for each breakout brick
+    + BOBRICK_COUNT // value for each breakout brick
 
 export class RaceLut extends Lut<RaceLeaf> {
   static {
@@ -44,7 +44,7 @@ export class RaceLut extends Lut<RaceLeaf> {
   // ts-expect-error race lut
   blobHash = LUT_BLOBS.RACE_LUT?.hash ?? ''
   computeLeaf(_index: Array<number>) {
-    console.log('race-lut comput eleaf')
+    // console.log('race-lut comput eleaf')
 
     const commonStartSeed = Perturbations.randomSeed()
     const branches: Array<BranchDatum> = Array.from(
@@ -59,13 +59,13 @@ export class RaceLut extends Lut<RaceLeaf> {
       _simCount++
 
       // run common start
-      console.log('race-lut reset sim')
+      // console.log('race-lut reset sim')
       const sim = new Simulation(commonStartSeed)
       for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
         sim.step()
         _stepCount++
       }
-      console.log('race-lut finish common start')
+      // console.log('race-lut finish common start')
       if (sim.winningDiskIndex !== -1) {
         throw new Error('sim already has winning disk before branching')
       }
@@ -73,7 +73,7 @@ export class RaceLut extends Lut<RaceLeaf> {
       // branch, find winning disk, and set the mid seed for that disk
       const branchSeed = Perturbations.randomSeed()
       Perturbations.setSeed(branchSeed)
-      console.log('race-lut set branch seed')
+      // console.log('race-lut set branch seed')
       // console.log(`set branch seed ${branchSeed} for sim with step count ${sim.stepCount}`)
       while (sim.winningDiskIndex === -1 && _stepCount < maxStepsTotal) {
         sim.step()
@@ -119,6 +119,7 @@ export class RaceLut extends Lut<RaceLeaf> {
       }
       const branchSequences = branches.map((branch,branchIndex) => {
         const result =branch.roomSeqs[roomIndex] as Array<number>
+        if( !result ) throw new Error(`branch at index ${branchIndex} has no seq`)
         console.log(`branch at index ${branchIndex} has seq ${JSON.stringify(result)}`)
         return result
       }).filter(Boolean)

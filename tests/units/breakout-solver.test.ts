@@ -4,16 +4,27 @@
  * Compute brick values for breakout room to have consistent score in all branches.
  */
 
-import { ok } from 'assert'
-import { BreakoutRoom } from '../../src/rooms/imp/breakout-room'
+import { equal, ok } from 'assert'
+import { solveBreakout } from '../../src/breakout-solver'
 
 describe(`breakout room solver`, function () {
-  it(`computes brick values for input with 8 branches`, function () {
-    const solution = BreakoutRoom.solve(testInput)
+  it(`computes brick values for input with 10 branches`, function () {
+    const solution = solveBreakout(testInput)
     ok(solution.every(v => Number.isInteger(v)),
       `solved brick values should be integers: ${JSON.stringify(solution)}`)
-    ok(solution.every(v => (v >= 0) && (v <= 10)),
-      `solved brick values should be between 0 and 10: ${JSON.stringify(solution)}`)
+    ok(solution.every(v => (v >= 0) && (v <= 100)),
+      `solved brick values should be between 0 and 100: ${JSON.stringify(solution)}`)
+
+    console.log(JSON.stringify(solution))
+    ok(new Set(solution).size > 5, `solution should have many distinct values: ${JSON.stringify(solution)}`)
+
+    for (const branchSequence of testInput) {
+      let score = 0
+      for (const brickIndex of branchSequence) {
+        score += solution[brickIndex]
+      }
+      equal(score, 100, `solution should result in total score of 100`)
+    }
   })
 })
 

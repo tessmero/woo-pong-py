@@ -13,6 +13,7 @@ import { drawDisk } from './disk-gfx'
 import type { Simulation } from 'simulation/simulation'
 import { VALUE_SCALE } from 'simulation/constants'
 import { Disk } from 'simulation/disk'
+import type { BreakoutRoom } from 'rooms/imp/breakout-room'
 
 const cvs = document.getElementById('sim-canvas') as HTMLCanvasElement
 const ctx = cvs.getContext('2d') as CanvasRenderingContext2D
@@ -122,11 +123,17 @@ export class Graphics {
       const [x, y, w, h] = room.bounds
       // console.log(`room bounds: ${JSON.stringify(room.bounds)}`)
       ctx.strokeRect(x * gfxScale, y * gfxScale, w * gfxScale, h * gfxScale)
-      ctx.fillText(room.name, x * gfxScale, y * gfxScale)
+
+      if (room.name === 'breakout-room') {
+        ctx.fillText(`SCORE: ${(room as BreakoutRoom).score}`, x * gfxScale, y * gfxScale)
+      }
+      else {
+        ctx.fillText(room.name, x * gfxScale, y * gfxScale)
+      }
     }
 
     for (const obstacle of sim.obstacles) {
-      if (obstacle.label) {
+      if (obstacle.label && !obstacle.isHidden) {
         const [x, y] = obstacle.pos
         ctx.fillText(obstacle.label, x * gfxScale, y * gfxScale)
       }

@@ -7,18 +7,21 @@
 import { BOBRICK_HEIGHT, BOBRICK_WIDTH } from 'rooms/imp/breakout-room'
 import { VALUE_SCALE } from './constants'
 
+
 export const SHAPE_NAMES = [
   // 'square', 'circle', 'triangle',
   'roundrect',
   'breakoutbrick',
   'diamond',
   'sine',
-  'wedge',
+  'rightwedge',
+  'leftwedge',
 ] as const
 export type ShapeName = (typeof SHAPE_NAMES)[number]
 
 const mediumRadius = 5 * VALUE_SCALE
 const cornerRadius = 1 * VALUE_SCALE
+const wedgeWidth = 45 * VALUE_SCALE
 
 function scaleSvgPath(path: string, scale: number): string {
   // This function scales all numbers in the SVG path by the given scale factor.
@@ -29,19 +32,7 @@ function scaleSvgPath(path: string, scale: number): string {
 }
 
 export const SHAPE_PATHS: Record<ShapeName, string> = {
-  // square: `M${-mediumRadius},${mediumRadius} `
-  //   + `L${mediumRadius},${mediumRadius} `
-  //   + `L${mediumRadius},${-mediumRadius} `
-  //   + `L${-mediumRadius},${-mediumRadius} Z`,
-
-  // circle: `M0,${-mediumRadius} `
-  //   + `A${mediumRadius},${mediumRadius} 0 1,0 0,${mediumRadius} `
-  //   + `A${mediumRadius},${mediumRadius} 0 1,0 0,${-mediumRadius} Z`,
-
-  // triangle: `M0,${-mediumRadius} `
-  //   + `L${-mediumRadius},${mediumRadius} `
-  //   + `L${mediumRadius},${mediumRadius} Z`,
-
+  // ...existing code...
   roundrect: generateRoundedRectPath(
     10 * mediumRadius, 0.5 * mediumRadius, cornerRadius),
 
@@ -50,26 +41,31 @@ export const SHAPE_PATHS: Record<ShapeName, string> = {
 
   diamond: scaleSvgPath(
     `M197.6 42.4 42.4 197.6a60 60 0 0 0 0 84.8l155.2 155.2a60 60 0 0 0 84.8 0l155.2-155.2a60 60 0 0 0 0-84.8L282.4 42.4a60 60 0 0 0-84.8 0Z`,
-    VALUE_SCALE / 40
+    VALUE_SCALE / 40,
   ),
 
   // Long vertical capsule with 5 sine periods along its length.
   sine: generateSineCapsulePath(
-    2 * mediumRadius,   // approximate width
-    10 * mediumRadius,  // approximate height
+    2 * mediumRadius, // approximate width
+    10 * mediumRadius, // approximate height
     mediumRadius * 0.4, // horizontal amplitude of the sine
-    5                   // number of wave periods along vertical axis
+    5, // number of wave periods along vertical axis
   ),
   // Wide right triangle wedge with rounded corners,
   // aligned/centered similarly to breakoutbrick.
-  wedge: generateRoundedRightTrianglePath(
-    BOBRICK_WIDTH,
+  rightwedge: rightTrianglePath(
+    wedgeWidth,
     BOBRICK_HEIGHT,
-    cornerRadius
+    cornerRadius,
+  ),
+  leftwedge: mirroredRightTrianglePath(
+      wedgeWidth,
+      BOBRICK_HEIGHT,
+      cornerRadius,
   ),
 }
 
-export function generateRoundedRightTrianglePath(width: number, height: number, r: number): string {
+export function rightTrianglePath(width: number, height: number, r: number): string {
   const hw = width / 2, hh = height / 2
   return `M${-hw + r},${hh} `
     + `L${hw - r},${hh} `
@@ -78,6 +74,17 @@ export function generateRoundedRightTrianglePath(width: number, height: number, 
     + `Q${hw},${-hh} ${hw - r},${-hh} `
     + `L${-hw + r},${hh - r} `
     + `Q${-hw},${hh} ${-hw + r},${hh} Z`
+}
+
+export function mirroredRightTrianglePath(width: number, height: number, r: number): string {
+  const hw = width / 2, hh = height / 2
+  return `M${hw - r},${hh} `
+    + `Q${hw},${hh} ${hw - r},${hh - r} `
+    + `L${-hw + r},${-hh} `
+    + `Q${-hw},${-hh} ${-hw},${-hh + r} `
+    + `L${-hw},${hh - r} `
+    + `Q${-hw},${hh} ${-hw + r},${hh} `
+    + `L${hw - r},${hh} Z`
 }
 
 export function generateRoundedRectPath(width: number, height: number, cornerRadius: number): string {
@@ -115,8 +122,8 @@ export function generateSineCapsulePath(
   const dy = height / totalSegments
   const omega = 2 * Math.PI * periods / height
 
-  const leftPoints: { x: number; y: number }[] = []
-  const rightPoints: { x: number; y: number }[] = []
+  const leftPoints: Array<{ x: number, y: number }> = []
+  const rightPoints: Array<{ x: number, y: number }> = []
 
   // Generate points from bottom (-halfHeight) to top (+halfHeight).
   for (let i = 0; i <= totalSegments; i++) {
@@ -131,7 +138,7 @@ export function generateSineCapsulePath(
   }
 
   // Build path: start at bottom of left side, go up, then across top, down right, and across bottom.
-  const parts: string[] = []
+  const parts: Array<string> = []
 
   // Move to first left point.
   const firstLeft = leftPoints[0]
