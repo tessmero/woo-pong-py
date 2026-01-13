@@ -6,7 +6,7 @@
 
 import type { GuiElement } from 'guis/gui'
 import { Gui } from 'guis/gui'
-import { setElementLabel } from 'guis/gui-html-elements'
+import { setElementLabel, toggleElement } from 'guis/gui-html-elements'
 import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
 import type { PinballWizard } from 'pinball-wizard'
@@ -75,17 +75,19 @@ export const speedUpBtn: PlayingElem = {
 //   },
 // }))
 
+const elements: Array<PlayingElem> = [
+  clock,
+  playPauseBtn,
+  speedUpBtn,
+  // ...diskBtns,
+]
+
 export class PlayingGui extends Gui<PlayingLayoutKey> {
   static {
     Gui.register('playing-gui', {
       factory: () => new PlayingGui(),
       layoutFactory: () => PLAYING_LAYOUT,
-      elements: [
-        clock,
-        playPauseBtn,
-        speedUpBtn,
-        // ...diskBtns,
-      ],
+      elements,
     })
   }
 
@@ -101,6 +103,9 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
   }
 
   showHideElements(pinballWizard: PinballWizard) {
+    for (const elem of elements) {
+      toggleElement(elem, !pinballWizard.isTitleScreen)
+    }
     const hasBranched = pinballWizard.hasBranched
     // for (const btn of diskBtns) {
     //   toggleElement(btn, !hasBranched)

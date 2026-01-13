@@ -29,6 +29,7 @@ export class PinballWizard {
   public activeSim!: Simulation // assigned in init
   public gui!: Gui // assigned in init
 
+  public isTitleScreen = true
   public speed: Speed = 'normal'
   public selectedDiskIndex = -1
 

@@ -10,6 +10,14 @@ import { topConfig } from 'configs/imp/top-config'
 export function getTestSupport(_pinballWizard: PinballWizard) {
   return {
 
+    locateElement: (id: string) => {
+      return [100, 100, 100, 100]
+    },
+
+    getCameraPos: () => {
+      return [0,0]
+    },
+
     getSetting: (key) => {
       return topConfig.flatConfig[key]
     },
@@ -22,7 +30,7 @@ export function getTestSupport(_pinballWizard: PinballWizard) {
     },
 
     getGameState: () => {
-      return 'flat-view'
+      return 'title-screen'
     },
 
     getCursorState: () => {

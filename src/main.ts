@@ -57,12 +57,12 @@ async function main() {
   await pinballWizard.init()
 
   // bind start button in title screen
-  let isTitleScreen = true
   const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
   const inner = iframe.contentDocument as Document
   const startBtn = inner.getElementById('start-button') as HTMLElement
   startBtn.onclick = () => {
-    isTitleScreen = false
+    pinballWizard.isTitleScreen = false
+    pinballWizard.onResize()
     titleScreenElem.classList.add('hidden')
   }
 
@@ -107,7 +107,7 @@ async function main() {
     const dt = Math.min(50, currentTime - lastTime)
     lastTime = currentTime
 
-    if (isTitleScreen) {
+    if (pinballWizard.isTitleScreen) {
       TitleScreen.update(dt)
     }
     else {

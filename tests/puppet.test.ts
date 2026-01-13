@@ -11,7 +11,7 @@ const params = {
   targets: [
     {
       shortName: 'demo',
-      name: 'development build of pinball-wizard',
+      name: 'development build of woo-pong',
       serverCmd: [
         'python3', ['-m', 'http.server', '8642'], { cwd: 'dist' },
       ],
