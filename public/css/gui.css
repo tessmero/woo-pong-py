@@ -3,10 +3,10 @@
   src: url('/fonts/Chewy-Regular.ttf')  format('truetype');
 }
 
-button {
+/* button {
   all: unset;
   cursor: pointer;
-}
+} */
 
 /* button or clickable non-button tag */
 .button {

@@ -13,10 +13,39 @@
 
 
   <canvas id="sim-canvas" style="z-index:1;"></canvas>
+
+
+  <div id="title-screen" class="modal hidden">
+    <div class="modal-content">
+      <iframe 
+        id="title-iframe" src="title-screen.html" 
+        style="width:100vw;height:100vh;border:none;background:transparent;overflow:hidden;"
+        allowtransparency="true"
+        scrolling="no"
+      ></iframe>
   <div id="controls-container" style="z-index:6"></div>
+  <div id="title-screen" class="modal hidden">
+    <div class="modal-content" style="overflow:hidden;">
+    // Toggle warning details
+<style>
+  html, body {
+    overflow: hidden !important;
+  }
+</style>
+</body>
+      const toggle = document.getElementById('warning-toggle');
+      const details = document.getElementById('warning-details');
+      if (toggle && details) {
+        toggle.addEventListener('click', function() {
+          const expanded = toggle.getAttribute('aria-expanded') === 'true';
+          toggle.setAttribute('aria-expanded', String(!expanded));
+          details.classList.toggle('hidden');
+        });
+      }
+    });
+  </script>
   <script type="module" src="/src/util/literal-ctor-tracker.ts"></script>
   <script type="module" src="/src/main.ts"></script>
-
 
 </body>
 </html>

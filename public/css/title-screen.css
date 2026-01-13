@@ -1,0 +1,277 @@
+/* Variables */
+:root {
+    --border-radius: 5px;
+}
+
+/* Light mode colours */
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --color-bg: #F7F7F7;
+        --color-text: #37352F;
+    }
+}
+
+/* Dark mode colours */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-bg: #000D21;
+        --color-text: #E0E0E0;
+    }
+}
+
+/* Fonts */
+@font-face {
+    font-family: 'Rubik';
+    src: url(/fonts/Rubik-VariableFont_wght.ttf);
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Rubik';
+    src: url(/fonts/Rubik-Italic-VariableFont_wght.ttf);
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Bitter';
+    src: url(/fonts/Bitter-VariableFont_wght.ttf);
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Bitter';
+    src: url(/fonts/Bitter-Italic-VariableFont_wght.ttf);
+    font-style: italic;
+}
+
+/* Fix annoying scrollbar jump https://aykevl.nl/2014/09/fix-jumping-scrollbar */
+html {
+    margin-left: calc(100vw - 100%);
+    margin-right: 0;
+    user-select: none;
+}
+
+body {
+    font-family: 'Rubik', sans-serif;
+    font-size: 1.25rem;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.4;
+}
+
+
+.hidden {
+    display: none !important;
+}
+
+
+section#main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 1rem;
+    min-height: 100vh;
+}
+
+section:not(#main) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 1rem;
+}
+
+section>* {
+    width: 100%;
+    max-width: calc(500px + 1rem);
+}
+
+.portrait {
+    max-width: 150px;
+    border-radius: 100%;
+    margin-top: 1rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Bitter', serif;
+}
+
+h1, h3 {
+    text-align: center;
+}
+
+h3 {
+    margin: 0;
+}
+
+details {
+    transition: border-bottom 150ms ease;
+    border-bottom: 2px solid rgba(128, 128, 128, 0);
+}
+
+details[open] {
+    margin-bottom: 2rem;
+}
+
+details summary {
+    cursor: pointer;
+    margin: 0.5rem 0;
+}
+
+details .details-content {
+    opacity: 0;
+    transform: translateY(-20px);
+    max-height: 0px;
+    transition: all 300ms ease;
+    display: block;
+}
+
+details[open] .details-content {
+    transform: translateY(0px);
+    max-height: 750px;
+    overflow: hidden;
+    opacity: 1;
+}
+
+details summary::marker {
+    font-size: 0;
+}
+
+details summary::before {
+    content: '⚠️';
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 150ms ease;
+}
+
+details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+a:not(.imgLink) {
+    color: var(--color-text);
+    text-decoration: none;
+    background-color: rgba(128, 128, 128, 0.2);
+    padding: 0 5px;
+    border-radius: var(--border-radius);
+    transition: all ease 50ms;
+    cursor: pointer;
+    display: inline-block;
+}
+
+a:not(.imgLink):hover {
+    background-color: rgba(128, 128, 128, 0.4);
+}
+
+a:not(.imgLink):active {
+    transform: scale(0.95);
+}
+
+a,
+details:not([open]) {
+    user-select: none;
+}
+
+p,
+ul {
+    margin: 0.5rem 0;
+}
+
+ul li {
+    margin-bottom: 0.25rem;
+}
+
+details ul {
+    padding: 1rem;
+}
+
+details img {
+    max-width: 100%;
+    border-radius: var(--border-radius);
+}
+
+.squiggle {
+    display: block;
+    overflow: visible;
+}
+
+.squiggle-path {
+    stroke: var(--color-text);
+}
+
+.heading {
+    display: flex;
+}
+
+.heading h2 {
+    flex-grow: 1;
+}
+
+a.details-button {
+    height: fit-content;
+    align-self: center;
+    text-align: center;
+    break-inside: avoid;
+    padding: 20px;
+}
+
+.projects-list {
+    padding-left: 0;
+}
+
+.projects-list li {
+    list-style-type: none;
+}
+
+body.loaded .wave {
+    display: inline-block;
+    animation: wave 1s ease-in-out 300ms 1 normal backwards;
+    transform-origin: 75% 75%;
+}
+
+@keyframes wave {
+    0% {
+        transform: rotate(0deg) scale(0.0);
+    }
+
+    25% {
+        transform: rotate(-25deg) scale(1);
+    }
+
+    50% {
+        transform: rotate(0deg)
+    }
+
+    75% {
+        transform: rotate(-25deg);
+    }
+
+    100% {
+        transform: rotate(0deg)
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    body {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 500px) {
+    body {
+        font-size: 1.1rem;
+    }
+
+    a.details-button {
+        font-size: 0.75rem;
+    }
+}

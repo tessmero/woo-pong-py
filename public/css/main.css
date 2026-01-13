@@ -1,3 +1,106 @@
+.warning-collapsed {
+  margin-top: 2em;
+  text-align: center;
+}
+
+button {
+  background: #fffbe6;
+  color: #a00;
+  border: 1px solid #f99;
+  border-radius: 8px;
+  padding: 0.7em 1.5em;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: background 0.2s;
+  outline: none;
+  margin-bottom: 0.5em;
+}
+.warning-toggle {
+}
+.warning-toggle[aria-expanded="true"] {
+  background: #ffe0e0;
+}
+
+.warning-details {
+  background: #fffbe6;
+  color: #a00;
+  border: 1px solid #f99;
+  border-radius: 8px;
+  padding: 1em 1.5em;
+  font-size: 1.05em;
+  margin-top: 0.5em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* Modal styles */
+.modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+  transition: opacity 0.3s;
+}
+
+.modal-content {
+  background: transparent;
+  color: black;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}
+
+.modal h1 {
+  font-size: 2.5em;
+  margin-bottom: 0.2em;
+}
+.modal h2 {
+  font-size: 1.5em;
+  margin-bottom: 1em;
+  color: #aaf;
+}
+
+.modal ol {
+  list-style: decimal inside;
+  padding: 0;
+  margin: 0;
+}
+.modal ol li {
+  margin: 1.2em 0;
+  font-size: 1.2em;
+}
+.modal ol li strong {
+  font-size: 1.3em;
+  color: #ffd700;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Warning message styles */
+.warning {
+  background: #fffbe6;
+  color: #a00;
+  border: 1px solid #f99;
+  border-radius: 8px;
+  padding: 1em 1.5em;
+  margin-top: 2em;
+  font-size: 1.1em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
 html,
 body {
   height: 100%;
@@ -6,25 +109,7 @@ body {
   touch-action: none;
 }
 
-#groundElem, #skyElem {
-  pointer-events: none;
-  transition: background-color 0.5s ease-in-out;
-}
 
-#groundElem {
-  z-index: 10;
-}
-
-#groundElem canvas, #skyElem canvas {
-  width: 100%;
-  height: 100%;
-}
-
-
-
-#skyElem {
-  z-index: -40,
-}
 
 
 * {

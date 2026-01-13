@@ -20,6 +20,17 @@ import { Gui } from 'guis/gui'
 import { Graphics } from 'gfx/graphics'
 
 async function main() {
+
+  // Wait for the title iframe to be loaded before continuing
+  await new Promise<void>((resolve) => {
+    const iframe = document.getElementById('title-iframe') as HTMLIFrameElement;
+    if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
+      resolve();
+    } else {
+      iframe.addEventListener('load', () => resolve(), { once: true });
+    }
+  });
+
   // const layeredViewport = new LayeredViewport()
   gfxConfig.refreshConfig()
 
@@ -94,6 +105,18 @@ async function main() {
   pinballWizard.gui = Gui.create('playing-gui')
 
   await pinballWizard.init()
+
+  // bind start button in title screen
+  const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
+  const inner = iframe.contentDocument as Document
+  const startBtn = inner.getElementById('start-button') as HTMLElement
+  startBtn.onclick = () => {
+    titleScreenElem.classList.add('hidden')
+  }
+
+  // show title screen
+  const titleScreenElem = document.getElementById('title-screen') as HTMLElement
+  titleScreenElem.classList.remove('hidden')
 
   if (isDevMode) {
     await applyDevMode(pinballWizard) // apply overrides
