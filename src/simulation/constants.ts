@@ -4,6 +4,16 @@
  * Constants.
  */
 
+export type Speed
+  = 'normal' | 'paused' | 'fast'
+
+export const SPEEDS: Record<Speed, number> = {
+  normal: 1,
+  paused: 0.0,
+  fast: 10,
+}
+export const SPEED_LERP = 1e-3 // lerp towards target speed per ms
+
 export const DISK_COUNT = 10
 export const BOBRICK_COUNT = 30
 

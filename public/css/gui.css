@@ -1,7 +1,31 @@
+
+
+
+/* Fonts */
 @font-face {
-  font-family: 'Chewy';
-  src: url('/fonts/Chewy-Regular.ttf')  format('truetype');
+    font-family: 'Rubik';
+    src: url(/fonts/Rubik-VariableFont_wght.ttf);
+    font-style: normal;
 }
+
+@font-face {
+    font-family: 'Rubik';
+    src: url(/fonts/Rubik-Italic-VariableFont_wght.ttf);
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Bitter';
+    src: url(/fonts/Bitter-VariableFont_wght.ttf);
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Bitter';
+    src: url(/fonts/Bitter-Italic-VariableFont_wght.ttf);
+    font-style: italic;
+}
+
 
 /* button {
   all: unset;
@@ -15,8 +39,9 @@
 
 
 .gui-element {
-  font-family: 'Chewy';
-  font-size: 12px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.5rem;
+    font-weight: 100;
   z-index: 3;
   border: 1px solid black;
   border-radius: 5px;
@@ -39,9 +64,21 @@
   align-items: center;
 }
 
+:root {
+    --border-radius: 5px;
+        --color-bg: #F7F7F7;
+        --color-text: #37352F;
+}
+
 .gui-element.button {
-  border: 5px solid black;
-  background-color: #cccccc;
+    color: var(--color-text);
+    text-decoration: none;
+    background-color: rgb(230, 230, 230);
+    padding: 0 5px;
+    border-radius: var(--border-radius);
+    transition: all ease 50ms;
+    cursor: pointer;
+    display: inline-block;
 }
 
 .gui-element:not(.button) {
@@ -50,7 +87,6 @@
 
 .gui-element > span {
   font-size: 2em;
-  font-weight: bold;
 }
 
 /* 600 threshold should agree with layout-parser.ts */

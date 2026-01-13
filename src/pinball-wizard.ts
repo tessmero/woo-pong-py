@@ -10,9 +10,11 @@ import { Graphics } from 'gfx/graphics'
 import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
+import { updateClockLabel } from 'guis/imp/playing-gui'
 import { GUI } from 'imp-names'
 import type { BreakoutRoom } from 'rooms/imp/breakout-room'
-import { BOBRICK_COUNT, DISK_COUNT, DISK_RADSQ, STEPS_BEFORE_BRANCH } from 'simulation/constants'
+import type { Speed } from 'simulation/constants'
+import { BOBRICK_COUNT, DISK_COUNT, DISK_RADSQ, SPEED_LERP, SPEEDS, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
@@ -21,15 +23,6 @@ import { type Vec2 } from 'util/math-util'
 // can only be constructed once
 let didConstruct = false
 let didInit = false
-
-export type Speed
-  = 'normal' | 'paused' | 'fast'
-
-const speedMultipliers: Record<Speed, number> = {
-  normal: 1,
-  paused: 0.0,
-  fast: 3,
-}
 
 export class PinballWizard {
   // sim for live toppling/rewind
@@ -48,23 +41,24 @@ export class PinballWizard {
     didConstruct = true
   }
 
+  private _race: Array<number> = []
   async init() {
     if (didInit) {
       throw new Error('PinballWizard initialized multiple times')
     }
     didInit = true
 
-    const race = Lut.create('race-lut').tree[0]
-    const commonStartSeed = race[0]
+    this._race = Lut.create('race-lut').tree[0]
+    const commonStartSeed = this._race[0]
 
     this.activeSim = new Simulation(commonStartSeed)
-    this.activeSim.branchSeed = race[1]
+    this.activeSim.branchSeed = this._race[1]
 
     const brickValuesStartIndex = 1 + DISK_COUNT
     const room = this.activeSim.level.rooms.find(room => 'breakoutBricks' in room) as BreakoutRoom
     if (room) {
       for (let i = 0; i < BOBRICK_COUNT; i++) {
-        room.breakoutBricks[i].label = `${race[i + brickValuesStartIndex]}`
+        room.breakoutBricks[i].label = `${this._race[i + brickValuesStartIndex]}`
       }
     }
 
@@ -78,8 +72,8 @@ export class PinballWizard {
   update(dt: number) {
     const wasBranched = this.hasBranched
 
-    const targetSpeed = speedMultipliers[this.speed]
-    const delta = dt * 1e-3
+    const targetSpeed = SPEEDS[this.speed]
+    const delta = dt * SPEED_LERP
     if (this._speedMult < targetSpeed) {
       this._speedMult = Math.min(targetSpeed, this._speedMult + delta)
     }
@@ -88,6 +82,10 @@ export class PinballWizard {
     }
 
     this.activeSim.update(dt * this._speedMult)
+    if (this.activeSim.winningDiskIndex !== -1) {
+      this.speed = 'paused'
+      this._speedMult = 0
+    }
 
     if (this.hasBranched && !wasBranched) {
       // just branched
@@ -103,6 +101,8 @@ export class PinballWizard {
     Graphics.drawCursor(this.mousePos)
 
     Graphics.drawScrollBar(this)
+
+    updateClockLabel(this.activeSim.stepCount)
 
     this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)
   }
@@ -174,6 +174,7 @@ export class PinballWizard {
           + Math.pow(this.simMousePos[1] - y, 2)
       if (distSquared < DISK_RADSQ) {
         this.selectedDiskIndex = diskIndex
+        this.activeSim.branchSeed = this._race[diskIndex + 1]
       }
     }
   }

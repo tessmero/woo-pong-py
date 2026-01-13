@@ -13,6 +13,7 @@ export class FinishRoom extends Room {
   }
 
   buildObstacles(): Array<Obstacle> {
-    return [...this.wedges()]
+    // return [...this.wedges()]
+    return []
   }
 }

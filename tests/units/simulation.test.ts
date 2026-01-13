@@ -21,14 +21,15 @@ import { RaceLut } from '../../src/simulation/luts/imp/race-lut'
 import { BasicRoom } from '../../src/rooms/imp/basic-room'
 import { PongRoom } from '../../src/rooms/imp/pong-room'
 import { BreakoutRoom } from '../../src/rooms/imp/breakout-room'
-import { SorterRoom } from '../../src/rooms/imp/sorter-room'
+import { StartRoom } from '../../src/rooms/imp/start-room'
+import { FinishRoom } from '../../src/rooms/imp/finish-room'
 
 // excuse to import luts and have them registered
 const _luts = [
   DiskDiskLut, ObstacleLut, DiskNormalLut, DiskFrictionLut, RaceLut,
 ]
 const _rooms = [
-  BasicRoom, PongRoom, BreakoutRoom, SorterRoom,
+  BasicRoom, PongRoom, BreakoutRoom, StartRoom, FinishRoom,
 ]
 
 
@@ -86,9 +87,7 @@ function getSnapshot(): string {
 const expectedSnapshot = `
 
 
-
-[[342940,3283317,180,-758],[960000,1047379,-810,121],[59800,1042708,360,614],[790470,781061,325,-123],[176987,677588,-310,677],[120820,1328400,180,720],[512217,457848,-107,82],[749130,455182,-90,37],[57100,2297829,450,-702],[258540,1615465,-180,685]]
-
+[[283547,852381,-67,433],[238288,1728977,891,-818],[346109,975473,185,-112],[280002,976171,-651,-40],[284221,2803483,1095,1343],[507681,2329041,-1494,-226],[283226,507074,184,850],[115406,1482584,104,1241],[513142,2516855,179,1339],[260916,1502699,302,317]]
 
 
 `.replace(/\s/g, '') // remove whitespace

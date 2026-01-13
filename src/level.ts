@@ -20,7 +20,7 @@ const totalHeight = startPadding
   + roomPadding * (ROOM_COUNT - 1)
   + endPadding
 
-const finishThickness = 10
+const finishThickness = 50
 const _finish: Rectangle = [
   0, totalHeight - finishThickness,
   100, finishThickness,

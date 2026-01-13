@@ -6,16 +6,13 @@
 
 import type { GuiElement } from 'guis/gui'
 import { Gui } from 'guis/gui'
-import { toggleElement } from 'guis/gui-html-elements'
+import { setElementLabel } from 'guis/gui-html-elements'
 import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
 import type { PinballWizard } from 'pinball-wizard'
-import { DISK_COUNT } from 'simulation/constants'
-import { Lut } from 'simulation/luts/lut'
 import type { Vec2 } from 'util/math-util'
 
 type PlayingElem = GuiElement<PlayingLayoutKey>
-
 
 export const clock: PlayingElem = {
   layoutKey: 'clock',
@@ -24,12 +21,25 @@ export const clock: PlayingElem = {
     label: '00:00',
   },
 }
+export function updateClockLabel(steps: number) {
+  setElementLabel(clock, formatTime(steps))
+}
+function formatTime(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = Math.floor(totalSeconds % 60)
+
+  // Use padStart to ensure two digits for both minutes and seconds
+  const formattedMinutes = String(minutes).padStart(2, '0')
+  const formattedSeconds = String(seconds).padStart(2, '0')
+
+  return `${formattedMinutes}:${formattedSeconds}`
+}
 
 export const playPauseBtn: PlayingElem = {
   layoutKey: 'playPauseBtn',
   display: {
     type: 'button',
-    label: 'play/pause',
+    label: 'PAUSE',
   },
   click: ({ pinballWizard }) => {
     if (pinballWizard.speed === 'normal') {
@@ -71,9 +81,9 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
       factory: () => new PlayingGui(),
       layoutFactory: () => PLAYING_LAYOUT,
       elements: [
-        // clock,
-        // playPauseBtn,
-        // speedUpBtn,
+        clock,
+        playPauseBtn,
+        speedUpBtn,
         // ...diskBtns,
       ],
     })
