@@ -4,7 +4,7 @@
  * List of shape names and paths.
  */
 
-import { BOBRICK_HEIGHT, BOBRICK_WIDTH } from 'rooms/imp/breakout-room'
+import { BOBRICK_HEIGHT, BOBRICK_WIDTH } from './constants'
 import { VALUE_SCALE } from './constants'
 
 export const SHAPE_NAMES = [
@@ -13,6 +13,7 @@ export const SHAPE_NAMES = [
   'breakoutbrick',
   'diamond',
   'sine',
+  //'wedge',
   'rightwedge',
   'leftwedge',
   'star',
@@ -56,8 +57,12 @@ export const SHAPE_PATHS: Record<ShapeName, string> = {
     mediumRadius * 0.4, // horizontal amplitude of the sine
     5, // number of wave periods along vertical axis
   ),
-  // Wide right triangle wedge with rounded corners,
-  // aligned/centered similarly to breakoutbrick.
+
+  // wedge: generateRoundedRectPath(
+  //   wedgeWidth, BOBRICK_HEIGHT, cornerRadius),
+
+  // // Wide right triangle wedge with rounded corners,
+  // // aligned/centered similarly to breakoutbrick.
   rightwedge: rightTrianglePath(
     wedgeWidth,
     BOBRICK_HEIGHT,

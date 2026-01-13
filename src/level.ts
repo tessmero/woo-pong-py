@@ -59,15 +59,25 @@ export class Level {
     for (const [_roomIndex, room] of this.rooms.entries()) {
       result.push(...room.buildObstacles())
     }
+
+    // result.push(new Obstacle(
+    //   [50 * VALUE_SCALE, 100 * VALUE_SCALE],
+    //   SHAPE_PATHS.roundrect,
+    //   Lut.create('obstacle-lut', 'roundrect') as ObstacleLut)
+    // )
+
     return result
   }
 }
 
 function randomRoom(roomIndex: number, bounds: Rectangle) {
-  // second-to-last room is always breakout
-  if (roomIndex === ROOM_COUNT - 2) {
-    return Room.create('breakout-room', bounds)
-  } 
+  if (roomIndex === 0) {
+    return Room.create('start-room', bounds)
+  }
+
+  if (roomIndex === (ROOM_COUNT - 1)) {
+    return Room.create('finish-room', bounds)
+  }
 
   // return Room.create('pong-room', bounds)
 

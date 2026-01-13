@@ -26,11 +26,12 @@ export class BasicRoom extends Room {
   }
 
   buildObstacles(): Array<Obstacle> {
-    return _obstacles.map(([pos, shapeName]) => new Obstacle(
+    const obstacles = _obstacles.map(([pos, shapeName]) => new Obstacle(
       [pos[0] * VALUE_SCALE, pos[1] * VALUE_SCALE + this.bounds[1]],
       SHAPE_PATHS[shapeName],
       Lut.create('obstacle-lut', shapeName) as ObstacleLut,
       this,
     ))
+    return [...this.wedges(), ...obstacles]
   }
 }

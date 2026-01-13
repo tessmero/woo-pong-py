@@ -11,8 +11,8 @@ import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
 import { GUI } from 'imp-names'
-import { BreakoutRoom } from 'rooms/imp/breakout-room'
-import { BOBRICK_COUNT, DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
+import type { BreakoutRoom } from 'rooms/imp/breakout-room'
+import { BOBRICK_COUNT, DISK_COUNT, DISK_RADSQ, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
@@ -102,6 +102,8 @@ export class PinballWizard {
     // draw mouse pose
     Graphics.drawCursor(this.mousePos)
 
+    Graphics.drawScrollBar(this)
+
     this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)
   }
 
@@ -121,6 +123,7 @@ export class PinballWizard {
   }
 
   private readonly mousePos: Vec2 = [0, 0]
+  private readonly simMousePos: Vec2 = [0, 0]
   move(mousePos: Vec2): Vec2 {
     if (this.isMouseDown) {
       this.camera.drag(this.dragY, mousePos[1])
@@ -136,6 +139,8 @@ export class PinballWizard {
     // compute mouse pos in terms of simulation units
     const simMouseX = mousePos[0] / drawSimScale * window.devicePixelRatio - drawOffset[0] / drawSimScale
     const simMouseY = mousePos[1] / drawSimScale * window.devicePixelRatio - drawOffset[1] / drawSimScale
+    this.simMousePos[0] = simMouseX
+    this.simMousePos[1] = simMouseY
 
     // // // debug, position obstacle on mouse
     // const obs = this.activeSim.obstacles.at(-1) as Obstacle
@@ -161,6 +166,16 @@ export class PinballWizard {
     const _mousePos = this.move(rawPos)
     this.isMouseDown = true
     this.dragY = rawPos[1]
+
+    for (const [diskIndex, disk] of this.activeSim.disks.entries()) {
+      const [x, y] = disk.interpolatedPos
+      const distSquared
+        = Math.pow(this.simMousePos[0] - x, 2)
+          + Math.pow(this.simMousePos[1] - y, 2)
+      if (distSquared < DISK_RADSQ) {
+        this.selectedDiskIndex = diskIndex
+      }
+    }
   }
 
   up(rawPos: Vec2) {
@@ -177,6 +192,10 @@ export class PinballWizard {
 
   public onResize() {
     Graphics.onResize()
+
+    // // on title screen, set level bounds to match screen height
+    // console.log('poop')
+    // this.activeSim.level.bounds[3] = Math.floor(Graphics.cvs.height / Graphics.drawSimScale)
 
     // console.log('onResize')
     // console.log('this.gui is ', this.gui.constructor.name)

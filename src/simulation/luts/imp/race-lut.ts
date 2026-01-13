@@ -25,7 +25,7 @@ export type BranchDatum = {
 const leafLength
   = 1 // start seed
     + DISK_COUNT // mid seed for each disk
-    + BOBRICK_COUNT // value for each breakout brick
+    // + BOBRICK_COUNT // value for each breakout brick
 
 export class RaceLut extends Lut<RaceLeaf> {
   static {
@@ -105,28 +105,28 @@ export class RaceLut extends Lut<RaceLeaf> {
       }
     }
 
-    // solve breakout room
-    let breakoutSolution: Array<number> = []
-    for (let roomIndex = 0; roomIndex < ROOM_COUNT; roomIndex++) {
-      if (branches.some(branch => branch.roomSeqs[roomIndex])) {
-        console.log('computing breakout room at index', roomIndex)
-        // if (branches.some(branch => !branch.roomSeqs[roomIndex])) {
-        //   throw new Error('branches have breakout rooms at different indices')
-        // }
-      }
-      else {
-        continue // room is not breakout room
-      }
-      const branchSequences = branches.map((branch,branchIndex) => {
-        const result =branch.roomSeqs[roomIndex] as Array<number>
-        if( !result ) throw new Error(`branch at index ${branchIndex} has no seq`)
-        console.log(`branch at index ${branchIndex} has seq ${JSON.stringify(result)}`)
-        return result
-      }).filter(Boolean)
-      breakoutSolution = BreakoutRoom.solve(branchSequences)
-      console.log(branchSequences)
-      console.log('solution:', breakoutSolution)
-    }
+    // // solve breakout room
+    // let breakoutSolution: Array<number> = []
+    // for (let roomIndex = 0; roomIndex < ROOM_COUNT; roomIndex++) {
+    //   if (branches.some(branch => branch.roomSeqs[roomIndex])) {
+    //     console.log('computing breakout room at index', roomIndex)
+    //     // if (branches.some(branch => !branch.roomSeqs[roomIndex])) {
+    //     //   throw new Error('branches have breakout rooms at different indices')
+    //     // }
+    //   }
+    //   else {
+    //     continue // room is not breakout room
+    //   }
+    //   const branchSequences = branches.map((branch,branchIndex) => {
+    //     const result =branch.roomSeqs[roomIndex] as Array<number>
+    //     if( !result ) throw new Error(`branch at index ${branchIndex} has no seq`)
+    //     console.log(`branch at index ${branchIndex} has seq ${JSON.stringify(result)}`)
+    //     return result
+    //   }).filter(Boolean)
+    //   breakoutSolution = BreakoutRoom.solve(branchSequences)
+    //   console.log(branchSequences)
+    //   console.log('solution:', breakoutSolution)
+    // }
 
     // console.log(`found seeds for race with ${DISK_COUNT} disks`
     //   + ` after ${simCount} simulations and ${stepCount} total steps`)
@@ -134,7 +134,7 @@ export class RaceLut extends Lut<RaceLeaf> {
     const result = [
       commonStartSeed,
       ...branches.map(({ midSeed }) => midSeed),
-      ...breakoutSolution,
+      // ...breakoutSolution,
     ]
 
     if (result.length !== leafLength) {

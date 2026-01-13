@@ -129,7 +129,7 @@ canvas {
   position: absolute;
   left: 0px;
   top: 0px;
-  background: transparent;
+  background-color: #ddd;
   display: block;
   width: 100vw;
   height: 100vh;

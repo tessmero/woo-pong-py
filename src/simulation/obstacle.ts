@@ -32,7 +32,7 @@ export class Obstacle {
     readonly pos: Vec2,
     readonly path: string,
     readonly lut: ObstacleLut,
-    readonly room: Room,
+    readonly room?: Room,
   ) {
     this.points = pointsOnPath(path)[0]
 

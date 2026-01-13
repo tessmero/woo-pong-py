@@ -14,7 +14,6 @@ import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/dis
 import type { DiskPattern } from 'gfx/disk-gfx'
 import { DISK_RADIUS } from './constants'
 import { applyFrictionX, applyFrictionY } from './luts/imp/disk-friction-lut'
-import { resourceLimits } from 'worker_threads'
 
 // export const DISK_STYLES = ['red', 'green', 'blue', 'yellow'] as const
 // export type DiskStyle = (typeof DISK_STYLES)[number]
@@ -78,7 +77,7 @@ export class DiskState {
 
 export const tailLength = 100 // number of past positions to remember
 
-const tailEps = .2 * DISK_RADIUS // skip drawing tail segments within eps of neighbors
+const tailEps = 0//0.1 * DISK_RADIUS // skip drawing tail segments within eps of neighbors
 
 const dummy: [number, number, number] = [0, 0, 0]
 
@@ -102,8 +101,8 @@ export class Disk {
     }
   }
 
-  history(): Array<[number,number,number]> {
-    const result: Array<[number,number,number]>  = []
+  history(): Array<[number, number, number]> {
+    const result: Array<[number, number, number]> = []
     let lastX = 0
     let lastY = 0
     let cumulativeDistance = 0
@@ -120,13 +119,14 @@ export class Disk {
       lastX = x
       lastY = y
 
-      if( 
-        ((cumulativeDistance - lastDrawnCumDist) < tailEps) 
-        && (i < (tailLength-1)) 
-      ){
+      if (
+        ((cumulativeDistance - lastDrawnCumDist) < tailEps)
+        && (i < (tailLength - 1))
+      ) {
         // skip drawing small segment
 
-      } else {
+      }
+      else {
         dummy[0] = Math.round(x)
         dummy[1] = Math.round(y)
         dummy[2] = Math.round(cumulativeDistance)
@@ -134,7 +134,6 @@ export class Disk {
         result.push([...dummy])
         lastDrawnCumDist = cumulativeDistance
       }
-
     }
     return result
   }
@@ -195,7 +194,7 @@ export class Disk {
         }
         const col = obs.lut.tree[i0 + xRad]![i1 + yRad] as null | ObstacleCollision
         if (col) {
-          obs.room.obstacleHit(obs)
+          obs.room?.obstacleHit(obs)
 
           // collided with obstacle
           const [xAdj, yAdj, normIndex] = col
@@ -266,12 +265,13 @@ export class Disk {
         applyFrictionX(this.nextState)
       }
     }
-    if ((this.nextState.y + DISK_RADIUS) > (bounds[1] + bounds[3])) {
-      this.nextState.y = bounds[1] + bounds[3] - DISK_RADIUS
-      if (this.nextState.dy > 0) {
-        this.nextState.dy *= -1
-        applyFrictionY(this.nextState)
-      }
-    }
+    // // bottom
+    // if ((this.nextState.y + DISK_RADIUS) > (bounds[1] + bounds[3])) {
+    //   this.nextState.y = bounds[1] + bounds[3] - DISK_RADIUS
+    //   if (this.nextState.dy > 0) {
+    //     this.nextState.dy *= -1
+    //     applyFrictionY(this.nextState)
+    //   }
+    // }
   }
 }

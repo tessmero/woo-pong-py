@@ -7,16 +7,12 @@
 
 import { solveBreakout } from 'breakout-solver'
 import { Room } from 'rooms/room'
-import { VALUE_SCALE } from 'simulation/constants'
+import { BOBRICK_HEIGHT, BOBRICK_PADDING, BOBRICK_WIDTH, VALUE_SCALE } from 'simulation/constants'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
 import { SHAPE_PATHS, type ShapeName } from 'simulation/shapes'
 import type { Vec2 } from 'util/math-util'
-
-export const BOBRICK_WIDTH = 16 * VALUE_SCALE
-export const BOBRICK_HEIGHT = 8 * VALUE_SCALE
-export const BOBRICK_PADDING = 2 * VALUE_SCALE
 
 const dx = BOBRICK_WIDTH + BOBRICK_PADDING
 const dy = BOBRICK_HEIGHT + BOBRICK_PADDING
@@ -43,12 +39,6 @@ for (let row = 0; row < nRows; row++) {
   }
 }
 
-const _wedges: Array<[Vec2, ShapeName]> = [
-  [[20 * VALUE_SCALE, 10 * VALUE_SCALE], 'leftwedge'],
-  [[80 * VALUE_SCALE, 10 * VALUE_SCALE], 'rightwedge'],
-  [[20 * VALUE_SCALE, 90 * VALUE_SCALE], 'leftwedge'],
-  [[80 * VALUE_SCALE, 90 * VALUE_SCALE], 'rightwedge'],
-]
 
 export class BreakoutRoom extends Room {
   static {
@@ -83,20 +73,12 @@ export class BreakoutRoom extends Room {
   public breakoutBricks: Array<Obstacle> = []
 
   buildObstacles(): Array<Obstacle> {
-
-    const wedges = _wedges.map(([pos, shapeName]) => new Obstacle(
-      [pos[0], pos[1] + this.bounds[1]],
-      SHAPE_PATHS[shapeName],
-      Lut.create('obstacle-lut', shapeName) as ObstacleLut,
-      this,
-    ))
-
     this.breakoutBricks = _obstacles.map(([pos, shapeName]) => new Obstacle(
       [pos[0], pos[1] + this.bounds[1]],
       SHAPE_PATHS[shapeName],
       Lut.create('obstacle-lut', shapeName) as ObstacleLut,
       this,
     ))
-    return [...wedges,...this.breakoutBricks]
+    return [...this.wedges(),...this.breakoutBricks]
   }
 }

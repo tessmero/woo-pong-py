@@ -42,13 +42,7 @@ const outerWallHeight = 300
 //   [outerWallXOffset, outerWallYOffset + outerWallHeight, outerWallWidth, thick], // bottom
 // ] as const
 
-const _obstacles: Array<[Vec2, ShapeName]> = []
-const obsSpace = 40
-let y = 100
-while (y < outerWallHeight) {
-  _obstacles.push([[50, y] as Vec2, 'roundrect'])
-  y += obsSpace
-}
+
 
 export class Simulation {
   readonly level: Level
@@ -113,6 +107,7 @@ export class Simulation {
     // collide disks with barriers
     for (const [diskIndex, disk] of this.disks.entries()) {
       disk.advance(this.obstacles)
+
       disk.pushInBounds(this.level.bounds)
 
       // check if bounced

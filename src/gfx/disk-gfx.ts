@@ -8,9 +8,7 @@ import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import { tailLength, type Disk } from 'simulation/disk'
 import { twopi } from 'util/math-util'
 
-const maxTailDistance = 10 * DISK_RADIUS
-
-const tailEps = 0.2 * DISK_RADIUS // skip drawing tail segments within eps of neighbors
+const maxTailDistance = 3 * DISK_RADIUS
 
 const isShowingTails = true
 
@@ -33,12 +31,12 @@ export function drawDisk(
   ctx.beginPath()
   let i = 0
   ctx.moveTo(cx, cy)
-  ctx.arc(cx, cy, DISK_RADIUS * (1 - i * tailShrinkRatio / tailLength) + edgeRad, 0, twopi)
+  ctx.arc(cx, cy, DISK_RADIUS * (1 - i * tailShrinkRatio / tailLength), 0, twopi)
   if (isShowingTails) {
     for (const [x, y, distance] of disk.history()) {
       // draw point in tail
       ctx.moveTo(x, y)
-      const rad = DISK_RADIUS * (1 - (Math.min(distance, maxTailDistance) / maxTailDistance)) + edgeRad
+      const rad = DISK_RADIUS * (1 - (Math.min(distance, maxTailDistance) / maxTailDistance))
       ctx.arc(x, y, rad, 0, twopi)
       i++
     }
@@ -51,7 +49,7 @@ export function drawDisk(
 }
 
 export const DISK_PATTERNS = [
-  'white', 'black', 'v-stripe', 'h-stripe', 'checkered', 'hex-dots',
+  'white', 'black', 'v-stripe', 'h-stripe', 'checkered', 'hex-a', 'hex-b',
 ] as const
 
 export type DiskPattern = (typeof DISK_PATTERNS)[number]
@@ -146,27 +144,46 @@ function createVerticalStripePattern(
 function createCheckeredPattern(
   color1 = '#000',
   color2 = '#fff',
-  squareSize = 2,
+  squareSize = 512/8,
+  resolution = 512,
 ) {
   if (typeof document === 'undefined') return 'white'
+  // Create a larger canvas for higher resolution
   const patternCanvas = document.createElement('canvas')
-  patternCanvas.width = squareSize * 2
-  patternCanvas.height = squareSize * 2
+  patternCanvas.width = resolution
+  patternCanvas.height = resolution
   const pctx = patternCanvas.getContext('2d') as CanvasRenderingContext2D
-  // Top-left
-  pctx.fillStyle = color1
-  pctx.fillRect(0, 0, squareSize, squareSize)
-  // Top-right
-  pctx.fillStyle = color2
-  pctx.fillRect(squareSize, 0, squareSize, squareSize)
-  // Bottom-left
-  pctx.fillStyle = color2
-  pctx.fillRect(0, squareSize, squareSize, squareSize)
-  // Bottom-right
-  pctx.fillStyle = color1
-  pctx.fillRect(squareSize, squareSize, squareSize, squareSize)
+
+  // Fill the canvas with rotated checkers
+  // Calculate the number of squares needed to cover the diagonal
+  const numSquares = Math.ceil(resolution / squareSize) * 2
+  for (let i = -numSquares; i < numSquares; i++) {
+    for (let j = -numSquares; j < numSquares; j++) {
+      // Checkerboard pattern: alternate colors
+      const isColor1 = (i + j) % 2 === 0
+      pctx.save()
+      // Center the rotation
+      pctx.translate(resolution / 2, resolution / 2)
+      pctx.rotate(Math.PI / 4)
+      // Draw the square
+      pctx.fillStyle = isColor1 ? color1 : color2
+      
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          const s = Math.random()
+      pctx.fillRect(
+        ((i+2*dx) * squareSize) - resolution / 2,
+        ((j+2*dy) * squareSize) - resolution / 2,
+        squareSize * s,
+        squareSize * s
+      )
+    }
+  }
+      pctx.restore()
+    }
+  }
   const pattern = pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
-  pattern.setTransform(new DOMMatrix().scale(VALUE_SCALE, VALUE_SCALE))
+  pattern.setTransform(new DOMMatrix().scale(VALUE_SCALE / 50, VALUE_SCALE / 50))
   return pattern
 }
 
@@ -176,5 +193,6 @@ const PATTERN_FILLERS: Record<DiskPattern, CanvasPattern | string> = {
   'v-stripe': createVerticalStripePattern(),
   'h-stripe': createHorizontalStripePattern(),
   'checkered': createCheckeredPattern(),
-  'hex-dots': createHexDotsPattern(),
+  'hex-a': createHexDotsPattern('#000', '#fff'),
+  'hex-b': createHexDotsPattern('#fff', '#000', 4),
 }

@@ -14,6 +14,7 @@ import type { Simulation } from 'simulation/simulation'
 import { VALUE_SCALE } from 'simulation/constants'
 import { Disk } from 'simulation/disk'
 import type { BreakoutRoom } from 'rooms/imp/breakout-room'
+import { PinballWizard } from 'pinball-wizard'
 
 const cvs = document.getElementById('sim-canvas') as HTMLCanvasElement
 const ctx = cvs.getContext('2d') as CanvasRenderingContext2D
@@ -34,7 +35,7 @@ export class Graphics {
   }
 
   static drawObstacle(obstacle: Obstacle) {
-    ctx.fillStyle = 'black'
+    ctx.fillStyle = '#444'
 
     const {
       isHidden, pos, points,
@@ -146,6 +147,10 @@ export class Graphics {
     // ctx.strokeStyle = 'red'
     // ctx.lineWidth = 1
     // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
+  }
+
+  static drawScrollBar(_pinballWizard: PinballWizard){
+
   }
 
   static drawCursor(pos: Vec2) {

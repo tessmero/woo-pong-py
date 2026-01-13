@@ -16,15 +16,6 @@ import type { Vec2 } from 'util/math-util'
 
 type PlayingElem = GuiElement<PlayingLayoutKey>
 
-export const topLabel: PlayingElem = {
-  layoutKey: 'topLabel',
-  display: {
-    type: 'panel',
-    label: 'Remove one block',
-    textAlign: 'left',
-    styles: { border: 'none' },
-  },
-}
 
 export const clock: PlayingElem = {
   layoutKey: 'clock',
@@ -61,19 +52,18 @@ export const speedUpBtn: PlayingElem = {
   },
 }
 
-export const diskBtns: Array<PlayingElem> = Array.from({ length: DISK_COUNT }, (_, i) => ({
-  layoutKey: `disk${i}` as PlayingLayoutKey,
-  display: {
-    type: 'button',
-    label: `${i}`,
-  },
-  click: ({ pinballWizard }) => {
-    pinballWizard.selectedDiskIndex = i
-
-    const raceSeeds = Lut.create('race-lut').tree[0]
-    pinballWizard.activeSim.branchSeed = raceSeeds[i + 1]
-  },
-}))
+// export const diskBtns: Array<PlayingElem> = Array.from({ length: DISK_COUNT }, (_, i) => ({
+//   layoutKey: `disk${i}` as PlayingLayoutKey,
+//   display: {
+//     type: 'button',
+//     label: `${i}`,
+//   },
+//   click: ({ pinballWizard }) => {
+//     pinballWizard.selectedDiskIndex = i
+//     const raceSeeds = Lut.create('race-lut').tree[0]
+//     pinballWizard.activeSim.branchSeed = raceSeeds[i + 1]
+//   },
+// }))
 
 export class PlayingGui extends Gui<PlayingLayoutKey> {
   static {
@@ -81,11 +71,10 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
       factory: () => new PlayingGui(),
       layoutFactory: () => PLAYING_LAYOUT,
       elements: [
-        topLabel,
-        clock,
-        playPauseBtn,
-        speedUpBtn,
-        ...diskBtns,
+        // clock,
+        // playPauseBtn,
+        // speedUpBtn,
+        // ...diskBtns,
       ],
     })
   }
@@ -103,8 +92,8 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
 
   showHideElements(pinballWizard: PinballWizard) {
     const hasBranched = pinballWizard.hasBranched
-    for (const btn of diskBtns) {
-      toggleElement(btn, !hasBranched)
-    }
+    // for (const btn of diskBtns) {
+    //   toggleElement(btn, !hasBranched)
+    // }
   }
 }

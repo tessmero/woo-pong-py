@@ -5,14 +5,35 @@
  */
 
 import type { RoomName } from 'imp-names'
-import type { Obstacle } from 'simulation/obstacle'
-import type { Rectangle } from 'util/math-util'
+import { VALUE_SCALE } from 'simulation/constants'
+import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
+import { Lut } from 'simulation/luts/lut'
+import { Obstacle } from 'simulation/obstacle'
+import type { ShapeName } from 'simulation/shapes'
+import { SHAPE_PATHS } from 'simulation/shapes'
+import type { Rectangle, Vec2 } from 'util/math-util'
+
+const _wedges: Array<[Vec2, ShapeName]> = [
+  //[[20 * VALUE_SCALE, 10 * VALUE_SCALE], 'wedge'],
+  //[[80 * VALUE_SCALE, 10 * VALUE_SCALE], 'wedge'],
+  [[20 * VALUE_SCALE, 90 * VALUE_SCALE], 'leftwedge'],
+  [[80 * VALUE_SCALE, 90 * VALUE_SCALE], 'rightwedge'],
+]
 
 export abstract class Room {
   readonly name: RoomName = '' as RoomName // re-assigned in create
   readonly bounds: Rectangle = {} as Rectangle // re-assigned in create
 
   abstract buildObstacles(): Array<Obstacle>
+
+  protected wedges(): Array<Obstacle> {
+    return _wedges.map(([pos, shapeName]) => new Obstacle(
+      [pos[0], pos[1] + this.bounds[1]],
+      SHAPE_PATHS[shapeName],
+      Lut.create('obstacle-lut', shapeName) as ObstacleLut,
+      this,
+    ))
+  }
 
   obstacleHit(obstacle: Obstacle): void {
     // do nothing

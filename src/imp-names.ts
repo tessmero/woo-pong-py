@@ -51,10 +51,11 @@ export type LutName = (typeof LUT.NAMES)[number]
 // rooms (level segments)
 export const ROOM = {
   NAMES: [
+    'start-room','finish-room',
     'basic-room', // just regular static obstacles
     'pong-room',
     'breakout-room', // numbered bricks disappear after collision
-    'sorter-room', // balls pass through or end up in numbered regions
+    // 'sorter-room', // balls pass through or end up in numbered regions
   ],
   SOURCES: ['src/rooms/imp/**/*.ts'],
 } as const satisfies ImpManifest

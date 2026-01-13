@@ -18,18 +18,19 @@ import type { ShapeName } from 'simulation/shapes'
 import { SHAPE_PATHS } from 'simulation/shapes'
 import { Gui } from 'guis/gui'
 import { Graphics } from 'gfx/graphics'
+import { TitleScreen } from 'title-screen'
 
 async function main() {
-
   // Wait for the title iframe to be loaded before continuing
   await new Promise<void>((resolve) => {
-    const iframe = document.getElementById('title-iframe') as HTMLIFrameElement;
+    const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
     if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
-      resolve();
-    } else {
-      iframe.addEventListener('load', () => resolve(), { once: true });
+      resolve()
     }
-  });
+    else {
+      iframe.addEventListener('load', () => resolve(), { once: true })
+    }
+  })
 
   // const layeredViewport = new LayeredViewport()
   gfxConfig.refreshConfig()
@@ -45,59 +46,8 @@ async function main() {
   //   pinballWizard.gui.keydown(pinballWizard, event.code)
   // })
 
-  const rawMousePos: Vec2 = [0, 0]
-  Graphics.cvs.addEventListener('pointermove', (e) => {
-    rawMousePos[0] = e.clientX
-    rawMousePos[1] = e.clientY
-    pinballWizard.move(rawMousePos)
-  })
-
-  Graphics.cvs.addEventListener('pointerdown', (e) => {
-    rawMousePos[0] = e.clientX
-    rawMousePos[1] = e.clientY
-    pinballWizard.down(rawMousePos)
-  })
-
-  Graphics.cvs.addEventListener('pointerup', (e) => {
-    rawMousePos[0] = e.clientX
-    rawMousePos[1] = e.clientY
-    pinballWizard.up(rawMousePos)
-  })
-
-  Graphics.cvs.addEventListener('pointerleave', (e) => {
-    rawMousePos[0] = e.clientX
-    rawMousePos[1] = e.clientY
-    pinballWizard.up(rawMousePos)
-  })
-
-  Graphics.cvs.addEventListener('wheel', (e) => {
-    pinballWizard.camera.scroll(e.deltaY)
-  })
-
-  const isComputing = false
-  for (const lutName of LUT.NAMES) {
-    if (lutName === 'obstacle-lut') {
-      for (const shapeName of Object.keys(SHAPE_PATHS)) {
-        const lut = Lut.create(lutName, shapeName as ShapeName)
-        if (isComputing) {
-          lut.computeAll()
-        }
-        else {
-          await lut.loadAll()
-        }
-      }
-    }
-    else {
-      // Lut.create(lutName).computeAll()
-      const lut = Lut.create(lutName)
-      if (isComputing) {
-        lut.computeAll()
-      }
-      else {
-        await lut.loadAll()
-      }
-    }
-  }
+  _initListeners(pinballWizard)
+  await _initLuts()
 
   for (const guiName of GUI.NAMES) {
     Gui.preload(pinballWizard, guiName)
@@ -107,10 +57,12 @@ async function main() {
   await pinballWizard.init()
 
   // bind start button in title screen
+  let isTitleScreen = true
   const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
   const inner = iframe.contentDocument as Document
   const startBtn = inner.getElementById('start-button') as HTMLElement
   startBtn.onclick = () => {
+    isTitleScreen = false
     titleScreenElem.classList.add('hidden')
   }
 
@@ -155,9 +107,72 @@ async function main() {
     const dt = Math.min(50, currentTime - lastTime)
     lastTime = currentTime
 
-    pinballWizard.update(dt)
+    if (isTitleScreen) {
+      TitleScreen.update(dt)
+    }
+    else {
+      pinballWizard.update(dt)
+    }
   }
   animate() // start first loop
 }
 
 main()
+
+function _initListeners(pinballWizard: PinballWizard) {
+  const rawMousePos: Vec2 = [0, 0]
+  Graphics.cvs.addEventListener('pointermove', (e) => {
+    rawMousePos[0] = e.clientX
+    rawMousePos[1] = e.clientY
+    pinballWizard.move(rawMousePos)
+  })
+
+  Graphics.cvs.addEventListener('pointerdown', (e) => {
+    rawMousePos[0] = e.clientX
+    rawMousePos[1] = e.clientY
+    pinballWizard.down(rawMousePos)
+  })
+
+  Graphics.cvs.addEventListener('pointerup', (e) => {
+    rawMousePos[0] = e.clientX
+    rawMousePos[1] = e.clientY
+    pinballWizard.up(rawMousePos)
+  })
+
+  Graphics.cvs.addEventListener('pointerleave', (e) => {
+    rawMousePos[0] = e.clientX
+    rawMousePos[1] = e.clientY
+    pinballWizard.up(rawMousePos)
+  })
+
+  Graphics.cvs.addEventListener('wheel', (e) => {
+    pinballWizard.camera.scroll(e.deltaY)
+  })
+}
+
+async function _initLuts() {
+  const isComputing = false
+  for (const lutName of LUT.NAMES) {
+    if (lutName === 'obstacle-lut') {
+      for (const shapeName of Object.keys(SHAPE_PATHS)) {
+        const lut = Lut.create(lutName, shapeName as ShapeName)
+        if (isComputing) {
+          lut.computeAll()
+        }
+        else {
+          await lut.loadAll()
+        }
+      }
+    }
+    else {
+      // Lut.create(lutName).computeAll()
+      const lut = Lut.create(lutName)
+      if (isComputing) {
+        lut.computeAll()
+      }
+      else {
+        await lut.loadAll()
+      }
+    }
+  }
+}

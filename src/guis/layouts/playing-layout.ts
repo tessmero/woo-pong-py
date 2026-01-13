@@ -72,27 +72,6 @@ export const PLAYING_LAYOUT = {
     parent: 'rightBar',
     margin: () => im(),
   },
-
-  disk0: {
-    parent: '_innerRightBar',
-    height: 100,
-  },
-
-  disk1: {
-    parent: 'disk0',
-    top: () => 100 + im(),
-  },
-
-  disk2: {
-    parent: 'disk1',
-    top: () => 100 + im(),
-  },
-
-  disk3: {
-    parent: 'disk2',
-    top: () => 100 + im(),
-  },
-
 } as const satisfies CssLayout
 
 export type PlayingLayoutKey = keyof typeof PLAYING_LAYOUT

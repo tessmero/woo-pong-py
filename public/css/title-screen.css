@@ -1,25 +1,10 @@
 /* Variables */
 :root {
     --border-radius: 5px;
-}
-
-/* Light mode colours */
-
-@media (prefers-color-scheme: light) {
-    :root {
         --color-bg: #F7F7F7;
         --color-text: #37352F;
-    }
 }
 
-/* Dark mode colours */
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --color-bg: #000D21;
-        --color-text: #E0E0E0;
-    }
-}
 
 /* Fonts */
 @font-face {
@@ -56,7 +41,6 @@ html {
 body {
     font-family: 'Rubik', sans-serif;
     font-size: 1.25rem;
-    background-color: var(--color-bg);
     color: var(--color-text);
     line-height: 1.4;
 }
@@ -114,7 +98,7 @@ h3 {
 
 details {
     transition: border-bottom 150ms ease;
-    border-bottom: 2px solid rgba(128, 128, 128, 0);
+    border-bottom: 2px solid rgb(255, 255, 255);
 }
 
 details[open] {
@@ -156,10 +140,11 @@ details[open] summary::before {
     transform: rotate(90deg);
 }
 
+
 a:not(.imgLink) {
     color: var(--color-text);
     text-decoration: none;
-    background-color: rgba(128, 128, 128, 0.2);
+    background-color: rgb(230, 230, 230);
     padding: 0 5px;
     border-radius: var(--border-radius);
     transition: all ease 50ms;
@@ -167,8 +152,9 @@ a:not(.imgLink) {
     display: inline-block;
 }
 
+
 a:not(.imgLink):hover {
-    background-color: rgba(128, 128, 128, 0.4);
+    background-color: rgb(204, 204, 204);
 }
 
 a:not(.imgLink):active {

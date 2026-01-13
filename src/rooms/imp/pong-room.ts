@@ -27,7 +27,7 @@ export class PongRoom extends Room {
   }
 
   buildObstacles(): Array<Obstacle> {
-    return _obstacles.map(([pos, shapeName]) => {
+    const paddles = _obstacles.map(([pos, shapeName]) => {
       const obs = new Obstacle(
         [pos[0] * VALUE_SCALE, pos[1] * VALUE_SCALE + this.bounds[1]],
         SHAPE_PATHS[shapeName],
@@ -37,5 +37,6 @@ export class PongRoom extends Room {
       obs.isStatic = false
       return obs
     })
+    return [...this.wedges(), ...paddles]
   }
 }

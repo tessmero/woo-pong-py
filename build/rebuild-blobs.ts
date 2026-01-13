@@ -21,14 +21,15 @@ import { LUT } from '../src/imp-names'
 import { BasicRoom } from '../src/rooms/imp/basic-room'
 import { PongRoom } from '../src/rooms/imp/pong-room'
 import { BreakoutRoom } from '../src/rooms/imp/breakout-room'
-import { SorterRoom } from '../src/rooms/imp/sorter-room'
+import { StartRoom } from '../src/rooms/imp/start-room'
+import { FinishRoom } from '../src/rooms/imp/finish-room'
 
 // excuse to import luts and have them registered
 const _luts = [
   DiskDiskLut, ObstacleLut, DiskNormalLut, DiskFrictionLut, RaceLut,
 ]
 const _rooms = [
-  BasicRoom, PongRoom, BreakoutRoom, SorterRoom,
+  BasicRoom, PongRoom, BreakoutRoom, StartRoom, FinishRoom,
 ]
 
 // Remove existing files in public/luts
