@@ -7,8 +7,9 @@
 import { Configurable } from '../configurable'
 import type { ConfigTree } from '../config-tree'
 import type { PinballWizard } from 'pinball-wizard'
+import { SPEEDS } from 'simulation/constants'
 
-export const isDevMode = true
+export const isDevMode = false
 export async function applyDevMode(pinballWizard: PinballWizard) {
   pinballWizard.rebuildControls() // show controls gui on startup
 
@@ -33,6 +34,24 @@ const topConfigTree = {
       max: 10000,
       step: 1,
       onChange: () => topConfig.refreshConfig(),
+    },
+
+    seed: {
+      value: -1,
+      min: -1,
+      max: Number.MAX_SAFE_INTEGER,
+      step: 1,
+      onChange: () => topConfig.refreshConfig(),
+    },
+
+    topSpeed: {
+      value: 10,
+      min: 2,
+      max: 1e6,
+      onChange: () => {
+        topConfig.refreshConfig()
+        SPEEDS.fast = topConfig.flatConfig.topSpeed
+      },
     },
 
     roomIndex: {

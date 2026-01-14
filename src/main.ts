@@ -35,12 +35,12 @@ async function main() {
   // const layeredViewport = new LayeredViewport()
   gfxConfig.refreshConfig()
 
-  const pinballWizard = new PinballWizard();
+  const pinballWizard = new PinballWizard()
 
   // pinballWizard.config.refreshConfig()
 
   // TestSupport // support automated report on tessmero.github.io //
-  (window as any).TestSupport = getTestSupport(pinballWizard) // eslint-disable-line @typescript-eslint/no-explicit-any
+  ;(window as any).TestSupport = getTestSupport(pinballWizard) // eslint-disable-line @typescript-eslint/no-explicit-any
 
   // window.addEventListener('keydown', (event) => {
   //   pinballWizard.gui.keydown(pinballWizard, event.code)
@@ -52,15 +52,15 @@ async function main() {
   for (const guiName of GUI.NAMES) {
     Gui.preload(pinballWizard, guiName)
   }
-  pinballWizard.gui = Gui.create('playing-gui')
-
-  await pinballWizard.init()
+  pinballWizard.onResize()
 
   // bind start button in title screen
   const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
   const inner = iframe.contentDocument as Document
   const startBtn = inner.getElementById('start-button') as HTMLElement
-  startBtn.onclick = () => {
+  startBtn.onclick = async () => {
+    await pinballWizard.init()
+    pinballWizard.gui = Gui.create('playing-gui')
     pinballWizard.isTitleScreen = false
     pinballWizard.onResize()
     titleScreenElem.classList.add('hidden')
@@ -73,8 +73,6 @@ async function main() {
   if (isDevMode) {
     await applyDevMode(pinballWizard) // apply overrides
   }
-
-  // pinballWizard.onResize()
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // TestSupport // support automated report on tessmero.github.io

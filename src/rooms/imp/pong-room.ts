@@ -14,8 +14,8 @@ import { SHAPE_PATHS } from 'simulation/shapes'
 import type { Vec2 } from 'util/math-util'
 
 const _obstacles: Array<[Vec2, ShapeName]> = []
-const obsSpace = 40
-let y = 0
+const obsSpace = 20
+let y = 20
 while (y < 100) {
   _obstacles.push([[50, y] as Vec2, 'roundrect'])
   y += obsSpace

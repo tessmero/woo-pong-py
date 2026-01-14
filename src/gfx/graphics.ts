@@ -124,7 +124,6 @@ export class Graphics {
     //   const [x, y, w, h] = room.bounds
     //   // console.log(`room bounds: ${JSON.stringify(room.bounds)}`)
     //   ctx.strokeRect(x * gfxScale, y * gfxScale, w * gfxScale, h * gfxScale)
-
     //   if (room.name === 'breakout-room') {
     //     ctx.fillText(`SCORE: ${(room as BreakoutRoom).score}`, x * gfxScale, y * gfxScale)
     //   }

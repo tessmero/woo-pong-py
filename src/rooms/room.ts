@@ -14,10 +14,10 @@ import { SHAPE_PATHS } from 'simulation/shapes'
 import type { Rectangle, Vec2 } from 'util/math-util'
 
 const _wedges: Array<[Vec2, ShapeName]> = [
-  //[[20 * VALUE_SCALE, 10 * VALUE_SCALE], 'wedge'],
-  //[[80 * VALUE_SCALE, 10 * VALUE_SCALE], 'wedge'],
-  [[20 * VALUE_SCALE, 90 * VALUE_SCALE], 'leftwedge'],
-  [[80 * VALUE_SCALE, 90 * VALUE_SCALE], 'rightwedge'],
+  // [[20 * VALUE_SCALE, 10 * VALUE_SCALE], 'wedge'],
+  // [[80 * VALUE_SCALE, 10 * VALUE_SCALE], 'wedge'],
+  [[20 * VALUE_SCALE, 100 * VALUE_SCALE], 'leftwedge'],
+  [[80 * VALUE_SCALE, 100 * VALUE_SCALE], 'rightwedge'],
 ]
 
 export abstract class Room {

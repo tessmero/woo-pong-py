@@ -21,8 +21,8 @@ export class Obstacle {
   readonly points: ReadonlyArray<Vec2>
 
   readonly vel: Vec2 = [100, 0]
-  readonly minX = 25 * VALUE_SCALE
-  readonly maxX = 75 * VALUE_SCALE
+  readonly minX = 20 * VALUE_SCALE
+  readonly maxX = 80 * VALUE_SCALE
 
   isHidden = false
   isStatic = true

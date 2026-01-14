@@ -6,6 +6,7 @@
 
 import { Camera } from 'camera'
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
+import { topConfig } from 'configs/imp/top-config'
 import { Graphics } from 'gfx/graphics'
 import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
@@ -14,10 +15,11 @@ import { updateClockLabel } from 'guis/imp/playing-gui'
 import { GUI } from 'imp-names'
 import type { BreakoutRoom } from 'rooms/imp/breakout-room'
 import type { Speed } from 'simulation/constants'
-import { BOBRICK_COUNT, DISK_COUNT, DISK_RADSQ, SPEED_LERP, SPEEDS, STEPS_BEFORE_BRANCH } from 'simulation/constants'
+import { BOBRICK_COUNT, DISK_COUNT, DISK_RADIUS, DISK_RADSQ, SPEED_LERP, SPEEDS, STEPS_BEFORE_BRANCH, VALUE_SCALE } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
+import type { Rectangle } from 'util/math-util'
 import { type Vec2 } from 'util/math-util'
 
 // can only be constructed once
@@ -49,11 +51,16 @@ export class PinballWizard {
     }
     didInit = true
 
+    const cfgSeed = topConfig.flatConfig.seed
+    const isSeedConfiged = cfgSeed !== -1 // is seed set manually by user or puppeteer
+
     this._race = Lut.create('race-lut').tree[0]
-    const commonStartSeed = this._race[0]
+    const commonStartSeed = isSeedConfiged ? cfgSeed : this._race[0]
 
     this.activeSim = new Simulation(commonStartSeed)
-    this.activeSim.branchSeed = this._race[1]
+    if (!isSeedConfiged) {
+      this.activeSim.branchSeed = this._race[1]
+    }
 
     const brickValuesStartIndex = 1 + DISK_COUNT
     const room = this.activeSim.level.rooms.find(room => 'breakoutBricks' in room) as BreakoutRoom
@@ -121,6 +128,17 @@ export class PinballWizard {
 
     ctx.fillStyle = 'black'
     ctx.fillRect(0, 0, w * progress, thickness)
+  }
+
+  locateDiskOnScreen(diskIndex: number): Rectangle {
+    const disk = this.activeSim.disks[diskIndex]
+    const [rawx, rawy] = disk.interpolatedPos
+    const rad = DISK_RADIUS * VALUE_SCALE * Graphics.drawSimScale
+    const x = Graphics.drawOffset[0] + rawx * Graphics.drawSimScale
+    const y = Graphics.drawOffset[1] + rawy * Graphics.drawSimScale
+    return [
+      x - rad, y - rad, 2 * rad, 2 * rad,
+    ]
   }
 
   private readonly mousePos: Vec2 = [0, 0]

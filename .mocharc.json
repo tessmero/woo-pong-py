@@ -1,8 +1,7 @@
 {
   "extension": ["ts"],
   "spec": [
-    "tests/**/*.test.ts",
-    "eslint-plugin-tt/tests/**/*.test.ts"
+    "tests/puppet.test.ts"
   ],
   "require": [
     "ts-node/register",

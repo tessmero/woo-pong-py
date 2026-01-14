@@ -13,11 +13,16 @@ import { SHAPE_PATHS, type ShapeName } from 'simulation/shapes'
 import type { Vec2 } from 'util/math-util'
 
 const _obstacles: Array<[Vec2, ShapeName]> = []
-const obsSpace = 40
-let x = 0
-while (x < 100) {
-  _obstacles.push([[x, 50] as Vec2, 'star'])
-  x += obsSpace
+const dx = 20
+const dy = 20
+let x = 10
+while (x < 80) {
+  let y = 10
+  while (y < 80) {
+    _obstacles.push([[x, y] as Vec2, 'star'])
+    y += dy
+  }
+  x += dx
 }
 
 export class BasicRoom extends Room {
