@@ -20,6 +20,13 @@ export class Camera {
   private _cameraFriction = 1e-3 // fraction of speed lost per ms
   private _snapSpeed = 7e-3 // fraction lerped per ms
 
+  jumpToRoom(pinballWizard: PinballWizard, roomIndex: number) {
+    const room = pinballWizard.activeSim.level.rooms[roomIndex]
+    const roomCenter = -room.bounds[1] - room.bounds[3] / 2
+    this.pos = roomCenter
+    this.vel = 0
+  }
+
   update(dt: number, pinballWizard: PinballWizard) {
     if (this.isDragging) {
       // do nothing
@@ -63,7 +70,7 @@ export class Camera {
   scroll(delta: number) {
     const { roomIndex } = topConfig.flatConfig
     let newRoomIndex = roomIndex + Math.sign(delta)
-    newRoomIndex = Math.max(0, Math.min(ROOM_COUNT-1, newRoomIndex))
+    newRoomIndex = Math.max(0, Math.min(ROOM_COUNT - 1, newRoomIndex))
     topConfig.tree.children.roomIndex.value = newRoomIndex
     topConfig.refreshConfig()
 

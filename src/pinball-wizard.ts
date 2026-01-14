@@ -7,6 +7,7 @@
 import { Camera } from 'camera'
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
 import { topConfig } from 'configs/imp/top-config'
+import { DISK_PATTERNS } from 'gfx/disk-gfx'
 import { Graphics } from 'gfx/graphics'
 import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
@@ -15,12 +16,15 @@ import { updateClockLabel } from 'guis/imp/playing-gui'
 import { GUI } from 'imp-names'
 import type { BreakoutRoom } from 'rooms/imp/breakout-room'
 import type { Speed } from 'simulation/constants'
-import { BOBRICK_COUNT, DISK_COUNT, DISK_RADIUS, DISK_RADSQ, SPEED_LERP, SPEEDS, STEPS_BEFORE_BRANCH, VALUE_SCALE } from 'simulation/constants'
+import {
+  BOBRICK_COUNT, DISK_COUNT, DISK_RADIUS, DISK_RADSQ,
+  SPEEDS, STEPS_BEFORE_BRANCH, VALUE_SCALE,
+} from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
 import type { Rectangle } from 'util/math-util'
-import { type Vec2 } from 'util/math-util'
+import { shuffle, type Vec2 } from 'util/math-util'
 
 // can only be constructed once
 let didConstruct = false
@@ -44,6 +48,7 @@ export class PinballWizard {
     didConstruct = true
   }
 
+  private isSeedConfiged = false
   private _race: Array<number> = []
   async init() {
     if (didInit) {
@@ -51,15 +56,18 @@ export class PinballWizard {
     }
     didInit = true
 
-    const cfgSeed = topConfig.flatConfig.seed
-    const isSeedConfiged = cfgSeed !== -1 // is seed set manually by user or puppeteer
+    const cfgSeed = topConfig.flatConfig.rngSeed
+    this.isSeedConfiged = cfgSeed !== -1 // is seed set manually (used for puppeteer)
 
-    this._race = Lut.create('race-lut').tree[0]
-    const commonStartSeed = isSeedConfiged ? cfgSeed : this._race[0]
+    const possibleRaces = Lut.create('race-lut').tree
+    this._race = possibleRaces[Math.floor(Math.random() * possibleRaces.length)]
+    const commonStartSeed = this.isSeedConfiged ? cfgSeed : this._race[0]
+
+    shuffle(DISK_PATTERNS) // shuffle appearance of bouncing balls
 
     this.activeSim = new Simulation(commonStartSeed)
-    if (!isSeedConfiged) {
-      this.activeSim.branchSeed = this._race[1]
+    if (!this.isSeedConfiged) {
+      this.activeSim.branchSeed = this._race[1] // seed to insert later
     }
 
     const brickValuesStartIndex = 1 + DISK_COUNT
@@ -71,6 +79,7 @@ export class PinballWizard {
     }
 
     this.gui = Gui.create('playing-gui')
+    this.camera.jumpToRoom(this, 0)
 
     window.addEventListener('resize', () => this.onResize())
     this.onResize()
@@ -81,7 +90,7 @@ export class PinballWizard {
     const wasBranched = this.hasBranched
 
     const targetSpeed = SPEEDS[this.speed]
-    const delta = dt * SPEED_LERP
+    const delta = dt * topConfig.flatConfig.speedLerp
     if (this._speedMult < targetSpeed) {
       this._speedMult = Math.min(targetSpeed, this._speedMult + delta)
     }
@@ -186,14 +195,18 @@ export class PinballWizard {
     this.isMouseDown = true
     this.dragY = rawPos[1]
 
-    for (const [diskIndex, disk] of this.activeSim.disks.entries()) {
-      const [x, y] = disk.interpolatedPos
-      const distSquared
-        = Math.pow(this.simMousePos[0] - x, 2)
-          + Math.pow(this.simMousePos[1] - y, 2)
-      if (distSquared < DISK_RADSQ) {
-        this.selectedDiskIndex = diskIndex
-        this.activeSim.branchSeed = this._race[diskIndex + 1]
+    if (!this.hasBranched) {
+      for (const [diskIndex, disk] of this.activeSim.disks.entries()) {
+        const [x, y] = disk.interpolatedPos
+        const distSquared
+          = Math.pow(this.simMousePos[0] - x, 2)
+            + Math.pow(this.simMousePos[1] - y, 2)
+        if (distSquared < DISK_RADSQ) {
+          this.selectedDiskIndex = diskIndex
+
+          if( !this.isSeedConfiged )
+            this.activeSim.branchSeed = this._race[diskIndex + 1]
+        }
       }
     }
   }

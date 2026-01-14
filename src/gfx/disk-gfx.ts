@@ -19,7 +19,7 @@ export function drawDisk(
   // const [cx, cy, _dx, _dy] = disk.currentState
   const [cx, cy] = disk.interpolatedPos
 
-  const edgeRad = VALUE_SCALE * 0.5 * (isSelected ? 2 : 1)
+  const edgeRad = VALUE_SCALE * 0.5 * (isSelected ? 5 : 1)
   const tailShrinkRatio = 2
   // ctx.strokeStyle = 'black'
   // ctx.beginPath()

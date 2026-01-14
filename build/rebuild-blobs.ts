@@ -32,14 +32,14 @@ const _rooms = [
   BasicRoom, PongRoom, BreakoutRoom, StartRoom, FinishRoom,
 ]
 
-// Remove existing files in public/luts
-const collisionsDir = join(__dirname, '../public/luts')
-const existingFiles = readdirSync(collisionsDir)
-existingFiles.forEach((file) => {
-  const filePath = join(collisionsDir, file)
-  unlinkSync(filePath)
-})
-console.log(`Removed existing files in: ${collisionsDir}`) // eslint-disable-line no-console
+// // Remove existing files in public/luts
+// const collisionsDir = join(__dirname, '../public/luts')
+// const existingFiles = readdirSync(collisionsDir)
+// existingFiles.forEach((file) => {
+//   const filePath = join(collisionsDir, file)
+//   unlinkSync(filePath)
+// })
+// console.log(`Removed existing files in: ${collisionsDir}`) // eslint-disable-line no-console
 
 // Update the constants in set-by-build.ts
 const sourceFilePath = join(__dirname, '../src/set-by-build.ts')
@@ -72,7 +72,7 @@ for (const shapeName of SHAPE_NAMES) {
 
   const varPrefix = shapeName.replaceAll('-', '_').toUpperCase()
   lutBlobs[varPrefix] = {
-    url: `/luts/${filename}`,
+    url: `luts/${filename}`,
     hash: hash,
     xRad: (lut as ObstacleLut).obsOffsetDetailX,
     yRad: (lut as ObstacleLut).obsOffsetDetailY,
@@ -82,9 +82,10 @@ for (const shapeName of SHAPE_NAMES) {
 // write singleton luts' blobs
 for (const lutName of LUT.NAMES) {
   if (lutName === 'obstacle-lut') continue
-  console.log('A')
+
+  if( lutName === 'race-lut' ) continue /// 2026-01-14 skip long step
+
   const lut = Lut.create(lutName)
-  console.log('B')
   lut.computeAll()
 
   console.log('encoding', lutName)

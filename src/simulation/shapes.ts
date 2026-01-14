@@ -12,7 +12,7 @@ export const SHAPE_NAMES = [
   'roundrect',
   'breakoutbrick',
   'diamond',
-  'sine',
+  // 'sine',
   //'wedge',
   'rightwedge',
   'leftwedge',
@@ -33,10 +33,11 @@ function scaleSvgPath(path: string, scale: number): string {
 }
 
 export const SHAPE_PATHS: Record<ShapeName, string> = {
-  // ...existing code...
+  // pong paddles
   roundrect: generateRoundedRectPath(
     5 * mediumRadius, 1 * mediumRadius, cornerRadius),
 
+  // disappearing brick
   breakoutbrick: generateRoundedRectPath(
     BOBRICK_WIDTH, BOBRICK_HEIGHT, cornerRadius),
 
@@ -50,13 +51,13 @@ export const SHAPE_PATHS: Record<ShapeName, string> = {
     VALUE_SCALE / 40,
   ),
 
-  // Long vertical capsule with 5 sine periods along its length.
-  sine: generateSineCapsulePath(
-    2 * mediumRadius, // approximate width
-    10 * mediumRadius, // approximate height
-    mediumRadius * 0.4, // horizontal amplitude of the sine
-    5, // number of wave periods along vertical axis
-  ),
+  // // Long vertical capsule with 5 sine periods along its length.
+  // sine: generateSineCapsulePath(
+  //   2 * mediumRadius, // approximate width
+  //   10 * mediumRadius, // approximate height
+  //   mediumRadius * 0.4, // horizontal amplitude of the sine
+  //   5, // number of wave periods along vertical axis
+  // ),
 
   // wedge: generateRoundedRectPath(
   //   wedgeWidth, BOBRICK_HEIGHT, cornerRadius),

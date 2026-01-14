@@ -7,7 +7,7 @@
     "dev:static": "concurrently \"npx vite build --watch\" \"npx serve dist\"",
     "build:prod": "vite build --config vite.config.prod.ts && npx mocha && npm run zip",
     "build:quickprod": "vite build --config vite.config.prod.ts && npm run zip",
-    "zip": "cp -r reports dist && cd dist && zip -r pinball-wizard.zip .",
+    "zip": "cp -r reports dist && cd dist && zip -r woo-pong.zip .",
     "rebuild-blobs": "ts-node -r tsconfig-paths/register build/rebuild-blobs.ts"
   },
   "keywords": [],

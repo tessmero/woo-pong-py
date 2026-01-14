@@ -4,7 +4,7 @@
  * Sequence for puppet test.
  */
 
-const seed = '123456789' 
+const seed = 12345
 const winner = 1 // winning ball index for seed 
 
 export const puppetTestSequence = [
@@ -14,15 +14,21 @@ export const puppetTestSequence = [
   },
   {
     test: 'change-default-setting',
-    key: 'seed',
-    defaultValue: '-1',
+    key: 'rngSeed',
+    defaultValue: -1,
     value: seed,
   },
   {
     test: 'change-default-setting',
     key: 'topSpeed',
-    defaultValue: '10',
-    value: '100',
+    defaultValue: 10,
+    value: 1000,
+  },
+  {
+    test: 'change-default-setting',
+    key: 'speedLerp',
+    defaultValue: 1e-3,
+    value: 1,
   },
   {
     test: 'button-changes-state',

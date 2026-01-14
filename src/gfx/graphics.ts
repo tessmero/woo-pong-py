@@ -12,12 +12,13 @@ import type { Obstacle } from '../simulation/obstacle'
 import { drawDisk } from './disk-gfx'
 import type { Simulation } from 'simulation/simulation'
 import { VALUE_SCALE } from 'simulation/constants'
-import { Disk } from 'simulation/disk'
-import type { BreakoutRoom } from 'rooms/imp/breakout-room'
-import { PinballWizard } from 'pinball-wizard'
+import type { PinballWizard } from 'pinball-wizard'
+import { BreakoutRoom } from 'rooms/imp/breakout-room'
 
 const cvs = document.getElementById('sim-canvas') as HTMLCanvasElement
 const ctx = cvs.getContext('2d') as CanvasRenderingContext2D
+
+const OBSTACLE_COLOR = '#444'
 
 export class Graphics {
   static cvs = cvs
@@ -35,7 +36,7 @@ export class Graphics {
   }
 
   static drawObstacle(obstacle: Obstacle) {
-    ctx.fillStyle = '#444'
+    ctx.fillStyle = OBSTACLE_COLOR
 
     const {
       isHidden, pos, points,
@@ -108,10 +109,20 @@ export class Graphics {
     // const camY = Graphics.drawOf
     // ctx.strokeRect(...sim.level.bounds)
 
-    // debug bounds
-    ctx.strokeStyle = 'red'
-    ctx.lineWidth = 0.4 * VALUE_SCALE
-    ctx.strokeRect(...sim.level.bounds)
+    // // debug bounds
+    // ctx.strokeStyle = 'red'
+    // ctx.lineWidth = 0.5 * VALUE_SCALE
+    // ctx.strokeRect(...sim.level.bounds)
+
+    // draw bounds
+    const thick = 2 * VALUE_SCALE
+    const x0 = sim.level.bounds[0]
+    const y0 = sim.level.bounds[1]
+    const x1 = x0 + sim.level.bounds[2]
+    const y1 = y0 + sim.level.bounds[3]
+    ctx.fillStyle = OBSTACLE_COLOR
+    ctx.fillRect(x0 - thick, y0, thick, y1 - y0)
+    ctx.fillRect(x1, y0, thick, y1 - y0)
 
     // // debug room bounds
     // ctx.strokeStyle = 'blue'
@@ -148,7 +159,7 @@ export class Graphics {
     // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
   }
 
-  static drawScrollBar(_pinballWizard: PinballWizard){
+  static drawScrollBar(_pinballWizard: PinballWizard) {
 
   }
 

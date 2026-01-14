@@ -36,7 +36,7 @@ const topConfigTree = {
       onChange: () => topConfig.refreshConfig(),
     },
 
-    seed: {
+    rngSeed: {
       value: -1,
       min: -1,
       max: Number.MAX_SAFE_INTEGER,
@@ -52,6 +52,13 @@ const topConfigTree = {
         topConfig.refreshConfig()
         SPEEDS.fast = topConfig.flatConfig.topSpeed
       },
+    },
+
+    speedLerp: {
+      value: 1e-3,
+      min: 0,
+      max: 1,
+      onChange: () => topConfig.refreshConfig(),
     },
 
     roomIndex: {

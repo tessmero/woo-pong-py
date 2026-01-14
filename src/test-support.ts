@@ -7,6 +7,7 @@
 import { type PinballWizard } from 'pinball-wizard'
 import { topConfig } from 'configs/imp/top-config'
 import { Gui } from 'guis/gui'
+import { SPEEDS } from 'simulation/constants'
 
 export function getTestSupport(pinballWizard: PinballWizard) {
   return {

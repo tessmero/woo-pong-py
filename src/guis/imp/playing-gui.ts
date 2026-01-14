@@ -10,6 +10,7 @@ import { setElementLabel, toggleElement } from 'guis/gui-html-elements'
 import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
 import type { PinballWizard } from 'pinball-wizard'
+import { STEP_DURATION } from 'simulation/constants'
 import type { Vec2 } from 'util/math-util'
 
 type PlayingElem = GuiElement<PlayingLayoutKey>
@@ -22,7 +23,7 @@ export const clock: PlayingElem = {
   },
 }
 export function updateClockLabel(steps: number) {
-  setElementLabel(clock, formatTime(steps))
+  setElementLabel(clock, formatTime(Math.floor(steps * STEP_DURATION / 1000)))
 }
 function formatTime(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60)
