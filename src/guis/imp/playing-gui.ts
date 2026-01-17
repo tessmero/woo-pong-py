@@ -107,7 +107,7 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
     for (const elem of elements) {
       toggleElement(elem, !pinballWizard.isTitleScreen)
     }
-    const hasBranched = pinballWizard.hasBranched
+    // const hasBranched = pinballWizard.hasBranched
     // for (const btn of diskBtns) {
     //   toggleElement(btn, !hasBranched)
     // }

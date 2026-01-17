@@ -7,7 +7,6 @@
 import { type PinballWizard } from 'pinball-wizard'
 import { topConfig } from 'configs/imp/top-config'
 import { Gui } from 'guis/gui'
-import { SPEEDS } from 'simulation/constants'
 
 export function getTestSupport(pinballWizard: PinballWizard) {
   return {
@@ -52,7 +51,7 @@ export function getTestSupport(pinballWizard: PinballWizard) {
       if (key in topConfig.tree.children) {
         // only works for items at top level
         const item = topConfig.tree.children[key]
-        item.value = value 
+        item.value = value
         item.onChange()
       }
     },

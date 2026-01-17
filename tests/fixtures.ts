@@ -19,7 +19,6 @@ const _luts = [
   DiskDiskLut, ObstacleLut, DiskNormalLut, DiskFrictionLut, RaceLut,
 ]
 
-
 RuleTester.afterAll = mocha.after
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', {

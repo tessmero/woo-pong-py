@@ -39,7 +39,6 @@ for (let row = 0; row < nRows; row++) {
   }
 }
 
-
 export class BreakoutRoom extends Room {
   static {
     Room.register('breakout-room', () => new BreakoutRoom())
@@ -79,6 +78,6 @@ export class BreakoutRoom extends Room {
       Lut.create('obstacle-lut', shapeName) as ObstacleLut,
       this,
     ))
-    return [...this.wedges(),...this.breakoutBricks]
+    return [...this.wedges(), ...this.breakoutBricks]
   }
 }

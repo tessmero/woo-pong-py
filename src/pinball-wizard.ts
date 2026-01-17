@@ -204,14 +204,14 @@ export class PinballWizard {
         if (distSquared < DISK_RADSQ) {
           this.selectedDiskIndex = diskIndex
 
-          if( !this.isSeedConfiged )
+          if (!this.isSeedConfiged)
             this.activeSim.branchSeed = this._race[diskIndex + 1]
         }
       }
     }
   }
 
-  up(rawPos: Vec2) {
+  up(_rawPos: Vec2) {
     this.isMouseDown = false
     this.camera.endDrag()
   }

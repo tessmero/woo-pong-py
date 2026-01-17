@@ -5,7 +5,7 @@
  */
 
 const seed = 12345
-const winner = 1 // winning ball index for seed 
+const winner = 4 // winning ball index for seed (guess and check)
 
 export const puppetTestSequence = [
   {

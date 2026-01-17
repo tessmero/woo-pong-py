@@ -75,10 +75,10 @@ function _drawTitleSim() {
   ctx.restore()
 
   // Draw trails (dotted lines)
-//   ctx.save()
+  //   ctx.save()
   ctx.fillStyle = '#888'
-//   ctx.setLineDash([4, 6])
-//   ctx.lineWidth = 2
+  //   ctx.setLineDash([4, 6])
+  //   ctx.lineWidth = 2
   for (const body of bodies) {
     if (body.trail.length > 1) {
       // ctx.beginPath();
@@ -93,8 +93,8 @@ function _drawTitleSim() {
       // ctx.stroke();
     }
   }
-//   ctx.setLineDash([])
-//   ctx.restore()
+  //   ctx.setLineDash([])
+  //   ctx.restore()
 
   // Draw bodies (black)
   for (const body of bodies) {

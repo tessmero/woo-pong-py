@@ -4,7 +4,7 @@
  * Rebuild lookup collision lookup table blobs.
  */
 
-import { writeFileSync, readdirSync, unlinkSync } from 'fs'
+import { writeFileSync } from 'fs'
 import { join } from 'path'
 import { LutEncoder } from '../src/simulation/lut-encoder'
 import { createHash } from 'crypto'
@@ -82,8 +82,6 @@ for (const shapeName of SHAPE_NAMES) {
 // write singleton luts' blobs
 for (const lutName of LUT.NAMES) {
   if (lutName === 'obstacle-lut') continue
-
-  if( lutName === 'race-lut' ) continue /// 2026-01-14 skip long step
 
   const lut = Lut.create(lutName)
   lut.computeAll()

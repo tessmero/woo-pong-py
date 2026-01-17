@@ -13,11 +13,11 @@ import type { ShapeName } from 'simulation/shapes'
 import { SHAPE_PATHS } from 'simulation/shapes'
 import type { Rectangle, Vec2 } from 'util/math-util'
 
-const _wedges: Array<[Vec2, ShapeName]> = [
+const _wedges: Array<[Vec2, ShapeName, boolean?]> = [
   // [[20 * VALUE_SCALE, 10 * VALUE_SCALE], 'wedge'],
   // [[80 * VALUE_SCALE, 10 * VALUE_SCALE], 'wedge'],
-  [[20 * VALUE_SCALE, 100 * VALUE_SCALE], 'leftwedge'],
-  [[80 * VALUE_SCALE, 100 * VALUE_SCALE], 'rightwedge'],
+  [[20 * VALUE_SCALE, 100 * VALUE_SCALE], 'wedge', true],
+  [[80 * VALUE_SCALE, 100 * VALUE_SCALE], 'wedge'], // shape has flipped X
 ]
 
 export abstract class Room {
@@ -27,12 +27,19 @@ export abstract class Room {
   abstract buildObstacles(): Array<Obstacle>
 
   protected wedges(): Array<Obstacle> {
-    return _wedges.map(([pos, shapeName]) => new Obstacle(
-      [pos[0], pos[1] + this.bounds[1]],
-      SHAPE_PATHS[shapeName],
-      Lut.create('obstacle-lut', shapeName) as ObstacleLut,
-      this,
-    ))
+    return _wedges.map(([pos, shapeName, isFlippedX]) => {
+      const result = new Obstacle(
+        [pos[0], pos[1] + this.bounds[1]],
+        SHAPE_PATHS[shapeName],
+        Lut.create('obstacle-lut', shapeName) as ObstacleLut,
+        this,
+      )
+      if( isFlippedX ){
+        result.isFlippedX = isFlippedX
+      }
+      return result
+    },
+    )
   }
 
   obstacleHit(obstacle: Obstacle): void {

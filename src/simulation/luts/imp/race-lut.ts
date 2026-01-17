@@ -13,7 +13,7 @@ import { BreakoutRoom } from 'rooms/imp/breakout-room'
 
 export type RaceLeaf = Array<number>
 
-const nRaces = 100
+const nRaces = 1// 100
 const maxStepsTotal = 1e7
 
 export type BranchDatum = {
@@ -100,7 +100,7 @@ function _tryComputeLeaf(): Array<number> | null {
 
     // get breakout sequences
     const roomSeqs: Array<Array<number> | null> = []
-    for (const [roomIndex, room] of sim.level.rooms.entries()) {
+    for (const [_roomIndex, room] of sim.level.rooms.entries()) {
       if (room instanceof BreakoutRoom) {
         // console.log(`breakout room at index ${roomIndex} had sequence ${JSON.stringify(room.hitSequence)}`)
         roomSeqs.push(room.hitSequence)
@@ -163,6 +163,7 @@ function _tryComputeLeaf(): Array<number> | null {
   }
 
   // console.log(result)
+  // eslint-disable-next-line no-console
   console.log(`solved race with start seed ${commonStartSeed}`)
   return result
 }

@@ -14,7 +14,7 @@ const isShowingTails = true
 
 export function drawDisk(
   ctx: CanvasRenderingContext2D, disk: Disk,
-  isSelected = false, isWinner = false,
+  isSelected = false, _isWinner = false,
 ) {
   // const [cx, cy, _dx, _dy] = disk.currentState
   const [cx, cy] = disk.interpolatedPos
@@ -56,7 +56,7 @@ export type DiskPattern = (typeof DISK_PATTERNS)[number]
 
 function createHexDotsPattern(
   dotColor = '#000', bgColor = '#fff',
-  dotRadius = 12, spacing = 32, resolution = 128,
+  dotRadius = 12, spacing = 32,
 ) {
   if (typeof document === 'undefined') return bgColor
   const c = document.createElement('canvas')
@@ -144,7 +144,7 @@ function createVerticalStripePattern(
 function createCheckeredPattern(
   color1 = '#000',
   color2 = '#fff',
-  squareSize = 512/8,
+  squareSize = 512 / 8,
   resolution = 512,
 ) {
   if (typeof document === 'undefined') return 'white'
@@ -167,18 +167,18 @@ function createCheckeredPattern(
       pctx.rotate(Math.PI / 4)
       // Draw the square
       pctx.fillStyle = isColor1 ? color1 : color2
-      
+
       for (let dx = -1; dx <= 1; dx++) {
         for (let dy = -1; dy <= 1; dy++) {
           const s = Math.random()
-      pctx.fillRect(
-        ((i+2*dx) * squareSize) - resolution / 2,
-        ((j+2*dy) * squareSize) - resolution / 2,
-        squareSize * s,
-        squareSize * s
-      )
-    }
-  }
+          pctx.fillRect(
+            ((i + 2 * dx) * squareSize) - resolution / 2,
+            ((j + 2 * dy) * squareSize) - resolution / 2,
+            squareSize * s,
+            squareSize * s,
+          )
+        }
+      }
       pctx.restore()
     }
   }

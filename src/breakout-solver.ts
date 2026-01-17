@@ -14,7 +14,7 @@ export function solveBreakout(branchSequences: Array<Array<number>>): Array<numb
   // Helper to fix branch sums
   function fixBranchSums(vals: Array<number>) {
     for (let iter = 0; iter < 50; iter++) {
-      let changed = false
+      let hasChanged = false
       for (const branch of branchSequences) {
         const score = branch.reduce((sum, idx) => sum + vals[idx], 0)
         if (score !== 100) {
@@ -26,10 +26,10 @@ export function solveBreakout(branchSequences: Array<Array<number>>): Array<numb
           for (const idx of branch) {
             vals[idx] = Math.max(0, Math.min(100, vals[idx]))
           }
-          changed = true
+          hasChanged = true
         }
       }
-      if (!changed) break
+      if (!hasChanged) break
     }
   }
   // Annealing loop

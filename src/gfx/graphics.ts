@@ -13,7 +13,6 @@ import { drawDisk } from './disk-gfx'
 import type { Simulation } from 'simulation/simulation'
 import { VALUE_SCALE } from 'simulation/constants'
 import type { PinballWizard } from 'pinball-wizard'
-import { BreakoutRoom } from 'rooms/imp/breakout-room'
 
 const cvs = document.getElementById('sim-canvas') as HTMLCanvasElement
 const ctx = cvs.getContext('2d') as CanvasRenderingContext2D

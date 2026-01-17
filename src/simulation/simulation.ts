@@ -9,8 +9,7 @@ import { DISK_COUNT, STEP_DURATION, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './c
 import { Disk } from './disk'
 import { collideDisks } from './luts/imp/disk-disk-lut'
 import type { Obstacle } from './obstacle'
-import { lerp, type Rectangle, type Vec2 } from 'util/math-util'
-import type { ShapeName } from './shapes'
+import { lerp, type Rectangle } from 'util/math-util'
 import { Perturbations } from './perturbations'
 import { DISK_PATTERNS } from 'gfx/disk-gfx'
 import { Level } from 'level'
@@ -29,8 +28,8 @@ for (let i = 0; i < 5; i++) {
 }
 if (_disks.length !== DISK_COUNT) throw new Error('wrong disk count')
 
-const outerWallWidth = 100
-const outerWallHeight = 300
+// const outerWallWidth = 100
+// const outerWallHeight = 300
 // const outerWallXOffset = 0
 // const outerWallYOffset = 0
 
@@ -41,8 +40,6 @@ const outerWallHeight = 300
 //   [outerWallXOffset, outerWallYOffset, outerWallWidth, thick], // top
 //   [outerWallXOffset, outerWallYOffset + outerWallHeight, outerWallWidth, thick], // bottom
 // ] as const
-
-
 
 export class Simulation {
   readonly level: Level
@@ -111,9 +108,9 @@ export class Simulation {
       disk.pushInBounds(this.level.bounds)
 
       // check if bounced
-      //if (disk.currentState[2] !== disk.nextState[2] || disk.currentState[3] !== disk.nextState[3]) {
-        Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
-      //}
+      // if (disk.currentState[2] !== disk.nextState[2] || disk.currentState[3] !== disk.nextState[3]) {
+      Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
+      // }
 
       disk.nextState.dy += 1 // gravity
 

@@ -4,7 +4,7 @@
  * Construct level composed of rooms using prng.
  */
 
-import { ROOM, RoomName } from 'imp-names'
+import type { RoomName } from 'imp-names'
 import { Room } from 'rooms/room'
 import { ROOM_COUNT, VALUE_SCALE } from 'simulation/constants'
 import type { Obstacle } from 'simulation/obstacle'
@@ -82,8 +82,7 @@ function randomRoom(roomIndex: number, bounds: Rectangle) {
   // return Room.create('pong-room', bounds)
 
   const i = Perturbations.nextInt() >>> 0
-  let roomName = randomRoomNames[i % randomRoomNames.length]
-  
+  const roomName = randomRoomNames[i % randomRoomNames.length]
 
   // // prevent multiple breakout rooms
   // if (roomName === 'breakout-room') {
@@ -92,4 +91,4 @@ function randomRoom(roomIndex: number, bounds: Rectangle) {
   return Room.create(roomName, bounds)
 }
 
-const randomRoomNames: Array<RoomName> = ['basic-room','breakout-room','pong-room']
+const randomRoomNames: Array<RoomName> = ['basic-room', 'breakout-room', 'pong-room']

@@ -20,12 +20,24 @@ export class Obstacle {
   readonly collisionRect: Rectangle
   readonly points: ReadonlyArray<Vec2>
 
+  isStatic = true // disable movement
+
+  // movement only for pong paddles
   readonly vel: Vec2 = [100, 0]
   readonly minX = 20 * VALUE_SCALE
   readonly maxX = 80 * VALUE_SCALE
 
+  private _isFlippedX = false
+  set isFlippedX(value: boolean) {
+    this._isFlippedX = value
+    if (this._isFlippedX) {
+      flipPointsX(this)
+    }
+  }
+
+  get isFlippedX() { return this._isFlippedX }
+
   isHidden = false
-  isStatic = true
   label: string | null = null
 
   constructor(
@@ -64,5 +76,12 @@ export class Obstacle {
 
     this.collisionRect[0] = pos[0] - lut.maxOffsetX
     this.collisionRect[1] = pos[1] - lut.maxOffsetY
+  }
+}
+
+function flipPointsX(obs: Obstacle) {
+  const { points, collisionRect } = obs
+  for (const p of points) {
+    p[0] = - p[0]
   }
 }

@@ -77,7 +77,7 @@ export class DiskState {
 
 export const tailLength = 100 // number of past positions to remember
 
-const tailEps = 0//0.1 * DISK_RADIUS // skip drawing tail segments within eps of neighbors
+const tailEps = 0// 0.1 * DISK_RADIUS // skip drawing tail segments within eps of neighbors
 
 const dummy: [number, number, number] = [0, 0, 0]
 
@@ -179,10 +179,14 @@ export class Disk {
       const obs = obstacles[oi]
       if (obs.isHidden) continue
       if (rectContainsPoint(obs.collisionRect, nx, ny)) {
-        let i0 = obs.lut.offsetToXIndex(nx - obs.pos[0])
-        let i1 = obs.lut.offsetToYIndex(ny - obs.pos[1])
         const xRad = (obs.lut as ObstacleLut).obsOffsetDetailX
         const yRad = (obs.lut as ObstacleLut).obsOffsetDetailY
+        let xOff = nx - obs.pos[0]
+        if (obs.isFlippedX) {
+          xOff *= -1
+        }
+        let i0 = obs.lut.offsetToXIndex(xOff)
+        let i1 = obs.lut.offsetToYIndex(ny - obs.pos[1])
         if (Math.abs(i0) > xRad) {
           i0 = xRad * Math.sign(i0)
         }
@@ -199,7 +203,7 @@ export class Disk {
           // collided with obstacle
           const [xAdj, yAdj, normIndex] = col
 
-          let vxi = speedToIndex(ndx)
+          let vxi = speedToIndex(ndx * (obs.isFlippedX ? -1 : 1))
           let vyi = speedToIndex(ndy)
           if (Math.abs(vxi) > speedDetail) {
             vxi = speedDetail * Math.sign(vxi)
@@ -212,10 +216,10 @@ export class Disk {
           const bounce = dnl
             .tree[vxi + speedDetail][vyi + speedDetail][normIndex] as DiskNormalBounce
           const [vxAdj, vyAdj] = bounce
-          ndx += vxAdj
+          ndx += vxAdj * (obs.isFlippedX ? -1 : 1)
           ndy += vyAdj
 
-          this.nextState.x += xAdj
+          this.nextState.x += xAdj * (obs.isFlippedX ? -1 : 1)
           this.nextState.y += yAdj
           this.nextState.dx = ndx
           this.nextState.dy = ndy
