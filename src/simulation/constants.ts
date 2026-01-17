@@ -8,7 +8,7 @@ export type Speed
   = 'normal' | 'paused' | 'fast'
 
 export const SPEEDS: Record<Speed, number> = {
-  normal: 1,
+  normal: 4,
   paused: 0.0,
   fast: 10,
 }
@@ -28,6 +28,7 @@ export const DISK_RADIUS = 3 * VALUE_SCALE
 export const DISK_RADSQ = DISK_RADIUS * DISK_RADIUS
 
 export const STEPS_BEFORE_BRANCH = 1e4 // number of steps before branching
+export const LOOK_AHEAD_STEPS = 700 // start halting when this close to branch time with no selection
 
 export const BOBRICK_WIDTH = 16 * VALUE_SCALE
 export const BOBRICK_HEIGHT = 8 * VALUE_SCALE

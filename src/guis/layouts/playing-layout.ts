@@ -23,18 +23,11 @@ export const PLAYING_LAYOUT = {
     left: 'auto',
   },
 
-  topLabel: {
+  topBar: {
     parent: '_outerMargin',
     height: () => bh(),
     // 'top@portrait': '-100%', // hidden
     // () => bh() + im(),
-  },
-
-  bottomLabel: {
-    parent: '_outerMargin',
-    height: () => bh(),
-    left: 0,
-    bottom: 0,
   },
 
   bottomBar: {

@@ -15,15 +15,20 @@ import type { Vec2 } from 'util/math-util'
 
 type PlayingElem = GuiElement<PlayingLayoutKey>
 
+export const topLabel: PlayingElem = {
+  layoutKey: 'topBar',
+  display: {
+    type: 'panel',
+    label: '',
+  },
+}
+
 export const clock: PlayingElem = {
   layoutKey: 'clock',
   display: {
     type: 'panel',
     label: '00:00',
   },
-}
-export function updateClockLabel(steps: number) {
-  setElementLabel(clock, formatTime(Math.floor(steps * STEP_DURATION / 1000)))
 }
 function formatTime(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60)
@@ -77,6 +82,7 @@ export const speedUpBtn: PlayingElem = {
 // }))
 
 const elements: Array<PlayingElem> = [
+  topLabel,
   clock,
   playPauseBtn,
   speedUpBtn,
@@ -92,8 +98,10 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
     })
   }
 
-  update(_pinballWizard: PinballWizard, _dt: number) {
-
+  update(pinballWizard: PinballWizard, _dt: number) {
+    const steps = pinballWizard.activeSim.stepCount
+    const label = formatTime(Math.floor(steps * STEP_DURATION / 1000))
+    setElementLabel(clock, label)
   }
 
   move(_pinballWizard: PinballWizard, _mousePos: Vec2) {
@@ -107,9 +115,29 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
     for (const elem of elements) {
       toggleElement(elem, !pinballWizard.isTitleScreen)
     }
+    setElementLabel(topLabel, getStatusText(pinballWizard))
     // const hasBranched = pinballWizard.hasBranched
     // for (const btn of diskBtns) {
     //   toggleElement(btn, !hasBranched)
     // }
   }
+}
+
+function getStatusText(pinballWizard: PinballWizard) {
+  if (pinballWizard.activeSim.winningDiskIndex !== -1) {
+    return 'finished'
+  }
+  if (pinballWizard.isHalted) {
+    return 'You must choose a ball'
+  }
+  const i = pinballWizard.selectedDiskIndex
+  if (i === -1) {
+    return 'Choose a ball'
+  }
+  if (pinballWizard.hasBranched) {
+    return 'Wait to finish'
+  }
+
+  const pattern = pinballWizard.activeSim.disks[i].pattern
+  return `selected ${pattern} disk`
 }

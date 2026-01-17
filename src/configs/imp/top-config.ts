@@ -55,7 +55,7 @@ const topConfigTree = {
     },
 
     speedLerp: {
-      value: 1e-3,
+      value: 4e-3,
       min: 0,
       max: 1,
       onChange: () => topConfig.refreshConfig(),

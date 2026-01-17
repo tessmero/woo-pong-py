@@ -12,12 +12,12 @@ import { Graphics } from 'gfx/graphics'
 import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
-import { updateClockLabel } from 'guis/imp/playing-gui'
 import { GUI } from 'imp-names'
 import type { BreakoutRoom } from 'rooms/imp/breakout-room'
 import type { Speed } from 'simulation/constants'
 import {
   BOBRICK_COUNT, DISK_COUNT, DISK_RADIUS, DISK_RADSQ,
+  LOOK_AHEAD_STEPS,
   SPEEDS, STEPS_BEFORE_BRANCH, VALUE_SCALE,
 } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
@@ -85,9 +85,27 @@ export class PinballWizard {
     this.onResize()
   }
 
+  get isHalted() {
+    return this._isHalted
+  }
+
   private _speedMult = 1 // real simulation speed
+  private _isHalted = false // near branch point iwth no selection
   update(dt: number) {
     const wasBranched = this.hasBranched
+
+    // anticpiate halting needed soon
+    if ((!this._isHalted)
+      && (this.activeSim.stepCount >= (STEPS_BEFORE_BRANCH - LOOK_AHEAD_STEPS))
+      && (this.selectedDiskIndex === -1)) {
+      this.speed = 'paused'
+      console.log('sim may need to halt soon, near branching time with no selection')
+
+      if (this._speedMult === 0) {
+        this._isHalted = true // real speed has reached 0 before emergency halt
+        this.onResize()
+      }
+    }
 
     const targetSpeed = SPEEDS[this.speed]
     const delta = dt * topConfig.flatConfig.speedLerp
@@ -98,9 +116,22 @@ export class PinballWizard {
       this._speedMult = Math.max(targetSpeed, this._speedMult - delta)
     }
 
+    // check if emergency halt should override speed
+    if ((!this._isHalted)
+      && (this.activeSim.stepCount >= (STEPS_BEFORE_BRANCH - 5))
+      && (this.selectedDiskIndex === -1)) {
+      // hit emergency halt somehow (maybe sim was too fast to stop in time)
+      this._speedMult = 0
+      this.onResize()
+      // console.log('sim halted, near branching time with no selection')
+    }
+
     this.activeSim.update(dt * this._speedMult)
     if (this.activeSim.winningDiskIndex !== -1) {
+
+      // race finished
       this.speed = 'paused'
+      this._isHalted = true
       this._speedMult = 0
     }
 
@@ -118,8 +149,6 @@ export class PinballWizard {
     Graphics.drawCursor(this.mousePos)
 
     Graphics.drawScrollBar(this)
-
-    updateClockLabel(this.activeSim.stepCount)
 
     this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)
   }
@@ -204,6 +233,13 @@ export class PinballWizard {
         if (distSquared < DISK_RADSQ) {
           this.selectedDiskIndex = diskIndex
 
+          if (this._isHalted) {
+            this.speed = 'normal'
+            this._isHalted = false
+          }
+
+          this.onResize()
+
           if (!this.isSeedConfiged)
             this.activeSim.branchSeed = this._race[diskIndex + 1]
         }
@@ -245,12 +281,5 @@ export class PinballWizard {
     }
 
     if (this.gui) this.gui.showHideElements(this)
-
-    // // update 3d renderer viewport
-    // OverlayLayer.onResize()
-    // this.graphics.onResize(this)
-    // SceneElements.reset(this)
-    // GroundGrid.reset(this)
-    // SkyGrid.reset(this)
   }
 }
