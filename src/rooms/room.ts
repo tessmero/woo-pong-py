@@ -10,7 +10,6 @@ import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
 import type { ShapeName } from 'simulation/shapes'
-import { SHAPE_PATHS } from 'simulation/shapes'
 import type { Rectangle, Vec2 } from 'util/math-util'
 
 const _wedges: Array<[Vec2, ShapeName, boolean?]> = [
@@ -30,12 +29,12 @@ export abstract class Room {
     return _wedges.map(([pos, shapeName, isFlippedX]) => {
       const result = new Obstacle(
         [pos[0], pos[1] + this.bounds[1]],
-        SHAPE_PATHS[shapeName],
+        shapeName,
         Lut.create('obstacle-lut', shapeName) as ObstacleLut,
         this,
       )
-      if( isFlippedX ){
-        result.isFlippedX = isFlippedX
+      if (isFlippedX) {
+        result.isFlippedX = true
       }
       return result
     },

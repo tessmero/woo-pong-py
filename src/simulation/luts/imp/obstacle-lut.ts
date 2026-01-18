@@ -8,7 +8,7 @@ import { DISK_RADIUS, OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
 import { Lut } from '../lut'
 import { pio2, twopi, type Vec2 } from 'util/math-util'
 import { pointsOnPath } from 'points-on-path'
-import type { ShapeName } from 'simulation/shapes'
+import type { ShapeName, ShapeParams } from 'simulation/shapes'
 import { SHAPE_PATHS } from 'simulation/shapes'
 
 export const normalDetail = 100 // number of angle steps
@@ -56,13 +56,17 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
   public computeAll(): void {
     // compute shape-specific members
 
+    const { baseSvg, scale = 1 } = SHAPE_PATHS[this.shape]
+
     let xRad = 0
     let yRad = 0
-    for (const p of pointsOnPath(SHAPE_PATHS[this.shape])[0]) {
+    for (const p of pointsOnPath(baseSvg, 0.05)[0]) {
       const [dx, dy] = p.map(val => Math.abs(val))
       if (dx > xRad) xRad = dx
       if (dy > yRad) yRad = dy
     }
+    xRad *= scale
+    yRad *= scale
     xRad += DISK_RADIUS
     yRad += DISK_RADIUS
     xRad = Math.floor(xRad / OBSTACLE_DETAIL_SCALE)
@@ -99,17 +103,51 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
 const detailedPointsCache: Partial<Record<ShapeName, ReadonlyArray<Vec2>>> = {}
 function getDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
   if (!Object.hasOwn(detailedPointsCache, shape)) {
-    const points = computeDetailedPointsOnPath(SHAPE_PATHS[shape])
+    const points = computeDetailedPoints(shape)
     detailedPointsCache[shape] = points
     // console.log('obstacle lut points: ', shape, points.length)
   }
   return detailedPointsCache[shape] as ReadonlyArray<Vec2>
 }
 
-function computeDetailedPointsOnPath(path: string): ReadonlyArray<Vec2> {
-  let points = pointsOnPath(path)[0]
-  // points.push(points[0])
-  const threshold = DISK_RADIUS / 10 // Distance threshold to add midpoints
+export function centeredPointsOnPath(path: string) {
+  const points = pointsOnPath(path, 0.05)[0]
+  let minX = Infinity
+  let maxX = -Infinity
+  let minY = Infinity
+  let maxY = -Infinity
+  for (const p of points) {
+    const [x, y] = p
+    if (x > maxX) maxX = x
+    if (x < minX) minX = x
+    if (y > maxY) maxY = y
+    if (y < minY) minY = y
+  }
+
+  const midX = (minX + maxX) / 2
+  const midY = (minY + maxY) / 2
+
+  for (const p of points) {
+    p[0] -= midX
+    p[1] -= midY
+  }
+  return points
+}
+
+function computeDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
+  const shapeParams = SHAPE_PATHS[shape]
+  const {
+    baseSvg,
+    scale = 1,
+    xScale = 1,
+    yScale = 1,
+    isPathReversed = false,
+  } = shapeParams
+
+  let points = centeredPointsOnPath(baseSvg)
+
+  // Distance threshold to add midpoints
+  const threshold = DISK_RADIUS / 10 / scale / Math.max(xScale, yScale)
   let hasAddedPoints = true
 
   while (hasAddedPoints) {
@@ -139,7 +177,31 @@ function computeDetailedPointsOnPath(path: string): ReadonlyArray<Vec2> {
     points = newPoints
   }
 
+  transformPoints(points, shapeParams)
+
+  if (isPathReversed) {
+    points.reverse()
+  }
+
   return points
+}
+
+export function transformPoints(points: Array<Vec2> | ReadonlyArray<Vec2>, params: ShapeParams) {
+  const {
+    rotation = 0,
+    scale = 1,
+    xScale = 1,
+    yScale = 1,
+    isPathReversed = false,
+  } = params
+
+  for (const p of points) {
+    const [x, y] = p
+    const cos = Math.cos(rotation)
+    const sin = Math.sin(rotation)
+    p[0] = (x * cos - y * sin) * scale * xScale
+    p[1] = (x * sin + y * cos) * scale * yScale
+  }
 }
 
 function computeCollision(shape: ShapeName, pos: Vec2): ObstacleCollision {

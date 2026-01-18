@@ -8,9 +8,9 @@ export type Speed
   = 'normal' | 'paused' | 'fast'
 
 export const SPEEDS: Record<Speed, number> = {
-  normal: 4,
+  normal: 2,
   paused: 0.0,
-  fast: 10,
+  fast: 6,
 }
 
 export const DISK_COUNT = 10

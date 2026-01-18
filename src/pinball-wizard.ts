@@ -93,6 +93,7 @@ export class PinballWizard {
   private _isHalted = false // near branch point iwth no selection
   update(dt: number) {
     const wasBranched = this.hasBranched
+    const wasFinished = this.hasFinished
 
     // anticpiate halting needed soon
     if ((!this._isHalted)
@@ -128,7 +129,6 @@ export class PinballWizard {
 
     this.activeSim.update(dt * this._speedMult)
     if (this.activeSim.winningDiskIndex !== -1) {
-
       // race finished
       this.speed = 'paused'
       this._isHalted = true
@@ -140,6 +140,11 @@ export class PinballWizard {
       this.onResize()
     }
 
+    if (this.hasFinished && !wasFinished) {
+      // just finished
+      this.onResize()
+    }
+
     this.camera.update(dt, this)
     Graphics.drawOffset[1] = this.camera.pos * Graphics.drawSimScale
       + Graphics.cvs.height / 2
@@ -148,13 +153,15 @@ export class PinballWizard {
     // draw mouse pose
     Graphics.drawCursor(this.mousePos)
 
-    Graphics.drawScrollBar(this)
-
     this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)
   }
 
   public get hasBranched() {
     return this.activeSim.stepCount >= STEPS_BEFORE_BRANCH
+  }
+
+  public get hasFinished() {
+    return this.activeSim.winningDiskIndex !== -1
   }
 
   private debugBranchCountdown(ctx: CanvasRenderingContext2D, w: number, _h: number) {

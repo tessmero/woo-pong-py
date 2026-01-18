@@ -4,7 +4,7 @@
  * Rebuild lookup collision lookup table blobs.
  */
 
-import { writeFileSync } from 'fs'
+import { readdirSync, unlinkSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { LutEncoder } from '../src/simulation/lut-encoder'
 import { createHash } from 'crypto'
@@ -32,14 +32,14 @@ const _rooms = [
   BasicRoom, PongRoom, BreakoutRoom, StartRoom, FinishRoom,
 ]
 
-// // Remove existing files in public/luts
-// const collisionsDir = join(__dirname, '../public/luts')
-// const existingFiles = readdirSync(collisionsDir)
-// existingFiles.forEach((file) => {
-//   const filePath = join(collisionsDir, file)
-//   unlinkSync(filePath)
-// })
-// console.log(`Removed existing files in: ${collisionsDir}`) // eslint-disable-line no-console
+// Remove existing files in public/luts
+const collisionsDir = join(__dirname, '../public/luts')
+const existingFiles = readdirSync(collisionsDir)
+existingFiles.forEach((file) => {
+  const filePath = join(collisionsDir, file)
+  unlinkSync(filePath)
+})
+console.log(`Removed existing files in: ${collisionsDir}`) // eslint-disable-line no-console
 
 // Update the constants in set-by-build.ts
 const sourceFilePath = join(__dirname, '../src/set-by-build.ts')

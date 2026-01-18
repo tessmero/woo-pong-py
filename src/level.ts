@@ -79,6 +79,8 @@ function randomRoom(roomIndex: number, bounds: Rectangle) {
     return Room.create('finish-room', bounds)
   }
 
+  // return Room.create('basic-room',bounds)
+
   // return Room.create('pong-room', bounds)
 
   const i = Perturbations.nextInt() >>> 0
@@ -91,4 +93,8 @@ function randomRoom(roomIndex: number, bounds: Rectangle) {
   return Room.create(roomName, bounds)
 }
 
-const randomRoomNames: Array<RoomName> = ['basic-room', 'breakout-room', 'pong-room']
+const randomRoomNames: Array<RoomName> = [
+  'basic-room', 
+  'breakout-room',
+  //  'pong-room',
+  ]

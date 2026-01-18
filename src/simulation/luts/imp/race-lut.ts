@@ -18,7 +18,7 @@ const maxStepsTotal = 1e7
 
 export type BranchDatum = {
   midSeed: number
-  roomSeqs: Array<Array<number> | null>
+  // roomSeqs: Array<Array<number> | null>
 }
 
 const leafLength
@@ -67,6 +67,13 @@ function _tryComputeLeaf(): Array<number> | null {
     () => ({ midSeed: -1, roomSeqs: [] }),
   )
 
+  // skip simulations and build summy race-lut
+  return [
+    commonStartSeed,
+    ...branches.map(({ midSeed }) => midSeed),
+    // ...breakoutSolution,
+  ]
+
   let _simCount = 0
   let _stepCount = 0
 
@@ -98,21 +105,21 @@ function _tryComputeLeaf(): Array<number> | null {
     // console.log(`got winning disk ${sim.winningDiskIndex}`
     //   + ` (${DISK_PATTERNS[sim.winningDiskIndex % DISK_PATTERNS.length]}) after ${_stepCount} steps`)
 
-    // get breakout sequences
-    const roomSeqs: Array<Array<number> | null> = []
-    for (const [_roomIndex, room] of sim.level.rooms.entries()) {
-      if (room instanceof BreakoutRoom) {
-        // console.log(`breakout room at index ${roomIndex} had sequence ${JSON.stringify(room.hitSequence)}`)
-        roomSeqs.push(room.hitSequence)
-      }
-      else {
-        roomSeqs.push(null)
-      }
-    }
+    // // get breakout sequences
+    // const roomSeqs: Array<Array<number> | null> = []
+    // for (const [_roomIndex, room] of sim.level.rooms.entries()) {
+    //   if (room instanceof BreakoutRoom) {
+    //     // console.log(`breakout room at index ${roomIndex} had sequence ${JSON.stringify(room.hitSequence)}`)
+    //     roomSeqs.push(room.hitSequence)
+    //   }
+    //   else {
+    //     roomSeqs.push(null)
+    //   }
+    // }
 
     branches[sim.winningDiskIndex] = {
       midSeed: branchSeed,
-      roomSeqs: roomSeqs,
+      // roomSeqs: roomSeqs,
     }
 
     if (_stepCount > maxStepsTotal) {

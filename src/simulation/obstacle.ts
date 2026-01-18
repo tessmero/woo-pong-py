@@ -1,15 +1,16 @@
 /**
  * @file obstacle.ts
  *
- * Solid obstacle defined by a closed path.
+ * One specific solid obstacle in level.
  */
 
 import type { Rectangle, Vec2 } from 'util/math-util'
-import type { ObstacleLut } from './luts/imp/obstacle-lut'
-import { pointsOnPath } from 'points-on-path'
+import { centeredPointsOnPath, transformPoints, type ObstacleLut } from './luts/imp/obstacle-lut'
 import { VALUE_SCALE } from './constants'
 import { Perturbations } from './perturbations'
 import type { Room } from 'rooms/room'
+import type { ShapeName } from './shapes'
+import { SHAPE_PATHS } from './shapes'
 
 // // dummy context to call isPointInPath
 // const canvas = document.createElement('canvas')
@@ -42,11 +43,14 @@ export class Obstacle {
 
   constructor(
     readonly pos: Vec2,
-    readonly path: string,
+    readonly shape: ShapeName,
     readonly lut: ObstacleLut,
     readonly room?: Room,
   ) {
-    this.points = pointsOnPath(path)[0]
+    const shapeParams = SHAPE_PATHS[shape]
+    const { baseSvg } = shapeParams
+    this.points = centeredPointsOnPath(baseSvg)
+    transformPoints(this.points, shapeParams)
 
     this.collisionRect = [
       pos[0] - lut.maxOffsetX,
@@ -82,6 +86,6 @@ export class Obstacle {
 function flipPointsX(obs: Obstacle) {
   const { points, collisionRect } = obs
   for (const p of points) {
-    p[0] = - p[0]
+    p[0] = -p[0]
   }
 }

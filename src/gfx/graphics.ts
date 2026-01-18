@@ -158,10 +158,6 @@ export class Graphics {
     // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
   }
 
-  static drawScrollBar(_pinballWizard: PinballWizard) {
-
-  }
-
   static drawCursor(pos: Vec2) {
     // console.log(`cursor: ${JSON.stringify(pos.map(val => val * VALUE_SCALE))}`)
     const x = (Graphics.drawOffset[0] + pos[0]) * window.devicePixelRatio

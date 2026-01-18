@@ -75,7 +75,7 @@ export class DiskState {
   }
 }
 
-export const tailLength = 100 // number of past positions to remember
+export const tailLength = 1000 // number of past positions to remember
 
 const tailEps = 0// 0.1 * DISK_RADIUS // skip drawing tail segments within eps of neighbors
 
@@ -107,7 +107,7 @@ export class Disk {
     let lastY = 0
     let cumulativeDistance = 0
     let lastDrawnCumDist = 0
-    for (let i = 0; i < tailLength; i += 3) {
+    for (let i = 0; i < tailLength; i += 10) {
       const realIndex = 2 * ((Disk.historyIndex + tailLength - i) % tailLength)
       const x = this._history[realIndex]
       const y = this._history[realIndex + 1]
@@ -144,8 +144,8 @@ export class Disk {
     const realIndex = Disk.historyIndex * 2
     for (const d of disks) {
       // push current position to history
-      d._history[realIndex] = Math.round(d.interpolatedPos[0])
-      d._history[realIndex + 1] = Math.round(d.interpolatedPos[1])
+      d._history[realIndex] = Math.round(d.currentState[0])
+      d._history[realIndex + 1] = Math.round(d.currentState[1])
     }
   }
 
