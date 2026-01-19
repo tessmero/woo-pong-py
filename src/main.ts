@@ -20,7 +20,6 @@ import { Gui } from 'guis/gui'
 import { Graphics } from 'gfx/graphics'
 import { TitleScreen } from 'title-screen'
 import { Scrollbar } from 'scrollbar'
-import { setElementLabel } from 'guis/gui-html-elements'
 
 async function main() {
   // Wait for the title iframe to be loaded before continuing
@@ -34,7 +33,7 @@ async function main() {
     }
   })
 
-
+  // bind start button in title screen
   const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
   const inner = iframe.contentDocument as Document
   const startBtn = inner.getElementById('start-button') as HTMLElement
@@ -43,27 +42,39 @@ async function main() {
   gfxConfig.refreshConfig()
 
   const pinballWizard = new PinballWizard()
+  pinballWizard.loadingState = 'B'
 
   // pinballWizard.config.refreshConfig()
 
   // TestSupport // support automated report on tessmero.github.io //
   ;(window as any).TestSupport = getTestSupport(pinballWizard) // eslint-disable-line @typescript-eslint/no-explicit-any
 
+  pinballWizard.loadingState = 'C'
   // window.addEventListener('keydown', (event) => {
   //   pinballWizard.gui.keydown(pinballWizard, event.code)
   // })
 
+  // show title screen
+  const titleScreenElem = document.getElementById('title-screen') as HTMLElement
+  titleScreenElem.classList.remove('hidden')
+  pinballWizard.loadingState = 'K'
+
   _initListeners(pinballWizard)
+  pinballWizard.loadingState = 'D'
   Scrollbar.initListeners(pinballWizard)
-  await _initLuts()
+  pinballWizard.loadingState = 'E'
+  await _initLuts(startBtn)
+  pinballWizard.loadingState = 'F'
   startBtn.innerHTML = 'START'
+  pinballWizard.loadingState = 'G'
 
   for (const guiName of GUI.NAMES) {
     Gui.preload(pinballWizard, guiName)
   }
+  pinballWizard.loadingState = 'H'
   pinballWizard.onResize()
+  pinballWizard.loadingState = 'I'
 
-  // bind start button in title screen
   startBtn.onclick = async () => {
     await pinballWizard.init()
     pinballWizard.gui = Gui.create('playing-gui')
@@ -72,14 +83,12 @@ async function main() {
     titleScreenElem.classList.add('hidden')
     Scrollbar.cvs.style.setProperty('display', 'block')
   }
-
-  // show title screen
-  const titleScreenElem = document.getElementById('title-screen') as HTMLElement
-  titleScreenElem.classList.remove('hidden')
+  pinballWizard.loadingState = 'J'
 
   if (isDevMode) {
     await applyDevMode(pinballWizard) // apply overrides
   }
+  pinballWizard.loadingState = 'L'
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // TestSupport // support automated report on tessmero.github.io
@@ -102,6 +111,8 @@ async function main() {
   }
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+  pinballWizard.loadingState = 'M'
+
   // main loop
   let lastTime = performance.now()
   function animate() {
@@ -119,6 +130,9 @@ async function main() {
       pinballWizard.update(dt)
     }
   }
+
+  pinballWizard.loadingState = null
+
   animate() // start first loop
 }
 
@@ -155,8 +169,21 @@ function _initListeners(pinballWizard: PinballWizard) {
   })
 }
 
-async function _initLuts() {
+async function _initLuts(loadingLabel: HTMLElement) {
   const isComputing = false
+
+  const totalTasks = Object.keys(SHAPE_PATHS).length + (LUT.NAMES.length - 1)
+  let tasksFinished = 0
+
+  async function finishTask() {
+    // // simulate lag
+    // await new Promise(resolve => setTimeout(resolve, 100))
+
+    tasksFinished++
+    const pctFinished = Math.floor(100 * tasksFinished / totalTasks)
+    loadingLabel.innerHTML = `LOADING (${pctFinished}%)`
+  }
+
   for (const lutName of LUT.NAMES) {
     if (lutName === 'obstacle-lut') {
       for (const shapeName of Object.keys(SHAPE_PATHS)) {
@@ -167,6 +194,10 @@ async function _initLuts() {
         else {
           await lut.loadAll()
         }
+
+        // simulate lag
+        // await new Promise(resolve => setTimeout(resolve, 100))
+        await finishTask()
       }
     }
     else {
@@ -178,6 +209,10 @@ async function _initLuts() {
       else {
         await lut.loadAll()
       }
+
+      // simulate lag
+      // await new Promise(resolve => setTimeout(resolve, 100))
+      await finishTask()
     }
   }
 }

@@ -5,7 +5,7 @@
  */
 
 const seed = 12345
-const winner = 4 // winning ball index for seed (guess and check)
+const winner = 1 // winning ball index for seed (guess and check)
 
 export const puppetTestSequence = [
   {
@@ -21,43 +21,49 @@ export const puppetTestSequence = [
   {
     test: 'change-default-setting',
     key: 'topSpeed',
-    defaultValue: 10,
+    defaultValue: 30,
     value: 1000,
   },
   {
     test: 'change-default-setting',
     key: 'speedLerp',
-    defaultValue: 1e-3,
+    defaultValue: 4e-3,
     value: 1,
   },
   {
+    // start game
     test: 'button-changes-state',
     state: 'title-screen',
     button: 'start-button',
-    targetState: 'playing-no-ball-selected',
+    targetState: 'normal',
   },
   {
+    // pause
     test: 'button-changes-state',
-    state: 'playing-no-ball-selected',
-    button: 'playPauseBtn',
-    targetState: 'paused-no-ball-selected',
+    state: 'normal',
+    button: 'pauseBtn',
+    targetState: 'paused',
   },
   {
+    // select ball
     test: 'button-changes-state',
-    state: 'paused-no-ball-selected',
+    state: 'paused',
     button: `ball-${winner}`,
-    targetState: `paused-ball-${winner}-selected`,
+    targetState: `paused-ball-${winner}`,
   },
   {
+    // unpause
     test: 'button-changes-state',
-    state: `paused-ball-${winner}-selected`,
-    button: 'playPauseBtn',
-    targetState: `playing-ball-${winner}-selected`,
+    state: `paused-ball-${winner}`,
+    button: 'playBtn',
+    targetState: `normal-ball-${winner}`,
   },
   {
+    // fast forward to finish
     test: 'button-changes-state',
-    state: `playing-ball-${winner}-selected`,
-    button: 'speedUpBtn',
+    state: `normal-ball-${winner}`,
+    button: 'fasterBtn',
     targetState: `ball-${winner}-finished`,
+    // targetState: `finished`,
   },
 ]

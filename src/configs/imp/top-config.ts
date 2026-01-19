@@ -45,12 +45,12 @@ const topConfigTree = {
     },
 
     topSpeed: {
-      value: 10,
+      value: 30,
       min: 2,
       max: 1e6,
       onChange: () => {
         topConfig.refreshConfig()
-        SPEEDS.fast = topConfig.flatConfig.topSpeed
+        SPEEDS.faster = topConfig.flatConfig.topSpeed
       },
     },
 

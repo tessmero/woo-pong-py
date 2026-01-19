@@ -14,11 +14,11 @@ import { type ShapeName } from 'simulation/shapes'
 import type { Vec2 } from 'util/math-util'
 
 const _obstacles: Array<[Vec2]> = []
-const dx = 20
-const dy = 20
-let x = 18
-while (x < 85) {
-  let y = 18
+const dx = 23
+const dy = 19
+let x = 15
+while (x < 90) {
+  let y = 14
   while (y < 85) {
     _obstacles.push([[x, y] as Vec2])
     y += dy
@@ -32,25 +32,13 @@ export class BasicRoom extends Room {
   }
 
   buildObstacles(): Array<Obstacle> {
-    const possibleShapes: Array<ShapeName> = [
+    const isMixed = ((Perturbations.nextInt() >>> 0) % 10) > 8
 
-      'diamond',
-      // 'flipper',
-      'star',
-      'pawn',
-      'shield',
-      'meeple',
-      'club',
-      'bishop',
-      'bolt',
-      'airplane',
-      'head',
-      'note',
-
-    ]
+    let shapeName = possibleShapes[(Perturbations.nextInt() >>> 0) % possibleShapes.length]
     const obstacles = _obstacles.map(([pos]) => {
-      const i = (Perturbations.nextInt() >>> 0)
-      const shapeName = possibleShapes[i % possibleShapes.length]
+      if (isMixed) {
+        shapeName = possibleShapes[(Perturbations.nextInt() >>> 0) % possibleShapes.length]
+      }
       const result = new Obstacle(
         [pos[0] * VALUE_SCALE, pos[1] * VALUE_SCALE + this.bounds[1]],
         shapeName,
@@ -66,3 +54,20 @@ export class BasicRoom extends Room {
     return [...this.wedges(), ...obstacles]
   }
 }
+
+const possibleShapes: Array<ShapeName> = [
+
+  'diamond',
+  // 'flipper',
+  'star',
+  'pawn',
+  'shield',
+  'meeple',
+  'club',
+  'bishop',
+  'bolt',
+  'airplane',
+  'head',
+  'note',
+
+]

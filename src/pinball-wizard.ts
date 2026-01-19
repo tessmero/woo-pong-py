@@ -37,6 +37,7 @@ export class PinballWizard {
   public activeSim!: Simulation // assigned in init
   public gui!: Gui // assigned in init
 
+  public loadingState: string | null = 'A'
   public isTitleScreen = true
   public selectedDiskIndex = -1
   public currentRoomIndex = 0 // greatest room index that has had balls
@@ -219,7 +220,7 @@ export class PinballWizard {
     const x = Graphics.drawOffset[0] + rawx * Graphics.drawSimScale
     const y = Graphics.drawOffset[1] + rawy * Graphics.drawSimScale
     return [
-      x - rad, y - rad, 2 * rad, 2 * rad,
+      x - rad + Graphics.cssLeft, y - rad, 2 * rad, 2 * rad,
     ]
   }
 

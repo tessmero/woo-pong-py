@@ -25,7 +25,9 @@ export const PLAYING_LAYOUT = {
 
   topBar: {
     parent: '_outerMargin',
+    width: () => 6 * bh() + 4 * im(),
     height: () => bh(),
+    left: 'auto',
     // 'top@portrait': '-100%', // hidden
     // () => bh() + im(),
   },

@@ -13,11 +13,17 @@ export function getTestSupport(pinballWizard: PinballWizard) {
 
     locateElement: (id: string) => {
       if (pinballWizard.isTitleScreen) {
-        // lookup element in title screen html doc
-        const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
-        const inner = iframe.contentDocument as Document
-        const elem = inner.getElementById(id)
-        const { x, y, width, height } = elem?.getBoundingClientRect() as DOMRect
+        // // lookup element in title screen html doc
+        // const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
+        // const inner = iframe.contentDocument as Document
+        // const elem = inner.getElementById(id)
+        const elem = (window as any).startBtn // eslint-disable-line @typescript-eslint/no-explicit-any
+
+        const domRect = elem?.getBoundingClientRect() as DOMRect
+        if (!domRect || !Object.hasOwn(domRect, 'x')) {
+          return [350,450,100,50]
+        }
+        const { x, y, width, height } = domRect
         return [x, y, width, height]
       }
       else if (id.startsWith('ball-')) {
@@ -36,7 +42,7 @@ export function getTestSupport(pinballWizard: PinballWizard) {
           return [x * ps, y * ps, w * ps, h * ps]
         }
       }
-      return [100, 100, 100, 100]
+      return null
     },
 
     getCameraPos: () => {
@@ -57,6 +63,9 @@ export function getTestSupport(pinballWizard: PinballWizard) {
     },
 
     getGameState: () => {
+      if( pinballWizard.loadingState){
+        return pinballWizard.loadingState
+      }
       if (pinballWizard.isTitleScreen) {
         return 'title-screen'
       }
@@ -64,14 +73,15 @@ export function getTestSupport(pinballWizard: PinballWizard) {
       const winner = pinballWizard.activeSim.winningDiskIndex
       if (winner !== -1) {
         return `ball-${winner}-finished`
+        // return `finished`
       }
 
-      const base = pinballWizard.speed === 'paused' ? 'paused' : 'playing'
+      const base = pinballWizard.speed
       const ball = pinballWizard.selectedDiskIndex
       if (ball === -1) {
-        return `${base}-no-ball-selected`
+        return `${base}`
       }
-      return `${base}-ball-${ball}-selected`
+      return `${base}-ball-${ball}`
     },
 
     getCursorState: () => {

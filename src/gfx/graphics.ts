@@ -95,10 +95,12 @@ export class Graphics {
     cvs.width = Graphics.innerWidth
     cvs.height = cvs.clientHeight * dpr
     Graphics.drawOffset[0] = 0
+    Graphics.cssLeft = cssLeft
     Scrollbar.setBounds(scrollbar, pw)
   }
 
-  static drawOffset: Vec2 = [0, 0] // set in draw
+  static drawOffset: Vec2 = [0, 0] 
+  static cssLeft = 0
 
   static drawSimScale: number = 1 // set in drawSim
   static drawSim(pw: PinballWizard) {

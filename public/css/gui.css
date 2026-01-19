@@ -53,7 +53,7 @@
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: black;
-  background: transparent;
+  background: #eee;
   opacity: 1;
   transform: scale(1);
   text-align: center;

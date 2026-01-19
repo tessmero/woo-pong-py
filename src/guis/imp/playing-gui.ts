@@ -11,7 +11,7 @@ import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
 import type { PinballWizard } from 'pinball-wizard'
 import type { Speed } from 'simulation/constants'
-import { STEP_DURATION } from 'simulation/constants'
+import { SECONDS_BEFORE_BRANCH, STEP_DURATION, stepsToSeconds } from 'simulation/constants'
 import type { Vec2 } from 'util/math-util'
 
 type PlayingElem = GuiElement<PlayingLayoutKey>
@@ -124,17 +124,28 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
     })
   }
 
+  // private lastSpeed: Speed | null = null
+  // private lastStatus: string | null = null
   update(pinballWizard: PinballWizard, _dt: number) {
     // update clock display
     const steps = pinballWizard.activeSim.stepCount
-    const label = formatTime(Math.floor(steps * STEP_DURATION / 1000))
+    const seconds = stepsToSeconds(steps)
+    const label = formatTime(seconds)
     setElementLabel(clock, label)
 
     // update active speed button
+    // if (pinballWizard.speed !== this.lastSpeed) {
     for (const [speed, btn] of Object.entries(speedBtns)) {
       const isActive = (speed === pinballWizard.speed)
       btn.htmlElem!.classList.toggle('active', isActive)
     }
+    // }
+    // this.lastSpeed = pinballWizard.speed
+
+    // update status text
+    const status = getStatusText(pinballWizard, seconds)
+    setElementLabel(topLabel, status)
+    // this.lastStatus = status
   }
 
   move(_pinballWizard: PinballWizard, _mousePos: Vec2) {
@@ -148,7 +159,6 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
     for (const elem of elements) {
       toggleElement(elem, !pinballWizard.isTitleScreen)
     }
-    setElementLabel(topLabel, getStatusText(pinballWizard))
     // const hasBranched = pinballWizard.hasBranched
     // for (const btn of diskBtns) {
     //   toggleElement(btn, !hasBranched)
@@ -156,21 +166,27 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
   }
 }
 
-function getStatusText(pinballWizard: PinballWizard) {
+function getStatusText(
+  pinballWizard: PinballWizard, 
+  secondsElapsed: number
+) {
+
+  const remainingSeconds = SECONDS_BEFORE_BRANCH - secondsElapsed
+
   if (pinballWizard.activeSim.winningDiskIndex !== -1) {
     return 'finished'
   }
   if (pinballWizard.isHalted) {
-    return 'You must choose a ball'
+    return `you must choose a ball`
   }
   const i = pinballWizard.selectedDiskIndex
   if (i === -1) {
-    return 'Choose a ball'
+    return `${remainingSeconds} sec choose a ball`
   }
   if (pinballWizard.hasBranched) {
-    return 'Wait to finish'
+    return `Choice locked. Wait to finish.`
   }
 
-  const pattern = pinballWizard.activeSim.disks[i].pattern
-  return `selected ${pattern} disk`
+  // const patternName = pinballWizard.activeSim.disks[i].pattern
+  return `${remainingSeconds} sec to reconsider`
 }
