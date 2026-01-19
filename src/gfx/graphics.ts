@@ -10,8 +10,7 @@ import { twopi } from 'util/math-util'
 import type { Barrier } from '../simulation/barrier'
 import type { Obstacle } from '../simulation/obstacle'
 import { drawDisk } from './disk-gfx'
-import type { Simulation } from 'simulation/simulation'
-import { VALUE_SCALE } from 'simulation/constants'
+import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import { Scrollbar } from 'scrollbar'
 import type { PinballWizard } from 'pinball-wizard'
 
@@ -40,18 +39,15 @@ export class Graphics {
 
     const {
       isHidden, pos, points,
-      // boundingRect, collisionRect
+      boundingRect, collisionRect
     } = obstacle
 
     if (isHidden) return
 
-    // // debug
-    // ctx.strokeStyle = 'red'
-    // ctx.lineWidth = 1 * VALUE_SCALE
-    // ctx.strokeRect(...boundingRect)
-    // ctx.strokeStyle = 'green'
-    // ctx.lineWidth = 1 * VALUE_SCALE
-    // ctx.strokeRect(...collisionRect)
+    // debug
+    ctx.strokeStyle = 'red'
+    ctx.lineWidth = 1 * VALUE_SCALE
+    ctx.strokeRect(...boundingRect)
 
     ctx.beginPath()
     for (const [x, y] of points) {
@@ -98,7 +94,11 @@ export class Graphics {
   static drawOffset: Vec2 = [0, 0] // set in draw
 
   static drawSimScale: number = 1 // set in drawSim
-  static drawSim(sim: Simulation, selectedDiskIndex: number) {
+  static drawSim(pw: PinballWizard) {
+    Graphics._updateSimViewRect(pw)
+
+    const sim = pw.activeSim
+    const { selectedDiskIndex, simViewRect } = pw
     const scale = Graphics.innerWidth / 100 / VALUE_SCALE
     Graphics.drawSimScale = scale
     // Graphics.drawScale = scale
@@ -116,7 +116,20 @@ export class Graphics {
       const isWinner = (diskIndex === sim.winningDiskIndex)
       drawDisk(ctx, disk, isSelected, isWinner)
     }
+
+    const vy0 = simViewRect[1]
+    const vy1 = vy0 + simViewRect[3]
+    console.log('draw obstacles')
     for (const obstacle of sim.obstacles) {
+      const [_x, y, _w, h] = obstacle.collisionRect
+      if (y > vy1){
+        // console.log('skip obstacle below view')
+        continue // obstacle below view
+      }
+      if ((y + h) < vy0){
+        // console.log('skip obstacle above view')
+        continue // obstacle above view
+      }
       Graphics.drawObstacle(ctx, obstacle)
     }
     // for (const barrier of sim.barriers) {
@@ -135,7 +148,7 @@ export class Graphics {
     // ctx.lineWidth = 0.5 * VALUE_SCALE
     // ctx.strokeRect(...sim.level.bounds)
 
-    // draw bounds
+    // draw level bounds
     const thick = 2 * VALUE_SCALE
     const x0 = sim.level.bounds[0]
     const y0 = sim.level.bounds[1]
@@ -144,6 +157,12 @@ export class Graphics {
     ctx.fillStyle = OBSTACLE_COLOR
     ctx.fillRect(x0 - thick, y0, thick, y1 - y0)
     ctx.fillRect(x1, y0, thick, y1 - y0)
+
+    // draw mouse pose
+    Graphics.drawCursor(pw.simMousePos)
+
+    // draw view rect
+    Graphics.drawViewRect(pw.simViewRect)
 
     // // debug room bounds
     // ctx.strokeStyle = 'blue'
@@ -180,14 +199,33 @@ export class Graphics {
     // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
   }
 
+  private static _updateSimViewRect(pw: PinballWizard) {
+    const { drawOffset, drawSimScale } = this
+    pw.simViewRect[0] = drawOffset[0] / drawSimScale
+    pw.simViewRect[1] = -drawOffset[1] / drawSimScale
+    pw.simViewRect[2] = Graphics.innerWidth / drawSimScale
+    // if (pw.activeSim)pw.simViewRect[2] = pw.activeSim.level.bounds[2]
+    pw.simViewRect[3] = window.innerHeight / drawSimScale * window.devicePixelRatio
+
+    // // debug, shrink simViewRect
+    // const shrinkFraction = 0.2
+    // const shrinkAmt = pw.simViewRect[3] * shrinkFraction
+    // pw.simViewRect[1] += shrinkAmt
+    // pw.simViewRect[3] -= 2 * shrinkAmt
+  }
+
   static drawCursor(pos: Vec2) {
-    // console.log(`cursor: ${JSON.stringify(pos.map(val => val * VALUE_SCALE))}`)
-    const x = (Graphics.drawOffset[0] + pos[0]) * window.devicePixelRatio
-    const y = (Graphics.drawOffset[1] + pos[1]) * window.devicePixelRatio
+    const [x, y] = pos
     ctx.fillStyle = 'rgba(100,100,100,.5)'
     ctx.beginPath()
     ctx.moveTo(x, y)
-    ctx.arc(x, y, 10, 0, twopi)
+    ctx.arc(x, y, DISK_RADIUS, 0, twopi)
     ctx.fill()
+  }
+
+  static drawViewRect(rect: Rectangle) {
+    ctx.strokeStyle = 'red'
+    ctx.lineWidth = DISK_RADIUS
+    ctx.strokeRect(...rect)
   }
 }

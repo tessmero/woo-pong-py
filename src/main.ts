@@ -19,6 +19,7 @@ import { SHAPE_PATHS } from 'simulation/shapes'
 import { Gui } from 'guis/gui'
 import { Graphics } from 'gfx/graphics'
 import { TitleScreen } from 'title-screen'
+import { Scrollbar } from 'scrollbar'
 
 async function main() {
   // Wait for the title iframe to be loaded before continuing
@@ -64,6 +65,7 @@ async function main() {
     pinballWizard.isTitleScreen = false
     pinballWizard.onResize()
     titleScreenElem.classList.add('hidden')
+    Scrollbar.cvs.style.setProperty('display', 'block')
   }
 
   // show title screen

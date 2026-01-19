@@ -151,10 +151,12 @@ export class PinballWizard {
     this.camera.update(dt, this)
     Graphics.drawOffset[1] = this.camera.pos * Graphics.drawSimScale
       + Graphics.cvs.height / 2
-    Graphics.drawSim(this.activeSim, this.selectedDiskIndex)
 
-    // draw mouse pose
-    // Graphics.drawCursor(this.mousePos)
+    Graphics.drawSim(this)
+
+    // // update simViewRect y-value
+    // const { drawOffset, drawSimScale } = Graphics
+    // this.simViewRect[1] = -drawOffset[1] / drawSimScale
 
     // always repaint scrollbar
     Scrollbar.isRepaintQueued = true
@@ -209,7 +211,8 @@ export class PinballWizard {
   }
 
   private readonly mousePos: Vec2 = [0, 0]
-  private readonly simMousePos: Vec2 = [0, 0]
+  public readonly simMousePos: Vec2 = [0, 0]
+  public readonly simViewRect: Rectangle = [1, 1, 1, 1]
   move(mousePos: Vec2): Vec2 {
     if (this.isMouseDown) {
       this.camera.drag(this.dragY, mousePos[1])
@@ -227,6 +230,11 @@ export class PinballWizard {
     const simMouseY = mousePos[1] / drawSimScale * window.devicePixelRatio - drawOffset[1] / drawSimScale
     this.simMousePos[0] = simMouseX
     this.simMousePos[1] = simMouseY
+
+    // this.simViewRect[0] = drawOffset[0] / drawSimScale
+    // this.simViewRect[1] = -drawOffset[1] / drawSimScale
+    // if( this.activeSim )this.simViewRect[2] = this.activeSim.level.bounds[2]
+    // this.simViewRect[3] = window.innerHeight / drawSimScale * window.devicePixelRatio
 
     // // // debug, position obstacle on mouse
     // const obs = this.activeSim.obstacles.at(-1) as Obstacle
@@ -290,6 +298,13 @@ export class PinballWizard {
 
   public onResize() {
     Graphics.onResize(this)
+
+    // // update simViewRect width and height
+    // const { drawOffset, drawSimScale } = Graphics
+    // this.simViewRect[0] = drawOffset[0] / drawSimScale
+    // this.simViewRect[1] = -drawOffset[1] / drawSimScale
+    // if (this.activeSim) this.simViewRect[2] = this.activeSim.level.bounds[2]
+    // this.simViewRect[3] = window.innerHeight / drawSimScale * window.devicePixelRatio
 
     // // on title screen, set level bounds to match screen height
     // console.log('poop')
