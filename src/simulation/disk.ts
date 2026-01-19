@@ -144,8 +144,8 @@ export class Disk {
     const realIndex = Disk.historyIndex * 2
     for (const d of disks) {
       // push current position to history
-      d._history[realIndex] = Math.round(d.currentState[0])
-      d._history[realIndex + 1] = Math.round(d.currentState[1])
+      d._history[realIndex] = d.currentState.x
+      d._history[realIndex + 1] = d.currentState.y
     }
   }
 

@@ -7,6 +7,7 @@
 
 import { solveBreakout } from 'breakout-solver'
 import { Room } from 'rooms/room'
+import { Scrollbar } from 'scrollbar'
 import { BOBRICK_HEIGHT, BOBRICK_PADDING, BOBRICK_WIDTH, VALUE_SCALE } from 'simulation/constants'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
@@ -59,6 +60,7 @@ export class BreakoutRoom extends Room {
     }
 
     obstacle.isHidden = true // brick disappears when hit
+    Scrollbar.isRepaintQueued = true // update mini view of obstacles in scrollbar
 
     if (this.hitSequence.includes(brickIndex)) {
       throw new Error('brick has already been hit')

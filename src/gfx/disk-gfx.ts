@@ -58,7 +58,7 @@ function createHexDotsPattern(
   dotColor = '#000', bgColor = '#fff',
   dotRadius = 12, spacing = 32,
 ) {
-  if (typeof document === 'undefined') return bgColor
+  if (typeof document === 'undefined') return null
   const c = document.createElement('canvas')
   const ctx = c.getContext('2d') as CanvasRenderingContext2D
   const h = spacing * Math.sqrt(3) / 2
@@ -80,16 +80,17 @@ function createHexDotsPattern(
       }
     }
   }
-  const p = ctx.createPattern(c, 'repeat') as CanvasPattern
-  p.setTransform(new DOMMatrix().scale(VALUE_SCALE / 10, VALUE_SCALE / 10))
-  return p
+  return c
+  // const p = ctx.createPattern(c, 'repeat') as CanvasPattern
+  // p.setTransform(new DOMMatrix().scale(VALUE_SCALE / 10, VALUE_SCALE / 10))
+  // return p
 }
 
 function createHorizontalStripePattern(
   stripeColor = '#000', bgColor = '#fff',
   stripeHeight = 1, gapHeight = 1,
 ) {
-  if (typeof document === 'undefined') return 'white'
+  if (typeof document === 'undefined') return null
   const patternCanvas = document.createElement('canvas')
   const totalHeight = stripeHeight + gapHeight
 
@@ -106,9 +107,10 @@ function createHorizontalStripePattern(
   pctx.fillStyle = stripeColor
   pctx.fillRect(0, 0, patternCanvas.width, stripeHeight)
 
-  const pattern = pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
-  pattern.setTransform(new DOMMatrix().scale(VALUE_SCALE, VALUE_SCALE))
-  return pattern
+  return patternCanvas
+  // const pattern = pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
+  // pattern.setTransform(new DOMMatrix().scale(VALUE_SCALE, VALUE_SCALE))
+  // return pattern
 }
 
 // NEW: vertical stripes for v-stripe
@@ -118,7 +120,7 @@ function createVerticalStripePattern(
   stripeWidth = 1,
   gapWidth = 1,
 ) {
-  if (typeof document === 'undefined') return 'white'
+  if (typeof document === 'undefined') return null
   const patternCanvas = document.createElement('canvas')
   const totalWidth = stripeWidth + gapWidth
 
@@ -136,9 +138,10 @@ function createVerticalStripePattern(
   pctx.fillStyle = stripeColor
   pctx.fillRect(0, 0, stripeWidth, patternCanvas.height)
 
-  const pattern = pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
-  pattern.setTransform(new DOMMatrix().scale(VALUE_SCALE, VALUE_SCALE))
-  return pattern
+  return patternCanvas
+  // const pattern = pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
+  // pattern.setTransform(new DOMMatrix().scale(VALUE_SCALE, VALUE_SCALE))
+  // return pattern
 }
 
 function createCheckeredPattern(
@@ -147,7 +150,7 @@ function createCheckeredPattern(
   squareSize = 512 / 8,
   resolution = 512,
 ) {
-  if (typeof document === 'undefined') return 'white'
+  if (typeof document === 'undefined') return null
   // Create a larger canvas for higher resolution
   const patternCanvas = document.createElement('canvas')
   patternCanvas.width = resolution
@@ -182,17 +185,48 @@ function createCheckeredPattern(
       pctx.restore()
     }
   }
-  const pattern = pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
-  pattern.setTransform(new DOMMatrix().scale(VALUE_SCALE / 50, VALUE_SCALE / 50))
-  return pattern
+  return patternCanvas
+  // const pattern = pctx.createPattern(patternCanvas, 'repeat') as CanvasPattern
+  // pattern.setTransform(new DOMMatrix().scale(VALUE_SCALE / 50, VALUE_SCALE / 50))
+  // return pattern
 }
 
-const PATTERN_FILLERS: Record<DiskPattern, CanvasPattern | string> = {
-  'black': 'black',
-  'white': 'white',
+export const PATTERN_CANVASES = {
   'v-stripe': createVerticalStripePattern(),
   'h-stripe': createHorizontalStripePattern(),
   'checkered': createCheckeredPattern(),
   'hex-a': createHexDotsPattern('#000', '#fff'),
   'hex-b': createHexDotsPattern('#fff', '#000', 4),
+} as const satisfies Partial<Record<DiskPattern, HTMLCanvasElement | null>>
+
+export const PATTERN_SCALES: Record<DiskPattern, number> = {
+  'black': VALUE_SCALE,
+  'white': VALUE_SCALE,
+  'h-stripe': VALUE_SCALE,
+  'v-stripe': VALUE_SCALE,
+  'checkered': VALUE_SCALE / 50,
+  'hex-a': VALUE_SCALE / 10,
+  'hex-b': VALUE_SCALE / 10,
+}
+
+export const PATTERN_FILLERS: Record<DiskPattern, CanvasPattern | string> = {
+  'black': 'black',
+  'white': 'white',
+  'h-stripe': buildPattern('h-stripe'),
+  'v-stripe': buildPattern('v-stripe'),
+  'checkered': buildPattern('checkered'),
+  'hex-a': buildPattern('hex-a'),
+  'hex-b': buildPattern('hex-b'),
+}
+
+export function buildPattern(
+  key: DiskPattern, scale = 1,
+): CanvasPattern | string {
+  const cvs = PATTERN_CANVASES[key]
+  if (!cvs) return 'white'
+  const pctx = cvs.getContext('2d') as CanvasRenderingContext2D
+  const pattern = pctx.createPattern(cvs, 'repeat') as CanvasPattern
+  scale *= PATTERN_SCALES[key]
+  pattern.setTransform(new DOMMatrix().scale(scale, scale))
+  return pattern
 }

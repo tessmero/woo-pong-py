@@ -9,7 +9,6 @@ import { Lut } from '../lut'
 import { DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
-import { BreakoutRoom } from 'rooms/imp/breakout-room'
 
 export type RaceLeaf = Array<number>
 
@@ -67,12 +66,14 @@ function _tryComputeLeaf(): Array<number> | null {
     () => ({ midSeed: -1, roomSeqs: [] }),
   )
 
-  // skip simulations and build summy race-lut
-  return [
-    commonStartSeed,
-    ...branches.map(({ midSeed }) => midSeed),
-    // ...breakoutSolution,
-  ]
+  // // skip simulations and build summy race-lut
+  // return [
+  //   commonStartSeed,
+  //   ...branches.map(({ midSeed }) => midSeed),
+  //   // ...breakoutSolution,
+  // ]
+
+  console.log(`attempting to solve race with start seed ${commonStartSeed}...`)
 
   let _simCount = 0
   let _stepCount = 0

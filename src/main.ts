@@ -120,26 +120,26 @@ main()
 function _initListeners(pinballWizard: PinballWizard) {
   const rawMousePos: Vec2 = [0, 0]
   Graphics.cvs.addEventListener('pointermove', (e) => {
-    rawMousePos[0] = e.clientX
-    rawMousePos[1] = e.clientY
+    rawMousePos[0] = e.offsetX
+    rawMousePos[1] = e.offsetY
     pinballWizard.move(rawMousePos)
   })
 
   Graphics.cvs.addEventListener('pointerdown', (e) => {
-    rawMousePos[0] = e.clientX
-    rawMousePos[1] = e.clientY
+    rawMousePos[0] = e.offsetX
+    rawMousePos[1] = e.offsetY
     pinballWizard.down(rawMousePos)
   })
 
   Graphics.cvs.addEventListener('pointerup', (e) => {
-    rawMousePos[0] = e.clientX
-    rawMousePos[1] = e.clientY
+    rawMousePos[0] = e.offsetX
+    rawMousePos[1] = e.offsetY
     pinballWizard.up(rawMousePos)
   })
 
   Graphics.cvs.addEventListener('pointerleave', (e) => {
-    rawMousePos[0] = e.clientX
-    rawMousePos[1] = e.clientY
+    rawMousePos[0] = e.offsetX
+    rawMousePos[1] = e.offsetY
     pinballWizard.up(rawMousePos)
   })
 

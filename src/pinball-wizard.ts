@@ -14,10 +14,12 @@ import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
 import { GUI } from 'imp-names'
 import type { BreakoutRoom } from 'rooms/imp/breakout-room'
+import { Scrollbar } from 'scrollbar'
 import type { Speed } from 'simulation/constants'
 import {
   BOBRICK_COUNT, DISK_COUNT, DISK_RADIUS, DISK_RADSQ,
   LOOK_AHEAD_STEPS,
+  ROOM_COUNT,
   SPEEDS, STEPS_BEFORE_BRANCH, VALUE_SCALE,
 } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
@@ -38,6 +40,7 @@ export class PinballWizard {
   public isTitleScreen = true
   public speed: Speed = 'normal'
   public selectedDiskIndex = -1
+  public currentRoomIndex = 0 // greatest room index that has had balls
 
   public readonly camera = new Camera()
 
@@ -151,9 +154,28 @@ export class PinballWizard {
     Graphics.drawSim(this.activeSim, this.selectedDiskIndex)
 
     // draw mouse pose
-    Graphics.drawCursor(this.mousePos)
+    // Graphics.drawCursor(this.mousePos)
+
+    // always repaint scrollbar
+    Scrollbar.isRepaintQueued = true
+
+    // repaint scrollbar if necessary
+    if (Scrollbar.isRepaintQueued) {
+      Scrollbar.isRepaintQueued = false
+      Scrollbar.repaint(this)
+    }
 
     this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)
+
+    // check if next room was reached
+    const nextRoomIndex = this.currentRoomIndex + 1
+    if (nextRoomIndex < ROOM_COUNT) {
+      if (this.activeSim.maxBallY > this.activeSim.level.rooms[nextRoomIndex].bounds[1]) {
+      // just reached new room
+        this.currentRoomIndex = nextRoomIndex
+        this.camera.jumpToRoom(this, this.currentRoomIndex)
+      }
+    }
   }
 
   public get hasBranched() {
@@ -267,7 +289,7 @@ export class PinballWizard {
   }
 
   public onResize() {
-    Graphics.onResize()
+    Graphics.onResize(this)
 
     // // on title screen, set level bounds to match screen height
     // console.log('poop')

@@ -15,8 +15,8 @@ import type { Rectangle, Vec2 } from 'util/math-util'
 const _wedges: Array<[Vec2, ShapeName, boolean?]> = [
   // [[20 * VALUE_SCALE, 10 * VALUE_SCALE], 'wedge'],
   // [[80 * VALUE_SCALE, 10 * VALUE_SCALE], 'wedge'],
-  [[20 * VALUE_SCALE, 100 * VALUE_SCALE], 'wedge', true],
-  [[80 * VALUE_SCALE, 100 * VALUE_SCALE], 'wedge'], // shape has flipped X
+  [[15 * VALUE_SCALE, 100 * VALUE_SCALE], 'flipper', true],
+  [[85 * VALUE_SCALE, 100 * VALUE_SCALE], 'flipper'], // shape has flipped X
 ]
 
 export abstract class Room {

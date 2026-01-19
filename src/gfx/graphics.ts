@@ -5,17 +5,18 @@
  * canvas 2d graphics context.
  */
 
-import type { Vec2 } from 'util/math-util'
+import type { Rectangle, Vec2 } from 'util/math-util'
 import { twopi } from 'util/math-util'
 import type { Barrier } from '../simulation/barrier'
 import type { Obstacle } from '../simulation/obstacle'
 import { drawDisk } from './disk-gfx'
 import type { Simulation } from 'simulation/simulation'
 import { VALUE_SCALE } from 'simulation/constants'
+import { Scrollbar } from 'scrollbar'
 import type { PinballWizard } from 'pinball-wizard'
 
-const cvs = document.getElementById('sim-canvas') as HTMLCanvasElement
-const ctx = cvs.getContext('2d') as CanvasRenderingContext2D
+const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
+const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
 
 const OBSTACLE_COLOR = '#444'
 
@@ -34,7 +35,7 @@ export class Graphics {
     ctx.fillRect(...barrier.xywh)
   }
 
-  static drawObstacle(obstacle: Obstacle) {
+  static drawObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
     ctx.fillStyle = OBSTACLE_COLOR
 
     const {
@@ -62,15 +63,36 @@ export class Graphics {
   }
 
   static innerWidth = 1
-  static onResize() {
+  static onResize(pw: PinballWizard) {
     const dpr = window.devicePixelRatio
-    cvs.width = cvs.clientWidth * dpr
-    cvs.height = cvs.clientHeight * dpr
+    const screenWidth = window.innerWidth * dpr
+    // cvs.width = cvs.clientWidth * dpr
+    // cvs.height = cvs.clientHeight * dpr
 
     const maxWidth = 600 * dpr
-    Graphics.innerWidth = Math.min(maxWidth, cvs.width)
+    Graphics.innerWidth = Math.min(maxWidth, screenWidth)
 
-    Graphics.drawOffset[0] = (cvs.width - Graphics.innerWidth) / 2
+    cvs.width = Graphics.innerWidth
+    cvs.height = cvs.clientHeight * dpr
+
+    const cssWidth = Math.floor(Graphics.innerWidth / dpr)
+    const cssLeft = Math.floor((screenWidth - Graphics.innerWidth) / 2 / dpr)
+    cvs.style.setProperty('position', `absolute`)
+    cvs.style.setProperty('width', `${cssWidth}px`)
+    cvs.style.setProperty('left', `${cssLeft}px`)
+
+    // Graphics.drawOffset[0] = (cvs.width - Graphics.innerWidth) / 2
+    Graphics.drawOffset[0] = 0
+
+    const scrollbarHeight = Math.min(600, window.innerHeight)
+    const levelShape = pw?.activeSim?.level?.bounds ?? [1, 1, 1, 1]
+    const scrollbar: Rectangle = [
+      cssLeft + cssWidth,
+      (window.innerHeight - scrollbarHeight) / 2,
+      scrollbarHeight * (levelShape[2] / levelShape[3]),
+      scrollbarHeight,
+    ]
+    Scrollbar.setBounds(scrollbar, pw)
   }
 
   static drawOffset: Vec2 = [0, 0] // set in draw
@@ -95,7 +117,7 @@ export class Graphics {
       drawDisk(ctx, disk, isSelected, isWinner)
     }
     for (const obstacle of sim.obstacles) {
-      Graphics.drawObstacle(obstacle)
+      Graphics.drawObstacle(ctx, obstacle)
     }
     // for (const barrier of sim.barriers) {
     //   Graphics.drawBarrier(barrier)

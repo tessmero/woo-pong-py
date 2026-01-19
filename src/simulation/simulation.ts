@@ -51,6 +51,8 @@ export class Simulation {
   branchSeed = -1
   winningDiskIndex = -1 // index of first disk to hit finish
 
+  maxBallY = -Infinity // record lowest y position for any ball so far
+
   constructor(seed: number) {
     // console.log(`construct simulation with starting seed ${seed}`)
 
@@ -119,6 +121,11 @@ export class Simulation {
       ) {
         // console.log(`disk index ${diskIndex} won after ${this._stepCount} steps`)
         this.winningDiskIndex = diskIndex
+      }
+
+      // update lowest Y
+      if (disk.nextState.y > this.maxBallY) {
+        this.maxBallY = disk.nextState.y
       }
     }
 

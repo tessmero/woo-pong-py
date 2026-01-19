@@ -16,7 +16,7 @@ export const SPEEDS: Record<Speed, number> = {
 export const DISK_COUNT = 10
 export const BOBRICK_COUNT = 30
 
-export const ROOM_COUNT = 5
+export const ROOM_COUNT = 10
 
 export const RESTITUTION = 1
 

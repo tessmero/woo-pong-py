@@ -106,7 +106,6 @@ for (const lutName of LUT.NAMES) {
     url: `/luts/${filename}`,
     hash: hash,
   }
-  console.log('C')
 }
 
 // Write the updated source code back to the file
