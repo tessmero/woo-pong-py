@@ -5,12 +5,13 @@
  */
 
 export type Speed
-  = 'normal' | 'paused' | 'fast'
+  = 'normal' | 'paused' | 'fast' | 'faster'
 
 export const SPEEDS: Record<Speed, number> = {
-  normal: 2,
   paused: 0.0,
+  normal: 2,
   fast: 6,
+  faster: 30,
 }
 
 export const DISK_COUNT = 10

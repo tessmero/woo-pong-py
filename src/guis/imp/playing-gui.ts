@@ -10,6 +10,7 @@ import { setElementLabel, toggleElement } from 'guis/gui-html-elements'
 import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
 import type { PinballWizard } from 'pinball-wizard'
+import type { Speed } from 'simulation/constants'
 import { STEP_DURATION } from 'simulation/constants'
 import type { Vec2 } from 'util/math-util'
 
@@ -41,31 +42,54 @@ function formatTime(totalSeconds) {
   return `${formattedMinutes}:${formattedSeconds}`
 }
 
-export const playPauseBtn: PlayingElem = {
-  layoutKey: 'playPauseBtn',
+const pauseBtn: PlayingElem = {
+  layoutKey: 'pauseBtn',
   display: {
     type: 'button',
-    label: 'PAUSE',
+    icon: 'pause',
   },
   click: ({ pinballWizard }) => {
-    if (pinballWizard.speed === 'normal') {
-      pinballWizard.speed = 'paused'
-    }
-    else {
-      pinballWizard.speed = 'normal'
-    }
+    pinballWizard.speed = 'paused'
+  },
+}
+const playBtn: PlayingElem = {
+  layoutKey: 'playBtn',
+  display: {
+    type: 'button',
+    icon: 'play',
+  },
+  click: ({ pinballWizard }) => {
+    pinballWizard.speed = 'normal'
   },
 }
 
-export const speedUpBtn: PlayingElem = {
-  layoutKey: 'speedUpBtn',
+const fastBtn: PlayingElem = {
+  layoutKey: 'fastBtn',
   display: {
     type: 'button',
-    label: 'speed up',
+    icon: 'fast',
   },
   click: ({ pinballWizard }) => {
     pinballWizard.speed = 'fast'
   },
+}
+
+const fasterBtn: PlayingElem = {
+  layoutKey: 'fasterBtn',
+  display: {
+    type: 'button',
+    icon: 'faster',
+  },
+  click: ({ pinballWizard }) => {
+    pinballWizard.speed = 'faster'
+  },
+}
+
+const speedBtns: Record<Speed, PlayingElem> = {
+  paused: pauseBtn,
+  normal: playBtn,
+  fast: fastBtn,
+  faster: fasterBtn,
 }
 
 // export const diskBtns: Array<PlayingElem> = Array.from({ length: DISK_COUNT }, (_, i) => ({
@@ -84,8 +108,10 @@ export const speedUpBtn: PlayingElem = {
 const elements: Array<PlayingElem> = [
   topLabel,
   clock,
-  playPauseBtn,
-  speedUpBtn,
+  pauseBtn,
+  playBtn,
+  fastBtn,
+  fasterBtn,
   // ...diskBtns,
 ]
 
@@ -99,9 +125,16 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
   }
 
   update(pinballWizard: PinballWizard, _dt: number) {
+    // update clock display
     const steps = pinballWizard.activeSim.stepCount
     const label = formatTime(Math.floor(steps * STEP_DURATION / 1000))
     setElementLabel(clock, label)
+
+    // update active speed button
+    for (const [speed, btn] of Object.entries(speedBtns)) {
+      const isActive = (speed === pinballWizard.speed)
+      btn.htmlElem!.classList.toggle('active', isActive)
+    }
   }
 
   move(_pinballWizard: PinballWizard, _mousePos: Vec2) {

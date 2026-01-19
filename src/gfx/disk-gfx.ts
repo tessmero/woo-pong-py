@@ -19,7 +19,7 @@ export function drawDisk(
   // const [cx, cy, _dx, _dy] = disk.currentState
   const [cx, cy] = disk.interpolatedPos
 
-  const edgeRad = VALUE_SCALE * 0.5 * (isSelected ? 5 : 1)
+  const edgeRad = VALUE_SCALE * 0.8 * (isSelected ? 5 : 1)
   const tailShrinkRatio = 2
   // ctx.strokeStyle = 'black'
   // ctx.beginPath()
@@ -27,7 +27,6 @@ export function drawDisk(
   // ctx.stroke()
 
   // draw outline
-  ctx.fillStyle = 'black'
   ctx.beginPath()
   let i = 0
   ctx.moveTo(cx, cy)
@@ -35,13 +34,19 @@ export function drawDisk(
   if (isShowingTails) {
     for (const [x, y, distance] of disk.history()) {
       // draw point in tail
-      ctx.moveTo(x, y)
       const rad = DISK_RADIUS * (1 - (Math.min(distance, maxTailDistance) / maxTailDistance))
-      ctx.arc(x, y, rad, 0, twopi)
+
+      if( rad > 0 ){
+        ctx.moveTo(x, y)
+        ctx.arc(x, y, rad, 0, twopi)
+      }
       i++
     }
   }
   ctx.lineWidth = edgeRad
+  ctx.lineCap = 'round'
+  ctx.lineJoin = 'round'
+  ctx.strokeStyle = isSelected ? 'green' : 'black'
   ctx.stroke()
   ctx.fillStyle = PATTERN_FILLERS[disk.pattern]
   ctx.imageSmoothingEnabled = false

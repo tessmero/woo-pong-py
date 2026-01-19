@@ -147,7 +147,7 @@ export class Simulation {
   }
 
   private t = 0
-  update(dt: number) {
+  update(dt: number, isBranchingAllowed = true) {
     this.t += dt
     const stepIndex = Math.ceil(this.t / STEP_DURATION)
 
@@ -156,6 +156,10 @@ export class Simulation {
 
     // advance the simulation by n steps
     while (this._stepCount < stepIndex) {
+      if ((!isBranchingAllowed) && (this.stepCount >= (STEPS_BEFORE_BRANCH - 2))) {
+        break
+      }
+
       this.step()
 
       // sanityCheck();

@@ -17,7 +17,8 @@ import type { PinballWizard } from 'pinball-wizard'
 const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
 const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
 
-const OBSTACLE_COLOR = '#444'
+export const OBSTACLE_FILL = '#888'
+export const OBSTACLE_STROKE = '#000'
 
 export class Graphics {
   static cvs = cvs
@@ -34,9 +35,7 @@ export class Graphics {
     ctx.fillRect(...barrier.xywh)
   }
 
-  static drawObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
-    ctx.fillStyle = OBSTACLE_COLOR
-
+  static traceObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
     const {
       isHidden, pos, points,
       // boundingRect, collisionRect
@@ -44,18 +43,11 @@ export class Graphics {
 
     if (isHidden) return
 
-    // // debug
-    // ctx.strokeStyle = 'red'
-    // ctx.lineWidth = 1 * VALUE_SCALE
-    // ctx.strokeRect(...boundingRect)
-
     ctx.beginPath()
     for (const [x, y] of points) {
       ctx.lineTo(pos[0] + x, pos[1] + y)
     }
     ctx.closePath()
-
-    ctx.fill()
   }
 
   static innerWidth = 1
@@ -65,29 +57,44 @@ export class Graphics {
     // cvs.width = cvs.clientWidth * dpr
     // cvs.height = cvs.clientHeight * dpr
 
+    // compute sim bounds
     const maxWidth = 600 * dpr
     Graphics.innerWidth = Math.min(maxWidth, screenWidth)
+    let cssWidth = Math.floor(Graphics.innerWidth / dpr)
+    let cssLeft = Math.floor((screenWidth - Graphics.innerWidth) / 2 / dpr)
 
-    cvs.width = Graphics.innerWidth
-    cvs.height = cvs.clientHeight * dpr
-
-    const cssWidth = Math.floor(Graphics.innerWidth / dpr)
-    const cssLeft = Math.floor((screenWidth - Graphics.innerWidth) / 2 / dpr)
-    cvs.style.setProperty('position', `absolute`)
-    cvs.style.setProperty('width', `${cssWidth}px`)
-    cvs.style.setProperty('left', `${cssLeft}px`)
-
-    // Graphics.drawOffset[0] = (cvs.width - Graphics.innerWidth) / 2
-    Graphics.drawOffset[0] = 0
-
+    // compute scrollbar bounds
     const scrollbarHeight = Math.min(600, window.innerHeight)
     const levelShape = pw?.activeSim?.level?.bounds ?? [1, 1, 1, 1]
+    const scrollbarWidth = scrollbarHeight * (levelShape[2] / levelShape[3])
     const scrollbar: Rectangle = [
       cssLeft + cssWidth,
       (window.innerHeight - scrollbarHeight) / 2,
-      scrollbarHeight * (levelShape[2] / levelShape[3]),
+      scrollbarWidth,
       scrollbarHeight,
     ]
+
+    if ((cssWidth + scrollbarWidth) > window.innerWidth) {
+      // shrink sim and snap to left to make space for scrollbar
+      cssLeft = 0
+      cssWidth = window.innerWidth - scrollbarWidth
+      scrollbar[0] = cssLeft + cssWidth
+      Graphics.innerWidth = cssWidth * dpr
+    }
+    else if ((cssLeft + cssWidth + scrollbarWidth) > window.innerWidth) {
+      // slide sim to left to make space for scrollbar
+      cssLeft = window.innerWidth - cssWidth - scrollbarWidth
+      scrollbar[0] = cssLeft + cssWidth
+      Graphics.innerWidth = cssWidth * dpr
+    }
+
+    // commit new layout
+    cvs.style.setProperty('position', `absolute`)
+    cvs.style.setProperty('width', `${cssWidth}px`)
+    cvs.style.setProperty('left', `${cssLeft}px`)
+    cvs.width = Graphics.innerWidth
+    cvs.height = cvs.clientHeight * dpr
+    Graphics.drawOffset[0] = 0
     Scrollbar.setBounds(scrollbar, pw)
   }
 
@@ -119,7 +126,9 @@ export class Graphics {
 
     const vy0 = simViewRect[1]
     const vy1 = vy0 + simViewRect[3]
-    console.log('draw obstacles')
+    ctx.fillStyle = OBSTACLE_FILL
+    ctx.strokeStyle = OBSTACLE_STROKE
+    ctx.lineWidth = .4 * VALUE_SCALE
     for (const obstacle of sim.obstacles) {
       const [_x, y, _w, h] = obstacle.collisionRect
       if (y > vy1) {
@@ -130,8 +139,16 @@ export class Graphics {
         // console.log('skip obstacle above view')
         continue // obstacle above view
       }
-      Graphics.drawObstacle(ctx, obstacle)
+      Graphics.traceObstacle(ctx, obstacle)
+      ctx.fill()
+      ctx.stroke()
+
+      // // debug
+      // ctx.strokeStyle = 'red'
+      // ctx.lineWidth = 1 * VALUE_SCALE
+      // ctx.strokeRect(...boundingRect)
     }
+
     // for (const barrier of sim.barriers) {
     //   Graphics.drawBarrier(barrier)
     // }
@@ -154,15 +171,15 @@ export class Graphics {
     const y0 = sim.level.bounds[1]
     const x1 = x0 + sim.level.bounds[2]
     const y1 = y0 + sim.level.bounds[3]
-    ctx.fillStyle = OBSTACLE_COLOR
+    ctx.fillStyle = OBSTACLE_FILL
     ctx.fillRect(x0 - thick, y0, thick, y1 - y0)
     ctx.fillRect(x1, y0, thick, y1 - y0)
 
-    // draw mouse pose
-    // Graphics.drawCursor(pw.simMousePos)
+    // debug mouse pose
+    Graphics.drawCursor(pw.simMousePos)
 
-    // draw view rect
-    Graphics.drawViewRect(ctx, pw.simViewRect)
+    // // debug view rect
+    // Graphics.drawViewRect(ctx, pw.simViewRect)
 
     // // debug room bounds
     // ctx.strokeStyle = 'blue'

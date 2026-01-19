@@ -5,6 +5,7 @@
  */
 
 // import { playSound } from 'audio/sound-effect-player'
+import { BUTTON_ICONS } from 'gfx/button-icons'
 import { type ElementId, type GuiElement } from 'guis/gui'
 import type { PinballWizard } from 'pinball-wizard'
 import type { Rectangle } from 'util/math-util'
@@ -17,8 +18,8 @@ export function buildHtmlElement(id: ElementId, elem: GuiElement): HTMLElement {
   const tagName = elem.display.draw ? 'canvas' : (elem.display.type === 'button' ? 'button' : 'div')
 
   const allClasses = elem.display.classes ?? []
-  const iconClasses = allClasses.filter(clazz => clazz.startsWith('fa-'))
-  const nonIconClasses = allClasses.filter(clazz => !clazz.startsWith('fa-'))
+  // const iconClasses = []//allClasses.filter(clazz => clazz.startsWith('fa-'))
+  const nonIconClasses = allClasses// allClasses.filter(clazz => !clazz.startsWith('fa-'))
 
   if (elem.display.type !== 'button') {
     nonIconClasses.push('noselect')
@@ -34,9 +35,8 @@ export function buildHtmlElement(id: ElementId, elem: GuiElement): HTMLElement {
           ${nonIconClasses.join(' ')}
         "
         >
-
+      ${elem.display.icon ? BUTTON_ICONS[elem.display.icon] : ''}
       <span 
-        class="${iconClasses.join(' ')}" 
         ${elem.display.textAlign === 'left' ? 'style="width:100%;text-align:left;"' : ''}
       >
         ${elem.display.label ?? ''}

@@ -75,7 +75,7 @@ export class DiskState {
   }
 }
 
-export const tailLength = 1000 // number of past positions to remember
+export const tailLength = 100 // number of past positions to remember
 
 const tailEps = 0// 0.1 * DISK_RADIUS // skip drawing tail segments within eps of neighbors
 

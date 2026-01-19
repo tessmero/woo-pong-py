@@ -20,6 +20,7 @@ import { Gui } from 'guis/gui'
 import { Graphics } from 'gfx/graphics'
 import { TitleScreen } from 'title-screen'
 import { Scrollbar } from 'scrollbar'
+import { setElementLabel } from 'guis/gui-html-elements'
 
 async function main() {
   // Wait for the title iframe to be loaded before continuing
@@ -32,6 +33,11 @@ async function main() {
       iframe.addEventListener('load', () => resolve(), { once: true })
     }
   })
+
+
+  const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
+  const inner = iframe.contentDocument as Document
+  const startBtn = inner.getElementById('start-button') as HTMLElement
 
   // const layeredViewport = new LayeredViewport()
   gfxConfig.refreshConfig()
@@ -50,6 +56,7 @@ async function main() {
   _initListeners(pinballWizard)
   Scrollbar.initListeners(pinballWizard)
   await _initLuts()
+  startBtn.innerHTML = 'START'
 
   for (const guiName of GUI.NAMES) {
     Gui.preload(pinballWizard, guiName)
@@ -57,9 +64,6 @@ async function main() {
   pinballWizard.onResize()
 
   // bind start button in title screen
-  const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
-  const inner = iframe.contentDocument as Document
-  const startBtn = inner.getElementById('start-button') as HTMLElement
   startBtn.onclick = async () => {
     await pinballWizard.init()
     pinballWizard.gui = Gui.create('playing-gui')

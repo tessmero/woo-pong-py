@@ -10,6 +10,7 @@ import { parseLayoutRectangles, type ComputedRects, type CssLayout } from 'util/
 import type { GuiName } from 'imp-names'
 import type { PinballWizard } from 'pinball-wizard'
 import { buildHtmlElement, updateElement } from './gui-html-elements'
+import { IconName } from 'gfx/button-icons'
 
 // export function setMouseCursor(cursor: 'pointer' | 'default') {
 //   document.documentElement.style.cursor = cursor; // set displayed cursor
@@ -73,6 +74,7 @@ export type ElementDisplayParams = {
   readonly type: 'button' | 'panel' | 'diagram' | 'transparent'
   readonly draw?: (ctx: CanvasRenderingContext2D, pinballWizard: PinballWizard, rect: Rectangle) => void
   label?: string
+  icon?: IconName
   styles?: Record<string, string> // styles to add to html element
   classes?: Array<string> // classes to add to html element
   textAlign?: 'center' | 'left'

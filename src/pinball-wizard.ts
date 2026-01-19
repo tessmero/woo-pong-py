@@ -38,7 +38,6 @@ export class PinballWizard {
   public gui!: Gui // assigned in init
 
   public isTitleScreen = true
-  public speed: Speed = 'normal'
   public selectedDiskIndex = -1
   public currentRoomIndex = 0 // greatest room index that has had balls
 
@@ -49,6 +48,13 @@ export class PinballWizard {
       throw new Error('PinballWizard constructed multiple times')
     }
     didConstruct = true
+  }
+
+  private _speed: Speed = 'normal'
+  public get speed() { return this._speed }
+  public set speed(s: Speed) {
+    if (this._isHalted) return
+    this._speed = s
   }
 
   private isSeedConfiged = false
@@ -102,7 +108,7 @@ export class PinballWizard {
     if ((!this._isHalted)
       && (this.activeSim.stepCount >= (STEPS_BEFORE_BRANCH - LOOK_AHEAD_STEPS))
       && (this.selectedDiskIndex === -1)) {
-      this.speed = 'paused'
+      this._speed = 'paused'
       console.log('sim may need to halt soon, near branching time with no selection')
 
       if (this._speedMult === 0) {
@@ -125,15 +131,19 @@ export class PinballWizard {
       && (this.activeSim.stepCount >= (STEPS_BEFORE_BRANCH - 5))
       && (this.selectedDiskIndex === -1)) {
       // hit emergency halt somehow (maybe sim was too fast to stop in time)
+      this._isHalted = true
       this._speedMult = 0
+      this._speed = 'paused'
       this.onResize()
       // console.log('sim halted, near branching time with no selection')
     }
 
-    this.activeSim.update(dt * this._speedMult)
+    const isBranchingAllowed = this.selectedDiskIndex !== -1
+    this.activeSim.update(dt * this._speedMult, isBranchingAllowed)
+
     if (this.activeSim.winningDiskIndex !== -1) {
       // race finished
-      this.speed = 'paused'
+      this._speed = 'paused'
       this._isHalted = true
       this._speedMult = 0
     }
@@ -178,6 +188,9 @@ export class PinballWizard {
         this.camera.jumpToRoom(this, this.currentRoomIndex)
       }
     }
+
+    //
+    this.gui.update(this, dt)
   }
 
   public get hasBranched() {
@@ -271,7 +284,7 @@ export class PinballWizard {
           this.selectedDiskIndex = diskIndex
 
           if (this._isHalted) {
-            this.speed = 'normal'
+            this._speed = 'normal'
             this._isHalted = false
           }
 

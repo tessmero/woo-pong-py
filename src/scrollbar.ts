@@ -6,7 +6,7 @@
 
 import type { DiskPattern } from 'gfx/disk-gfx'
 import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx'
-import { Graphics } from 'gfx/graphics'
+import { Graphics, OBSTACLE_FILL } from 'gfx/graphics'
 import type { PinballWizard } from 'pinball-wizard'
 import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import type { Disk } from 'simulation/disk'
@@ -97,8 +97,10 @@ export class Scrollbar {
     ctx.scale(scale, scale)
 
     if (sim) {
+      ctx.fillStyle = OBSTACLE_FILL
       for (const obstacle of sim.obstacles) {
-        Graphics.drawObstacle(ctx, obstacle)
+        Graphics.traceObstacle(ctx, obstacle)
+        ctx.fill()
       }
       for (const disk of sim.disks) {
         Scrollbar.drawDisk(disk)

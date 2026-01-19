@@ -33,7 +33,7 @@ export class Camera {
   targetRoom = 0
 
   update(dt: number, pinballWizard: PinballWizard) {
-    if (this.isDragging || Scrollbar.isDragging) {
+    if (this.isDragging || Scrollbar.isDragging || pinballWizard.isHalted) {
       // do nothing
       return
     }

@@ -32,7 +32,7 @@ export const PLAYING_LAYOUT = {
 
   bottomBar: {
     parent: '_outerMargin',
-    width: () => 4 * bw() + 2 * im(),
+    width: () => 6 * bh() + 4 * im(),
     height: () => bh(),
     left: 'auto',
     bottom: 0,
@@ -40,17 +40,27 @@ export const PLAYING_LAYOUT = {
 
   clock: {
     parent: 'bottomBar',
-    width: () => 2 * bw(),
+    width: () => 2 * bh(),
   },
-  playPauseBtn: {
+  pauseBtn: {
     parent: 'clock',
-    width: () => bw(),
-    left: () => 2 * bw() + im(),
+    width: () => bh(),
+    left: () => 2 * bh() + im(),
   },
-  speedUpBtn: {
-    parent: 'playPauseBtn',
-    width: () => bw(),
-    left: () => bw() + im(),
+  playBtn: {
+    parent: 'pauseBtn',
+    width: () => bh(),
+    left: () => bh() + im(),
+  },
+  fastBtn: {
+    parent: 'playBtn',
+    width: () => bh(),
+    left: () => bh() + im(),
+  },
+  fasterBtn: {
+    parent: 'fastBtn',
+    width: () => bh(),
+    left: () => bh() + im(),
   },
 
   rightBar: {
