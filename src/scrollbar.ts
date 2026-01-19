@@ -20,13 +20,43 @@ const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
 let lastWidth = -1
 let lastHeight = -1
 
+let didInitListeners = false
+let isDragging = false
+
 export class Scrollbar {
   static isRepaintQueued = false
   static cvs = cvs
   static ctx = ctx
 
+  static get isDragging() { return isDragging }
+
+  static initListeners(pw: PinballWizard) {
+    if (didInitListeners) {
+      throw new Error('Scrollbar.initListeners() called multiple times')
+    }
+    didInitListeners = true
+
+    Scrollbar.cvs.addEventListener('pointerdown', (e) => {
+      pw.camera.pos = -(e.clientY - Scrollbar._bounds[1]) * window.devicePixelRatio / Scrollbar._drawScale
+      isDragging = true
+    })
+    document.addEventListener('pointermove', (e) => {
+      if (isDragging) {
+        pw.camera.pos = -(e.clientY - Scrollbar._bounds[1]) * window.devicePixelRatio / Scrollbar._drawScale
+      }
+    })
+    document.addEventListener('pointerup', () => {
+      isDragging = false
+    })
+    document.addEventListener('pointerleave', () => {
+      isDragging = false
+    })
+  }
+
   // set bounds in px
+  private static _bounds: Rectangle = [1, 1, 1, 1]
   static setBounds(bounds: Rectangle, pw: PinballWizard) {
+    Scrollbar._bounds = bounds
     const [x, y, w, h] = bounds
 
     cvs.style.setProperty('position', 'absolute')
@@ -46,6 +76,7 @@ export class Scrollbar {
     lastHeight = h
   }
 
+  private static _drawScale = 1
   static repaint(pw: PinballWizard) {
     const sim = pw.activeSim
     ctx.fillStyle = 'red'
@@ -59,6 +90,7 @@ export class Scrollbar {
     ctx.strokeRect(0, 0, w, h)
 
     const scale = cvs.width / 100 / VALUE_SCALE
+    this._drawScale = scale
 
     ctx.clearRect(0, 0, cvs.width, cvs.height)
     ctx.save()
@@ -71,6 +103,8 @@ export class Scrollbar {
       for (const disk of sim.disks) {
         Scrollbar.drawDisk(disk)
       }
+
+      Graphics.drawViewRect(ctx, pw.simViewRect)
     }
 
     ctx.restore()
@@ -106,7 +140,7 @@ function getScaledPattern(pattern: DiskPattern): CanvasPattern | string {
 
 function _buildScaledPattern(pattern: DiskPattern): CanvasPattern | string {
   const original = PATTERN_FILLERS[pattern]
-  if( original instanceof CanvasPattern ){
+  if (original instanceof CanvasPattern) {
     return buildPattern(pattern, 3) // scaled canvas pattern
   }
   return original // string

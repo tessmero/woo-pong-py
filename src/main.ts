@@ -48,6 +48,7 @@ async function main() {
   // })
 
   _initListeners(pinballWizard)
+  Scrollbar.initListeners(pinballWizard)
   await _initLuts()
 
   for (const guiName of GUI.NAMES) {

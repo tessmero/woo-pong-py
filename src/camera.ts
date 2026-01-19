@@ -8,6 +8,7 @@
 import { topConfig } from 'configs/imp/top-config'
 import { Graphics } from 'gfx/graphics'
 import type { PinballWizard } from 'pinball-wizard'
+import { Scrollbar } from 'scrollbar'
 import { ROOM_COUNT, VALUE_SCALE } from 'simulation/constants'
 import { lerp } from 'util/math-util'
 
@@ -32,7 +33,7 @@ export class Camera {
   targetRoom = 0
 
   update(dt: number, pinballWizard: PinballWizard) {
-    if (this.isDragging) {
+    if (this.isDragging || Scrollbar.isDragging) {
       // do nothing
       return
     }

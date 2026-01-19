@@ -39,15 +39,15 @@ export class Graphics {
 
     const {
       isHidden, pos, points,
-      boundingRect, collisionRect
+      // boundingRect, collisionRect
     } = obstacle
 
     if (isHidden) return
 
-    // debug
-    ctx.strokeStyle = 'red'
-    ctx.lineWidth = 1 * VALUE_SCALE
-    ctx.strokeRect(...boundingRect)
+    // // debug
+    // ctx.strokeStyle = 'red'
+    // ctx.lineWidth = 1 * VALUE_SCALE
+    // ctx.strokeRect(...boundingRect)
 
     ctx.beginPath()
     for (const [x, y] of points) {
@@ -122,11 +122,11 @@ export class Graphics {
     console.log('draw obstacles')
     for (const obstacle of sim.obstacles) {
       const [_x, y, _w, h] = obstacle.collisionRect
-      if (y > vy1){
+      if (y > vy1) {
         // console.log('skip obstacle below view')
         continue // obstacle below view
       }
-      if ((y + h) < vy0){
+      if ((y + h) < vy0) {
         // console.log('skip obstacle above view')
         continue // obstacle above view
       }
@@ -159,10 +159,10 @@ export class Graphics {
     ctx.fillRect(x1, y0, thick, y1 - y0)
 
     // draw mouse pose
-    Graphics.drawCursor(pw.simMousePos)
+    // Graphics.drawCursor(pw.simMousePos)
 
     // draw view rect
-    Graphics.drawViewRect(pw.simViewRect)
+    Graphics.drawViewRect(ctx, pw.simViewRect)
 
     // // debug room bounds
     // ctx.strokeStyle = 'blue'
@@ -223,7 +223,7 @@ export class Graphics {
     ctx.fill()
   }
 
-  static drawViewRect(rect: Rectangle) {
+  static drawViewRect(ctx: CanvasRenderingContext2D, rect: Rectangle) {
     ctx.strokeStyle = 'red'
     ctx.lineWidth = DISK_RADIUS
     ctx.strokeRect(...rect)
