@@ -13,11 +13,9 @@ import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
 import { GUI } from 'imp-names'
-import type { BreakoutRoom } from 'rooms/imp/breakout-room'
 import { Scrollbar } from 'scrollbar'
 import type { Speed } from 'simulation/constants'
-import {
-  BOBRICK_COUNT, DISK_COUNT, DISK_RADIUS, DISK_RADSQ,
+import { DISK_RADIUS, DISK_RADSQ,
   LOOK_AHEAD_STEPS,
   ROOM_COUNT,
   SPEEDS, STEPS_BEFORE_BRANCH, VALUE_SCALE,
@@ -42,7 +40,7 @@ export class PinballWizard {
   public selectedDiskIndex = -1
   public currentRoomIndex = 0 // greatest room index that has had balls
 
-  public readonly camera = new Camera()
+  public camera = new Camera()
 
   constructor() {
     if (didConstruct) {
@@ -66,6 +64,19 @@ export class PinballWizard {
     }
     didInit = true
 
+    window.addEventListener('resize', () => this.onResize())
+    this.reset()
+  }
+
+  reset() {
+    this.selectedDiskIndex = -1
+    this.currentRoomIndex = 0 // greatest room index that has had balls
+    this.camera = new Camera()
+    this._isHalted = false
+    this._speedMult = SPEEDS.normal
+    this._speed = 'normal'
+    this._speedBeforeHalt = 'normal'
+
     const cfgSeed = topConfig.flatConfig.rngSeed
     this.isSeedConfiged = cfgSeed !== -1 // is seed set manually (used for puppeteer)
 
@@ -80,18 +91,16 @@ export class PinballWizard {
       this.activeSim.branchSeed = this._race[1] // seed to insert later
     }
 
-    const brickValuesStartIndex = 1 + DISK_COUNT
-    const room = this.activeSim.level.rooms.find(room => 'breakoutBricks' in room) as BreakoutRoom
-    if (room) {
-      for (let i = 0; i < BOBRICK_COUNT; i++) {
-        room.breakoutBricks[i].label = `${this._race[i + brickValuesStartIndex]}`
-      }
-    }
+    // const brickValuesStartIndex = 1 + DISK_COUNT
+    // const room = this.activeSim.level.rooms.find(room => 'breakoutBricks' in room) as BreakoutRoom
+    // if (room) {
+    //   for (let i = 0; i < BOBRICK_COUNT; i++) {
+    //     room.breakoutBricks[i].label = `${this._race[i + brickValuesStartIndex]}`
+    //   }
+    // }
 
     this.gui = Gui.create('playing-gui')
     this.camera.jumpToRoom(this, 0)
-
-    window.addEventListener('resize', () => this.onResize())
     this.onResize()
   }
 
@@ -99,8 +108,9 @@ export class PinballWizard {
     return this._isHalted
   }
 
-  private _speedMult = 1 // real simulation speed
+  private _speedMult = SPEEDS.normal // real simulation speed
   private _isHalted = false // near branch point iwth no selection
+  private _speedBeforeHalt: Speed = 'normal'
   update(dt: number) {
     const wasBranched = this.hasBranched
     const wasFinished = this.hasFinished
@@ -109,6 +119,10 @@ export class PinballWizard {
     if ((!this._isHalted)
       && (this.activeSim.stepCount >= (STEPS_BEFORE_BRANCH - LOOK_AHEAD_STEPS))
       && (this.selectedDiskIndex === -1)) {
+      if (this._speed !== 'paused') {
+        this._speedBeforeHalt = this._speed
+      }
+
       this._speed = 'paused'
       console.log('sim may need to halt soon, near branching time with no selection')
 
@@ -132,6 +146,9 @@ export class PinballWizard {
       && (this.activeSim.stepCount >= (STEPS_BEFORE_BRANCH - 5))
       && (this.selectedDiskIndex === -1)) {
       // hit emergency halt somehow (maybe sim was too fast to stop in time)
+      if (this._speed !== 'paused') {
+        this._speedBeforeHalt = this._speed
+      }
       this._isHalted = true
       this._speedMult = 0
       this._speed = 'paused'
@@ -285,7 +302,7 @@ export class PinballWizard {
           this.selectedDiskIndex = diskIndex
 
           if (this._isHalted) {
-            this._speed = 'normal'
+            this._speed = this._speedBeforeHalt
             this._isHalted = false
           }
 

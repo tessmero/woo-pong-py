@@ -11,7 +11,7 @@ import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
 import type { PinballWizard } from 'pinball-wizard'
 import type { Speed } from 'simulation/constants'
-import { SECONDS_BEFORE_BRANCH, STEP_DURATION, stepsToSeconds } from 'simulation/constants'
+import { SECONDS_BEFORE_BRANCH, stepsToSeconds } from 'simulation/constants'
 import type { Vec2 } from 'util/math-util'
 
 type PlayingElem = GuiElement<PlayingLayoutKey>
@@ -105,13 +105,22 @@ const speedBtns: Record<Speed, PlayingElem> = {
 //   },
 // }))
 
+const resetBtn: PlayingElem = {
+  layoutKey: 'resetBtn',
+  display: {
+    type: 'button',
+    label: 'Play Again',
+  },
+  click: ({ pinballWizard }) => {
+    pinballWizard.reset()
+  },
+}
+
 const elements: Array<PlayingElem> = [
   topLabel,
   clock,
-  pauseBtn,
-  playBtn,
-  fastBtn,
-  fasterBtn,
+  ...Object.values(speedBtns),
+  resetBtn,
   // ...diskBtns,
 ]
 
@@ -159,6 +168,8 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
     for (const elem of elements) {
       toggleElement(elem, !pinballWizard.isTitleScreen)
     }
+
+    toggleElement(resetBtn, pinballWizard.activeSim.winningDiskIndex !== -1)
     // const hasBranched = pinballWizard.hasBranched
     // for (const btn of diskBtns) {
     //   toggleElement(btn, !hasBranched)
@@ -167,10 +178,9 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
 }
 
 function getStatusText(
-  pinballWizard: PinballWizard, 
-  secondsElapsed: number
+  pinballWizard: PinballWizard,
+  secondsElapsed: number,
 ) {
-
   const remainingSeconds = SECONDS_BEFORE_BRANCH - secondsElapsed
 
   if (pinballWizard.activeSim.winningDiskIndex !== -1) {

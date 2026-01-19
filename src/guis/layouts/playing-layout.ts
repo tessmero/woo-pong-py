@@ -77,6 +77,15 @@ export const PLAYING_LAYOUT = {
     parent: 'rightBar',
     margin: () => im(),
   },
+
+  resetBtn: {
+    parent: 'screen',
+    width: () => bw(),
+    height: () => bh(),
+    left: 'auto',
+    top: 'auto',
+  },
+
 } as const satisfies CssLayout
 
 export type PlayingLayoutKey = keyof typeof PLAYING_LAYOUT

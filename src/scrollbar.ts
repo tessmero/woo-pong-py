@@ -102,8 +102,16 @@ export class Scrollbar {
         Graphics.traceObstacle(ctx, obstacle)
         ctx.fill()
       }
-      for (const disk of sim.disks) {
-        Scrollbar.drawDisk(disk)
+
+      // draw disks
+      const selected = pw.selectedDiskIndex
+      for (const [diskIndex, disk] of sim.disks.entries()) {
+        const isSelected = (diskIndex === selected)
+        Scrollbar.drawDisk(disk, isSelected)
+      }
+      if (selected !== -1) {
+        const disk = sim.disks[selected]
+        Scrollbar.drawDisk(disk, true)
       }
 
       Graphics.drawViewRect(ctx, pw.simViewRect)
@@ -113,21 +121,19 @@ export class Scrollbar {
   }
 
   // draw mini view of disk in scrollbar
-  static drawDisk(disk: Disk) {
+  static drawDisk(disk: Disk, isSelected: boolean) {
     const [cx, cy] = disk.interpolatedPos
 
-    const isSelected = false
-
-    const edgeRad = VALUE_SCALE * 0.5 * (isSelected ? 5 : 1)
-    ctx.fillStyle = 'black'
-    ctx.beginPath()
-    ctx.moveTo(cx, cy)
-    ctx.arc(cx, cy, DISK_RADIUS * 2, 0, twopi)
+    const edgeRad = VALUE_SCALE * 2 * (isSelected ? 5 : 1)
+    ctx.strokeStyle = isSelected ? 'green' : 'black'
     ctx.lineWidth = edgeRad
-    ctx.stroke()
     ctx.fillStyle = getScaledPattern(disk.pattern)
     ctx.imageSmoothingEnabled = false
+
+    ctx.beginPath()
+    ctx.arc(cx, cy, DISK_RADIUS * 5, 0, twopi)
     ctx.fill()
+    ctx.stroke()
   }
 }
 
@@ -143,7 +149,7 @@ function getScaledPattern(pattern: DiskPattern): CanvasPattern | string {
 function _buildScaledPattern(pattern: DiskPattern): CanvasPattern | string {
   const original = PATTERN_FILLERS[pattern]
   if (original instanceof CanvasPattern) {
-    return buildPattern(pattern, 3) // scaled canvas pattern
+    return buildPattern(pattern, 6) // scaled canvas pattern
   }
   return original // string
 }

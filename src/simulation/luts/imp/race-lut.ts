@@ -41,7 +41,8 @@ export class RaceLut extends Lut<RaceLeaf> {
 
   // ts-expect-error race lut
   blobHash = LUT_BLOBS.RACE_LUT?.hash ?? ''
-  computeLeaf(_index: Array<number>): Array<number> {
+  computeLeaf(index: Array<number>): Array<number> {
+    console.log(`race-lut leaf ${index[0]} / ${nRaces}`)
     while (true) {
       const result = _tryComputeLeaf()
       if (result) {
