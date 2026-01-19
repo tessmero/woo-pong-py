@@ -42,7 +42,7 @@ export class RaceLut extends Lut<RaceLeaf> {
   // ts-expect-error race lut
   blobHash = LUT_BLOBS.RACE_LUT?.hash ?? ''
   computeLeaf(index: Array<number>): Array<number> {
-    console.log(`race-lut leaf ${index[0]} / ${nRaces}`)
+    console.log(`race-lut leaf ${index[0]} / ${nRaces}`)// eslint-disable-line no-console
     while (true) {
       const result = _tryComputeLeaf()
       if (result) {
@@ -74,7 +74,7 @@ function _tryComputeLeaf(): Array<number> | null {
   //   // ...breakoutSolution,
   // ]
 
-  console.log(`attempting to solve race with start seed ${commonStartSeed}...`)
+  console.log(`attempting to solve race with start seed ${commonStartSeed}...`)// eslint-disable-line no-console
 
   let _simCount = 0
   let _stepCount = 0
@@ -131,7 +131,7 @@ function _tryComputeLeaf(): Array<number> | null {
 
   if (branches.some(({ midSeed }) => midSeed === -1)) {
     // leaf failed
-    console.log(`failed race with start seed ${commonStartSeed}`)
+    console.log(`failed race with start seed ${commonStartSeed}`)// eslint-disable-line no-console
     return null
   }
 

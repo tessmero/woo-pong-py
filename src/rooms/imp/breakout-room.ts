@@ -12,7 +12,7 @@ import { BOBRICK_HEIGHT, BOBRICK_PADDING, BOBRICK_WIDTH, VALUE_SCALE } from 'sim
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
-import { SHAPE_PATHS, type ShapeName } from 'simulation/shapes'
+import { type ShapeName } from 'simulation/shapes'
 import type { Vec2 } from 'util/math-util'
 
 const dx = BOBRICK_WIDTH + BOBRICK_PADDING

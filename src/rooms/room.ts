@@ -41,7 +41,7 @@ export abstract class Room {
     )
   }
 
-  obstacleHit(obstacle: Obstacle): void {
+  obstacleHit(_obstacle: Obstacle): void {
     // do nothing
   }
 

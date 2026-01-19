@@ -9,7 +9,7 @@ import { topConfig } from 'configs/imp/top-config'
 import { Graphics } from 'gfx/graphics'
 import type { PinballWizard } from 'pinball-wizard'
 import { Scrollbar } from 'scrollbar'
-import { ROOM_COUNT, VALUE_SCALE } from 'simulation/constants'
+import { VALUE_SCALE } from 'simulation/constants'
 import { lerp } from 'util/math-util'
 
 export class Camera {
@@ -62,7 +62,7 @@ export class Camera {
     if (this._idleCountdown <= 0) {
       // camera is idle
       const { rooms } = pinballWizard.activeSim.level
-      let roomIndex = this.targetRoom//topConfig.flatConfig.roomIndex
+      let roomIndex = this.targetRoom// topConfig.flatConfig.roomIndex
       roomIndex = Math.max(0, Math.min(rooms.length - 1, roomIndex))
       const room = rooms[roomIndex]
       const targetPos = -room.bounds[1] - room.bounds[3] / 2
@@ -90,7 +90,7 @@ export class Camera {
   private isDragging = false
   drag(start: number, end: number) {
     const t = performance.now()
-    const timeDelta = t - this.lastDragTime
+    // const timeDelta = t - this.lastDragTime
     const mouseDelta = end - start
     const posDelta = mouseDelta / Graphics.drawSimScale * window.devicePixelRatio
     this.pos += posDelta

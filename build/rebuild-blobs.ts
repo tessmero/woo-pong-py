@@ -86,7 +86,7 @@ for (const lutName of LUT.NAMES) {
   const lut = Lut.create(lutName)
   lut.computeAll()
 
-  console.log('encoding', lutName)
+  console.log('encoding', lutName) // eslint-disable-line no-console
   const encodedBlob = LutEncoder.encode(lut.tree)
   const buffer = Buffer.from(encodedBlob.buffer, encodedBlob.byteOffset, encodedBlob.byteLength)
 

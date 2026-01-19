@@ -4,6 +4,8 @@
  * Button icons.
  */
 
+/* eslint-disable max-len */
+
 export const BUTTON_ICONS = {
 
   pause: `

@@ -124,7 +124,7 @@ export class PinballWizard {
       }
 
       this._speed = 'paused'
-      console.log('sim may need to halt soon, near branching time with no selection')
+      // console.log('sim may need to halt soon, near branching time with no selection')
 
       if (this._speedMult === 0) {
         this._isHalted = true // real speed has reached 0 before emergency halt

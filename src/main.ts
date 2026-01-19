@@ -22,19 +22,15 @@ import { TitleScreen } from 'title-screen'
 import { Scrollbar } from 'scrollbar'
 
 async function main() {
+  const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
+
   // Wait for the title iframe to be loaded before continuing
   await new Promise<void>((resolve) => {
-    const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
-    if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
-      resolve()
-    }
-    else {
-      iframe.addEventListener('load', () => resolve(), { once: true })
-    }
+    iframe.addEventListener('load', () => resolve())
+    iframe.src = 'title-screen.html'
   })
 
   // bind start button in title screen
-  const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
   const inner = iframe.contentDocument as Document
   const startBtn = inner.getElementById('start-button') as HTMLElement
 
@@ -181,7 +177,7 @@ async function _initLuts(loadingLabel: HTMLElement) {
 
     tasksFinished++
     const pctFinished = Math.floor(100 * tasksFinished / totalTasks)
-    loadingLabel.innerHTML = `LOADING (${pctFinished}%)`
+    if (loadingLabel) loadingLabel.innerHTML = `LOADING (${pctFinished}%)`
   }
 
   for (const lutName of LUT.NAMES) {

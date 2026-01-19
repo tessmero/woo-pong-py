@@ -10,7 +10,7 @@ import { parseLayoutRectangles, type ComputedRects, type CssLayout } from 'util/
 import type { GuiName } from 'imp-names'
 import type { PinballWizard } from 'pinball-wizard'
 import { buildHtmlElement, updateElement } from './gui-html-elements'
-import { IconName } from 'gfx/button-icons'
+import type { IconName } from 'gfx/button-icons'
 
 // export function setMouseCursor(cursor: 'pointer' | 'default') {
 //   document.documentElement.style.cursor = cursor; // set displayed cursor

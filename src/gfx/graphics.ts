@@ -99,7 +99,7 @@ export class Graphics {
     Scrollbar.setBounds(scrollbar, pw)
   }
 
-  static drawOffset: Vec2 = [0, 0] 
+  static drawOffset: Vec2 = [0, 0]
   static cssLeft = 0
 
   static drawSimScale: number = 1 // set in drawSim
@@ -130,7 +130,7 @@ export class Graphics {
     const vy1 = vy0 + simViewRect[3]
     ctx.fillStyle = OBSTACLE_FILL
     ctx.strokeStyle = OBSTACLE_STROKE
-    ctx.lineWidth = .4 * VALUE_SCALE
+    ctx.lineWidth = 0.4 * VALUE_SCALE
     for (const obstacle of sim.obstacles) {
       const [_x, y, _w, h] = obstacle.collisionRect
       if (y > vy1) {

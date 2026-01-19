@@ -15,7 +15,7 @@ describe(`breakout room solver`, function () {
     ok(solution.every(v => (v >= 0) && (v <= 100)),
       `solved brick values should be between 0 and 100: ${JSON.stringify(solution)}`)
 
-    console.log(JSON.stringify(solution))
+    // console.log(JSON.stringify(solution))
     ok(new Set(solution).size > 5, `solution should have many distinct values: ${JSON.stringify(solution)}`)
 
     for (const branchSequence of testInput) {

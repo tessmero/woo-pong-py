@@ -21,7 +21,7 @@ export function getTestSupport(pinballWizard: PinballWizard) {
 
         const domRect = elem?.getBoundingClientRect() as DOMRect
         if (!domRect || !Object.hasOwn(domRect, 'x')) {
-          return [350,450,100,50]
+          return [350, 450, 100, 50]
         }
         const { x, y, width, height } = domRect
         return [x, y, width, height]
@@ -63,7 +63,7 @@ export function getTestSupport(pinballWizard: PinballWizard) {
     },
 
     getGameState: () => {
-      if( pinballWizard.loadingState){
+      if (pinballWizard.loadingState) {
         return pinballWizard.loadingState
       }
       if (pinballWizard.isTitleScreen) {

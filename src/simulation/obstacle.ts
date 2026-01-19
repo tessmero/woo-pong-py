@@ -84,7 +84,7 @@ export class Obstacle {
 }
 
 function flipPointsX(obs: Obstacle) {
-  const { points, collisionRect } = obs
+  const { points } = obs
   for (const p of points) {
     p[0] = -p[0]
   }

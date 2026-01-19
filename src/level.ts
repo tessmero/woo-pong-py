@@ -94,7 +94,7 @@ function randomRoom(roomIndex: number, bounds: Rectangle) {
 }
 
 const randomRoomNames: Array<RoomName> = [
-  'basic-room', 
+  'basic-room',
   'breakout-room',
   //  'pong-room',
-  ]
+]

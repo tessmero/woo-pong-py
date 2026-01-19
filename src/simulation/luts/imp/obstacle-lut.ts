@@ -56,19 +56,15 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
   public computeAll(): void {
     // compute shape-specific members
 
-
     const shapeParams = SHAPE_PATHS[this.shape]
     const {
       baseSvg,
-      scale = 1,
-      xScale = 1,
-      yScale = 1,
     } = shapeParams
 
     let xRad = 0
     let yRad = 0
     const checkPoints = centeredPointsOnPath(baseSvg)
-    transformPoints(checkPoints,shapeParams)
+    transformPoints(checkPoints, shapeParams)
 
     for (const p of checkPoints) {
       const [dx, dy] = p.map(val => Math.abs(val))
@@ -200,7 +196,6 @@ export function transformPoints(points: Array<Vec2> | ReadonlyArray<Vec2>, param
     scale = 1,
     xScale = 1,
     yScale = 1,
-    isPathReversed = false,
   } = params
 
   for (const p of points) {

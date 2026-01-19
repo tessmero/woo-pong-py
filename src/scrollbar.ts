@@ -12,7 +12,9 @@ import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import type { Disk } from 'simulation/disk'
 import { twopi, type Rectangle } from 'util/math-util'
 
-const cvs = ((typeof document === 'undefined') ? null : document.getElementById('scrollbar-canvas')) as HTMLCanvasElement
+const cvs = ((typeof document === 'undefined')
+  ? null
+  : document.getElementById('scrollbar-canvas')) as HTMLCanvasElement
 const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
 // const cvs = document.getElementById('scrollbar-canvas') as HTMLCanvasElement
 // const ctx = cvs.getContext('2d') as CanvasRenderingContext2D

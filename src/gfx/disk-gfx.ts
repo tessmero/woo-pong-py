@@ -36,7 +36,7 @@ export function drawDisk(
       // draw point in tail
       const rad = DISK_RADIUS * (1 - (Math.min(distance, maxTailDistance) / maxTailDistance))
 
-      if( rad > 0 ){
+      if (rad > 0) {
         ctx.moveTo(x, y)
         ctx.arc(x, y, rad, 0, twopi)
       }
