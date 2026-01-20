@@ -96,19 +96,19 @@ export const LUT_BLOBS = {
     yRad: 95,
   },
   DISK_FRICTION_LUT: {
-    url: '/luts/disk-friction-lut-9f8e66a2dc70f064.bin',
+    url: 'luts/disk-friction-lut-9f8e66a2dc70f064.bin',
     hash: '9f8e66a2dc70f06456c6baf67dd2d922e9b7a846fc266a8de88559b493dffa51',
   },
   DISK_DISK_LUT: {
-    url: '/luts/disk-disk-lut-e9cd18aa3e3da17a.bin',
+    url: 'luts/disk-disk-lut-e9cd18aa3e3da17a.bin',
     hash: 'e9cd18aa3e3da17a07ed2d5fbe3559e39c81868b0f54a103ec98c96b1210d902',
   },
   DISK_NORMAL_LUT: {
-    url: '/luts/disk-normal-lut-705377676ab3d42c.bin',
+    url: 'luts/disk-normal-lut-705377676ab3d42c.bin',
     hash: '705377676ab3d42cd2e6ffcb1f5c3298f1df3018910f934c553c0ee2096e27de',
   },
   RACE_LUT: {
-    url: '/luts/race-lut-7d494a4493e51ddc.bin',
+    url: 'luts/race-lut-7d494a4493e51ddc.bin',
     hash: '7d494a4493e51ddc679bbb5b07d3a642fa8c8ad76c09e22edd01390e9c7aa0fa',
   },
 }

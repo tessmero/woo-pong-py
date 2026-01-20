@@ -103,7 +103,7 @@ for (const lutName of LUT.NAMES) {
 
   const varPrefix = lutName.replaceAll('-', '_').toUpperCase()
   lutBlobs[varPrefix] = {
-    url: `/luts/${filename}`,
+    url: `luts/${filename}`,
     hash: hash,
   }
 }
