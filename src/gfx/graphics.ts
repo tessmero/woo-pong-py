@@ -13,6 +13,7 @@ import { drawDisk } from './disk-gfx'
 import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import { Scrollbar } from 'scrollbar'
 import type { PinballWizard } from 'pinball-wizard'
+import { BallSelectionPanel } from 'ball-selection-panel'
 
 const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
 const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
@@ -88,6 +89,13 @@ export class Graphics {
       Graphics.innerWidth = cssWidth * dpr
     }
 
+    // comput eball selecion panel
+    const bspHeight = 300
+    const bsp: Rectangle = [
+      cssLeft, window.innerHeight - bspHeight,
+      cssWidth, bspHeight,
+    ]
+
     // commit new layout
     cvs.style.setProperty('position', `absolute`)
     cvs.style.setProperty('width', `${cssWidth}px`)
@@ -97,6 +105,7 @@ export class Graphics {
     Graphics.drawOffset[0] = 0
     Graphics.cssLeft = cssLeft
     Scrollbar.setBounds(scrollbar, pw)
+    BallSelectionPanel.setBounds(bsp, pw)
   }
 
   static drawOffset: Vec2 = [0, 0]

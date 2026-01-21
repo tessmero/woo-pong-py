@@ -4,6 +4,7 @@
  * Main object constructed once in main.ts.
  */
 
+import { BallSelectionPanel } from 'ball-selection-panel'
 import { Camera } from 'camera'
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
 import { topConfig } from 'configs/imp/top-config'
@@ -101,6 +102,7 @@ export class PinballWizard {
 
     this.gui = Gui.create('playing-gui')
     this.camera.jumpToRoom(this, 0)
+    BallSelectionPanel.isRepaintQueued = true
     this.onResize()
   }
 
@@ -193,6 +195,15 @@ export class PinballWizard {
     if (Scrollbar.isRepaintQueued) {
       Scrollbar.isRepaintQueued = false
       Scrollbar.repaint(this)
+    }
+
+    // // always repaint bsp
+    // BallSelectionPanel.isRepaintQueued = true
+
+    // repaint ball selection panel if necessary
+    if (BallSelectionPanel.isRepaintQueued) {
+      BallSelectionPanel.isRepaintQueued = false
+      BallSelectionPanel.repaint(this)
     }
 
     this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)

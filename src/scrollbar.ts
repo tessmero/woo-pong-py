@@ -32,13 +32,21 @@ export class Scrollbar {
 
   static get isDragging() { return isDragging }
 
+  static show(){
+      cvs.style.setProperty('display', 'block')
+  }
+
+  static hide(){
+      cvs.style.setProperty('display', 'none')
+  }
+
   static initListeners(pw: PinballWizard) {
     if (didInitListeners) {
       throw new Error('Scrollbar.initListeners() called multiple times')
     }
     didInitListeners = true
 
-    Scrollbar.cvs.addEventListener('pointerdown', (e) => {
+    cvs.addEventListener('pointerdown', (e) => {
       pw.camera.pos = -(e.clientY - Scrollbar._bounds[1]) * window.devicePixelRatio / Scrollbar._drawScale
       isDragging = true
     })

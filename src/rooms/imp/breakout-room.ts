@@ -5,6 +5,7 @@
  * The total score always ends up at exactly 100.
  */
 
+import { BallSelectionPanel } from 'ball-selection-panel'
 import { solveBreakout } from 'breakout-solver'
 import { Room } from 'rooms/room'
 import { Scrollbar } from 'scrollbar'

@@ -20,6 +20,7 @@ import { Gui } from 'guis/gui'
 import { Graphics } from 'gfx/graphics'
 import { TitleScreen } from 'title-screen'
 import { Scrollbar } from 'scrollbar'
+import { BallSelectionPanel } from 'ball-selection-panel'
 
 async function main() {
   const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
@@ -58,6 +59,7 @@ async function main() {
   _initListeners(pinballWizard)
   pinballWizard.loadingState = 'D'
   Scrollbar.initListeners(pinballWizard)
+  BallSelectionPanel.initListeners(pinballWizard)
   pinballWizard.loadingState = 'E'
   await _initLuts(startBtn)
   pinballWizard.loadingState = 'F'
@@ -77,7 +79,8 @@ async function main() {
     pinballWizard.isTitleScreen = false
     pinballWizard.onResize()
     titleScreenElem.classList.add('hidden')
-    Scrollbar.cvs.style.setProperty('display', 'block')
+    Scrollbar.show()
+    BallSelectionPanel.show()
   }
   pinballWizard.loadingState = 'J'
 
