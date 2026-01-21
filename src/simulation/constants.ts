@@ -28,6 +28,10 @@ export const OBSTACLE_DETAIL_SCALE = 1e3
 export const DISK_RADIUS = 3 * VALUE_SCALE
 export const DISK_RADSQ = DISK_RADIUS * DISK_RADIUS
 
+// radius for purposes of clicking disks in simulation
+export const CLICKABLE_RADIUS = DISK_RADIUS * 2
+export const CLICKABLE_RADSQ = CLICKABLE_RADIUS * CLICKABLE_RADIUS
+
 export const STEPS_BEFORE_BRANCH = 1.5e4 // number of steps before branching
 export const LOOK_AHEAD_STEPS = 200 // start halting when this close to branch time with no selection
 

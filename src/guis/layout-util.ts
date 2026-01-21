@@ -20,11 +20,11 @@ export function setLayoutUtilMode(glp: GuiLayoutParser<string>) {
 }
 
 export function btnWidth() {
-  const { buttonWidth, smButtonWidth } = layoutConfig.flatConfig
-  return isSmall ? smButtonWidth : buttonWidth
+  const { buttonWidth } = layoutConfig.flatConfig
+  return buttonWidth
 }
 
 export function btnHeight() {
-  const { buttonHeight, smButtonHeight } = layoutConfig.flatConfig
-  return isSmall ? smButtonHeight : buttonHeight
+  const { buttonHeight } = layoutConfig.flatConfig
+  return buttonHeight
 }

@@ -186,8 +186,8 @@ export class Graphics {
     ctx.fillRect(x0 - thick, y0, thick, y1 - y0)
     ctx.fillRect(x1, y0, thick, y1 - y0)
 
-    // debug mouse pose
-    Graphics.drawCursor(pw.simMousePos)
+    // // debug mouse pose
+    // Graphics.drawCursor(pw.simMousePos)
 
     // // debug view rect
     // Graphics.drawViewRect(ctx, pw.simViewRect)

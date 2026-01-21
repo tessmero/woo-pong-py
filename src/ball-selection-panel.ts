@@ -15,6 +15,12 @@ import { twopi, type Rectangle } from 'util/math-util'
 const cvs = ((typeof document === 'undefined')
   ? null
   : document.getElementById('ball-selection-panel-canvas')) as HTMLCanvasElement
+
+if (cvs) {
+  cvs.style.setProperty('border-radius', '5px')
+  cvs.style.setProperty('border', '1px solid black')
+}
+
 const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
 // const cvs = document.getElementById('scrollbar-canvas') as HTMLCanvasElement
 // const ctx = cvs.getContext('2d') as CanvasRenderingContext2D
@@ -88,18 +94,18 @@ export class BallSelectionPanel {
     }
     didInitListeners = true
     cvs.addEventListener('pointerdown', (e) => {
-      const mx = e.offsetX * window.devicePixelRatio
-      const my = e.offsetY * window.devicePixelRatio
-      for (const [diskIndex, [x, y]] of diskPositions.entries()) {
-        const dx = x - mx
-        const dy = y - my
-        const d2 = dx * dx + dy * dy
-        if (d2 < diskRadiusSquared) {
-          pw.selectedDiskIndex = diskIndex
-          break
-        }
+      const i = getHoveredDiskIndex(e)
+      pw.trySelectDisk(i)
+    })
+
+    cvs.addEventListener('pointermove', (e) => {
+      const i = getHoveredDiskIndex(e)
+      if (i === -1) {
+        cvs.style.setProperty('cursor', 'default')
       }
-      BallSelectionPanel.isRepaintQueued = true
+      else {
+        cvs.style.setProperty('cursor', 'pointer')
+      }
     })
   }
 
@@ -108,11 +114,8 @@ export class BallSelectionPanel {
     const w = cvs.width
     const h = cvs.height
 
-    ctx.fillStyle = 'red'
-    ctx.strokeStyle = 'blue'
-    ctx.lineWidth = 5
+    ctx.fillStyle = 'rgb(221,221,221)'
     ctx.fillRect(0, 0, w, h)
-    ctx.strokeRect(0, 0, w, h)
 
     if (!pw.activeSim) return
 
@@ -158,17 +161,35 @@ export class BallSelectionPanel {
   }
 }
 
+function getHoveredDiskIndex(e: PointerEvent): number {
+  const mx = e.offsetX * window.devicePixelRatio
+  const my = e.offsetY * window.devicePixelRatio
+  for (const [diskIndex, [x, y]] of diskPositions.entries()) {
+    const dx = x - mx
+    const dy = y - my
+    const d2 = dx * dx + dy * dy
+    if (d2 < diskRadiusSquared) {
+      return diskIndex
+      break
+    }
+  }
+  return -1
+}
+
 function drawDisk(
   ctx: CanvasRenderingContext2D, disk: Disk,
   isSelected = false, _isWinner = false,
   cx: number, cy: number,
 ) {
-  const edgeRad = (isSelected ? 5 : 1)
-
   ctx.beginPath()
-  ctx.moveTo(cx, cy)
-  ctx.arc(cx, cy, diskRadius, 0, twopi)
-  ctx.lineWidth = edgeRad
+
+  const [x0, y0] = disk.interpolatedPos.map(v => -v / VALUE_SCALE)
+
+  ctx.save()
+  ctx.translate(x0, y0)
+  ctx.moveTo(cx - x0, cy - y0)
+  ctx.arc(cx - x0, cy - y0, diskRadius, 0, twopi)
+  ctx.lineWidth = (isSelected ? 20 : 5)
   ctx.lineCap = 'round'
   ctx.lineJoin = 'round'
   ctx.strokeStyle = isSelected ? 'green' : 'black'
@@ -176,6 +197,7 @@ function drawDisk(
   ctx.fillStyle = getScaledPattern(disk.pattern)
   ctx.imageSmoothingEnabled = false
   ctx.fill()
+  ctx.restore()
 }
 
 // scaled versions of disk-gfx patterns
@@ -190,7 +212,7 @@ function getScaledPattern(pattern: DiskPattern): CanvasPattern | string {
 function _buildScaledPattern(pattern: DiskPattern): CanvasPattern | string {
   const original = PATTERN_FILLERS[pattern]
   if (original instanceof CanvasPattern) {
-    return buildPattern(pattern, 10 / VALUE_SCALE) // scaled canvas pattern
+    return buildPattern(pattern, 20 / VALUE_SCALE) // scaled canvas pattern
   }
   return original // string
 }

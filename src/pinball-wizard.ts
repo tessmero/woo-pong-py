@@ -16,7 +16,7 @@ import { toggleElement } from 'guis/gui-html-elements'
 import { GUI } from 'imp-names'
 import { Scrollbar } from 'scrollbar'
 import type { Speed } from 'simulation/constants'
-import { DISK_RADIUS, DISK_RADSQ,
+import { CLICKABLE_RADSQ, DISK_RADIUS,
   LOOK_AHEAD_STEPS,
   ROOM_COUNT,
   SPEEDS, STEPS_BEFORE_BRANCH, VALUE_SCALE,
@@ -197,8 +197,8 @@ export class PinballWizard {
       Scrollbar.repaint(this)
     }
 
-    // // always repaint bsp
-    // BallSelectionPanel.isRepaintQueued = true
+    // always repaint bsp
+    BallSelectionPanel.isRepaintQueued = true
 
     // repaint ball selection panel if necessary
     if (BallSelectionPanel.isRepaintQueued) {
@@ -255,6 +255,7 @@ export class PinballWizard {
   private readonly mousePos: Vec2 = [0, 0]
   public readonly simMousePos: Vec2 = [0, 0]
   public readonly simViewRect: Rectangle = [1, 1, 1, 1]
+  private hoveredDiskIndex = -1
   move(mousePos: Vec2): Vec2 {
     if (this.isMouseDown) {
       this.camera.drag(this.dragY, mousePos[1])
@@ -293,6 +294,15 @@ export class PinballWizard {
 
     // this.gui.move(this, this.mousePos)
 
+    this.hoveredDiskIndex = this.getHoveredDiskIndex()
+
+    if (this.hoveredDiskIndex === -1) {
+      Graphics.cvs.style.setProperty('cursor', 'default')
+    }
+    else {
+      Graphics.cvs.style.setProperty('cursor', 'pointer')
+    }
+
     return this.mousePos
   }
 
@@ -303,27 +313,38 @@ export class PinballWizard {
     this.isMouseDown = true
     this.dragY = rawPos[1]
 
-    if (!this.hasBranched) {
-      for (const [diskIndex, disk] of this.activeSim.disks.entries()) {
-        const [x, y] = disk.interpolatedPos
-        const distSquared
-          = Math.pow(this.simMousePos[0] - x, 2)
-            + Math.pow(this.simMousePos[1] - y, 2)
-        if (distSquared < DISK_RADSQ) {
-          this.selectedDiskIndex = diskIndex
+    this.trySelectDisk(this.hoveredDiskIndex)
+  }
 
-          if (this._isHalted) {
-            this._speed = this._speedBeforeHalt
-            this._isHalted = false
-          }
+  trySelectDisk(diskIndex: number) {
+    if (diskIndex === -1) return
+    if (this.hasBranched) return
 
-          this.onResize()
+    this.selectedDiskIndex = diskIndex
+    BallSelectionPanel.isRepaintQueued = true
 
-          if (!this.isSeedConfiged)
-            this.activeSim.branchSeed = this._race[diskIndex + 1]
-        }
+    if (this._isHalted) {
+      this._speed = this._speedBeforeHalt
+      this._isHalted = false
+    }
+
+    this.onResize()
+
+    if (!this.isSeedConfiged)
+      this.activeSim.branchSeed = this._race[diskIndex + 1]
+  }
+
+  private getHoveredDiskIndex(): number {
+    for (const [diskIndex, disk] of this.activeSim.disks.entries()) {
+      const [x, y] = disk.interpolatedPos
+      const distSquared
+        = Math.pow(this.simMousePos[0] - x, 2)
+          + Math.pow(this.simMousePos[1] - y, 2)
+      if (distSquared < CLICKABLE_RADSQ) {
+        return diskIndex
       }
     }
+    return -1
   }
 
   up(_rawPos: Vec2) {

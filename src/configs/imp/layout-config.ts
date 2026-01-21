@@ -27,25 +27,9 @@ const layoutConfigTree = {
 
     },
 
-    smButtonWidth: {
-      tooltip: 'width for small square-ish buttons on small screens',
-      value: 80,
-      min: 10,
-      max: 100,
-      step: 1,
-    },
-
     buttonWidth: {
       tooltip: 'width for small square-ish buttons on desktop',
       value: 150,
-      min: 10,
-      max: 100,
-      step: 1,
-    },
-
-    smButtonHeight: {
-      tooltip: 'standard button thickness on small screens',
-      value: 35,
       min: 10,
       max: 100,
       step: 1,
