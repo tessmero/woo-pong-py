@@ -5,6 +5,7 @@
  */
 
 import { Room } from 'rooms/room'
+import { RoomLayout } from 'rooms/room-layouts/room-layout'
 import { VALUE_SCALE } from 'simulation/constants'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
@@ -13,18 +14,6 @@ import { Perturbations } from 'simulation/perturbations'
 import { type ShapeName } from 'simulation/shapes'
 import type { Vec2 } from 'util/math-util'
 
-const _obstacles: Array<[Vec2]> = []
-const dx = 23
-const dy = 19
-let x = 15
-while (x < 90) {
-  let y = 14
-  while (y < 85) {
-    _obstacles.push([[x, y] as Vec2])
-    y += dy
-  }
-  x += dx
-}
 
 export class BasicRoom extends Room {
   static {
@@ -34,8 +23,10 @@ export class BasicRoom extends Room {
   buildObstacles(): Array<Obstacle> {
     const isMixed = ((Perturbations.nextInt() >>> 0) % 10) > 8
 
+    const layout = RoomLayout.create('four-by-four').computePositions()
+
     let shapeName = possibleShapes[(Perturbations.nextInt() >>> 0) % possibleShapes.length]
-    const obstacles = _obstacles.map(([pos]) => {
+    const obstacles = layout.map((pos) => {
       if (isMixed) {
         shapeName = possibleShapes[(Perturbations.nextInt() >>> 0) % possibleShapes.length]
       }

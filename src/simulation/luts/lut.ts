@@ -91,7 +91,7 @@ export abstract class Lut<TLeaf> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static register(name: LutName, reg: RegisteredLut<any>): void {
     if (name in this._registry) {
-      throw new Error(`configurable already registered: '${name}'`)
+      throw new Error(`lut already registered: '${name}'`)
     }
     this._registry[name] = reg
     if (name === 'obstacle-lut') {

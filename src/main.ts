@@ -13,7 +13,7 @@ import { getTestSupport } from 'test-support'
 import { applyDevMode, isDevMode } from 'configs/imp/top-config'
 import type { Vec2 } from 'util/math-util'
 import { Lut } from 'simulation/luts/lut'
-import { GUI, LUT } from 'imp-names'
+import { GUI, LUT, ROOM_LAYOUT } from 'imp-names'
 import type { ShapeName } from 'simulation/shapes'
 import { SHAPE_PATHS } from 'simulation/shapes'
 import { Gui } from 'guis/gui'
@@ -21,6 +21,7 @@ import { Graphics } from 'gfx/graphics'
 import { TitleScreen } from 'title-screen'
 import { Scrollbar } from 'scrollbar'
 import { BallSelectionPanel } from 'ball-selection-panel'
+import { RoomLayout } from 'rooms/room-layouts/room-layout'
 
 let isTitleAnimPlaying = true
 let lastTime = performance.now()
@@ -186,6 +187,15 @@ function _initListeners(pinballWizard: PinballWizard) {
   Graphics.cvs.addEventListener('wheel', (e) => {
     pinballWizard.camera.scroll(e.deltaY)
   })
+}
+
+function _initRlayouts(){
+
+  const isComputing = false
+
+  for( const name of ROOM_LAYOUT.names ){
+    
+  }
 }
 
 async function _initLuts(loadingLabel: HTMLElement) {
