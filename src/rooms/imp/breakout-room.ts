@@ -5,41 +5,14 @@
  * The total score always ends up at exactly 100.
  */
 
-import { BallSelectionPanel } from 'ball-selection-panel'
 import { solveBreakout } from 'breakout-solver'
 import { Room } from 'rooms/room'
+import { ROOM_LAYOUT_POSITIONS } from 'rooms/room-layouts/set-by-build'
 import { Scrollbar } from 'scrollbar'
-import { BOBRICK_HEIGHT, BOBRICK_PADDING, BOBRICK_WIDTH, VALUE_SCALE } from 'simulation/constants'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
 import { type ShapeName } from 'simulation/shapes'
-import type { Vec2 } from 'util/math-util'
-
-const dx = BOBRICK_WIDTH + BOBRICK_PADDING
-const dy = BOBRICK_HEIGHT + BOBRICK_PADDING
-
-const nCols = 5
-const nRows = 6
-
-const x0 = Math.floor(
-  50 * VALUE_SCALE
-  - (nCols * BOBRICK_WIDTH + (nCols - 1) * BOBRICK_PADDING) / 2
-  + BOBRICK_WIDTH / 2,
-)
-
-const y0 = Math.floor(
-  50 * VALUE_SCALE
-  - (nRows * BOBRICK_HEIGHT + (nRows - 1) * BOBRICK_PADDING) / 2
-  + BOBRICK_HEIGHT / 2,
-)
-
-const _obstacles: Array<[Vec2, ShapeName]> = []
-for (let row = 0; row < nRows; row++) {
-  for (let col = 0; col < nCols; col++) {
-    _obstacles.push([[x0 + col * dx, y0 + row * dy] as Vec2, 'breakoutbrick'])
-  }
-}
 
 export class BreakoutRoom extends Room {
   static {
@@ -75,7 +48,9 @@ export class BreakoutRoom extends Room {
   public breakoutBricks: Array<Obstacle> = []
 
   buildObstacles(): Array<Obstacle> {
-    this.breakoutBricks = _obstacles.map(([pos, shapeName]) => new Obstacle(
+    const _obstacles = ROOM_LAYOUT_POSITIONS['breakout']
+    const shapeName: ShapeName = 'breakoutbrick'
+    this.breakoutBricks = _obstacles.map(([_group,pos]) => new Obstacle(
       [pos[0], pos[1] + this.bounds[1]],
       shapeName,
       Lut.create('obstacle-lut', shapeName) as ObstacleLut,

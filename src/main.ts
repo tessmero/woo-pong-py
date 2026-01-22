@@ -104,7 +104,7 @@ async function main() {
     pinballWizard.onResize()
     titleScreenElem.classList.add('hidden')
     Scrollbar.show()
-    BallSelectionPanel.show()
+    // BallSelectionPanel.show()
 
     isTitleAnimPlaying = false // break title screen loop
     document.removeEventListener('resize', titleAnimResize)
@@ -193,7 +193,7 @@ function _initRlayouts(){
 
   const isComputing = false
 
-  for( const name of ROOM_LAYOUT.names ){
+  for( const name of ROOM_LAYOUT.NAMES ){
     
   }
 }

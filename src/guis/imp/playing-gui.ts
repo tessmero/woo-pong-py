@@ -4,12 +4,13 @@
  * Placeholder used for games with no gui elements.
  */
 
+import { BallSelectionPanel } from 'ball-selection-panel'
 import type { GuiElement } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { setElementLabel, toggleElement } from 'guis/gui-html-elements'
 import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
-import type { PinballWizard } from 'pinball-wizard'
+import { PinballWizard } from 'pinball-wizard'
 import type { Speed } from 'simulation/constants'
 import { SECONDS_BEFORE_BRANCH, stepsToSeconds } from 'simulation/constants'
 import type { Vec2 } from 'util/math-util'
@@ -21,6 +22,17 @@ export const topLabel: PlayingElem = {
   display: {
     type: 'panel',
     label: '',
+  },
+}
+
+export const ballsBtn: PlayingElem = {
+  layoutKey: 'ballsBtn',
+  display: {
+    type: 'button',
+    label: 'BALLS',
+  },
+  click: ({ pinballWizard }) => {
+    BallSelectionPanel.toggle()
   },
 }
 
@@ -118,6 +130,7 @@ const resetBtn: PlayingElem = {
 
 const elements: Array<PlayingElem> = [
   topLabel,
+  ballsBtn,
   clock,
   ...Object.values(speedBtns),
   resetBtn,

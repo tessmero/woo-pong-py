@@ -34,15 +34,21 @@ export const PLAYING_LAYOUT = {
 
   bottomBar: {
     parent: '_outerMargin',
-    width: () => 6 * bh() + 4 * im(),
+    width: () => 7 * bh() + 5 * im(),
     height: () => bh(),
     left: 'auto',
     bottom: 0,
   },
 
-  clock: {
+  ballsBtn: {
     parent: 'bottomBar',
+    width: () => bh(),
+  },
+
+  clock: {
+    parent: 'ballsBtn',
     width: () => 2 * bh(),
+    left: () => bh() + im(),
   },
   pauseBtn: {
     parent: 'clock',
@@ -65,18 +71,6 @@ export const PLAYING_LAYOUT = {
     left: () => bh() + im(),
   },
 
-  rightBar: {
-    parent: '_outerMargin',
-    width: 100,
-    height: 400,
-    right: 0,
-    top: 'auto',
-  },
-
-  _innerRightBar: {
-    parent: 'rightBar',
-    margin: () => im(),
-  },
 
   resetBtn: {
     parent: 'screen',
@@ -85,6 +79,7 @@ export const PLAYING_LAYOUT = {
     left: 'auto',
     top: 'auto',
   },
+
 
 } as const satisfies CssLayout
 

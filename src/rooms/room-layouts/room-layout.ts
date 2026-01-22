@@ -10,7 +10,7 @@ import type { Vec2 } from 'util/math-util'
 type Registered = () => RoomLayout
 
 export abstract class RoomLayout {
-  abstract computePositions(): Array<Vec2>
+  abstract computePositions(): Array<[number, Vec2]>
 
   // static registry pattern
   protected constructor() {}
@@ -27,6 +27,9 @@ export abstract class RoomLayout {
   }
 
   static create(name: RoomLayoutName): RoomLayout {
+    if( typeof document !== 'undefined' ) {
+      throw new Error('should only be used in build scripts, not in browser')
+    }
     if (!Object.hasOwn(this._singletonLayouts, name)) {
       throw new Error(`singleton room layout not registered: ${name}`)
     }

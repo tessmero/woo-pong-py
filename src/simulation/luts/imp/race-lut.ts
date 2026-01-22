@@ -12,7 +12,7 @@ import { Simulation } from 'simulation/simulation'
 
 export type RaceLeaf = Array<number>
 
-const nRaces = 100 // 100
+const nRaces = 1 // 100
 const maxStepsTotal = 1e7
 
 export type BranchDatum = {

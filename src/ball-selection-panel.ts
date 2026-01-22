@@ -88,6 +88,15 @@ export class BallSelectionPanel {
     cvs.style.setProperty('display', 'none')
   }
 
+  static toggle() {
+    if (cvs.style.display === 'none') {
+      BallSelectionPanel.show()
+    }
+    else {
+      BallSelectionPanel.hide()
+    }
+  }
+
   static initListeners(pw: PinballWizard) {
     if (didInitListeners) {
       throw new Error('BallSelectionPanel.initListeners() called multiple times')

@@ -65,7 +65,7 @@ export type RoomName = (typeof ROOM.NAMES)[number]
 // basic room layouts
 export const ROOM_LAYOUT = {
   NAMES: [
-    'four-by-four',
+    'four-by-four', 'breakout', 'honeycomb',
   ],
   SOURCES: ['src/room-layouts/**/*.ts']
 }

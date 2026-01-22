@@ -5,15 +5,13 @@
  */
 
 import { Room } from 'rooms/room'
-import { RoomLayout } from 'rooms/room-layouts/room-layout'
-import { VALUE_SCALE } from 'simulation/constants'
+import { ROOM_LAYOUT_POSITIONS } from 'rooms/room-layouts/set-by-build'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
 import { Perturbations } from 'simulation/perturbations'
 import { type ShapeName } from 'simulation/shapes'
 import type { Vec2 } from 'util/math-util'
-
 
 export class BasicRoom extends Room {
   static {
@@ -23,15 +21,25 @@ export class BasicRoom extends Room {
   buildObstacles(): Array<Obstacle> {
     const isMixed = ((Perturbations.nextInt() >>> 0) % 10) > 8
 
-    const layout = RoomLayout.create('four-by-four').computePositions()
-
-    let shapeName = possibleShapes[(Perturbations.nextInt() >>> 0) % possibleShapes.length]
-    const obstacles = layout.map((pos) => {
+    // const layout = RoomLayout.create('four-by-four').computePositions()
+    const layout = ROOM_LAYOUT_POSITIONS['honeycomb']
+    const groupShapes: Record<number, ShapeName> = {}
+    
+    const obstacles = layout.map((entry) => {
+      const group = entry[0] as number
+      const pos = entry[1] as Vec2
+      let shapeName: ShapeName
       if (isMixed) {
-        shapeName = possibleShapes[(Perturbations.nextInt() >>> 0) % possibleShapes.length]
+        shapeName = randomShape()
+      }
+      else {
+        if (!Object.hasOwn(groupShapes, group)) {
+          groupShapes[group] = randomShape()
+        }
+        shapeName = groupShapes[group]
       }
       const result = new Obstacle(
-        [pos[0] * VALUE_SCALE, pos[1] * VALUE_SCALE + this.bounds[1]],
+        [pos[0], pos[1] + this.bounds[1]],
         shapeName,
         Lut.create('obstacle-lut', shapeName) as ObstacleLut,
         this,
@@ -62,3 +70,9 @@ const possibleShapes: Array<ShapeName> = [
   'note',
 
 ]
+
+function randomShape(): ShapeName {
+  return possibleShapes[
+    (Perturbations.nextInt() >>> 0) % possibleShapes.length
+  ]
+}
