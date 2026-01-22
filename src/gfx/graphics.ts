@@ -52,7 +52,7 @@ export class Graphics {
   }
 
   static innerWidth = 1
-  static onResize(pw: PinballWizard) {
+  static onResize(pw?: PinballWizard) {
     const dpr = window.devicePixelRatio
     const screenWidth = window.innerWidth * dpr
     // cvs.width = cvs.clientWidth * dpr
@@ -64,37 +64,42 @@ export class Graphics {
     let cssWidth = Math.floor(Graphics.innerWidth / dpr)
     let cssLeft = Math.floor((screenWidth - Graphics.innerWidth) / 2 / dpr)
 
-    // compute scrollbar bounds
-    const scrollbarHeight = Math.min(600, window.innerHeight)
-    const levelShape = pw?.activeSim?.level?.bounds ?? [1, 1, 1, 1]
-    const scrollbarWidth = scrollbarHeight * (levelShape[2] / levelShape[3])
-    const scrollbar: Rectangle = [
-      cssLeft + cssWidth,
-      (window.innerHeight - scrollbarHeight) / 2,
-      scrollbarWidth,
-      scrollbarHeight,
-    ]
+    if (pw) {
+      // compute scrollbar bounds
+      const scrollbarHeight = Math.min(600, window.innerHeight)
+      const levelShape = pw?.activeSim?.level?.bounds ?? [1, 1, 1, 1]
+      const scrollbarWidth = scrollbarHeight * (levelShape[2] / levelShape[3])
+      const scrollbar: Rectangle = [
+        cssLeft + cssWidth,
+        (window.innerHeight - scrollbarHeight) / 2,
+        scrollbarWidth,
+        scrollbarHeight,
+      ]
 
-    if ((cssWidth + scrollbarWidth) > window.innerWidth) {
-      // shrink sim and snap to left to make space for scrollbar
-      cssLeft = 0
-      cssWidth = window.innerWidth - scrollbarWidth
-      scrollbar[0] = cssLeft + cssWidth
-      Graphics.innerWidth = cssWidth * dpr
-    }
-    else if ((cssLeft + cssWidth + scrollbarWidth) > window.innerWidth) {
-      // slide sim to left to make space for scrollbar
-      cssLeft = window.innerWidth - cssWidth - scrollbarWidth
-      scrollbar[0] = cssLeft + cssWidth
-      Graphics.innerWidth = cssWidth * dpr
-    }
+      if ((cssWidth + scrollbarWidth) > window.innerWidth) {
+        // shrink sim and snap to left to make space for scrollbar
+        cssLeft = 0
+        cssWidth = window.innerWidth - scrollbarWidth
+        scrollbar[0] = cssLeft + cssWidth
+        Graphics.innerWidth = cssWidth * dpr
+      }
+      else if ((cssLeft + cssWidth + scrollbarWidth) > window.innerWidth) {
+        // slide sim to left to make space for scrollbar
+        cssLeft = window.innerWidth - cssWidth - scrollbarWidth
+        scrollbar[0] = cssLeft + cssWidth
+        Graphics.innerWidth = cssWidth * dpr
+      }
 
-    // comput eball selecion panel
-    const bspHeight = 300
-    const bsp: Rectangle = [
-      cssLeft, window.innerHeight - bspHeight,
-      cssWidth, bspHeight,
-    ]
+      // comput eball selecion panel
+      const bspHeight = 300
+      const bsp: Rectangle = [
+        cssLeft, window.innerHeight - bspHeight,
+        cssWidth, bspHeight,
+      ]
+
+      Scrollbar.setBounds(scrollbar, pw)
+      BallSelectionPanel.setBounds(bsp, pw)
+    }
 
     // commit new layout
     cvs.style.setProperty('position', `absolute`)
@@ -104,8 +109,6 @@ export class Graphics {
     cvs.height = cvs.clientHeight * dpr
     Graphics.drawOffset[0] = 0
     Graphics.cssLeft = cssLeft
-    Scrollbar.setBounds(scrollbar, pw)
-    BallSelectionPanel.setBounds(bsp, pw)
   }
 
   static drawOffset: Vec2 = [0, 0]

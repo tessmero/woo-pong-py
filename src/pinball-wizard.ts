@@ -360,6 +360,8 @@ export class PinballWizard {
   }
 
   public onResize() {
+    console.log('pinball wizard onResize')
+
     Graphics.onResize(this)
 
     // // update simViewRect width and height

@@ -22,7 +22,30 @@ import { TitleScreen } from 'title-screen'
 import { Scrollbar } from 'scrollbar'
 import { BallSelectionPanel } from 'ball-selection-panel'
 
+let isTitleAnimPlaying = true
+let lastTime = performance.now()
+
+function titleAnimLoop() {
+  if (!isTitleAnimPlaying) return
+  requestAnimationFrame(titleAnimLoop) // queue next loop
+
+  // Calculate delta time since last loop
+  const currentTime = performance.now()
+  const dt = Math.min(50, currentTime - lastTime)
+  lastTime = currentTime
+  TitleScreen.update(dt) // update and repaint title screen background
+}
+
+function titleAnimResize() {
+  console.log('title anim resize')
+  Graphics.onResize()
+}
+
 async function main() {
+  titleAnimResize()
+  window.addEventListener('resize', titleAnimResize )
+  requestAnimationFrame(titleAnimLoop) // start background animation loop
+
   const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
 
   // Wait for the title iframe to be loaded before continuing
@@ -70,7 +93,7 @@ async function main() {
     Gui.preload(pinballWizard, guiName)
   }
   pinballWizard.loadingState = 'H'
-  pinballWizard.onResize()
+  // pinballWizard.onResize()
   pinballWizard.loadingState = 'I'
 
   startBtn.onclick = async () => {
@@ -81,6 +104,10 @@ async function main() {
     titleScreenElem.classList.add('hidden')
     Scrollbar.show()
     BallSelectionPanel.show()
+
+    isTitleAnimPlaying = false // break title screen loop
+    document.removeEventListener('resize', titleAnimResize)
+    mainLoop() // start first loop
   }
   pinballWizard.loadingState = 'J'
 
@@ -114,25 +141,18 @@ async function main() {
 
   // main loop
   let lastTime = performance.now()
-  function animate() {
-    requestAnimationFrame(animate) // queue next loop
+  function mainLoop() {
+    requestAnimationFrame(mainLoop) // queue next loop
 
     // Calculate delta time since last loop
     const currentTime = performance.now()
     const dt = Math.min(50, currentTime - lastTime)
     lastTime = currentTime
 
-    if (pinballWizard.isTitleScreen) {
-      TitleScreen.update(dt)
-    }
-    else {
-      pinballWizard.update(dt)
-    }
+    pinballWizard.update(dt)
   }
 
   pinballWizard.loadingState = null
-
-  animate() // start first loop
 }
 
 main()
