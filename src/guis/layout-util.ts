@@ -11,12 +11,12 @@ import { GuiLayoutParser } from 'util/layout-parser'
 
 let _isLandscape = true
 let _isPortrait = false
-let isSmall = true
+let _isSmall = true
 
 export function setLayoutUtilMode(glp: GuiLayoutParser<string>) {
   _isLandscape = glp.isLandscape
   _isPortrait = glp.isPortrait
-  isSmall = GuiLayoutParser.isSmall
+  _isSmall = GuiLayoutParser.isSmall
 }
 
 export function btnWidth() {

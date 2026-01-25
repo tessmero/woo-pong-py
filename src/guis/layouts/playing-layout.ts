@@ -71,7 +71,6 @@ export const PLAYING_LAYOUT = {
     left: () => bh() + im(),
   },
 
-
   resetBtn: {
     parent: 'screen',
     width: () => bw(),
@@ -79,7 +78,6 @@ export const PLAYING_LAYOUT = {
     left: 'auto',
     top: 'auto',
   },
-
 
 } as const satisfies CssLayout
 

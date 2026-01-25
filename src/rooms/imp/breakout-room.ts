@@ -50,7 +50,7 @@ export class BreakoutRoom extends Room {
   buildObstacles(): Array<Obstacle> {
     const _obstacles = ROOM_LAYOUT_POSITIONS['breakout']
     const shapeName: ShapeName = 'breakoutbrick'
-    this.breakoutBricks = _obstacles.map(([_group,pos]) => new Obstacle(
+    this.breakoutBricks = _obstacles.map(([_group, pos]) => new Obstacle(
       [pos[0], pos[1] + this.bounds[1]],
       shapeName,
       Lut.create('obstacle-lut', shapeName) as ObstacleLut,

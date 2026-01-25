@@ -25,11 +25,18 @@ import { Lut } from 'simulation/luts/lut'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
 import type { Rectangle } from 'util/math-util'
-import { shuffle, type Vec2 } from 'util/math-util'
+import { lerp, shuffle, type Vec2 } from 'util/math-util'
 
 // can only be constructed once
 let didConstruct = false
 let didInit = false
+
+export type SpeedAnim = {
+  startTime: number
+  endTime: number
+  startSpeed: number
+  // end speed number is inferred from "speed" property
+}
 
 export class PinballWizard {
   // sim for live toppling/rewind
@@ -50,11 +57,24 @@ export class PinballWizard {
     didConstruct = true
   }
 
+  // rough target speed setting
   private _speed: Speed = 'normal'
   public get speed() { return this._speed }
   public set speed(s: Speed) {
     if (this._isHalted) return
     this._speed = s
+    const targetMult = SPEEDS[s]
+    if (this._speedMult === targetMult) {
+      this._speedAnim = null // already at target speed
+    }
+    else {
+      // start transition to target speed
+      this._speedAnim = {
+        startTime: performance.now(),
+        endTime: performance.now() + topConfig.flatConfig.speedAnimDur,
+        startSpeed: this._speedMult,
+      }
+    }
   }
 
   private isSeedConfiged = false
@@ -111,36 +131,43 @@ export class PinballWizard {
   }
 
   private _speedMult = SPEEDS.normal // real simulation speed
+  private _speedAnim: SpeedAnim | null = null // ongoing transition to target speed
   private _isHalted = false // near branch point iwth no selection
   private _speedBeforeHalt: Speed = 'normal'
+
   update(dt: number) {
     const wasBranched = this.hasBranched
     const wasFinished = this.hasFinished
 
-    // anticpiate halting needed soon
+    // anticipate halting needed soon
     if ((!this._isHalted)
       && (this.activeSim.stepCount >= (STEPS_BEFORE_BRANCH - LOOK_AHEAD_STEPS))
       && (this.selectedDiskIndex === -1)) {
       if (this._speed !== 'paused') {
         this._speedBeforeHalt = this._speed
+        this.speed = 'paused'
       }
 
-      this._speed = 'paused'
       // console.log('sim may need to halt soon, near branching time with no selection')
 
       if (this._speedMult === 0) {
         this._isHalted = true // real speed has reached 0 before emergency halt
-        this.onResize()
+        // this.onResize()
       }
     }
 
-    const targetSpeed = SPEEDS[this.speed]
-    const delta = dt * topConfig.flatConfig.speedLerp
-    if (this._speedMult < targetSpeed) {
-      this._speedMult = Math.min(targetSpeed, this._speedMult + delta)
-    }
-    if (this._speedMult > targetSpeed) {
-      this._speedMult = Math.max(targetSpeed, this._speedMult - delta)
+    if (this._speedAnim) {
+      const { startSpeed, startTime, endTime } = this._speedAnim
+      const t = performance.now()
+      const frac = (t - startTime) / (endTime - startTime)
+      if (frac >= 1) {
+        // animation finished
+        this._speedMult = SPEEDS[this._speed]
+        this._speedAnim = null
+      }
+      else {
+        this._speedMult = lerp(startSpeed, SPEEDS[this._speed], frac)
+      }
     }
 
     // check if emergency halt should override speed
@@ -154,6 +181,8 @@ export class PinballWizard {
       this._isHalted = true
       this._speedMult = 0
       this._speed = 'paused'
+      this._speedAnim = null
+      // BallSelectionPanel.show()
       this.onResize()
       // console.log('sim halted, near branching time with no selection')
     }
@@ -170,7 +199,8 @@ export class PinballWizard {
 
     if (this.hasBranched && !wasBranched) {
       // just branched
-      this.onResize()
+      // this.onResize()
+      BallSelectionPanel.hide()
     }
 
     if (this.hasFinished && !wasFinished) {
@@ -296,11 +326,11 @@ export class PinballWizard {
 
     this.hoveredDiskIndex = this.getHoveredDiskIndex()
 
-    if (this.hoveredDiskIndex === -1) {
+    if (this.hoveredDiskIndex === -1 || this.hasBranched || this.hoveredDiskIndex === this.selectedDiskIndex) {
       Graphics.cvs.style.setProperty('cursor', 'default')
     }
     else {
-      Graphics.cvs.style.setProperty('cursor', 'pointer')
+      Graphics.cvs.style.setProperty('cursor', 'pointer') // can select disk
     }
 
     return this.mousePos
@@ -314,6 +344,7 @@ export class PinballWizard {
     this.dragY = rawPos[1]
 
     this.trySelectDisk(this.hoveredDiskIndex)
+    Graphics.cvs.style.setProperty('cursor', 'default')
   }
 
   trySelectDisk(diskIndex: number) {
@@ -324,27 +355,30 @@ export class PinballWizard {
     BallSelectionPanel.isRepaintQueued = true
 
     if (this._isHalted) {
-      this._speed = this._speedBeforeHalt
       this._isHalted = false
+      this.speed = this._speedBeforeHalt
     }
 
-    this.onResize()
+    // this.onResize()
 
     if (!this.isSeedConfiged)
       this.activeSim.branchSeed = this._race[diskIndex + 1]
   }
 
   private getHoveredDiskIndex(): number {
+    let minD2 = CLICKABLE_RADSQ
+    let result = -1
     for (const [diskIndex, disk] of this.activeSim.disks.entries()) {
       const [x, y] = disk.interpolatedPos
       const distSquared
         = Math.pow(this.simMousePos[0] - x, 2)
           + Math.pow(this.simMousePos[1] - y, 2)
-      if (distSquared < CLICKABLE_RADSQ) {
-        return diskIndex
+      if (distSquared < minD2) {
+        minD2 = distSquared
+        result = diskIndex
       }
     }
-    return -1
+    return result
   }
 
   up(_rawPos: Vec2) {
@@ -360,8 +394,6 @@ export class PinballWizard {
   }
 
   public onResize() {
-    console.log('pinball wizard onResize')
-
     Graphics.onResize(this)
 
     // // update simViewRect width and height

@@ -27,7 +27,7 @@ export abstract class RoomLayout {
   }
 
   static create(name: RoomLayoutName): RoomLayout {
-    if( typeof document !== 'undefined' ) {
+    if (typeof document !== 'undefined') {
       throw new Error('should only be used in build scripts, not in browser')
     }
     if (!Object.hasOwn(this._singletonLayouts, name)) {

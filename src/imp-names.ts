@@ -61,12 +61,11 @@ export const ROOM = {
 } as const satisfies ImpManifest
 export type RoomName = (typeof ROOM.NAMES)[number]
 
-
 // basic room layouts
 export const ROOM_LAYOUT = {
   NAMES: [
-    'four-by-four', 'breakout', 'honeycomb',
+    'four-by-four', 'breakout', 'honeycomb', 'three-by-three',
   ],
-  SOURCES: ['src/room-layouts/**/*.ts']
-}
+  SOURCES: ['src/room-layouts/**/*.ts'],
+} as const
 export type RoomLayoutName = (typeof ROOM_LAYOUT.NAMES)[number]

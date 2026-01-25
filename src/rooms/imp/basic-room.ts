@@ -4,6 +4,7 @@
  * Room with static obstacles and no special behavior.
  */
 
+import type { RoomLayoutName } from 'imp-names'
 import { Room } from 'rooms/room'
 import { ROOM_LAYOUT_POSITIONS } from 'rooms/room-layouts/set-by-build'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
@@ -21,10 +22,11 @@ export class BasicRoom extends Room {
   buildObstacles(): Array<Obstacle> {
     const isMixed = ((Perturbations.nextInt() >>> 0) % 10) > 8
 
-    // const layout = RoomLayout.create('four-by-four').computePositions()
-    const layout = ROOM_LAYOUT_POSITIONS['honeycomb']
+    const layoutName = randomLayout()
+    // const layout = RoomLayout.create(layoutName).computePositions()
+    const layout = ROOM_LAYOUT_POSITIONS[layoutName]
     const groupShapes: Record<number, ShapeName> = {}
-    
+
     const obstacles = layout.map((entry) => {
       const group = entry[0] as number
       const pos = entry[1] as Vec2
@@ -52,6 +54,18 @@ export class BasicRoom extends Room {
     })
     return [...this.wedges(), ...obstacles]
   }
+}
+
+const possibleLayouts: Array<RoomLayoutName> = [
+  'honeycomb',
+  'three-by-three',
+  'four-by-four',
+]
+
+function randomLayout(): RoomLayoutName {
+  return possibleLayouts[
+    (Perturbations.nextInt() >>> 0) % possibleLayouts.length
+  ]
 }
 
 const possibleShapes: Array<ShapeName> = [

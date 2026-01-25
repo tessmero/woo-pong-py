@@ -163,7 +163,7 @@ function createCheckeredPattern(
   const pctx = patternCanvas.getContext('2d') as CanvasRenderingContext2D
 
   pctx.fillStyle = 'white'
-  pctx.fillRect(0,0,patternCanvas.width,patternCanvas.height)
+  pctx.fillRect(0, 0, patternCanvas.width, patternCanvas.height)
 
   // Fill the canvas with rotated checkers
   // Calculate the number of squares needed to cover the diagonal

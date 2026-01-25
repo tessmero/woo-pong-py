@@ -10,7 +10,7 @@ import { Gui } from 'guis/gui'
 import { setElementLabel, toggleElement } from 'guis/gui-html-elements'
 import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
-import { PinballWizard } from 'pinball-wizard'
+import type { PinballWizard } from 'pinball-wizard'
 import type { Speed } from 'simulation/constants'
 import { SECONDS_BEFORE_BRANCH, stepsToSeconds } from 'simulation/constants'
 import type { Vec2 } from 'util/math-util'
@@ -29,9 +29,14 @@ export const ballsBtn: PlayingElem = {
   layoutKey: 'ballsBtn',
   display: {
     type: 'button',
-    label: 'BALLS',
+    icon: 'bsp',
+    // draw: (ctx, pw, rect) => {
+    //   const [_x, _y, w, h] = rect
+    //   MiniBsp.drawMiniView(ctx, w, h, pw)
+    //   // MiniBsp.logMiniSvg(w,h,pw)
+    // },
   },
-  click: ({ pinballWizard }) => {
+  click: () => {
     BallSelectionPanel.toggle()
   },
 }
@@ -168,6 +173,8 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
     const status = getStatusText(pinballWizard, seconds)
     setElementLabel(topLabel, status)
     // this.lastStatus = status
+
+    // repaintDiagram(pinballWizard, ballsBtn)
   }
 
   move(_pinballWizard: PinballWizard, _mousePos: Vec2) {

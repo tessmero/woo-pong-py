@@ -6,6 +6,7 @@
 
 import type { DiskPattern } from 'gfx/disk-gfx'
 import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx'
+import { ballsBtn } from 'guis/imp/playing-gui'
 import type { PinballWizard } from 'pinball-wizard'
 import { DISK_COUNT, VALUE_SCALE } from 'simulation/constants'
 import type { Disk } from 'simulation/disk'
@@ -76,16 +77,22 @@ export class BallSelectionPanel {
   static isRepaintQueued = false
   static cvs = cvs
   static ctx = ctx
+  static totalWidth = totalWidth
+  static totalHeight = totalHeight
+  static diskRadius = diskRadius
+  static diskPositions = diskPositions
 
   private static _drawScale = 1
   private static _bounds: Rectangle = [1, 1, 1, 1]
 
   static show() {
     cvs.style.setProperty('display', 'block')
+    ballsBtn.htmlElem?.classList.add('active')
   }
 
   static hide() {
     cvs.style.setProperty('display', 'none')
+    ballsBtn.htmlElem?.classList.remove('active')
   }
 
   static toggle() {
@@ -105,11 +112,12 @@ export class BallSelectionPanel {
     cvs.addEventListener('pointerdown', (e) => {
       const i = getHoveredDiskIndex(e)
       pw.trySelectDisk(i)
+      cvs.style.setProperty('cursor', 'default')
     })
 
     cvs.addEventListener('pointermove', (e) => {
       const i = getHoveredDiskIndex(e)
-      if (i === -1) {
+      if (i === -1 || pw.hasBranched || i === pw.selectedDiskIndex) {
         cvs.style.setProperty('cursor', 'default')
       }
       else {
@@ -119,7 +127,10 @@ export class BallSelectionPanel {
   }
 
   static repaint(pw: PinballWizard) {
-    console.log('repaint bsp')
+    // if (cvs.style.display === 'none') {
+    //   return // not visible
+    // }
+
     const w = cvs.width
     const h = cvs.height
 

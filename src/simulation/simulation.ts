@@ -157,6 +157,7 @@ export class Simulation {
     // advance the simulation by n steps
     while (this._stepCount < stepIndex) {
       if ((!isBranchingAllowed) && (this.stepCount >= (STEPS_BEFORE_BRANCH - 2))) {
+        this.t = STEP_DURATION * (STEPS_BEFORE_BRANCH - 2)
         break
       }
 

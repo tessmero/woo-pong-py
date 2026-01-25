@@ -21,7 +21,7 @@ type Body = {
 }
 
 // Parameters for a visually appealing, centered 3-body animation
-const BODY_RADIUS = 5
+const BODY_RADIUS = 15
 const INIT_RADIUS = 0.22 // relative to canvas min(width, height)
 const INIT_SPEED = 1e-4 // relative to canvas min(width, height) per second
 const MASSES = [1, 1, 1]
@@ -101,8 +101,8 @@ function _drawTitleSim() {
     const [x, y] = [w / 2 + body.pos[0] * scale, h / 2 + body.pos[1] * scale]
     ctx.beginPath()
     ctx.arc(x, y, BODY_RADIUS, 0, 2 * Math.PI)
-    ctx.fillStyle = '#888'
-    ctx.shadowColor = '#555'
+    ctx.fillStyle = '#aaa'
+    ctx.shadowColor = '#999'
     ctx.shadowBlur = 8
     ctx.fill()
     ctx.shadowBlur = 0

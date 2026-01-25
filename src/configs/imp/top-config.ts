@@ -61,6 +61,13 @@ const topConfigTree = {
       onChange: () => topConfig.refreshConfig(),
     },
 
+    speedAnimDur: {
+      value: 1e3,
+      min: 0,
+      max: 1e4,
+      onChange: () => topConfig.refreshConfig(),
+    },
+
     roomIndex: {
       value: 0,
       min: -1,

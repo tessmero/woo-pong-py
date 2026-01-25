@@ -32,12 +32,12 @@ export class Scrollbar {
 
   static get isDragging() { return isDragging }
 
-  static show(){
-      cvs.style.setProperty('display', 'block')
+  static show() {
+    cvs.style.setProperty('display', 'block')
   }
 
-  static hide(){
-      cvs.style.setProperty('display', 'none')
+  static hide() {
+    cvs.style.setProperty('display', 'none')
   }
 
   static initListeners(pw: PinballWizard) {
