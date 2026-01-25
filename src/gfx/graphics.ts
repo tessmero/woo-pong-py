@@ -8,12 +8,12 @@
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { twopi } from 'util/math-util'
 import type { Barrier } from '../simulation/barrier'
-import type { Obstacle } from '../simulation/obstacle'
 import { drawDisk } from './disk-gfx'
 import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import { Scrollbar } from 'scrollbar'
 import type { PinballWizard } from 'pinball-wizard'
 import { BallSelectionPanel } from 'ball-selection-panel'
+import { drawObstacles } from './obstacle-gfx'
 
 const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
 const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
@@ -34,21 +34,6 @@ export class Graphics {
     if (barrier.isHidden) return
     ctx.fillStyle = 'black'
     ctx.fillRect(...barrier.xywh)
-  }
-
-  static traceObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
-    const {
-      isHidden, pos, points,
-      // boundingRect, collisionRect
-    } = obstacle
-
-    if (isHidden) return
-
-    ctx.beginPath()
-    for (const [x, y] of points) {
-      ctx.lineTo(pos[0] + x, pos[1] + y)
-    }
-    ctx.closePath()
   }
 
   static innerWidth = 1
@@ -138,30 +123,7 @@ export class Graphics {
       drawDisk(ctx, disk, isSelected, isWinner)
     }
 
-    const vy0 = simViewRect[1]
-    const vy1 = vy0 + simViewRect[3]
-    ctx.fillStyle = OBSTACLE_FILL
-    ctx.strokeStyle = OBSTACLE_STROKE
-    ctx.lineWidth = 0.4 * VALUE_SCALE
-    for (const obstacle of sim.obstacles) {
-      const [_x, y, _w, h] = obstacle.collisionRect
-      if (y > vy1) {
-        // console.log('skip obstacle below view')
-        continue // obstacle below view
-      }
-      if ((y + h) < vy0) {
-        // console.log('skip obstacle above view')
-        continue // obstacle above view
-      }
-      Graphics.traceObstacle(ctx, obstacle)
-      ctx.fill()
-      ctx.stroke()
-
-      // // debug
-      // ctx.strokeStyle = 'red'
-      // ctx.lineWidth = 1 * VALUE_SCALE
-      // ctx.strokeRect(...boundingRect)
-    }
+    drawObstacles(ctx, pw)
 
     // for (const barrier of sim.barriers) {
     //   Graphics.drawBarrier(barrier)
