@@ -67,12 +67,12 @@ function _tryComputeLeaf(): Array<number> | null {
     () => ({ midSeed: -1, roomSeqs: [] }),
   )
 
-  // // skip simulations and build summy race-lut
-  // return [
-  //   commonStartSeed,
-  //   ...branches.map(({ midSeed }) => midSeed),
-  //   // ...breakoutSolution,
-  // ]
+  // skip simulations and return dummy race-lut
+  return [
+    commonStartSeed,
+    ...branches.map(({ midSeed }) => midSeed),
+    // ...breakoutSolution,
+  ]
 
   console.log(`attempting to solve race with start seed ${commonStartSeed}...`)// eslint-disable-line no-console
 

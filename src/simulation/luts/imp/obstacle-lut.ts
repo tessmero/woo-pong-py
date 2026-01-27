@@ -100,12 +100,12 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
   computeLeaf(index: Array<number>): ObstacleCollision {
     const dx = this.indexToXOffset(index[0] - this.obsOffsetDetailX)
     const dy = this.indexToYOffset(index[1] - this.obsOffsetDetailY)
-    return computeCollision(this.shape, [dx, dy])
+    return computeCollision(this, [dx, dy])
   }
 }
 
 const detailedPointsCache: Partial<Record<ShapeName, ReadonlyArray<Vec2>>> = {}
-function getDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
+export function getDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
   if (!Object.hasOwn(detailedPointsCache, shape)) {
     const points = computeDetailedPoints(shape)
     detailedPointsCache[shape] = points
@@ -207,15 +207,11 @@ export function transformPoints(points: Array<Vec2> | ReadonlyArray<Vec2>, param
   }
 }
 
-function computeCollision(shape: ShapeName, pos: Vec2): ObstacleCollision {
-  // check if inside of obstacle
-  // const isInside = this.path.contains(...pos)
-  const points = getDetailedPoints(shape)
-  const isInside = isPointInPolygon(pos, points)
-
+function findNearestPoint(points: ReadonlyArray<Vec2>, pos: Vec2): number {
   // locate nearest point
   let minDistSquared = Infinity
   let nearestPointIndex = 0
+  const nearestPoint = points[0]
   for (const [i, point] of points.entries()) {
     const dx = point[0] - pos[0]
     const dy = point[1] - pos[1]
@@ -226,7 +222,24 @@ function computeCollision(shape: ShapeName, pos: Vec2): ObstacleCollision {
     }
   }
 
-  const distToNearestPoint = Math.sqrt(minDistSquared)
+  return nearestPointIndex
+}
+
+function computeCollision(lut: ObstacleLut, pos: Vec2): ObstacleCollision {
+  const { shape } = lut
+  // check if inside of obstacle
+  // const isInside = this.path.contains(...pos)
+  const points = getDetailedPoints(shape)
+  const isInside = isPointInPolygon(pos, points)
+
+  const nearestPointIndex = findNearestPoint(points, pos)
+  const nearestPoint = points[nearestPointIndex]
+  const distToNearestPoint = Math.hypot(
+    nearestPoint[0] - pos[0], nearestPoint[1] - pos[1],
+  )
+
+  // assume balls never make it inside
+  if (isInside) return null
 
   if (isInside || distToNearestPoint < DISK_RADIUS) {
     // compute normal based on neighboring points
@@ -235,11 +248,13 @@ function computeCollision(shape: ShapeName, pos: Vec2): ObstacleCollision {
     const b = points[(nearestPointIndex - 1 + n) % n]
     const normAngle = Math.atan2(b[1] - a[1], b[0] - a[0]) - pio2
 
-    // compute offset for disk to stop overlapping
-    const offsetDist = DISK_RADIUS - distToNearestPoint
+    const offsetPoint: Vec2 = [
+      nearestPoint[0] + (DISK_RADIUS * Math.cos(normAngle)),
+      nearestPoint[1] + (DISK_RADIUS * Math.sin(normAngle)),
+    ]
     const offset: Vec2 = [
-      Math.round(offsetDist * Math.cos(normAngle)),
-      Math.round(offsetDist * Math.sin(normAngle)),
+      Math.round(offsetPoint[0] - pos[0]),
+      Math.round(offsetPoint[1] - pos[1]),
     ]
 
     return [
