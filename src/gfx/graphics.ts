@@ -13,7 +13,7 @@ import { Scrollbar } from 'scrollbar'
 import type { PinballWizard } from 'pinball-wizard'
 import { BallSelectionPanel } from 'ball-selection-panel'
 import { drawObstacles } from 'gfx/obstacle-gfx-util'
-import type { GfxRegionName } from 'imp-names'
+import { GFX_REGION, type GfxRegionName } from 'imp-names'
 import { GfxRegion } from './gfx-region'
 
 const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
@@ -118,7 +118,7 @@ export class Graphics {
 
     const _regions: Partial<Record<GfxRegionName, Rectangle>> = {
       'scrollbar-gfx': [
-        cssWidth, 0,
+        cssWidth, scrollbar[1],
         scrollbar[2],
         cssHeight,
       ],
@@ -136,14 +136,14 @@ export class Graphics {
       ],
     }
 
-    // draw all regions on test canvas
-    const testCtx = testCvs.getContext('2d') as CanvasRenderingContext2D
-    testCtx.fillStyle = 'red'
-    testCtx.fillRect(100, 100, 100, 100)
-    Object.keys(_regions).forEach((gfxName) => {
-      GfxRegion.create(gfxName as GfxRegionName)
-        .draw(testCtx, _regions[gfxName].map(v => v * window.devicePixelRatio))
-    })
+
+    this._testCvs = testCvs
+    this._regions = _regions
+
+      Object.keys(this._regions).forEach((gfxName) => {
+        GfxRegion.create(gfxName as GfxRegionName)
+          .onResize(this._regions[gfxName].map(v => v * window.devicePixelRatio))
+      })
   }
 
   static get _testCanvas() {
@@ -152,6 +152,22 @@ export class Graphics {
 
   static drawOffset: Vec2 = [0, 0]
   static cssLeft = 0
+
+  private static _regions: Partial<Record<GfxRegionName, Rectangle>> = {}
+  private static _testCvs
+
+  static get regions() { return Graphics._regions }
+
+  static drawNew(pw: PinballWizard) {
+    // draw all regions on test canvas
+    const testCtx = this._testCvs.getContext('2d') as CanvasRenderingContext2D
+    if (pw) {
+      Object.keys(this._regions).forEach((gfxName) => {
+        GfxRegion.create(gfxName as GfxRegionName)
+          .draw(testCtx, pw, this._regions[gfxName].map(v => v * window.devicePixelRatio))
+      })
+    }
+  }
 
   static drawSimScale: number = 1 // set in drawSim
   static drawSim(pw: PinballWizard) {

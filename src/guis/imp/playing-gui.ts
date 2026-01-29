@@ -15,7 +15,7 @@ import type { Speed } from 'simulation/constants'
 import { SECONDS_BEFORE_BRANCH, stepsToSeconds } from 'simulation/constants'
 import type { Vec2 } from 'util/math-util'
 
-type PlayingElem = GuiElement<PlayingLayoutKey>
+export type PlayingElem = GuiElement<PlayingLayoutKey>
 
 export const topLabel: PlayingElem = {
   layoutKey: 'topBar',
@@ -59,7 +59,7 @@ function formatTime(totalSeconds) {
   return `${formattedMinutes}:${formattedSeconds}`
 }
 
-const pauseBtn: PlayingElem = {
+export const pauseBtn: PlayingElem = {
   layoutKey: 'pauseBtn',
   display: {
     type: 'button',
@@ -69,7 +69,7 @@ const pauseBtn: PlayingElem = {
     pinballWizard.speed = 'paused'
   },
 }
-const playBtn: PlayingElem = {
+export const playBtn: PlayingElem = {
   layoutKey: 'playBtn',
   display: {
     type: 'button',
@@ -80,7 +80,7 @@ const playBtn: PlayingElem = {
   },
 }
 
-const fastBtn: PlayingElem = {
+export const fastBtn: PlayingElem = {
   layoutKey: 'fastBtn',
   display: {
     type: 'button',
@@ -91,7 +91,7 @@ const fastBtn: PlayingElem = {
   },
 }
 
-const fasterBtn: PlayingElem = {
+export const fasterBtn: PlayingElem = {
   layoutKey: 'fasterBtn',
   display: {
     type: 'button',
@@ -102,7 +102,7 @@ const fasterBtn: PlayingElem = {
   },
 }
 
-const speedBtns: Record<Speed, PlayingElem> = {
+export const speedBtns: Record<Speed, PlayingElem> = {
   paused: pauseBtn,
   normal: playBtn,
   fast: fastBtn,

@@ -48,12 +48,12 @@ export class Scrollbar {
     didInitListeners = true
 
     cvs.addEventListener('pointerdown', (e) => {
-      pw.camera.pos = -(e.clientY - Scrollbar._bounds[1]) * window.devicePixelRatio / Scrollbar._drawScale
+      pw.camera.pos = -(e.clientY - Scrollbar._bounds[1]) * window.devicePixelRatio / Scrollbar.drawScale
       isDragging = true
     })
     document.addEventListener('pointermove', (e) => {
       if (isDragging) {
-        pw.camera.pos = -(e.clientY - Scrollbar._bounds[1]) * window.devicePixelRatio / Scrollbar._drawScale
+        pw.camera.pos = -(e.clientY - Scrollbar._bounds[1]) * window.devicePixelRatio / Scrollbar.drawScale
       }
     })
     document.addEventListener('pointerup', () => {
@@ -80,56 +80,14 @@ export class Scrollbar {
       const dpr = window.devicePixelRatio
       cvs.width = w * dpr
       cvs.height = h * dpr
-      Scrollbar.repaint(pw)
+      // Scrollbar.repaint(pw)
     }
 
     lastWidth = w
     lastHeight = h
   }
 
-  private static _drawScale = 1
-  static repaint(pw: PinballWizard) {
-    const sim = pw.activeSim
-    ctx.fillStyle = 'red'
-    ctx.strokeStyle = 'blue'
-    ctx.lineWidth = 2
-
-    const w = cvs.width
-    const h = cvs.height
-
-    ctx.fillRect(0, 0, w, h)
-    ctx.strokeRect(0, 0, w, h)
-
-    const scale = cvs.width / 100 / VALUE_SCALE
-    this._drawScale = scale
-
-    ctx.clearRect(0, 0, cvs.width, cvs.height)
-    ctx.save()
-    ctx.scale(scale, scale)
-
-    if (sim) {
-      ctx.fillStyle = OBSTACLE_FILL
-      for (const obstacle of sim.obstacles) {
-        traceObstacle(ctx, obstacle)
-        ctx.fill()
-      }
-
-      // draw disks
-      const selected = pw.selectedDiskIndex
-      for (const [diskIndex, disk] of sim.disks.entries()) {
-        const isSelected = (diskIndex === selected)
-        Scrollbar.drawDisk(disk, isSelected)
-      }
-      if (selected !== -1) {
-        const disk = sim.disks[selected]
-        Scrollbar.drawDisk(disk, true)
-      }
-
-      Graphics.drawViewRect(ctx, pw.simViewRect)
-    }
-
-    ctx.restore()
-  }
+  public static drawScale = 1 // set in scrollbar-gfx.ts
 
   // draw mini view of disk in scrollbar
   static drawDisk(disk: Disk, isSelected: boolean) {

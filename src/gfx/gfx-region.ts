@@ -5,7 +5,8 @@
  */
 
 import type { GfxRegionName } from 'imp-names'
-import type { Rectangle } from 'util/math-util'
+import type { PinballWizard } from 'pinball-wizard'
+import type { Rectangle, Vec2 } from 'util/math-util'
 
 type Registered = () => GfxRegion
 
@@ -17,17 +18,27 @@ const GFX_DEBUG_COLORS: Record<GfxRegionName, string> = {
   'sim-gfx': 'green',
 }
 
-export class GfxRegion {
+export abstract class GfxRegion {
   readonly name: GfxRegionName = '' as GfxRegionName // assigned when registered
 
-  draw(ctx: CanvasRenderingContext2D, rect: Rectangle) {
-
-    console.log('debug gfx reigion', JSON.stringify(rect))
-
-    ctx.lineWidth = 4
-    ctx.strokeStyle = GFX_DEBUG_COLORS[this.name]
-    ctx.strokeRect(...rect)
+  onResize(rect: Rectangle){
+    // do nothing
   }
+
+  draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
+    // console.log('debug gfx reigion', JSON.stringify(rect))
+    // ctx.lineWidth = 4
+    // ctx.strokeStyle = GFX_DEBUG_COLORS[this.name]
+    // ctx.strokeRect(...rect)
+
+    this._draw(ctx, pw, rect)
+  }
+
+  abstract down(pw: PinballWizard, mousePos: Vec2)
+  abstract move(pw: PinballWizard, mousePos: Vec2)
+  abstract leave(pw: PinballWizard, mousePos: Vec2)
+  abstract up(pw: PinballWizard, mousePos: Vec2)
+  protected abstract _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle)
 
   // static registry pattern
   protected constructor() {}

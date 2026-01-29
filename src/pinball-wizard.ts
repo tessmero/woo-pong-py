@@ -9,10 +9,12 @@ import { Camera } from 'camera'
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
 import { topConfig } from 'configs/imp/top-config'
 import { DISK_PATTERNS } from 'gfx/disk-gfx-util'
+import { GfxRegion } from 'gfx/gfx-region'
 import { Graphics } from 'gfx/graphics'
 import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
+import type { GfxRegionName } from 'imp-names'
 import { GUI } from 'imp-names'
 import { Scrollbar } from 'scrollbar'
 import type { Speed } from 'simulation/constants'
@@ -25,7 +27,7 @@ import { Lut } from 'simulation/luts/lut'
 import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
 import type { Rectangle } from 'util/math-util'
-import { lerp, shuffle, type Vec2 } from 'util/math-util'
+import { lerp, rectContainsPoint, shuffle, type Vec2 } from 'util/math-util'
 
 // can only be constructed once
 let didConstruct = false
@@ -213,6 +215,7 @@ export class PinballWizard {
       + Graphics.cvs.height / 2
 
     Graphics.drawSim(this)
+    Graphics.drawNew(this)
 
     // // update simViewRect y-value
     // const { drawOffset, drawSimScale } = Graphics
@@ -224,7 +227,7 @@ export class PinballWizard {
     // repaint scrollbar if necessary
     if (Scrollbar.isRepaintQueued) {
       Scrollbar.isRepaintQueued = false
-      Scrollbar.repaint(this)
+      // Scrollbar.repaint(this)
     }
 
     // always repaint bsp
@@ -282,69 +285,64 @@ export class PinballWizard {
     ]
   }
 
-  private readonly mousePos: Vec2 = [0, 0]
+  public readonly mousePos: Vec2 = [0, 0]
   public readonly simMousePos: Vec2 = [0, 0]
   public readonly simViewRect: Rectangle = [1, 1, 1, 1]
-  private hoveredDiskIndex = -1
+  public hoveredDiskIndex = -1
   move(mousePos: Vec2): Vec2 {
     if (this.isMouseDown) {
       this.camera.drag(this.dragY, mousePos[1])
       this.dragY = mousePos[1]
     }
 
-    // idleCountdown = IDLE_DELAY
-    const { drawOffset, drawSimScale } = Graphics
-
-    this.mousePos[0] = (mousePos[0] - drawOffset[0])
-    this.mousePos[1] = (mousePos[1] - drawOffset[1])
-
-    // compute mouse pos in terms of simulation units
-    const simMouseX = mousePos[0] / drawSimScale * window.devicePixelRatio - drawOffset[0] / drawSimScale
-    const simMouseY = mousePos[1] / drawSimScale * window.devicePixelRatio - drawOffset[1] / drawSimScale
-    this.simMousePos[0] = simMouseX
-    this.simMousePos[1] = simMouseY
-
-    // this.simViewRect[0] = drawOffset[0] / drawSimScale
-    // this.simViewRect[1] = -drawOffset[1] / drawSimScale
-    // if( this.activeSim )this.simViewRect[2] = this.activeSim.level.bounds[2]
-    // this.simViewRect[3] = window.innerHeight / drawSimScale * window.devicePixelRatio
-
-    // // // debug, position obstacle on mouse
-    // const obs = this.activeSim.obstacles.at(-1) as Obstacle
-    // obs.pos[0] = simMouseX
-    // obs.pos[1] = simMouseY
-
-    // // debug identify hovered room
-    // for (const [roomIndex, room] of this.activeSim.level.rooms.entries()) {
-    //   const bounds = room.bounds
-    //   if (rectContainsPoint(bounds, simMouseX, simMouseY)) {
-    //     console.log(`hovered room ${roomIndex}`)
-    //   }
-    // }
-
-    // this.gui.move(this, this.mousePos)
-
-    this.hoveredDiskIndex = this.getHoveredDiskIndex()
-
-    if (this.hoveredDiskIndex === -1 || this.hasBranched || this.hoveredDiskIndex === this.selectedDiskIndex) {
-      Graphics.cvs.style.setProperty('cursor', 'default')
-    }
-    else {
-      Graphics.cvs.style.setProperty('cursor', 'pointer') // can select disk
+    for (const [name, rect] of Object.entries(Graphics.regions)) {
+      const gfx = GfxRegion.create(name as GfxRegionName)
+      if (rectContainsPoint(rect, ...mousePos)) {
+        // const posInRegion: Vec2 = [
+        //   mousePos[0] - rect[0],
+        //   mousePos[1] - rect[1],
+        // ]
+        gfx.move(this, mousePos)
+      }
+      else {
+        gfx.leave(this, mousePos)
+      }
     }
 
     return this.mousePos
   }
 
-  private isMouseDown = false
-  private dragY = 0
+  public isMouseDown = false
+  public dragY = 0
   down(rawPos: Vec2) {
-    const _mousePos = this.move(rawPos)
-    this.isMouseDown = true
-    this.dragY = rawPos[1]
+    const mousePos = this.move(rawPos)
 
-    this.trySelectDisk(this.hoveredDiskIndex)
-    Graphics.cvs.style.setProperty('cursor', 'default')
+    for (const [name, rect] of Object.entries(Graphics.regions)) {
+      if (rectContainsPoint(rect, ...rawPos)) {
+        // const posInRegion: Vec2 = [
+        //   mousePos[0] - rect[0],
+        //   mousePos[1] - rect[1],
+        // ]
+        GfxRegion.create(name as GfxRegionName).down(this, rawPos)
+      }
+    }
+
+    // this.isMouseDown = true
+    // this.dragY = rawPos[1]
+    // this.trySelectDisk(this.hoveredDiskIndex)
+    // Graphics.cvs.style.setProperty('cursor', 'default')
+  }
+
+  up(rawPos: Vec2) {
+    for (const [name, rect] of Object.entries(Graphics.regions)) {
+      if (rectContainsPoint(rect, ...rawPos)) {
+        // const posInRegion: Vec2 = [
+        //   mousePos[0] - rect[0],
+        //   mousePos[1] - rect[1],
+        // ]
+        GfxRegion.create(name as GfxRegionName).up(this, rawPos)
+      }
+    }
   }
 
   trySelectDisk(diskIndex: number) {
@@ -365,7 +363,7 @@ export class PinballWizard {
       this.activeSim.branchSeed = this._race[diskIndex + 1]
   }
 
-  private getHoveredDiskIndex(): number {
+  public getHoveredDiskIndex(): number {
     let minD2 = CLICKABLE_RADSQ
     let result = -1
     for (const [diskIndex, disk] of this.activeSim.disks.entries()) {
@@ -379,11 +377,6 @@ export class PinballWizard {
       }
     }
     return result
-  }
-
-  up(_rawPos: Vec2) {
-    this.isMouseDown = false
-    this.camera.endDrag()
   }
 
   public didBuildControls = false // set to true after first build
