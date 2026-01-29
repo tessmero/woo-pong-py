@@ -21,6 +21,7 @@ import { Graphics } from 'gfx/graphics'
 import { TitleScreen } from 'title-screen'
 import { Scrollbar } from 'scrollbar'
 import { BallSelectionPanel } from 'ball-selection-panel'
+import { BottomBarGfx } from 'gfx/imp/bottom-bar-gfx'
 
 let isTitleAnimPlaying = true
 let lastTime = performance.now()
@@ -59,6 +60,8 @@ async function main() {
 
   // const layeredViewport = new LayeredViewport()
   gfxConfig.refreshConfig()
+
+  await BottomBarGfx.loadAllImages()
 
   const pinballWizard = new PinballWizard()
   pinballWizard.loadingState = 'B'

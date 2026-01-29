@@ -48,7 +48,7 @@ export const clock: PlayingElem = {
     label: '00:00',
   },
 }
-function formatTime(totalSeconds) {
+export function formatTime(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = Math.floor(totalSeconds % 60)
 
@@ -186,7 +186,7 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
 
   showHideElements(pinballWizard: PinballWizard) {
     for (const elem of elements) {
-      toggleElement(elem, !pinballWizard.isTitleScreen)
+      toggleElement(elem, false )//!pinballWizard.isTitleScreen)
     }
 
     toggleElement(resetBtn, pinballWizard.activeSim.winningDiskIndex !== -1)
