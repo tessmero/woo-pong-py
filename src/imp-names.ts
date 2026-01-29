@@ -67,5 +67,18 @@ export const ROOM_LAYOUT = {
     'four-by-four', 'breakout', 'honeycomb', 'three-by-three',
   ],
   SOURCES: ['src/room-layouts/**/*.ts'],
-} as const
+} as const satisfies ImpManifest
 export type RoomLayoutName = (typeof ROOM_LAYOUT.NAMES)[number]
+
+// main playing screen segments
+export const GFX_REGION = {
+  NAMES: [
+
+    // always visible
+    'sim-gfx','scrollbar-gfx','bottom-bar-gfx','top-bar-gfx', 
+
+    'bsp-gfx', // toggleable ball selection panel
+  ],
+  SOURCES: ['src/gfx/imp/']
+} as const satisfies ImpManifest
+export type GfxRegionName = (typeof GFX_REGION.NAMES)[number]

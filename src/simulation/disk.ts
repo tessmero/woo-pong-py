@@ -11,7 +11,7 @@ import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import { type ObstacleCollision } from './luts/imp/obstacle-lut'
 import { Lut } from './luts/lut'
 import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/disk-normal-lut'
-import type { DiskPattern } from 'gfx/disk-gfx'
+import type { DiskPattern } from 'gfx/disk-gfx-util'
 import { DISK_RADIUS } from './constants'
 import { applyFrictionX, applyFrictionY } from './luts/imp/disk-friction-lut'
 

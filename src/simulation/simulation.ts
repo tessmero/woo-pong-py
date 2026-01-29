@@ -11,7 +11,7 @@ import { collideDisks } from './luts/imp/disk-disk-lut'
 import type { Obstacle } from './obstacle'
 import { lerp, type Rectangle } from 'util/math-util'
 import { Perturbations } from './perturbations'
-import { DISK_PATTERNS } from 'gfx/disk-gfx'
+import { DISK_PATTERNS } from 'gfx/disk-gfx-util'
 import { Level } from 'level'
 
 const _disks: Array<[number, number, number, number]> = []

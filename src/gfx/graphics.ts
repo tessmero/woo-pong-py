@@ -1,19 +1,20 @@
 /**
  * @file graphics.ts
  *
- * Routines for drawing the air hockey scene on the
- * canvas 2d graphics context.
+ * Main entry point for drawing sim-with-controls view.
  */
 
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { twopi } from 'util/math-util'
 import type { Barrier } from '../simulation/barrier'
-import { drawDisk } from './disk-gfx'
+import { drawDisk } from './disk-gfx-util'
 import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import { Scrollbar } from 'scrollbar'
 import type { PinballWizard } from 'pinball-wizard'
 import { BallSelectionPanel } from 'ball-selection-panel'
-import { drawObstacles } from './obstacle-gfx'
+import { drawObstacles } from 'gfx/obstacle-gfx-util'
+import type { GfxRegionName } from 'imp-names'
+import { GfxRegion } from './gfx-region'
 
 const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
 const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
@@ -40,6 +41,7 @@ export class Graphics {
   static onResize(pw?: PinballWizard) {
     const dpr = window.devicePixelRatio
     const screenWidth = window.innerWidth * dpr
+    const screenHeight = window.innerHeight * dpr
     // cvs.width = cvs.clientWidth * dpr
     // cvs.height = cvs.clientHeight * dpr
 
@@ -47,14 +49,17 @@ export class Graphics {
     const maxWidth = 600 * dpr
     Graphics.innerWidth = Math.min(maxWidth, screenWidth)
     let cssWidth = Math.floor(Graphics.innerWidth / dpr)
+    const cssHeight = Math.floor(screenHeight / dpr)
     let cssLeft = Math.floor((screenWidth - Graphics.innerWidth) / 2 / dpr)
+
+    let scrollbar: Rectangle = [1, 1, 1, 1]
 
     if (pw) {
       // compute scrollbar bounds
       const scrollbarHeight = Math.min(600, window.innerHeight)
       const levelShape = pw?.activeSim?.level?.bounds ?? [1, 1, 1, 1]
       const scrollbarWidth = scrollbarHeight * (levelShape[2] / levelShape[3])
-      const scrollbar: Rectangle = [
+      scrollbar = [
         cssLeft + cssWidth,
         (window.innerHeight - scrollbarHeight) / 2,
         scrollbarWidth,
@@ -94,6 +99,55 @@ export class Graphics {
     cvs.height = cvs.clientHeight * dpr
     Graphics.drawOffset[0] = 0
     Graphics.cssLeft = cssLeft
+
+    // test new graphics
+    const _root: Rectangle = [
+      cssLeft, 0,
+      cssWidth + scrollbar[2],
+      cssHeight,
+    ]
+
+    const testCvs = this._testCanvas // new canvas in front
+    testCvs.style.setProperty('position', `absolute`)
+    testCvs.style.setProperty('left', `${_root[0]}px`)
+    testCvs.style.setProperty('top', `${_root[1]}px`)
+    testCvs.style.setProperty('width', `${_root[2]}px`)
+    testCvs.style.setProperty('height', `${_root[3]}px`)
+    testCvs.width = _root[2] * window.devicePixelRatio
+    testCvs.height = _root[3] * window.devicePixelRatio
+
+    const _regions: Partial<Record<GfxRegionName, Rectangle>> = {
+      'scrollbar-gfx': [
+        cssWidth, 0,
+        scrollbar[2],
+        cssHeight,
+      ],
+      'bottom-bar-gfx': [
+        0, _root[3] - 60,
+        cssWidth, 60,
+      ],
+      'top-bar-gfx': [
+        0, 0,
+        cssWidth, 60,
+      ],
+      'sim-gfx': [
+        0, 60,
+        cssWidth, cssHeight - 60 * 2,
+      ],
+    }
+
+    // draw all regions on test canvas
+    const testCtx = testCvs.getContext('2d') as CanvasRenderingContext2D
+    testCtx.fillStyle = 'red'
+    testCtx.fillRect(100, 100, 100, 100)
+    Object.keys(_regions).forEach((gfxName) => {
+      GfxRegion.create(gfxName as GfxRegionName)
+        .draw(testCtx, _regions[gfxName].map(v => v * window.devicePixelRatio))
+    })
+  }
+
+  static get _testCanvas() {
+    return document.getElementById('test-canvas') as HTMLCanvasElement
   }
 
   static drawOffset: Vec2 = [0, 0]

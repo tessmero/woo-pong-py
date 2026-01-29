@@ -4,10 +4,10 @@
  * Scrollbar with dedicated canvas similar to graphics.ts.
  */
 
-import type { DiskPattern } from 'gfx/disk-gfx'
-import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx'
+import type { DiskPattern } from 'gfx/disk-gfx-util'
+import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx-util'
 import { Graphics, OBSTACLE_FILL } from 'gfx/graphics'
-import { traceObstacle } from 'gfx/obstacle-gfx'
+import { traceObstacle } from 'gfx/obstacle-gfx-util'
 import type { PinballWizard } from 'pinball-wizard'
 import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import type { Disk } from 'simulation/disk'

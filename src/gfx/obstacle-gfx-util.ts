@@ -1,12 +1,12 @@
 /**
- * @file obstacle-gfx.ts
+ * @file obstacle-gfx-util.ts
  *
  * Helpers using graphics.ts to draw obstacles.
  */
 
 import type { PinballWizard } from 'pinball-wizard'
 import type { Obstacle } from 'simulation/obstacle'
-import { OBSTACLE_FILL, OBSTACLE_STROKE } from './graphics'
+import { OBSTACLE_FILL, OBSTACLE_STROKE } from 'gfx/graphics'
 import { VALUE_SCALE } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
 import { getDetailedPoints, type ObstacleLut } from 'simulation/luts/imp/obstacle-lut'

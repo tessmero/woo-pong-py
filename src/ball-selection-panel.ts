@@ -4,8 +4,8 @@
  * Ball selection panel.
  */
 
-import type { DiskPattern } from 'gfx/disk-gfx'
-import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx'
+import type { DiskPattern } from 'gfx/disk-gfx-util'
+import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx-util'
 import { ballsBtn } from 'guis/imp/playing-gui'
 import type { PinballWizard } from 'pinball-wizard'
 import { DISK_COUNT, VALUE_SCALE } from 'simulation/constants'
