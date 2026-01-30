@@ -64,7 +64,8 @@ export type RoomName = (typeof ROOM.NAMES)[number]
 // basic room layouts
 export const ROOM_LAYOUT = {
   NAMES: [
-    'four-by-four', 'breakout', 'honeycomb', 'three-by-three',
+    'four-by-four', 
+    'breakout', 'honeycomb', 'three-by-three',
   ],
   SOURCES: ['src/room-layouts/**/*.ts'],
 } as const satisfies ImpManifest
@@ -77,7 +78,7 @@ export const GFX_REGION = {
     // always visible
     'sim-gfx','scrollbar-gfx','bottom-bar-gfx','top-bar-gfx', 
 
-    'bsp-gfx', // toggleable ball selection panel
+    // 'bsp-gfx', // toggleable ball selection panel
 
     'glass-gfx', // effect overlay that covers all other regions
   ],

@@ -189,12 +189,12 @@ export class SimGfx extends GfxRegion {
 
     // Disk.updateHistory(sim.disks) // add to graphical tail
 
-    this._drawBoundsInnerEdges(ctx, sim)
+    this._drawBoundsInnerEdges(ctx, pw)
 
     drawObstacles(ctx, pw)
 
-    this._drawBounds(ctx, sim)
-    this._drawBoundsOuterEdges(ctx, sim)
+    this._drawBounds(ctx, pw)
+    this._drawBoundsOuterEdges(ctx, pw)
 
     for (const [diskIndex, disk] of sim.disks.entries()) {
       const isSelected = (diskIndex === selectedDiskIndex)
@@ -268,15 +268,15 @@ export class SimGfx extends GfxRegion {
     // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
   }
 
-  private _drawBoundsOuterEdges(ctx: CanvasRenderingContext2D, sim: Simulation) {
+  private _drawBoundsOuterEdges(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
     const mainThick = 2 * VALUE_SCALE
 
     const thick = 0.6 * VALUE_SCALE
-
-    const x0 = sim.level.bounds[0] - mainThick / 2
-    const y0 = sim.level.bounds[1]
-    const x1 = x0 + sim.level.bounds[2] + mainThick
-    const y1 = y0 + sim.level.bounds[3]
+    const viewRect = pw.simViewRect
+    const x0 = viewRect[0] - mainThick / 2
+    const y0 = viewRect[1]
+    const x1 = x0 + viewRect[2] + mainThick
+    const y1 = y0 + viewRect[3]
 
     ctx.lineWidth = thick
     ctx.strokeStyle = 'red'
@@ -293,34 +293,45 @@ export class SimGfx extends GfxRegion {
     ctx.stroke()
   }
 
-  private _drawBoundsInnerEdges(ctx: CanvasRenderingContext2D, sim: Simulation) {
+  private _drawBoundsInnerEdges(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
     const mainThick = 2 * VALUE_SCALE
 
     const thick = 0.6 * VALUE_SCALE
 
-    const x0 = sim.level.bounds[0]
-    const y0 = sim.level.bounds[1]
-    const x1 = x0 + sim.level.bounds[2]
-    const y1 = y0 + sim.level.bounds[3]
+    const viewRect = pw.simViewRect
+    const x0 = viewRect[0]
+    const y0 = viewRect[1]
+    const x1 = x0 + viewRect[2]
+    const y1 = y0 + viewRect[3]
 
     ctx.lineWidth = thick
     ctx.strokeStyle = 'black'
     ctx.beginPath()
+
+    // left
     ctx.moveTo(x0, y0)
     ctx.lineTo(x0, y1)
+
+    // right
     ctx.moveTo(x1, y0)
     ctx.lineTo(x1, y1)
+
+    // bottom
+    ctx.moveTo(x0,y1)
+    ctx.lineTo(x1,y1)
 
     ctx.stroke()
   }
 
-  private _drawBounds(ctx: CanvasRenderingContext2D, sim: Simulation) {
+  private _drawBounds(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
     // draw level bounds
     const thick = 2 * VALUE_SCALE
-    const x0 = sim.level.bounds[0]
-    const y0 = sim.level.bounds[1]
-    const x1 = x0 + sim.level.bounds[2]
-    const y1 = y0 + sim.level.bounds[3]
+
+    const viewRect = pw.simViewRect
+    const x0 = viewRect[0]
+    const y0 = viewRect[1]
+    const x1 = x0 + viewRect[2]
+    const y1 = y0 + viewRect[3]
     ctx.fillStyle = OBSTACLE_FILL
     ctx.fillRect(x0 - thick, y0, thick, y1 - y0)
     ctx.fillRect(x1, y0, thick, y1 - y0)

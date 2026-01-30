@@ -4,6 +4,8 @@
  * Graphics region for BSP (Binary Space Partitioning) visuals.
  */
 
+/*
+
 import type { PinballWizard } from 'pinball-wizard'
 import { GfxRegion } from '../gfx-region'
 import type { Rectangle, Vec2 } from 'util/math-util'
@@ -32,3 +34,5 @@ export class BspGfx extends GfxRegion {
     // do nothing
   }
 }
+
+*/

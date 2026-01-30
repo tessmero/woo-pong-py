@@ -6,7 +6,8 @@
 
 import type { DiskPattern } from 'gfx/disk-gfx-util'
 import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx-util'
-import { ballsBtn } from 'guis/imp/playing-gui'
+import { repaintDiagram } from 'guis/gui-html-elements'
+import { ballsBtn, ballSelectionPanel } from 'guis/imp/playing-gui'
 import type { PinballWizard } from 'pinball-wizard'
 import { DISK_COUNT, VALUE_SCALE } from 'simulation/constants'
 import type { Disk } from 'simulation/disk'
@@ -26,8 +27,8 @@ const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
 // const cvs = document.getElementById('scrollbar-canvas') as HTMLCanvasElement
 // const ctx = cvs.getContext('2d') as CanvasRenderingContext2D
 
-let lastWidth = -1
-let lastHeight = -1
+const lastWidth = -1
+const lastHeight = -1
 
 let didInitListeners = false
 
@@ -85,6 +86,10 @@ export class BallSelectionPanel {
   private static _drawScale = 1
   private static _bounds: Rectangle = [1, 1, 1, 1]
 
+  public static get isShowing() {
+    return cvs.style.display !== 'none'
+  }
+
   static show() {
     cvs.style.setProperty('display', 'block')
     ballsBtn.htmlElem?.classList.add('active')
@@ -126,7 +131,34 @@ export class BallSelectionPanel {
     })
   }
 
+  static draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
+    // if (cvs.style.display === 'none') {
+    //   return // not visible
+    // }
+
+    const [x, y, w, h] = rect
+
+    ctx.fillStyle = 'rgb(221,221,221)'
+    ctx.fillRect(0, 0, w, h)
+
+    if (!pw.activeSim) return
+
+    // draw balls
+    for (let i = 0; i < DISK_COUNT; i++) {
+      const disk = pw.activeSim.disks[i]
+      if (!disk) continue
+      const isSelected = (i === pw.selectedDiskIndex)
+
+      drawDisk(ctx, disk, isSelected, false,
+        ...diskPositions[i],
+      )
+    }
+  }
+
   static repaint(pw: PinballWizard) {
+    repaintDiagram(pw, ballSelectionPanel)
+    return
+
     // if (cvs.style.display === 'none') {
     //   return // not visible
     // }

@@ -73,8 +73,8 @@ export const PLAYING_LAYOUT = {
 
   resetBtn: {
     parent: 'screen',
-    width: () => bw(),
-    height: () => bh(),
+    width: () => 400,
+    height: () => 200,
     left: 'auto',
     top: 'auto',
   },

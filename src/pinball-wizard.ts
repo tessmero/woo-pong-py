@@ -218,6 +218,7 @@ export class PinballWizard {
     if (this.hasFinished && !wasFinished) {
       // just finished
       this.onResize()
+      Graphics.targetPixelAnim = 1
     }
 
     this.camera.update(dt, this)

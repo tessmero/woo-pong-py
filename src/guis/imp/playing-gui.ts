@@ -5,6 +5,8 @@
  */
 
 import { BallSelectionPanel } from 'ball-selection-panel'
+import { GfxRegion } from 'gfx/gfx-region'
+import { Graphics } from 'gfx/graphics'
 import type { GuiElement } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { setElementLabel, toggleElement } from 'guis/gui-html-elements'
@@ -130,7 +132,20 @@ const resetBtn: PlayingElem = {
   },
   click: ({ pinballWizard }) => {
     pinballWizard.reset()
+    Graphics.targetPixelAnim = 0
   },
+}
+
+export const ballSelectionPanel: PlayingElem = {
+  layoutKey: 'resetBtn',
+  display: {
+    type: 'diagram',
+    draw: (ctx, pw, rect) => {
+      // GfxRegion.create('bsp-gfx').draw(ctx, pw, rect)
+      BallSelectionPanel.draw(ctx,pw,rect)
+    },
+  },
+
 }
 
 const elements: Array<PlayingElem> = [
@@ -139,6 +154,7 @@ const elements: Array<PlayingElem> = [
   clock,
   ...Object.values(speedBtns),
   resetBtn,
+  ballSelectionPanel,
   // ...diskBtns,
 ]
 
@@ -185,9 +201,10 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
 
   showHideElements(pinballWizard: PinballWizard) {
     for (const elem of elements) {
-      toggleElement(elem, false )//!pinballWizard.isTitleScreen)
+      toggleElement(elem, false)// !pinballWizard.isTitleScreen)
     }
 
+    toggleElement(ballSelectionPanel, BallSelectionPanel.isShowing)
     toggleElement(resetBtn, pinballWizard.activeSim.winningDiskIndex !== -1)
     // const hasBranched = pinballWizard.hasBranched
     // for (const btn of diskBtns) {

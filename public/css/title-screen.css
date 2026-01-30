@@ -146,7 +146,9 @@ a:not(.imgLink) {
     text-decoration: none;
     background-color: rgb(230, 230, 230);
     padding: 0 5px;
-    border-radius: var(--border-radius);
+    /*border-radius: var(--border-radius);*/
+  border: 2px solid black;
+  border-radius: 5px;
     transition: all ease 50ms;
     cursor: pointer;
     display: inline-block;

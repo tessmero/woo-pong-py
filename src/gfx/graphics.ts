@@ -39,9 +39,8 @@ export class Graphics {
     this._updateCanvasDims() // update width and height if necessary
   }
 
-  private static _rootRect: Rectangle = [1,1,1,1]
-  private static _updateCanvasDims(){
-    
+  private static _rootRect: Rectangle = [1, 1, 1, 1]
+  private static _updateCanvasDims() {
     const _root = Graphics._rootRect
     const mainCvs = Graphics._mainCvs
     const glassCvs = Graphics._glassCvs
@@ -82,10 +81,10 @@ export class Graphics {
 
     // compute sim bounds
     const maxWidth = 600 * dpr
-    Graphics.innerWidth = Math.min(maxWidth, screenWidth)
-    let cssWidth = Math.floor(Graphics.innerWidth / dpr)
+    const targetWidth = Math.min(maxWidth, screenWidth)
+    let cssWidth = Math.floor(targetWidth / dpr)
     const cssHeight = Math.floor(screenHeight / dpr)
-    let cssLeft = Math.floor((screenWidth - Graphics.innerWidth) / 2 / dpr)
+    let cssLeft = Math.floor((screenWidth - targetWidth) / 2 / dpr)
 
     let scrollbar: Rectangle = [1, 1, 1, 1]
 
@@ -106,13 +105,13 @@ export class Graphics {
         cssLeft = 0
         cssWidth = window.innerWidth - scrollbarWidth
         scrollbar[0] = cssLeft + cssWidth
-        Graphics.innerWidth = cssWidth * dpr
+        // Graphics.innerWidth = cssWidth * dpr
       }
       else if ((cssLeft + cssWidth + scrollbarWidth) > window.innerWidth) {
         // slide sim to left to make space for scrollbar
         cssLeft = window.innerWidth - cssWidth - scrollbarWidth
         scrollbar[0] = cssLeft + cssWidth
-        Graphics.innerWidth = cssWidth * dpr
+        // Graphics.innerWidth = cssWidth * dpr
       }
 
       // comput eball selecion panel
@@ -140,6 +139,7 @@ export class Graphics {
       cssWidth + scrollbar[2] + rightGutterWidth,
       cssHeight,
     ]
+    Graphics.innerWidth = _root[2] * dpr
 
     const mainCvs = this._getMainCanvas() // new canvas in front
     const glassCvs = this._getGlassCanvas()
@@ -163,6 +163,8 @@ export class Graphics {
     this._rootRect = _root
     this._updateCanvasDims()
 
+    const isWide = window.innerWidth > 600
+
     this._regions = {
       'sim-gfx': [
         0, 60,
@@ -175,11 +177,13 @@ export class Graphics {
       ],
       'bottom-bar-gfx': [
         0, _root[3] - 60,
-        cssWidth, 60,
+        isWide ? cssWidth : _root[2],
+        60,
       ],
       'top-bar-gfx': [
         0, 0,
-        cssWidth, 60,
+        isWide ? cssWidth : _root[2],
+        60,
       ],
       'glass-gfx': [
         0, 0,
@@ -213,7 +217,6 @@ export class Graphics {
   static get regions() { return Graphics._regions }
 
   static draw(pw: PinballWizard) {
-
     // draw all regions
     Object.keys(this._regions).forEach((gfxName) => {
       const ctx = gfxName === 'glass-gfx' ? this._glassCtx : this._mainCtx

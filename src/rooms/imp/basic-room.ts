@@ -59,7 +59,7 @@ export class BasicRoom extends Room {
 const possibleLayouts: Array<RoomLayoutName> = [
   'honeycomb',
   'three-by-three',
-  'four-by-four',
+  // 'four-by-four',
 ]
 
 function randomLayout(): RoomLayoutName {

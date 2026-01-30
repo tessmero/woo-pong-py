@@ -33,6 +33,7 @@ const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
 const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
   bsp: (pw) => {
      BallSelectionPanel.toggle()
+     pw.onResize()
     Graphics.targetPixelAnim = 1 - Graphics.targetPixelAnim
      },
   clock: (pw) => {

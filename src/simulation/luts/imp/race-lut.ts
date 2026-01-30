@@ -12,7 +12,7 @@ import { Simulation } from 'simulation/simulation'
 
 export type RaceLeaf = Array<number>
 
-const nRaces = 100
+const nRaces = 1//000
 const maxStepsTotal = 1e7
 
 export type BranchDatum = {
@@ -41,11 +41,57 @@ export class RaceLut extends Lut<RaceLeaf> {
 
   // ts-expect-error race lut
   blobHash = LUT_BLOBS.RACE_LUT?.hash ?? ''
+  // Track stats for reporting and ETA
+  private static _raceStats = {
+    startTime: Date.now(),
+    solved: 0,
+    total: nRaces,
+    lastReport: Date.now(),
+  }
+
   computeLeaf(index: Array<number>): Array<number> {
-    console.log(`race-lut leaf ${index[0]} / ${nRaces}`)// eslint-disable-line no-console
+    const raceIndex = index[0]
+    const stats = RaceLut._raceStats
+    if (raceIndex === 0 && stats.solved !== 0) {
+      // Reset stats if running again
+      stats.startTime = Date.now()
+      stats.solved = 0
+      stats.lastReport = Date.now()
+    }
+    console.log(`race-lut leaf ${raceIndex} / ${nRaces}`)// eslint-disable-line no-console
     while (true) {
       const result = _tryComputeLeaf()
       if (result) {
+        stats.solved++
+        const now = Date.now()
+        const elapsed = (now - stats.startTime) / 1000 // seconds
+        const avgPerRace = elapsed / stats.solved
+        const remaining = stats.total - stats.solved
+        const eta = avgPerRace * remaining
+        // Only print if at least 1s since last report or last race
+        if (now - stats.lastReport > 1000 || stats.solved === stats.total) {
+          stats.lastReport = now
+          let etaStr = ''
+          if (remaining > 0) {
+            const etaH = Math.floor(eta / 3600)
+            const etaMin = Math.floor((eta % 3600) / 60)
+            const etaSec = Math.round(eta % 60)
+            if (etaH > 0) {
+              etaStr = `ETA: ${etaH}h ${etaMin}m ${etaSec}s.`
+            } else if (etaMin > 0) {
+              etaStr = `ETA: ${etaMin}m ${etaSec}s.`
+            } else {
+              etaStr = `ETA: ${etaSec}s.`
+            }
+          } else {
+            etaStr = 'All races complete!'
+          }
+          console.log(
+            `[race-lut] Solved ${stats.solved}/${stats.total} races. ` +
+            `Elapsed: ${elapsed.toFixed(1)}s. ` +
+            etaStr
+          )
+        }
         return result
       }
     }
@@ -58,21 +104,23 @@ export class RaceLut extends Lut<RaceLeaf> {
   }
 }
 
+let nextSeed = Perturbations.randomSeed()
+
 function _tryComputeLeaf(): Array<number> | null {
   // console.log('race-lut comput eleaf')
 
-  const commonStartSeed = Perturbations.randomSeed()
+  const commonStartSeed = nextSeed++
   const branches: Array<BranchDatum> = Array.from(
     { length: DISK_COUNT },
     () => ({ midSeed: -1, roomSeqs: [] }),
   )
 
-  // skip simulations and return dummy race-lut
-  return [
-    commonStartSeed,
-    ...branches.map(({ midSeed }) => midSeed),
-    // ...breakoutSolution,
-  ]
+  // // skip simulations and return dummy race-lut
+  // return [
+  //   commonStartSeed,
+  //   ...branches.map(({ midSeed }) => midSeed),
+  //   // ...breakoutSolution,
+  // ]
 
   console.log(`attempting to solve race with start seed ${commonStartSeed}...`)// eslint-disable-line no-console
 

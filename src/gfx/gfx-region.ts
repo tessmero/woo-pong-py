@@ -14,7 +14,7 @@ const GFX_DEBUG_COLORS: Record<GfxRegionName, string> = {
   'bottom-bar-gfx': 'white',
   'top-bar-gfx': 'lightblue',
   'scrollbar-gfx': 'orange',
-  'bsp-gfx': 'violet',
+  // 'bsp-gfx': 'violet',
   'sim-gfx': 'green',
   'glass-gfx': 'yellow',
 }
