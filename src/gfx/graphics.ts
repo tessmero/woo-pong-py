@@ -6,36 +6,21 @@
 
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { twopi } from 'util/math-util'
-import type { Barrier } from '../simulation/barrier'
-import { drawDisk } from './disk-gfx-util'
-import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
+import { DISK_RADIUS } from 'simulation/constants'
 import { Scrollbar } from 'scrollbar'
 import type { PinballWizard } from 'pinball-wizard'
 import { BallSelectionPanel } from 'ball-selection-panel'
-import { drawObstacles } from 'gfx/obstacle-gfx-util'
-import { GFX_REGION, type GfxRegionName } from 'imp-names'
+import { type GfxRegionName } from 'imp-names'
 import { GfxRegion } from './gfx-region'
 
-const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
-const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
+// const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
+// const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
 
 export const OBSTACLE_FILL = '#888'
 export const OBSTACLE_STROKE = '#000'
 
 export class Graphics {
-  static cvs = cvs
-  static ctx = ctx
-
-  static drawFinish(finish: Barrier) {
-    ctx.fillStyle = 'rgba(0,255,0,0.5)'
-    ctx.fillRect(...finish.xywh)
-  }
-
-  static drawBarrier(barrier: Barrier) {
-    if (barrier.isHidden) return
-    ctx.fillStyle = 'black'
-    ctx.fillRect(...barrier.xywh)
-  }
+  static get cvs() { return this._testCanvas }
 
   static innerWidth = 1
   static onResize(pw?: PinballWizard) {
@@ -86,18 +71,15 @@ export class Graphics {
         cssLeft, window.innerHeight - bspHeight,
         cssWidth, bspHeight,
       ]
-
-      Scrollbar.setBounds(scrollbar, pw)
-      BallSelectionPanel.setBounds(bsp, pw)
     }
 
-    // commit new layout
-    cvs.style.setProperty('position', `absolute`)
-    cvs.style.setProperty('width', `${cssWidth}px`)
-    cvs.style.setProperty('left', `${cssLeft}px`)
-    cvs.width = Graphics.innerWidth
-    cvs.height = cvs.clientHeight * dpr
-    Graphics.drawOffset[0] = 0
+    // // commit new layout
+    // cvs.style.setProperty('position', `absolute`)
+    // cvs.style.setProperty('width', `${cssWidth}px`)
+    // cvs.style.setProperty('left', `${cssLeft}px`)
+    // cvs.width = Graphics.innerWidth
+    // cvs.height = cvs.clientHeight * dpr
+    // // Graphics.drawOffset[0] = 0
     Graphics.cssLeft = cssLeft
 
     // test new graphics
@@ -116,7 +98,12 @@ export class Graphics {
     testCvs.width = _root[2] * window.devicePixelRatio
     testCvs.height = _root[3] * window.devicePixelRatio
 
-    const _regions: Partial<Record<GfxRegionName, Rectangle>> = {
+    this._testCvs = testCvs
+    this._regions = {
+      'sim-gfx': [
+        0, 60,
+        cssWidth, cssHeight - 60 * 2,
+      ],
       'scrollbar-gfx': [
         cssWidth, scrollbar[1],
         scrollbar[2],
@@ -130,27 +117,19 @@ export class Graphics {
         0, 0,
         cssWidth, 60,
       ],
-      'sim-gfx': [
-        0, 60,
-        cssWidth, cssHeight - 60 * 2,
-      ],
     }
 
-
-    this._testCvs = testCvs
-    this._regions = _regions
-
-      Object.keys(this._regions).forEach((gfxName) => {
-        GfxRegion.create(gfxName as GfxRegionName)
-          .onResize(this._regions[gfxName].map(v => v * window.devicePixelRatio))
-      })
+    // call all regions' onResize callbacks
+    Object.keys(this._regions).forEach((gfxName) => {
+      GfxRegion.create(gfxName as GfxRegionName)
+        .onResize(this._regions[gfxName].map(v => v * window.devicePixelRatio))
+    })
   }
 
   static get _testCanvas() {
     return document.getElementById('test-canvas') as HTMLCanvasElement
   }
 
-  static drawOffset: Vec2 = [0, 0]
   static cssLeft = 0
 
   private static _regions: Partial<Record<GfxRegionName, Rectangle>> = {}
@@ -169,115 +148,7 @@ export class Graphics {
     }
   }
 
-  static drawSimScale: number = 1 // set in drawSim
-  static drawSim(pw: PinballWizard) {
-    Graphics._updateSimViewRect(pw)
-
-    const sim = pw.activeSim
-    const { selectedDiskIndex, simViewRect } = pw
-    const scale = Graphics.innerWidth / 100 / VALUE_SCALE
-    Graphics.drawSimScale = scale
-    // Graphics.drawScale = scale
-
-    ctx.clearRect(0, 0, cvs.width, cvs.height)
-    ctx.save()
-    ctx.translate(...Graphics.drawOffset)
-    ctx.scale(scale, scale)
-    ctx.lineWidth = VALUE_SCALE
-
-    // Disk.updateHistory(sim.disks) // add to graphical tail
-
-    for (const [diskIndex, disk] of sim.disks.entries()) {
-      const isSelected = (diskIndex === selectedDiskIndex)
-      const isWinner = (diskIndex === sim.winningDiskIndex)
-      drawDisk(ctx, disk, isSelected, isWinner)
-    }
-
-    drawObstacles(ctx, pw)
-
-    // for (const barrier of sim.barriers) {
-    //   Graphics.drawBarrier(barrier)
-    // }
-    Graphics.drawFinish(sim.finish)
-
-    // // debug camera target height
-    // ctx.strokeStyle = 'green'
-    // ctx.lineWidth = 0.4 * VALUE_SCALE
-    // const camY = Graphics.drawOf
-    // ctx.strokeRect(...sim.level.bounds)
-
-    // // debug bounds
-    // ctx.strokeStyle = 'red'
-    // ctx.lineWidth = 0.5 * VALUE_SCALE
-    // ctx.strokeRect(...sim.level.bounds)
-
-    // draw level bounds
-    const thick = 2 * VALUE_SCALE
-    const x0 = sim.level.bounds[0]
-    const y0 = sim.level.bounds[1]
-    const x1 = x0 + sim.level.bounds[2]
-    const y1 = y0 + sim.level.bounds[3]
-    ctx.fillStyle = OBSTACLE_FILL
-    ctx.fillRect(x0 - thick, y0, thick, y1 - y0)
-    ctx.fillRect(x1, y0, thick, y1 - y0)
-
-    // // debug mouse pose
-    // Graphics.drawCursor(pw.simMousePos)
-
-    // // debug view rect
-    // Graphics.drawViewRect(ctx, pw.simViewRect)
-
-    // // debug room bounds
-    // ctx.strokeStyle = 'blue'
-    // ctx.fillStyle = 'blue'
-    // const gfxScale = 1 / 10 // extra scale factor needed to support text
-    // ctx.scale(1 / gfxScale, 1 / gfxScale)
-    // ctx.font = `${1 * VALUE_SCALE}px serif`
-    // ctx.lineWidth = 0.2 * VALUE_SCALE * gfxScale
-    // for (const room of sim.level.rooms) {
-    //   const [x, y, w, h] = room.bounds
-    //   // console.log(`room bounds: ${JSON.stringify(room.bounds)}`)
-    //   ctx.strokeRect(x * gfxScale, y * gfxScale, w * gfxScale, h * gfxScale)
-    //   if (room.name === 'breakout-room') {
-    //     ctx.fillText(`SCORE: ${(room as BreakoutRoom).score}`, x * gfxScale, y * gfxScale)
-    //   }
-    //   else {
-    //     ctx.fillText(room.name, x * gfxScale, y * gfxScale)
-    //   }
-    // }
-
-    // // draw labels on breakout bricks
-    // for (const obstacle of sim.obstacles) {
-    //   if (obstacle.label && !obstacle.isHidden) {
-    //     const [x, y] = obstacle.pos
-    //     ctx.fillText(obstacle.label, x * gfxScale, y * gfxScale)
-    //   }
-    // }
-
-    ctx.restore()
-
-    // // debug inner width
-    // ctx.strokeStyle = 'red'
-    // ctx.lineWidth = 1
-    // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
-  }
-
-  private static _updateSimViewRect(pw: PinballWizard) {
-    const { drawOffset, drawSimScale } = this
-    pw.simViewRect[0] = drawOffset[0] / drawSimScale
-    pw.simViewRect[1] = -drawOffset[1] / drawSimScale
-    pw.simViewRect[2] = Graphics.innerWidth / drawSimScale
-    // if (pw.activeSim)pw.simViewRect[2] = pw.activeSim.level.bounds[2]
-    pw.simViewRect[3] = window.innerHeight / drawSimScale * window.devicePixelRatio
-
-    // // debug, shrink simViewRect
-    // const shrinkFraction = 0.2
-    // const shrinkAmt = pw.simViewRect[3] * shrinkFraction
-    // pw.simViewRect[1] += shrinkAmt
-    // pw.simViewRect[3] -= 2 * shrinkAmt
-  }
-
-  static drawCursor(pos: Vec2) {
+  static drawCursor(ctx: CanvasRenderingContext2D, pos: Vec2) {
     const [x, y] = pos
     ctx.fillStyle = 'rgba(100,100,100,.5)'
     ctx.beginPath()

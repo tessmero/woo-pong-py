@@ -10,9 +10,12 @@ import type { PinballWizard } from 'pinball-wizard'
 import type { IconName } from 'gfx/button-icons'
 import { BUTTON_ICONS } from 'gfx/button-icons'
 import { Graphics } from 'gfx/graphics'
+
 import { stepsToSeconds } from 'simulation/constants'
 import { formatTime } from 'guis/imp/playing-gui'
 import { BallSelectionPanel } from 'ball-selection-panel'
+import { setupRubikText } from '../canvas-text-util'
+import { drawRoundedRect, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
 
 const LAYOUT_KEYS = ['bsp', 'clock', 'pause', 'play', 'fast', 'faster'] as const
 type LayoutKey = (typeof LAYOUT_KEYS)[number]
@@ -89,11 +92,14 @@ export class BottomBarGfx extends GfxRegion {
   }
 
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
-    ctx.clearRect(...rect)
+    // ctx.clearRect(...rect)
 
-    ctx.lineWidth = 4
-    ctx.strokeStyle = 'green'
-    ctx.strokeRect(...rect)
+    ctx.fillStyle = '#888'
+    ctx.fillRect(...rect)
+
+    // ctx.lineWidth = 4
+    // ctx.strokeStyle = 'green'
+    // ctx.strokeRect(...rect)
 
     if (!this._layout) return
 
@@ -103,32 +109,36 @@ export class BottomBarGfx extends GfxRegion {
       const isHeld = this._held === key
       const isActive = activeCheckers[key](pw)
 
-      // Draw button background
-      ctx.save()
-      if (isActive) {
-        ctx.fillStyle = 'black'
-        ctx.fillRect(...innerRect)
-      }
-      else if (isHeld) {
-        ctx.globalAlpha = 0.15
-        ctx.fillStyle = ctx.strokeStyle
-        ctx.fillRect(...innerRect)
-      }
-      ctx.restore()
+      // // Draw button background
+      // ctx.save()
+      // if (isActive) {
+      //   ctx.fillStyle = 'black'
+      //   ctx.fillRect(...innerRect)
+      // }
+      // else if (isHeld) {
+      //   ctx.globalAlpha = 0.15
+      //   ctx.fillStyle = ctx.strokeStyle
+      //   ctx.fillRect(...innerRect)
+      // }
+      // ctx.restore()
 
-      // Draw border
-      ctx.strokeStyle = isHovered ? 'red' : (isActive ? 'white' : 'blue')
-      ctx.strokeRect(...innerRect)
+      const fillStyle = isActive ? '#000' : (isHovered ? '#ccc' : '#eee')
+      const strokeStyle = isActive ? '#fff' : '#000'
+
+      ctx.lineWidth = isHovered ? 4 : 2
+      drawRoundedRect(ctx, innerRect, fillStyle, strokeStyle)
+
+      // // Draw border
+      // ctx.strokeStyle = isHovered ? 'red' : (isActive ? 'white' : 'blue')
+      // ctx.strokeRect(...innerRect)
 
       if (key === 'clock') {
         // Draw the current time string centered in the rect
         const [x, y, w, h] = innerRect
         ctx.save()
-        ctx.font = `bold ${Math.floor(h * 0.55)}px sans-serif`
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillStyle = isActive ? 'white' : 'black'
-        ctx.fillText(this.getCurrentTime(pw), x + w / 2, y + h / 2)
+        ctx.translate(x + w / 2, y + h / 2)
+        setupRubikText(ctx, h, isActive ? 'white' : 'black')
+        ctx.fillText(this.getCurrentTime(pw), 0, 0)
         ctx.restore()
       }
       else if (BUTTON_ICONS[key]) {
@@ -190,7 +200,12 @@ export class BottomBarGfx extends GfxRegion {
 
   private _layout: Layout | null = null
   private _computeLayout(rect: Rectangle) {
-    const [x, y, w, h] = rect
+    let [x, y, w, h] = rect
+    x += ROUNDED_RECT_PADDING
+    y += ROUNDED_RECT_PADDING
+    w -= 2 * ROUNDED_RECT_PADDING
+    h -= 2 * ROUNDED_RECT_PADDING
+
     const clockWidthFactor = 3 // how many btn widths in clock width
     const btnWidth = w / (5 + clockWidthFactor)
     const clockWidth = btnWidth * clockWidthFactor

@@ -211,10 +211,7 @@ export class PinballWizard {
     }
 
     this.camera.update(dt, this)
-    Graphics.drawOffset[1] = this.camera.pos * Graphics.drawSimScale
-      + Graphics.cvs.height / 2
 
-    Graphics.drawSim(this)
     Graphics.drawNew(this)
 
     // // update simViewRect y-value
@@ -239,7 +236,7 @@ export class PinballWizard {
       BallSelectionPanel.repaint(this)
     }
 
-    this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)
+    // this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)
 
     // check if next room was reached
     const nextRoomIndex = this.currentRoomIndex + 1
@@ -263,34 +260,18 @@ export class PinballWizard {
     return this.activeSim.winningDiskIndex !== -1
   }
 
-  private debugBranchCountdown(ctx: CanvasRenderingContext2D, w: number, _h: number) {
-    const thickness = 20
-    const progress = Math.min(1, this.activeSim.stepCount / STEPS_BEFORE_BRANCH)
 
-    ctx.fillStyle = 'white'
-    ctx.fillRect(0, 0, w, thickness)
-
-    ctx.fillStyle = 'black'
-    ctx.fillRect(0, 0, w * progress, thickness)
-  }
-
-  locateDiskOnScreen(diskIndex: number): Rectangle {
-    const disk = this.activeSim.disks[diskIndex]
-    const [rawx, rawy] = disk.interpolatedPos
-    const rad = DISK_RADIUS * VALUE_SCALE * Graphics.drawSimScale
-    const x = Graphics.drawOffset[0] + rawx * Graphics.drawSimScale
-    const y = Graphics.drawOffset[1] + rawy * Graphics.drawSimScale
-    return [
-      x - rad + Graphics.cssLeft, y - rad, 2 * rad, 2 * rad,
-    ]
-  }
 
   public readonly mousePos: Vec2 = [0, 0]
   public readonly simMousePos: Vec2 = [0, 0]
   public readonly simViewRect: Rectangle = [1, 1, 1, 1]
   public hoveredDiskIndex = -1
-  move(mousePos: Vec2): Vec2 {
-    if (this.isMouseDown) {
+  /**
+   * @param mousePos Position of input
+   * @param inputId 'mouse' for mouse, or a touch identifier (number)
+   */
+  move(mousePos: Vec2, inputId: 'mouse' | number): Vec2 {
+    if (this.isMouseDown && inputId === 'mouse') {
       this.camera.drag(this.dragY, mousePos[1])
       this.dragY = mousePos[1]
     }
@@ -298,49 +279,44 @@ export class PinballWizard {
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       const gfx = GfxRegion.create(name as GfxRegionName)
       if (rectContainsPoint(rect, ...mousePos)) {
-        // const posInRegion: Vec2 = [
-        //   mousePos[0] - rect[0],
-        //   mousePos[1] - rect[1],
-        // ]
-        gfx.move(this, mousePos)
-      }
-      else {
-        gfx.leave(this, mousePos)
+        if (typeof gfx.move === 'function') gfx.move(this, mousePos, inputId)
+      } else {
+        if (typeof gfx.leave === 'function') gfx.leave(this, mousePos, inputId)
       }
     }
-
-    return this.mousePos
+    return this.mousePos;
   }
 
   public isMouseDown = false
   public dragY = 0
-  down(rawPos: Vec2) {
-    const mousePos = this.move(rawPos)
+  /**
+   * @param rawPos Position of input
+   * @param inputId 'mouse' for mouse, or a touch identifier (number)
+   */
+  down(rawPos: Vec2, inputId: 'mouse' | number) {
+    const mousePos = this.move(rawPos, inputId)
 
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       if (rectContainsPoint(rect, ...rawPos)) {
-        // const posInRegion: Vec2 = [
-        //   mousePos[0] - rect[0],
-        //   mousePos[1] - rect[1],
-        // ]
-        GfxRegion.create(name as GfxRegionName).down(this, rawPos)
+        const gfx = GfxRegion.create(name as GfxRegionName);
+        if (typeof gfx.down === 'function') gfx.down(this, rawPos, inputId);
       }
     }
-
     // this.isMouseDown = true
     // this.dragY = rawPos[1]
     // this.trySelectDisk(this.hoveredDiskIndex)
     // Graphics.cvs.style.setProperty('cursor', 'default')
   }
 
-  up(rawPos: Vec2) {
+  /**
+   * @param rawPos Position of input
+   * @param inputId 'mouse' for mouse, or a touch identifier (number)
+   */
+  up(rawPos: Vec2, inputId: 'mouse' | number) {
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       if (rectContainsPoint(rect, ...rawPos)) {
-        // const posInRegion: Vec2 = [
-        //   mousePos[0] - rect[0],
-        //   mousePos[1] - rect[1],
-        // ]
-        GfxRegion.create(name as GfxRegionName).up(this, rawPos)
+        const gfx = GfxRegion.create(name as GfxRegionName);
+        if (typeof gfx.up === 'function') gfx.up(this, rawPos, inputId);
       }
     }
   }
@@ -361,22 +337,6 @@ export class PinballWizard {
 
     if (!this.isSeedConfiged)
       this.activeSim.branchSeed = this._race[diskIndex + 1]
-  }
-
-  public getHoveredDiskIndex(): number {
-    let minD2 = CLICKABLE_RADSQ
-    let result = -1
-    for (const [diskIndex, disk] of this.activeSim.disks.entries()) {
-      const [x, y] = disk.interpolatedPos
-      const distSquared
-        = Math.pow(this.simMousePos[0] - x, 2)
-          + Math.pow(this.simMousePos[1] - y, 2)
-      if (distSquared < minD2) {
-        minD2 = distSquared
-        result = diskIndex
-      }
-    }
-    return result
   }
 
   public didBuildControls = false // set to true after first build

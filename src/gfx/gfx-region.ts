@@ -34,10 +34,10 @@ export abstract class GfxRegion {
     this._draw(ctx, pw, rect)
   }
 
-  abstract down(pw: PinballWizard, mousePos: Vec2)
-  abstract move(pw: PinballWizard, mousePos: Vec2)
-  abstract leave(pw: PinballWizard, mousePos: Vec2)
-  abstract up(pw: PinballWizard, mousePos: Vec2)
+  abstract down(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
+  abstract move(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
+  abstract leave(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
+  abstract up(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
   protected abstract _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle)
 
   // static registry pattern

@@ -72,7 +72,12 @@ export type ElementMoveEvent = {
 export type ElementDisplayParams = {
 
   readonly type: 'button' | 'panel' | 'diagram' | 'transparent'
-  readonly draw?: (ctx: CanvasRenderingContext2D, pinballWizard: PinballWizard, rect: Rectangle) => void
+  readonly draw?: (
+    ctx: CanvasRenderingContext2D,
+    pinballWizard: PinballWizard,
+    rect: Rectangle,
+  ) => void
+
   label?: string
   icon?: IconName
   styles?: Record<string, string> // styles to add to html element
@@ -96,8 +101,8 @@ export abstract class Gui<TLayoutKey extends string = string> {
   public elements: Record<ElementId, GuiElement<TLayoutKey>> = {}
 
   abstract update(pinballWizard: PinballWizard, dt: number)
-  abstract move(pinballWizard: PinballWizard, mousePos: Vec2)
-  abstract down(pinballWizard: PinballWizard, mousePos: Vec2)
+  abstract move(pinballWizard: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
+  abstract down(pinballWizard: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
   abstract showHideElements(pinballWizard: PinballWizard)
 
   // assigned in create -> init

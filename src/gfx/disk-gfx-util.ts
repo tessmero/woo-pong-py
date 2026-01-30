@@ -4,13 +4,26 @@
  * Disk graphics.
  */
 
-import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
+import { CLICKABLE_RADIUS, DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import { tailLength, type Disk } from 'simulation/disk'
 import { twopi } from 'util/math-util'
 
 const maxTailDistance = 3 * DISK_RADIUS
 
 const isShowingTails = true
+
+export function drawDiskHalo(
+  ctx: CanvasRenderingContext2D, disk: Disk
+) {
+  // const [cx, cy, _dx, _dy] = disk.currentState
+  const [cx, cy] = disk.interpolatedPos
+
+  const edgeRad = VALUE_SCALE * 0.8
+  ctx.strokeStyle = 'black'
+  ctx.beginPath()
+  ctx.arc(cx, cy, CLICKABLE_RADIUS, 0, twopi)
+  ctx.stroke()
+}
 
 export function drawDisk(
   ctx: CanvasRenderingContext2D, disk: Disk,

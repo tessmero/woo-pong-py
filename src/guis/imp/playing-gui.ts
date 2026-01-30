@@ -177,11 +177,10 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
     // repaintDiagram(pinballWizard, ballsBtn)
   }
 
-  move(_pinballWizard: PinballWizard, _mousePos: Vec2) {
-
+  move(_pinballWizard: PinballWizard, _mousePos: Vec2, _inputId: 'mouse' | number) {
   }
 
-  down(_pinballWizard: PinballWizard, _mousePos: Vec2) {
+  down(_pinballWizard: PinballWizard, _mousePos: Vec2, _inputId: 'mouse' | number) {
   }
 
   showHideElements(pinballWizard: PinballWizard) {
@@ -197,7 +196,7 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
   }
 }
 
-function getStatusText(
+export function getStatusText(
   pinballWizard: PinballWizard,
   secondsElapsed: number,
 ) {

@@ -22,6 +22,23 @@ import { TitleScreen } from 'title-screen'
 import { Scrollbar } from 'scrollbar'
 import { BallSelectionPanel } from 'ball-selection-panel'
 import { BottomBarGfx } from 'gfx/imp/bottom-bar-gfx'
+import { BASE_FONT_SIZE } from 'gfx/canvas-text-util'
+
+// Utility to ensure Rubik font is loaded before drawing
+async function ensureRubikFontLoaded() {
+  const fontStr = `bold ${BASE_FONT_SIZE}px Rubik`
+  if (document && document.fonts) {
+    try {
+      await document.fonts.load(fontStr)
+      await document.fonts.ready
+      // Optionally log success
+      // console.log('[RubikFont] loaded', fontStr);
+    }
+    catch (e) {
+      console.error('[RubikFont] Error loading font:', e)
+    }
+  }
+}
 
 let isTitleAnimPlaying = true
 let lastTime = performance.now()
@@ -42,6 +59,8 @@ function titleAnimResize() {
 }
 
 async function main() {
+  await ensureRubikFontLoaded()
+
   titleAnimResize()
   window.addEventListener('resize', titleAnimResize)
   requestAnimationFrame(titleAnimLoop) // start background animation loop
@@ -160,30 +179,68 @@ async function main() {
 main()
 
 function _initListeners(pinballWizard: PinballWizard) {
-  const rawMousePos: Vec2 = [0, 0]
-  Graphics.cvs.addEventListener('pointermove', (e) => {
-    rawMousePos[0] = e.offsetX
-    rawMousePos[1] = e.offsetY
-    pinballWizard.move(rawMousePos)
+  const activeTouches: Record<number, Vec2> = {}
+  const mousePos: Vec2 = [0, 0]
+
+  // Mouse events
+  Graphics.cvs.addEventListener('mousedown', (e) => {
+    mousePos[0] = e.offsetX
+    mousePos[1] = e.offsetY
+    pinballWizard.down(mousePos, 'mouse')
+  })
+  Graphics.cvs.addEventListener('mousemove', (e) => {
+    mousePos[0] = e.offsetX
+    mousePos[1] = e.offsetY
+    Graphics.cvs.style.setProperty('cursor', 'default')
+    pinballWizard.move(mousePos, 'mouse')
+  })
+  Graphics.cvs.addEventListener('mouseup', (e) => {
+    mousePos[0] = e.offsetX
+    mousePos[1] = e.offsetY
+    pinballWizard.up(mousePos, 'mouse')
+  })
+  Graphics.cvs.addEventListener('mouseleave', (e) => {
+    pinballWizard.up(mousePos, 'mouse')
   })
 
-  Graphics.cvs.addEventListener('pointerdown', (e) => {
-    rawMousePos[0] = e.offsetX
-    rawMousePos[1] = e.offsetY
-    pinballWizard.down(rawMousePos)
-  })
+  // Touch events
+  Graphics.cvs.addEventListener('touchstart', (e) => {
+    for (const touch of Array.from(e.changedTouches)) {
+      const rect = Graphics.cvs.getBoundingClientRect()
+      const pos: Vec2 = [touch.clientX - rect.left, touch.clientY - rect.top]
+      activeTouches[touch.identifier] = pos
+      pinballWizard.down(pos, touch.identifier)
+    }
+    e.preventDefault()
+  }, { passive: false })
 
-  Graphics.cvs.addEventListener('pointerup', (e) => {
-    rawMousePos[0] = e.offsetX
-    rawMousePos[1] = e.offsetY
-    pinballWizard.up(rawMousePos)
-  })
+  Graphics.cvs.addEventListener('touchmove', (e) => {
+    for (const touch of Array.from(e.changedTouches)) {
+      const rect = Graphics.cvs.getBoundingClientRect()
+      const pos: Vec2 = [touch.clientX - rect.left, touch.clientY - rect.top]
+      activeTouches[touch.identifier] = pos
+      pinballWizard.move(pos, touch.identifier)
+    }
+    e.preventDefault()
+  }, { passive: false })
 
-  Graphics.cvs.addEventListener('pointerleave', (e) => {
-    rawMousePos[0] = e.offsetX
-    rawMousePos[1] = e.offsetY
-    pinballWizard.up(rawMousePos)
-  })
+  Graphics.cvs.addEventListener('touchend', (e) => {
+    for (const touch of Array.from(e.changedTouches)) {
+      const pos = activeTouches[touch.identifier] || [0, 0]
+      pinballWizard.up(pos, touch.identifier)
+      delete activeTouches[touch.identifier]
+    }
+    e.preventDefault()
+  }, { passive: false })
+
+  Graphics.cvs.addEventListener('touchcancel', (e) => {
+    for (const touch of Array.from(e.changedTouches)) {
+      const pos = activeTouches[touch.identifier] || [0, 0]
+      pinballWizard.up(pos, touch.identifier)
+      delete activeTouches[touch.identifier]
+    }
+    e.preventDefault()
+  }, { passive: false })
 
   Graphics.cvs.addEventListener('wheel', (e) => {
     pinballWizard.camera.scroll(e.deltaY)

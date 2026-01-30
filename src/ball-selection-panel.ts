@@ -150,35 +150,6 @@ export class BallSelectionPanel {
       )
     }
   }
-
-  static setBounds(bounds: Rectangle, pw: PinballWizard) {
-    BallSelectionPanel._bounds = bounds
-    let [x, y, w, h] = bounds
-
-    const shrinkW = w - (totalWidth / window.devicePixelRatio)
-    const shrinkH = h - (totalHeight / window.devicePixelRatio)
-
-    x += shrinkW / 2
-    w -= shrinkW
-    y += shrinkH / 2
-    h -= shrinkH
-
-    cvs.style.setProperty('position', 'absolute')
-    cvs.style.setProperty('left', `${x}px`)
-    cvs.style.setProperty('top', `${y}px`)
-
-    if ((w !== lastWidth) || (h !== lastHeight)) {
-      cvs.style.setProperty('width', `${w}px`)
-      cvs.style.setProperty('height', `${h}px`)
-      const dpr = window.devicePixelRatio
-      cvs.width = w * dpr
-      cvs.height = h * dpr
-      BallSelectionPanel.repaint(pw)
-    }
-
-    lastWidth = w
-    lastHeight = h
-  }
 }
 
 function getHoveredDiskIndex(e: PointerEvent): number {

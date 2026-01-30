@@ -6,7 +6,9 @@
  */
 
 import { topConfig } from 'configs/imp/top-config'
+import { GfxRegion } from 'gfx/gfx-region'
 import { Graphics } from 'gfx/graphics'
+import { SimGfx } from 'gfx/imp/sim-gfx'
 import type { PinballWizard } from 'pinball-wizard'
 import { Scrollbar } from 'scrollbar'
 import { VALUE_SCALE } from 'simulation/constants'
@@ -92,7 +94,7 @@ export class Camera {
     const t = performance.now()
     // const timeDelta = t - this.lastDragTime
     const mouseDelta = end - start
-    const posDelta = mouseDelta / Graphics.drawSimScale * window.devicePixelRatio
+    const posDelta = mouseDelta / (GfxRegion.create('sim-gfx') as SimGfx).drawSimScale * window.devicePixelRatio
     this.pos += posDelta
     // this.vel = posDelta / timeDelta // set velocity in case mouse is released
     this._idleCountdown = this._idleDelay
