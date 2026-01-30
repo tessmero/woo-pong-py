@@ -121,6 +121,7 @@ async function main() {
     await pinballWizard.init()
     pinballWizard.gui = Gui.create('playing-gui')
     pinballWizard.isTitleScreen = false
+    // Graphics.isTitleScreen = false
     pinballWizard.onResize()
     titleScreenElem.classList.add('hidden')
     Scrollbar.show()

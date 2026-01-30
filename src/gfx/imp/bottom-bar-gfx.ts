@@ -35,9 +35,12 @@ const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
      BallSelectionPanel.toggle()
     Graphics.targetPixelAnim = 1 - Graphics.targetPixelAnim
      },
-  clock: () => {
+  clock: (pw) => {
     //test
     Graphics.targetPixelAnim = 1 - Graphics.targetPixelAnim
+    if( Graphics.targetPixelAnim === 1 ){
+      pw.speed = 'paused'
+    }
   },
   pause: (pw) => { pw.speed = 'paused' },
   play: (pw) => { pw.speed = 'normal' },

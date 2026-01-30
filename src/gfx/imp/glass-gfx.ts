@@ -16,8 +16,9 @@ export class GlassGfx extends GfxRegion {
   // private _yOffset: number = 0
   private _yAnimOffset: number = 0
   private get _yOffset() {
-    const simOffset = [0,0] as Vec2 //(GfxRegion.create('sim-gfx') as SimGfx).drawOffset
-    const val = this._yAnimOffset + simOffset[1] / VALUE_SCALE
+    const simGfx = (GfxRegion.create('sim-gfx') as SimGfx)
+    const simOffset = simGfx.drawOffset
+    const val = this._yAnimOffset - simOffset[1] / Graphics.glassPixelScale
     const n = GlassGfx.GLASS_RES
     return ((val % n) + n) % n
   }
@@ -139,7 +140,7 @@ export class GlassGfx extends GfxRegion {
     this._initArrays()
     // Advance the x and y offsets for scrolling
     this._xOffset = (this._xOffset + dt * GlassGfx.X_SCROLL_RATE) % GlassGfx.GLASS_RES
-    this._yAnimOffset = (this._yOffset + dt * GlassGfx.Y_SCROLL_RATE) % GlassGfx.GLASS_RES
+    this._yAnimOffset = (this._yAnimOffset + dt * GlassGfx.Y_SCROLL_RATE) % GlassGfx.GLASS_RES
 
     // update physics
     const op = this._opacity

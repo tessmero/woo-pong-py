@@ -17,7 +17,7 @@ import { GfxRegion } from './gfx-region'
 export const OBSTACLE_FILL = '#888'
 export const OBSTACLE_STROKE = '#000'
 
-const pixelAnimSpeed = 1e-3// fraction per ms
+const pixelAnimSpeed = 1e-2// fraction per ms
 
 export class Graphics {
   static get cvs() { return this._getMainCanvas() }
@@ -25,7 +25,7 @@ export class Graphics {
   static innerWidth = 1
 
   static pixelAnim = 0 // 0-1 state
-  static targetPixelAnim = 1 // 0 or 1 target state
+  static targetPixelAnim = 0 // 0 or 1 target state
   static updatePixelAnim(dt: number) {
     if (this.pixelAnim === this.targetPixelAnim) return
     const delta = dt * pixelAnimSpeed
@@ -65,7 +65,9 @@ export class Graphics {
     }
   }
 
+  // public static isTitleScreen = true
   public static get mainPixelScale() {
+    // if( this.isTitleScreen ) return 10
     return Math.floor(1 + this.pixelAnim * 9)// physical pixels per big pixel
   }
 
@@ -152,8 +154,11 @@ export class Graphics {
 
     this._mainCvs = mainCvs
     this._mainCtx = mainCvs.getContext('2d') as CanvasRenderingContext2D
+    this._mainCtx.imageSmoothingEnabled = false
+
     this._glassCvs = glassCvs
     this._glassCtx = glassCvs.getContext('2d') as CanvasRenderingContext2D
+    this._glassCtx.imageSmoothingEnabled = false
 
     this._rootRect = _root
     this._updateCanvasDims()
@@ -200,16 +205,14 @@ export class Graphics {
   static cssLeft = 0
 
   private static _regions: Partial<Record<GfxRegionName, Rectangle>> = {}
-  private static _mainCvs: HTMLCanvasElement
-  private static _mainCtx: CanvasRenderingContext2D
+  public static _mainCvs: HTMLCanvasElement
+  public static _mainCtx: CanvasRenderingContext2D
   public static _glassCvs: HTMLCanvasElement
   public static _glassCtx: CanvasRenderingContext2D
 
   static get regions() { return Graphics._regions }
 
   static draw(pw: PinballWizard) {
-
-    this._mainCtx.imageSmoothingEnabled = this.pixelAnim > 0
 
     // draw all regions
     Object.keys(this._regions).forEach((gfxName) => {

@@ -64,8 +64,9 @@ function _updateTitleSim(dt: number) {
 }
 
 function _drawTitleSim() {
-  const { cvs } = Graphics
-  const ctx = cvs.getContext('2d') as CanvasRenderingContext2D
+  const cvs = Graphics._mainCvs
+  const ctx = Graphics._mainCtx
+  if( !ctx ) return
   const w = cvs.width, h = cvs.height
   const scale = Math.min(w, h) * 0.5
   // White background
