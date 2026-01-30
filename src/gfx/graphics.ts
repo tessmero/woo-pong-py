@@ -25,7 +25,7 @@ export class Graphics {
   static innerWidth = 1
 
   static pixelAnim = 0 // 0-1 state
-  static targetPixelAnim = 0 // 0 or 1 target state
+  static targetPixelAnim = 1 // 0 or 1 target state
   static updatePixelAnim(dt: number) {
     if (this.pixelAnim === this.targetPixelAnim) return
     const delta = dt * pixelAnimSpeed
@@ -69,7 +69,7 @@ export class Graphics {
     return Math.floor(1 + this.pixelAnim * 9)// physical pixels per big pixel
   }
 
-  public static glassPixelScale = 10 // physical pixels per big pixel
+  public static glassPixelScale = 40 // physical pixels per big pixel
 
   static onResize(pw?: PinballWizard) {
     const dpr = window.devicePixelRatio
@@ -202,12 +202,15 @@ export class Graphics {
   private static _regions: Partial<Record<GfxRegionName, Rectangle>> = {}
   private static _mainCvs: HTMLCanvasElement
   private static _mainCtx: CanvasRenderingContext2D
-  private static _glassCvs: HTMLCanvasElement
-  private static _glassCtx: CanvasRenderingContext2D
+  public static _glassCvs: HTMLCanvasElement
+  public static _glassCtx: CanvasRenderingContext2D
 
   static get regions() { return Graphics._regions }
 
   static draw(pw: PinballWizard) {
+
+    this._mainCtx.imageSmoothingEnabled = this.pixelAnim > 0
+
     // draw all regions
     Object.keys(this._regions).forEach((gfxName) => {
       const ctx = gfxName === 'glass-gfx' ? this._glassCtx : this._mainCtx

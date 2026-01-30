@@ -29,7 +29,12 @@ export class SimGfx extends GfxRegion {
     Graphics.cvs.style.setProperty('cursor', 'default')
   }
 
-  move(pw: PinballWizard, mousePos: Vec2) {
+  move(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number) {
+    if (pw.isMouseDown && inputId === 'mouse') {
+      pw.camera.drag(pw.dragY, mousePos[1])
+      pw.dragY = mousePos[1]
+    }
+
     // idleCountdown = IDLE_DELAY
     const { drawOffset, drawSimScale } = this
 
@@ -98,7 +103,7 @@ export class SimGfx extends GfxRegion {
   }
 
   public drawSimScale: number = 1 // set in drawSim
-  private drawOffset: Vec2 = [0, 0]
+  public drawOffset: Vec2 = [0, 0]
   private _updateSimViewRect(pw: PinballWizard) {
     const { drawOffset, drawSimScale } = this
     pw.simViewRect[0] = drawOffset[0] / drawSimScale
@@ -165,7 +170,8 @@ export class SimGfx extends GfxRegion {
     this.drawOffset[0] = x
     this.drawOffset[1] = (y * this.drawSimScale)
       + (pw.camera.pos * scale)
-      + Graphics.cvs.height / 2
+      // + Graphics.cvs.height / 2
+      + rect[3] * window.devicePixelRatio / 2
 
     this._updateSimViewRect(pw)
 
@@ -188,7 +194,7 @@ export class SimGfx extends GfxRegion {
     drawObstacles(ctx, pw)
 
     this._drawBounds(ctx, sim)
-    this._drawBoundsOuterEdges(ctx,sim)
+    this._drawBoundsOuterEdges(ctx, sim)
 
     for (const [diskIndex, disk] of sim.disks.entries()) {
       const isSelected = (diskIndex === selectedDiskIndex)
@@ -262,13 +268,12 @@ export class SimGfx extends GfxRegion {
     // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
   }
 
-  private _drawBoundsOuterEdges(ctx: CanvasRenderingContext2D, sim: Simulation ){
-    
+  private _drawBoundsOuterEdges(ctx: CanvasRenderingContext2D, sim: Simulation) {
     const mainThick = 2 * VALUE_SCALE
 
     const thick = 0.6 * VALUE_SCALE
 
-    const x0 = sim.level.bounds[0]  - mainThick/2
+    const x0 = sim.level.bounds[0] - mainThick / 2
     const y0 = sim.level.bounds[1]
     const x1 = x0 + sim.level.bounds[2] + mainThick
     const y1 = y0 + sim.level.bounds[3]
@@ -289,7 +294,6 @@ export class SimGfx extends GfxRegion {
   }
 
   private _drawBoundsInnerEdges(ctx: CanvasRenderingContext2D, sim: Simulation) {
-
     const mainThick = 2 * VALUE_SCALE
 
     const thick = 0.6 * VALUE_SCALE
@@ -306,7 +310,6 @@ export class SimGfx extends GfxRegion {
     ctx.lineTo(x0, y1)
     ctx.moveTo(x1, y0)
     ctx.lineTo(x1, y1)
-
 
     ctx.stroke()
   }

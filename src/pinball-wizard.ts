@@ -11,7 +11,8 @@ import { topConfig } from 'configs/imp/top-config'
 import { DISK_PATTERNS } from 'gfx/disk-gfx-util'
 import { GfxRegion } from 'gfx/gfx-region'
 import { Graphics } from 'gfx/graphics'
-import { SimGfx } from 'gfx/imp/sim-gfx'
+import type { GlassGfx } from 'gfx/imp/glass-gfx'
+import type { SimGfx } from 'gfx/imp/sim-gfx'
 import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
@@ -19,10 +20,10 @@ import type { GfxRegionName } from 'imp-names'
 import { GUI } from 'imp-names'
 import { Scrollbar } from 'scrollbar'
 import type { Speed } from 'simulation/constants'
-import { CLICKABLE_RADSQ, DISK_RADIUS,
+import {
   LOOK_AHEAD_STEPS,
   ROOM_COUNT,
-  SPEEDS, STEPS_BEFORE_BRANCH, VALUE_SCALE,
+  SPEEDS, STEPS_BEFORE_BRANCH,
 } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
 import { Simulation } from 'simulation/simulation'
@@ -64,9 +65,7 @@ export class PinballWizard {
   private _speed: Speed = 'normal'
   public get speed() { return this._speed }
   public set speed(s: Speed) {
-    
     if (this._isHalted) {
-
       // user tried to advance, but must select a ball first
       const gfx = GfxRegion.create('sim-gfx') as SimGfx
       gfx.startFlashing()
@@ -147,7 +146,8 @@ export class PinballWizard {
   private _speedBeforeHalt: Speed = 'normal'
 
   update(dt: number) {
-    Graphics.updatePixelAnim(dt)
+    Graphics.updatePixelAnim(dt);
+    (GfxRegion.create('glass-gfx') as GlassGfx).update(dt)
     const wasBranched = this.hasBranched
     const wasFinished = this.hasFinished
 
@@ -270,8 +270,6 @@ export class PinballWizard {
     return this.activeSim.winningDiskIndex !== -1
   }
 
-
-
   public readonly mousePos: Vec2 = [0, 0]
   public readonly simMousePos: Vec2 = [0, 0]
   public readonly simViewRect: Rectangle = [1, 1, 1, 1]
@@ -281,20 +279,16 @@ export class PinballWizard {
    * @param inputId 'mouse' for mouse, or a touch identifier (number)
    */
   move(mousePos: Vec2, inputId: 'mouse' | number): Vec2 {
-    if (this.isMouseDown && inputId === 'mouse') {
-      this.camera.drag(this.dragY, mousePos[1])
-      this.dragY = mousePos[1]
-    }
-
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       const gfx = GfxRegion.create(name as GfxRegionName)
       if (rectContainsPoint(rect, ...mousePos)) {
         if (typeof gfx.move === 'function') gfx.move(this, mousePos, inputId)
-      } else {
+      }
+      else {
         if (typeof gfx.leave === 'function') gfx.leave(this, mousePos, inputId)
       }
     }
-    return this.mousePos;
+    return this.mousePos
   }
 
   public isMouseDown = false
@@ -308,8 +302,8 @@ export class PinballWizard {
 
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       if (rectContainsPoint(rect, ...rawPos)) {
-        const gfx = GfxRegion.create(name as GfxRegionName);
-        if (typeof gfx.down === 'function') gfx.down(this, rawPos, inputId);
+        const gfx = GfxRegion.create(name as GfxRegionName)
+        if (typeof gfx.down === 'function') gfx.down(this, rawPos, inputId)
       }
     }
     // this.isMouseDown = true
@@ -324,10 +318,10 @@ export class PinballWizard {
    */
   up(rawPos: Vec2, inputId: 'mouse' | number) {
     for (const [name, rect] of Object.entries(Graphics.regions)) {
-      if (rectContainsPoint(rect, ...rawPos)) {
-        const gfx = GfxRegion.create(name as GfxRegionName);
-        if (typeof gfx.up === 'function') gfx.up(this, rawPos, inputId);
-      }
+      // if (rectContainsPoint(rect, ...rawPos)) {
+        const gfx = GfxRegion.create(name as GfxRegionName)
+        if (typeof gfx.up === 'function') gfx.up(this, rawPos, inputId)
+      // }
     }
   }
 

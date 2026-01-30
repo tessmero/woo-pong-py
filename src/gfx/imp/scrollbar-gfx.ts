@@ -98,7 +98,6 @@ export class ScrollbarGfx extends GfxRegion {
     ctx.strokeStyle = isSelected ? 'green' : 'black'
     ctx.lineWidth = edgeRad
     ctx.fillStyle = getScaledPattern(disk.pattern)
-    ctx.imageSmoothingEnabled = false
 
     ctx.beginPath()
     ctx.arc(cx, cy, DISK_RADIUS * 5, 0, twopi)

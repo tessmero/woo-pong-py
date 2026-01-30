@@ -186,7 +186,6 @@ function drawDisk(
   ctx.strokeStyle = isSelected ? 'green' : 'black'
   ctx.stroke()
   ctx.fillStyle = getScaledPattern(disk.pattern)
-  ctx.imageSmoothingEnabled = false
   ctx.fill()
   ctx.restore()
 }
