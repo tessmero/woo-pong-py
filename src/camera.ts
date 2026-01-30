@@ -7,8 +7,7 @@
 
 import { topConfig } from 'configs/imp/top-config'
 import { GfxRegion } from 'gfx/gfx-region'
-import { Graphics } from 'gfx/graphics'
-import { SimGfx } from 'gfx/imp/sim-gfx'
+import type { SimGfx } from 'gfx/imp/sim-gfx'
 import type { PinballWizard } from 'pinball-wizard'
 import { Scrollbar } from 'scrollbar'
 import { VALUE_SCALE } from 'simulation/constants'
@@ -35,6 +34,7 @@ export class Camera {
   targetRoom = 0
 
   update(dt: number, pinballWizard: PinballWizard) {
+
     if (this.isDragging || Scrollbar.isDragging || pinballWizard.isHalted || pinballWizard.speed === 'paused') {
       // do nothing
       return

@@ -16,6 +16,7 @@ const GFX_DEBUG_COLORS: Record<GfxRegionName, string> = {
   'scrollbar-gfx': 'orange',
   'bsp-gfx': 'violet',
   'sim-gfx': 'green',
+  'glass-gfx': 'yellow',
 }
 
 export abstract class GfxRegion {
@@ -47,7 +48,7 @@ export abstract class GfxRegion {
 
   static register(name: GfxRegionName, reg: Registered): void {
     if (name in this._registry) {
-      throw new Error(`room layout already registered: '${name}'`)
+      throw new Error(`gfx region already registered: '${name}'`)
     }
     this._registry[name] = reg
     const gfx = reg()
@@ -60,7 +61,7 @@ export abstract class GfxRegion {
 
   static create(name: GfxRegionName): GfxRegion {
     if (!Object.hasOwn(this._singletonInstances, name)) {
-      throw new Error(`singleton room layout not registered: ${name}`)
+      throw new Error(`singleton GfxRegion not registered: ${name}`)
     }
     return this._singletonInstances[name] as GfxRegion
   }

@@ -11,6 +11,7 @@ import { topConfig } from 'configs/imp/top-config'
 import { DISK_PATTERNS } from 'gfx/disk-gfx-util'
 import { GfxRegion } from 'gfx/gfx-region'
 import { Graphics } from 'gfx/graphics'
+import { SimGfx } from 'gfx/imp/sim-gfx'
 import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
@@ -63,7 +64,15 @@ export class PinballWizard {
   private _speed: Speed = 'normal'
   public get speed() { return this._speed }
   public set speed(s: Speed) {
-    if (this._isHalted) return
+    
+    if (this._isHalted) {
+
+      // user tried to advance, but must select a ball first
+      const gfx = GfxRegion.create('sim-gfx') as SimGfx
+      gfx.startFlashing()
+      return
+    }
+
     this._speed = s
     const targetMult = SPEEDS[s]
     if (this._speedMult === targetMult) {
@@ -138,6 +147,7 @@ export class PinballWizard {
   private _speedBeforeHalt: Speed = 'normal'
 
   update(dt: number) {
+    Graphics.updatePixelAnim(dt)
     const wasBranched = this.hasBranched
     const wasFinished = this.hasFinished
 
@@ -212,7 +222,7 @@ export class PinballWizard {
 
     this.camera.update(dt, this)
 
-    Graphics.drawNew(this)
+    Graphics.draw(this)
 
     // // update simViewRect y-value
     // const { drawOffset, drawSimScale } = Graphics

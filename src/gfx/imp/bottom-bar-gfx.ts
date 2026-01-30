@@ -31,8 +31,14 @@ const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
 }
 
 const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
-  bsp: (pw) => { BallSelectionPanel.toggle() },
-  clock: () => {},
+  bsp: (pw) => {
+     BallSelectionPanel.toggle()
+    Graphics.targetPixelAnim = 1 - Graphics.targetPixelAnim
+     },
+  clock: () => {
+    //test
+    Graphics.targetPixelAnim = 1 - Graphics.targetPixelAnim
+  },
   pause: (pw) => { pw.speed = 'paused' },
   play: (pw) => { pw.speed = 'normal' },
   fast: (pw) => { pw.speed = 'fast' },

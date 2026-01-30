@@ -12,9 +12,10 @@ import { CLICKABLE_RADSQ, DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import { drawDisk, drawDiskHalo } from 'gfx/disk-gfx-util'
 import { drawObstacles } from 'gfx/obstacle-gfx-util'
 import type { Barrier } from 'simulation/barrier'
+import type { Simulation } from 'simulation/simulation'
 
-const ballFlashDuration = 1000 // ms
-const ballFlashPeriod = 200 // ms
+const ballFlashDuration = 2000 // ms
+const ballFlashCycles = 5 // cycles per duration
 
 export class SimGfx extends GfxRegion {
   static {
@@ -135,24 +136,23 @@ export class SimGfx extends GfxRegion {
     ctx.fillRect(...barrier.xywh)
   }
 
-  private _flashCountdown = 0
-  private _lastT = 0
-  public startFlashingBalls() {
-    this._flashCountdown = ballFlashDuration
-    this._lastT = performance.now()
+  private _flashStartTime = -1
+  public startFlashing() {
+    this._flashStartTime = performance.now()
   }
 
   private _drawRect: Rectangle = [1, 1, 1, 1]
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
     let isFlashOn = false
-    if (this._flashCountdown > 0) {
-      const angle = (this._flashCountdown / ballFlashDuration) * twopi
-      if (Math.sin(angle) > 0) {
-        isFlashOn = true
-      }
+    if (this._flashStartTime > -1) {
       const t = performance.now()
-      const elapsed = t - this._lastT
-      this._flashCountdown -= elapsed
+      const flashCountdown = this._flashStartTime - t + ballFlashDuration
+      if (flashCountdown > 0) {
+        const angle = (flashCountdown / ballFlashDuration) * twopi * ballFlashCycles
+        if (Math.sin(angle) > 0) {
+          isFlashOn = true
+        }
+      }
     }
 
     this._drawRect = rect
@@ -163,7 +163,8 @@ export class SimGfx extends GfxRegion {
     this.drawSimScale = scale
 
     this.drawOffset[0] = x
-    this.drawOffset[1] = (y * this.drawSimScale) + (pw.camera.pos * scale)
+    this.drawOffset[1] = (y * this.drawSimScale)
+      + (pw.camera.pos * scale)
       + Graphics.cvs.height / 2
 
     this._updateSimViewRect(pw)
@@ -182,6 +183,13 @@ export class SimGfx extends GfxRegion {
 
     // Disk.updateHistory(sim.disks) // add to graphical tail
 
+    this._drawBoundsInnerEdges(ctx, sim)
+
+    drawObstacles(ctx, pw)
+
+    this._drawBounds(ctx, sim)
+    this._drawBoundsOuterEdges(ctx,sim)
+
     for (const [diskIndex, disk] of sim.disks.entries()) {
       const isSelected = (diskIndex === selectedDiskIndex)
       // const isHovered = (diskIndex === hoveredDiskIndex)
@@ -196,8 +204,6 @@ export class SimGfx extends GfxRegion {
       const disk = sim.disks[hoveredDiskIndex]
       drawDiskHalo(ctx, disk)
     }
-
-    drawObstacles(ctx, pw)
 
     // for (const barrier of sim.barriers) {
     //   Graphics.drawBarrier(barrier)
@@ -214,16 +220,6 @@ export class SimGfx extends GfxRegion {
     // ctx.strokeStyle = 'red'
     // ctx.lineWidth = 0.5 * VALUE_SCALE
     // ctx.strokeRect(...sim.level.bounds)
-
-    // draw level bounds
-    const thick = 2 * VALUE_SCALE
-    const x0 = sim.level.bounds[0]
-    const y0 = sim.level.bounds[1]
-    const x1 = x0 + sim.level.bounds[2]
-    const y1 = y0 + sim.level.bounds[3]
-    ctx.fillStyle = OBSTACLE_FILL
-    ctx.fillRect(x0 - thick, y0, thick, y1 - y0)
-    ctx.fillRect(x1, y0, thick, y1 - y0)
 
     // // debug mouse pose
     // Graphics.drawCursor(pw.simMousePos)
@@ -264,5 +260,66 @@ export class SimGfx extends GfxRegion {
     // ctx.strokeStyle = 'red'
     // ctx.lineWidth = 1
     // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
+  }
+
+  private _drawBoundsOuterEdges(ctx: CanvasRenderingContext2D, sim: Simulation ){
+    
+    const mainThick = 2 * VALUE_SCALE
+
+    const thick = 0.6 * VALUE_SCALE
+
+    const x0 = sim.level.bounds[0]  - mainThick/2
+    const y0 = sim.level.bounds[1]
+    const x1 = x0 + sim.level.bounds[2] + mainThick
+    const y1 = y0 + sim.level.bounds[3]
+
+    ctx.lineWidth = thick
+    ctx.strokeStyle = 'red'
+    ctx.beginPath()
+
+    // outer left edge
+    ctx.moveTo(x0, y0)
+    ctx.lineTo(x0, y1)
+
+    // outer right edge
+    ctx.moveTo(x1, y0)
+    ctx.lineTo(x1, y1)
+
+    ctx.stroke()
+  }
+
+  private _drawBoundsInnerEdges(ctx: CanvasRenderingContext2D, sim: Simulation) {
+
+    const mainThick = 2 * VALUE_SCALE
+
+    const thick = 0.6 * VALUE_SCALE
+
+    const x0 = sim.level.bounds[0]
+    const y0 = sim.level.bounds[1]
+    const x1 = x0 + sim.level.bounds[2]
+    const y1 = y0 + sim.level.bounds[3]
+
+    ctx.lineWidth = thick
+    ctx.strokeStyle = 'black'
+    ctx.beginPath()
+    ctx.moveTo(x0, y0)
+    ctx.lineTo(x0, y1)
+    ctx.moveTo(x1, y0)
+    ctx.lineTo(x1, y1)
+
+
+    ctx.stroke()
+  }
+
+  private _drawBounds(ctx: CanvasRenderingContext2D, sim: Simulation) {
+    // draw level bounds
+    const thick = 2 * VALUE_SCALE
+    const x0 = sim.level.bounds[0]
+    const y0 = sim.level.bounds[1]
+    const x1 = x0 + sim.level.bounds[2]
+    const y1 = y0 + sim.level.bounds[3]
+    ctx.fillStyle = OBSTACLE_FILL
+    ctx.fillRect(x0 - thick, y0, thick, y1 - y0)
+    ctx.fillRect(x1, y0, thick, y1 - y0)
   }
 }

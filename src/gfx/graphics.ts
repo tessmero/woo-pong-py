@@ -7,9 +7,7 @@
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { twopi } from 'util/math-util'
 import { DISK_RADIUS } from 'simulation/constants'
-import { Scrollbar } from 'scrollbar'
 import type { PinballWizard } from 'pinball-wizard'
-import { BallSelectionPanel } from 'ball-selection-panel'
 import { type GfxRegionName } from 'imp-names'
 import { GfxRegion } from './gfx-region'
 
@@ -19,10 +17,60 @@ import { GfxRegion } from './gfx-region'
 export const OBSTACLE_FILL = '#888'
 export const OBSTACLE_STROKE = '#000'
 
+const pixelAnimSpeed = 1e-3// fraction per ms
+
 export class Graphics {
-  static get cvs() { return this._testCanvas }
+  static get cvs() { return this._getMainCanvas() }
 
   static innerWidth = 1
+
+  static pixelAnim = 0 // 0-1 state
+  static targetPixelAnim = 0 // 0 or 1 target state
+  static updatePixelAnim(dt: number) {
+    if (this.pixelAnim === this.targetPixelAnim) return
+    const delta = dt * pixelAnimSpeed
+    if (this.pixelAnim < this.targetPixelAnim) {
+      this.pixelAnim = Math.min(this.targetPixelAnim, this.pixelAnim + delta)
+    }
+    if (this.pixelAnim > this.targetPixelAnim) {
+      this.pixelAnim = Math.max(this.targetPixelAnim, this.pixelAnim - delta)
+    }
+
+    this._updateCanvasDims() // update width and height if necessary
+  }
+
+  private static _rootRect: Rectangle = [1,1,1,1]
+  private static _updateCanvasDims(){
+    
+    const _root = Graphics._rootRect
+    const mainCvs = Graphics._mainCvs
+    const glassCvs = Graphics._glassCvs
+
+    // compute main canvas dimensions (maybe big pixels)
+    const mainWidth = Math.floor(_root[2] * window.devicePixelRatio / Graphics.mainPixelScale)
+    const mainHeight = Math.floor(_root[3] * window.devicePixelRatio / Graphics.mainPixelScale)
+    if (mainWidth !== mainCvs.width || mainHeight !== mainCvs.height) {
+      mainCvs.width = mainWidth
+      mainCvs.height = mainHeight
+      const scale = mainWidth / (_root[2] * window.devicePixelRatio)
+      this._mainCtx.setTransform(scale, 0, 0, scale, 0, 0)
+    }
+
+    // comput glass canvas dimensions wtih big pixels
+    const glassWidth = _root[2] * window.devicePixelRatio / Graphics.glassPixelScale
+    const glassHeight = _root[3] * window.devicePixelRatio / Graphics.glassPixelScale
+    if (glassWidth !== glassCvs.width || glassHeight !== glassCvs.height) {
+      glassCvs.width = glassWidth
+      glassCvs.height = glassHeight
+    }
+  }
+
+  public static get mainPixelScale() {
+    return Math.floor(1 + this.pixelAnim * 9)// physical pixels per big pixel
+  }
+
+  public static glassPixelScale = 10 // physical pixels per big pixel
+
   static onResize(pw?: PinballWizard) {
     const dpr = window.devicePixelRatio
     const screenWidth = window.innerWidth * dpr
@@ -82,23 +130,34 @@ export class Graphics {
     // // Graphics.drawOffset[0] = 0
     Graphics.cssLeft = cssLeft
 
+    const rightGutterWidth = 10
+
     // test new graphics
     const _root: Rectangle = [
       cssLeft, 0,
-      cssWidth + scrollbar[2],
+      cssWidth + scrollbar[2] + rightGutterWidth,
       cssHeight,
     ]
 
-    const testCvs = this._testCanvas // new canvas in front
-    testCvs.style.setProperty('position', `absolute`)
-    testCvs.style.setProperty('left', `${_root[0]}px`)
-    testCvs.style.setProperty('top', `${_root[1]}px`)
-    testCvs.style.setProperty('width', `${_root[2]}px`)
-    testCvs.style.setProperty('height', `${_root[3]}px`)
-    testCvs.width = _root[2] * window.devicePixelRatio
-    testCvs.height = _root[3] * window.devicePixelRatio
+    const mainCvs = this._getMainCanvas() // new canvas in front
+    const glassCvs = this._getGlassCanvas()
 
-    this._testCvs = testCvs
+    for (const cvs of ([mainCvs, glassCvs] as const)) {
+      cvs.style.setProperty('position', `absolute`)
+      cvs.style.setProperty('left', `${_root[0]}px`)
+      cvs.style.setProperty('top', `${_root[1]}px`)
+      cvs.style.setProperty('width', `${_root[2]}px`)
+      cvs.style.setProperty('height', `${_root[3]}px`)
+    }
+
+    this._mainCvs = mainCvs
+    this._mainCtx = mainCvs.getContext('2d') as CanvasRenderingContext2D
+    this._glassCvs = glassCvs
+    this._glassCtx = glassCvs.getContext('2d') as CanvasRenderingContext2D
+
+    this._rootRect = _root
+    this._updateCanvasDims()
+
     this._regions = {
       'sim-gfx': [
         0, 60,
@@ -117,6 +176,10 @@ export class Graphics {
         0, 0,
         cssWidth, 60,
       ],
+      'glass-gfx': [
+        0, 0,
+        _root[2], _root[3],
+      ],
     }
 
     // call all regions' onResize callbacks
@@ -126,26 +189,31 @@ export class Graphics {
     })
   }
 
-  static get _testCanvas() {
+  static _getGlassCanvas() {
+    return document.getElementById('glass-canvas') as HTMLCanvasElement
+  }
+
+  static _getMainCanvas() {
     return document.getElementById('test-canvas') as HTMLCanvasElement
   }
 
   static cssLeft = 0
 
   private static _regions: Partial<Record<GfxRegionName, Rectangle>> = {}
-  private static _testCvs
+  private static _mainCvs: HTMLCanvasElement
+  private static _mainCtx: CanvasRenderingContext2D
+  private static _glassCvs: HTMLCanvasElement
+  private static _glassCtx: CanvasRenderingContext2D
 
   static get regions() { return Graphics._regions }
 
-  static drawNew(pw: PinballWizard) {
-    // draw all regions on test canvas
-    const testCtx = this._testCvs.getContext('2d') as CanvasRenderingContext2D
-    if (pw) {
-      Object.keys(this._regions).forEach((gfxName) => {
-        GfxRegion.create(gfxName as GfxRegionName)
-          .draw(testCtx, pw, this._regions[gfxName].map(v => v * window.devicePixelRatio))
-      })
-    }
+  static draw(pw: PinballWizard) {
+    // draw all regions
+    Object.keys(this._regions).forEach((gfxName) => {
+      const ctx = gfxName === 'glass-gfx' ? this._glassCtx : this._mainCtx
+      GfxRegion.create(gfxName as GfxRegionName)
+        .draw(ctx, pw, this._regions[gfxName].map(v => v * window.devicePixelRatio))
+    })
   }
 
   static drawCursor(ctx: CanvasRenderingContext2D, pos: Vec2) {
