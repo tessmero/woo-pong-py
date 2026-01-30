@@ -62,6 +62,7 @@ export function drawDisk(
   ctx.strokeStyle = isSelected ? 'green' : 'black'
   ctx.stroke()
   ctx.fillStyle = PATTERN_FILLERS[disk.pattern]
+  ctx.imageSmoothingEnabled = false
   ctx.fill()
 }
 

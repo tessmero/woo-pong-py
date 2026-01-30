@@ -71,10 +71,17 @@ export const PLAYING_LAYOUT = {
     left: () => bh() + im(),
   },
 
+  bsp: {
+    parent: 'screen',
+    width: () => 400,
+    height: () => 400,
+    left: 'auto',
+    top: 'auto',
+  },
   resetBtn: {
     parent: 'screen',
     width: () => 400,
-    height: () => 200,
+    height: () => 400,
     left: 'auto',
     top: 'auto',
   },

@@ -13,6 +13,7 @@ import { setElementLabel, toggleElement } from 'guis/gui-html-elements'
 import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
 import type { PinballWizard } from 'pinball-wizard'
+import { Scrollbar } from 'scrollbar'
 import type { Speed } from 'simulation/constants'
 import { SECONDS_BEFORE_BRANCH, stepsToSeconds } from 'simulation/constants'
 import type { Vec2 } from 'util/math-util'
@@ -137,7 +138,7 @@ const resetBtn: PlayingElem = {
 }
 
 export const ballSelectionPanel: PlayingElem = {
-  layoutKey: 'resetBtn',
+  layoutKey: 'bsp',
   display: {
     type: 'diagram',
     draw: (ctx, pw, rect) => {
@@ -145,7 +146,7 @@ export const ballSelectionPanel: PlayingElem = {
       BallSelectionPanel.draw(ctx,pw,rect)
     },
   },
-
+  down: () => BallSelectionPanel
 }
 
 const elements: Array<PlayingElem> = [

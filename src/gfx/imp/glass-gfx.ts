@@ -78,7 +78,7 @@ export class GlassGfx extends GfxRegion {
     const N = GlassGfx.GLASS_RES
     // Interpolate between left and right opacity values for smooth scroll
     const xL = (x + Math.floor(this._xOffset)) % N
-    const iL = (y + Math.floor(this._yOffset)) * N + xL
+    const iL = ((y + Math.floor(this._yOffset)) % N) * N + xL
     this._opacity[iL] = 1
   }
 

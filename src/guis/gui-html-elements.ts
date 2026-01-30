@@ -129,6 +129,7 @@ export function repaintDiagram(pinballWizard: PinballWizard, elem: GuiElement) {
 
   const cvs = htmlElem as HTMLCanvasElement
   const ctx = cvs.getContext('2d') as CanvasRenderingContext2D
+  ctx.imageSmoothingEnabled = false
   elem.display.draw(ctx, pinballWizard, rectangle.map(v => v * window.devicePixelRatio) as Rectangle)
 }
 

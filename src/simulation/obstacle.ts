@@ -49,7 +49,9 @@ export class Obstacle {
   ) {
     const shapeParams = SHAPE_PATHS[shape]
     const { baseSvg } = shapeParams
-    this.points = centeredPointsOnPath(baseSvg)
+    
+  const truncate = (shape === 'flipper')
+    this.points = centeredPointsOnPath(baseSvg, truncate)
     transformPoints(this.points, shapeParams)
 
     this.collisionRect = [

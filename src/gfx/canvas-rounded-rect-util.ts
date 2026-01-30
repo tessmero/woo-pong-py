@@ -35,7 +35,7 @@ export function drawRoundedRect(
   ctx.fillStyle = fillStyle;
   ctx.fill();
   ctx.strokeStyle = strokeStyle;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 2 * window.devicePixelRatio;
   ctx.stroke();
   ctx.restore();
 }

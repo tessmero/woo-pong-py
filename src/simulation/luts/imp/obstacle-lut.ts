@@ -4,7 +4,7 @@
  * Used to check for collisions with obstacles and get normal angles.
  */
 
-import { DISK_RADIUS, OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
+import { DISK_RADIUS, OBSTACLE_DETAIL_SCALE, VALUE_SCALE } from 'simulation/constants'
 import { Lut } from '../lut'
 import { pio2, twopi, type Vec2 } from 'util/math-util'
 import { pointsOnPath } from 'points-on-path'
@@ -114,8 +114,8 @@ export function getDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
   return detailedPointsCache[shape] as ReadonlyArray<Vec2>
 }
 
-export function centeredPointsOnPath(path: string) {
-  const points = pointsOnPath(path, 0.05)[0]
+export function centeredPointsOnPath(path: string, truncate = false) {
+  let points = pointsOnPath(path, 0.05)[0]
   let minX = Infinity
   let maxX = -Infinity
   let minY = Infinity
@@ -135,6 +135,11 @@ export function centeredPointsOnPath(path: string) {
     p[0] -= midX
     p[1] -= midY
   }
+
+  if (truncate) {
+    points = points.filter(p => p[0] < 100)
+  }
+
   return points
 }
 
@@ -148,7 +153,8 @@ function computeDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
     isPathReversed = false,
   } = shapeParams
 
-  let points = centeredPointsOnPath(baseSvg)
+  const truncate = (shape === 'flipper')
+  let points = centeredPointsOnPath(baseSvg, truncate)
 
   // Distance threshold to add midpoints
   const threshold = DISK_RADIUS / 10 / scale / Math.max(xScale, yScale)

@@ -41,9 +41,11 @@ export class SimGfx extends GfxRegion {
     pw.mousePos[0] = (mousePos[0] - drawOffset[0] - this._drawRect[0])
     pw.mousePos[1] = (mousePos[1] - drawOffset[1] - this._drawRect[1])
 
+    const dpr = window.devicePixelRatio
+
     // compute mouse pos in terms of simulation units
-    const simMouseX = (mousePos[0] - this._drawRect[0]) / drawSimScale * window.devicePixelRatio - drawOffset[0] / drawSimScale
-    const simMouseY = (mousePos[1] - this._drawRect[1]) / drawSimScale * window.devicePixelRatio - drawOffset[1] / drawSimScale
+    let simMouseX = (mousePos[0] * dpr - this._drawRect[0]) / drawSimScale - drawOffset[0] / drawSimScale
+    let simMouseY = (mousePos[1] *dpr - this._drawRect[1]) / drawSimScale - drawOffset[1] / drawSimScale
     pw.simMousePos[0] = simMouseX
     pw.simMousePos[1] = simMouseY
 
@@ -108,9 +110,9 @@ export class SimGfx extends GfxRegion {
     const { drawOffset, drawSimScale } = this
     pw.simViewRect[0] = drawOffset[0] / drawSimScale
     pw.simViewRect[1] = -drawOffset[1] / drawSimScale
-    pw.simViewRect[2] = Graphics.innerWidth / drawSimScale
+    pw.simViewRect[2] = this._drawRect[2] / drawSimScale
     // if (pw.activeSim)pw.simViewRect[2] = pw.activeSim.level.bounds[2]
-    pw.simViewRect[3] = window.innerHeight / drawSimScale * window.devicePixelRatio
+    pw.simViewRect[3] = this._drawRect[3] / drawSimScale
 
     // // debug, shrink simViewRect
     // const shrinkFraction = 0.2
@@ -166,9 +168,10 @@ export class SimGfx extends GfxRegion {
     const { selectedDiskIndex, hoveredDiskIndex, simViewRect } = pw
     const scale = (w) / 100 / VALUE_SCALE
     this.drawSimScale = scale
+    const dpr = window.devicePixelRatio
 
-    this.drawOffset[0] = x
-    this.drawOffset[1] = (y * this.drawSimScale)
+    this.drawOffset[0] = x * dpr * this.drawSimScale
+    this.drawOffset[1] = (y * dpr * this.drawSimScale)
       + (pw.camera.pos * scale)
       // + Graphics.cvs.height / 2
       + rect[3] * window.devicePixelRatio / 2
@@ -178,7 +181,7 @@ export class SimGfx extends GfxRegion {
     ctx.clearRect(x, y, w, h)
 
     // debug
-    ctx.lineWidth = 3
+    ctx.lineWidth = 3  * window.devicePixelRatio
     ctx.strokeStyle = 'black'
     ctx.strokeRect(x, y, w, h)
 

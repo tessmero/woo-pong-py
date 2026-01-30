@@ -9,7 +9,7 @@ import { GfxRegion } from '../gfx-region'
 import type { PinballWizard } from 'pinball-wizard'
 import type { IconName } from 'gfx/button-icons'
 import { BUTTON_ICONS } from 'gfx/button-icons'
-import { Graphics } from 'gfx/graphics'
+import { Graphics, gutterPx } from 'gfx/graphics'
 
 import { stepsToSeconds } from 'simulation/constants'
 import { formatTime } from 'guis/imp/playing-gui'
@@ -211,9 +211,9 @@ export class BottomBarGfx extends GfxRegion {
   private _layout: Layout | null = null
   private _computeLayout(rect: Rectangle) {
     let [x, y, w, h] = rect
-    x += ROUNDED_RECT_PADDING
+    x += gutterPx
     y += ROUNDED_RECT_PADDING
-    w -= 2 * ROUNDED_RECT_PADDING
+    w -= 2 * (gutterPx)
     h -= 2 * ROUNDED_RECT_PADDING
 
     const clockWidthFactor = 3 // how many btn widths in clock width

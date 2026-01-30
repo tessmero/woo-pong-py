@@ -10,6 +10,7 @@ import { DISK_RADIUS } from 'simulation/constants'
 import type { PinballWizard } from 'pinball-wizard'
 import { type GfxRegionName } from 'imp-names'
 import { GfxRegion } from './gfx-region'
+import type { ScrollbarGfx } from './imp/scrollbar-gfx'
 
 // const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
 // const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
@@ -19,9 +20,10 @@ export const OBSTACLE_STROKE = '#000'
 
 const pixelAnimSpeed = 1e-2// fraction per ms
 
-const leftGutterWidthPx = 10
-const midGutterWidthPx = 10
-const rightGutterWidthPx = 10
+export const gutterPx = 4
+const leftGutterWidthPx = gutterPx
+const midGutterWidthPx = gutterPx
+const rightGutterWidthPx = gutterPx
 const barHeightPx = 60
 
 export class Graphics {
@@ -40,6 +42,7 @@ export class Graphics {
     if (this.pixelAnim > this.targetPixelAnim) {
       this.pixelAnim = Math.max(this.targetPixelAnim, this.pixelAnim - delta)
     }
+    Graphics._glassCvs.style.setProperty('display', this.pixelAnim === 0 ? 'none' : 'block')
 
     this._updateCanvasDims() // update width and height if necessary
   }
@@ -90,7 +93,7 @@ export class Graphics {
     // compute sim bounds
     const maxWidth = 600 * dpr
     this.hasSpaceOnSides = (screenWidth > maxWidth)
-    if (this.hasSpaceOnSides) {
+    if (this.hasSpaceOnSides && pw && !pw.isTitleScreen) {
       Graphics.cvs.style.setProperty('border-left', '2px solid black')
       Graphics.cvs.style.setProperty('border-right', '2px solid black')
     }
@@ -246,6 +249,14 @@ export class Graphics {
       ctx.fillRect(...rect)
     }
 
+    // draw disks on scrollbar
+    ;(GfxRegion.create('scrollbar-gfx') as ScrollbarGfx)
+      .drawDisks(ctx, pw, this._dpRegions['scrollbar-gfx'] as Rectangle)
+
+    // draw view cursor on scrollbar
+    ;(GfxRegion.create('scrollbar-gfx') as ScrollbarGfx)
+      .drawViewRect(ctx, pw, this._dpRegions['scrollbar-gfx'] as Rectangle)
+
     // // draw top edge of gutters
     // ctx.strokeStyle = 'black'
     // ctx.lineWidth = 1
@@ -286,8 +297,8 @@ export class Graphics {
   }
 
   static drawViewRect(ctx: CanvasRenderingContext2D, rect: Rectangle) {
-    ctx.strokeStyle = 'red'
-    ctx.lineWidth = DISK_RADIUS
+    ctx.strokeStyle = 'black'
+    ctx.lineWidth = DISK_RADIUS * 3
     ctx.strokeRect(...rect)
   }
 }

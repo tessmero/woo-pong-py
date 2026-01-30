@@ -6,6 +6,8 @@
  */
 
 import { solveBreakout } from 'breakout-solver'
+import { GfxRegion } from 'gfx/gfx-region'
+import { ScrollbarGfx } from 'gfx/imp/scrollbar-gfx'
 import { Room } from 'rooms/room'
 import { ROOM_LAYOUT_POSITIONS } from 'rooms/room-layouts/set-by-build'
 import { Scrollbar } from 'scrollbar'
@@ -34,6 +36,7 @@ export class BreakoutRoom extends Room {
     }
 
     obstacle.isHidden = true // brick disappears when hit
+    ;(GfxRegion.create('scrollbar-gfx') as ScrollbarGfx).hideObstacle(obstacle)
     Scrollbar.isRepaintQueued = true // update mini view of obstacles in scrollbar
 
     if (this.hitSequence.includes(brickIndex)) {

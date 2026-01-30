@@ -30,8 +30,8 @@ export const LUT_BLOBS = {
     "yRad": 80
   },
   "FLIPPER": {
-    "url": "luts/flipper-37df027a42ba96b8.bin",
-    "hash": "37df027a42ba96b878f712bbce4cbebbf7942baaeb206297e09288da42d9ea5b",
+    "url": "luts/flipper-6a311dbcbeefa4ff.bin",
+    "hash": "6a311dbcbeefa4ff85ed07317fbd96fb40464a42a320d36244852c36a8e9f154",
     "xRad": 286,
     "yRad": 97
   },
@@ -108,7 +108,7 @@ export const LUT_BLOBS = {
     "hash": "705377676ab3d42cd2e6ffcb1f5c3298f1df3018910f934c553c0ee2096e27de"
   },
   "RACE_LUT": {
-    "url": "luts/race-lut-b3b106efd8d875f1.bin",
-    "hash": "b3b106efd8d875f1d773972941836c16648f5e84a5ced5e97c15906ebe1e3373"
+    "url": "luts/race-lut-daf848dc90299066.bin",
+    "hash": "daf848dc90299066ddb20a11146ff9f4cc82edac1dacffd3627915d3013e0d51"
   }
 };
