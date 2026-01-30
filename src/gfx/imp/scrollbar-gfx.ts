@@ -59,15 +59,23 @@ export class ScrollbarGfx extends GfxRegion {
     Scrollbar.drawScale = scale
 
     ctx.clearRect(x, y, w, h)
+
+    //
+    ctx.strokeStyle = 'black'
+    ctx.lineWidth = 3
+    ctx.strokeRect( x,y,w,h )
+
     ctx.save()
     ctx.translate(x, y)
     ctx.scale(scale, scale)
+    ctx.lineWidth = 1 / scale
 
     if (sim) {
       ctx.fillStyle = OBSTACLE_FILL
       for (const obstacle of sim.obstacles) {
         traceObstacle(ctx, obstacle)
         ctx.fill()
+        ctx.stroke()
       }
 
       // draw disks

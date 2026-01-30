@@ -19,6 +19,11 @@ export const OBSTACLE_STROKE = '#000'
 
 const pixelAnimSpeed = 1e-2// fraction per ms
 
+const leftGutterWidthPx = 10
+const midGutterWidthPx = 10
+const rightGutterWidthPx = 10
+const barHeightPx = 60
+
 export class Graphics {
   static get cvs() { return this._getMainCanvas() }
 
@@ -68,9 +73,12 @@ export class Graphics {
   public static get mainPixelScale() {
     // if( this.isTitleScreen ) return 10
     return Math.floor(1 + this.pixelAnim * 9)// physical pixels per big pixel
+    // return Math.floor(4 + this.pixelAnim * 6)// physical pixels per big pixel
   }
 
   public static glassPixelScale = 40 // physical pixels per big pixel
+
+  public static hasSpaceOnSides = false // if true, draw extra outer left and right edges
 
   static onResize(pw?: PinballWizard) {
     const dpr = window.devicePixelRatio
@@ -81,45 +89,28 @@ export class Graphics {
 
     // compute sim bounds
     const maxWidth = 600 * dpr
-    const targetWidth = Math.min(maxWidth, screenWidth)
-    let cssWidth = Math.floor(targetWidth / dpr)
+    this.hasSpaceOnSides = (screenWidth > maxWidth)
+    if (this.hasSpaceOnSides) {
+      Graphics.cvs.style.setProperty('border-left', '2px solid black')
+      Graphics.cvs.style.setProperty('border-right', '2px solid black')
+    }
+    else {
+      Graphics.cvs.style.setProperty('border-left', 'none')
+      Graphics.cvs.style.setProperty('border-right', 'none')
+    }
+    const rootWidth = Math.min(maxWidth, screenWidth)
+    const rootWidthPx = Math.floor(rootWidth / dpr)
     const cssHeight = Math.floor(screenHeight / dpr)
-    let cssLeft = Math.floor((screenWidth - targetWidth) / 2 / dpr)
-
-    let scrollbar: Rectangle = [1, 1, 1, 1]
+    const simCssLeft = Math.floor((screenWidth - rootWidth) / 2 / dpr)
+    let simCssWidth = rootWidthPx
+    let scrollbarWidth = 1
 
     if (pw) {
       // compute scrollbar bounds
       const scrollbarHeight = Math.min(600, window.innerHeight)
       const levelShape = pw?.activeSim?.level?.bounds ?? [1, 1, 1, 1]
-      const scrollbarWidth = scrollbarHeight * (levelShape[2] / levelShape[3])
-      scrollbar = [
-        cssLeft + cssWidth,
-        (window.innerHeight - scrollbarHeight) / 2,
-        scrollbarWidth,
-        scrollbarHeight,
-      ]
-
-      if ((cssWidth + scrollbarWidth) > window.innerWidth) {
-        // shrink sim and snap to left to make space for scrollbar
-        cssLeft = 0
-        cssWidth = window.innerWidth - scrollbarWidth
-        scrollbar[0] = cssLeft + cssWidth
-        // Graphics.innerWidth = cssWidth * dpr
-      }
-      else if ((cssLeft + cssWidth + scrollbarWidth) > window.innerWidth) {
-        // slide sim to left to make space for scrollbar
-        cssLeft = window.innerWidth - cssWidth - scrollbarWidth
-        scrollbar[0] = cssLeft + cssWidth
-        // Graphics.innerWidth = cssWidth * dpr
-      }
-
-      // comput eball selecion panel
-      const bspHeight = 300
-      const bsp: Rectangle = [
-        cssLeft, window.innerHeight - bspHeight,
-        cssWidth, bspHeight,
-      ]
+      scrollbarWidth = scrollbarHeight * (levelShape[2] / levelShape[3])
+      simCssWidth = rootWidthPx - scrollbarWidth - leftGutterWidthPx - midGutterWidthPx - rightGutterWidthPx
     }
 
     // // commit new layout
@@ -129,14 +120,13 @@ export class Graphics {
     // cvs.width = Graphics.innerWidth
     // cvs.height = cvs.clientHeight * dpr
     // // Graphics.drawOffset[0] = 0
-    Graphics.cssLeft = cssLeft
-
-    const rightGutterWidth = 10
+    Graphics.cssLeft = simCssLeft
 
     // test new graphics
     const _root: Rectangle = [
-      cssLeft, 0,
-      cssWidth + scrollbar[2] + rightGutterWidth,
+      simCssLeft, 0,
+      // leftGutterWidthPx + simCssWidth + midGutterWidthPx + scrollbar[2] + rightGutterWidthPx,
+      rootWidthPx,
       cssHeight,
     ]
     Graphics.innerWidth = _root[2] * dpr
@@ -155,6 +145,7 @@ export class Graphics {
     this._mainCvs = mainCvs
     this._mainCtx = mainCvs.getContext('2d') as CanvasRenderingContext2D
     this._mainCtx.imageSmoothingEnabled = false
+    // this._mainCtx.lineCap = 'butt'
 
     this._glassCvs = glassCvs
     this._glassCtx = glassCvs.getContext('2d') as CanvasRenderingContext2D
@@ -163,27 +154,25 @@ export class Graphics {
     this._rootRect = _root
     this._updateCanvasDims()
 
-    const isWide = window.innerWidth > 600
-
-    this._regions = {
+    this._pxRegions = {
       'sim-gfx': [
-        0, 60,
-        cssWidth, cssHeight - 60 * 2,
+        leftGutterWidthPx, barHeightPx,
+        simCssWidth, cssHeight - barHeightPx * 2,
       ],
       'scrollbar-gfx': [
-        cssWidth, scrollbar[1],
-        scrollbar[2],
-        cssHeight,
+        leftGutterWidthPx + simCssWidth + midGutterWidthPx, barHeightPx,
+        scrollbarWidth,
+        cssHeight - barHeightPx * 2,
       ],
       'bottom-bar-gfx': [
-        0, _root[3] - 60,
-        isWide ? cssWidth : _root[2],
-        60,
+        0, _root[3] - barHeightPx,
+        _root[2],
+        barHeightPx,
       ],
       'top-bar-gfx': [
         0, 0,
-        isWide ? cssWidth : _root[2],
-        60,
+        _root[2],
+        barHeightPx,
       ],
       'glass-gfx': [
         0, 0,
@@ -191,10 +180,30 @@ export class Graphics {
       ],
     }
 
+    const gutterHeightPx = _root[3] - 2 * barHeightPx
+    this._pxGutters = [
+      [0, barHeightPx, leftGutterWidthPx, gutterHeightPx], // left
+      // mid between sim and scrollbar
+      [leftGutterWidthPx + simCssWidth, barHeightPx, leftGutterWidthPx, gutterHeightPx],
+      // right
+      [_root[2] - rightGutterWidthPx, barHeightPx, leftGutterWidthPx, gutterHeightPx],
+    ]
+
+    // translate regions and gutters to device pixels
+    this._dpRegions = {}
+    for (const [name, rect] of Object.entries(this._pxRegions)) {
+      this._dpRegions[name] = rect.map(
+        c => c * window.devicePixelRatio,
+      )
+    }
+    this._dpGutters = this._pxGutters.map(rect => rect.map(
+      v => v * window.devicePixelRatio,
+    ) as Rectangle)
+
     // call all regions' onResize callbacks
-    Object.keys(this._regions).forEach((gfxName) => {
+    Object.keys(this._dpRegions).forEach((gfxName) => {
       GfxRegion.create(gfxName as GfxRegionName)
-        .onResize(this._regions[gfxName].map(v => v * window.devicePixelRatio))
+        .onResize(this._dpRegions[gfxName])
     })
   }
 
@@ -208,21 +217,63 @@ export class Graphics {
 
   static cssLeft = 0
 
-  private static _regions: Partial<Record<GfxRegionName, Rectangle>> = {}
+  private static _pxRegions: Partial<Record<GfxRegionName, Rectangle>> = {}
+  private static _dpRegions: Partial<Record<GfxRegionName, Rectangle>> = {}
+
+  private static _pxGutters: Array<Rectangle> = []
+  private static _dpGutters: Array<Rectangle> = []
+
   public static _mainCvs: HTMLCanvasElement
   public static _mainCtx: CanvasRenderingContext2D
   public static _glassCvs: HTMLCanvasElement
   public static _glassCtx: CanvasRenderingContext2D
 
-  static get regions() { return Graphics._regions }
+  static get regions() { return Graphics._pxRegions }
 
   static draw(pw: PinballWizard) {
     // draw all regions
-    Object.keys(this._regions).forEach((gfxName) => {
+    Object.keys(this._dpRegions).forEach((gfxName) => {
       const ctx = gfxName === 'glass-gfx' ? this._glassCtx : this._mainCtx
       GfxRegion.create(gfxName as GfxRegionName)
-        .draw(ctx, pw, this._regions[gfxName].map(v => v * window.devicePixelRatio))
+        .draw(ctx, pw, this._dpRegions[gfxName])
     })
+
+    const ctx = this._mainCtx
+
+    // fill gutters
+    ctx.fillStyle = OBSTACLE_FILL
+    for (const rect of this._dpGutters) {
+      ctx.fillRect(...rect)
+    }
+
+    // // draw top edge of gutters
+    // ctx.strokeStyle = 'black'
+    // ctx.lineWidth = 1
+    // ctx.beginPath()
+    // for( const [x,y,w,h] of this._dpGutters ){
+    //   ctx.moveTo( x,y+1 )
+    //   ctx.lineTo(x+w,y+1)
+    // }
+    // ctx.stroke()
+
+    // // draw some borders
+    // ctx.lineWidth = 2
+    // ctx.strokeStyle = 'black'
+    // ctx.strokeRect(...(this._dpRegions['sim-gfx'] as Rectangle))
+
+    // //
+    // // this.hasSpaceOnSides = false
+    // if (this.hasSpaceOnSides) {
+    //   const [x, y, w, h] = this._dpRegions['glass-gfx'] as Rectangle
+    //   ctx.beginPath()
+    //   ctx.moveTo(x + 1, y)
+    //   ctx.lineTo(x + 1, y + h)
+    //   ctx.moveTo(x + w - 1, y)
+    //   ctx.lineTo(x + w - 1, y + h)
+    //   ctx.lineWidth = 2
+    //   ctx.strokeStyle = 'black'
+    //   ctx.stroke()
+    // }
   }
 
   static drawCursor(ctx: CanvasRenderingContext2D, pos: Vec2) {

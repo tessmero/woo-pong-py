@@ -177,10 +177,10 @@ export class SimGfx extends GfxRegion {
 
     ctx.clearRect(x, y, w, h)
 
-    // // debug
-    // ctx.lineWidth = 4
-    // ctx.strokeStyle = 'red'
-    // ctx.strokeRect(x, y, w, h)
+    // debug
+    ctx.lineWidth = 3
+    ctx.strokeStyle = 'black'
+    ctx.strokeRect(x, y, w, h)
 
     ctx.save()
     ctx.translate(x, y + this.drawOffset[1])
@@ -189,12 +189,12 @@ export class SimGfx extends GfxRegion {
 
     // Disk.updateHistory(sim.disks) // add to graphical tail
 
-    this._drawBoundsInnerEdges(ctx, pw)
+    // this._drawBoundsInnerEdges(ctx, pw)
 
     drawObstacles(ctx, pw)
 
-    this._drawBounds(ctx, pw)
-    this._drawBoundsOuterEdges(ctx, pw)
+    // this._drawBounds(ctx, pw)
+    // this._drawBoundsOuterEdges(ctx, pw)
 
     for (const [diskIndex, disk] of sim.disks.entries()) {
       const isSelected = (diskIndex === selectedDiskIndex)
@@ -268,72 +268,72 @@ export class SimGfx extends GfxRegion {
     // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
   }
 
-  private _drawBoundsOuterEdges(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
-    const mainThick = 2 * VALUE_SCALE
+  // private _drawBoundsOuterEdges(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
+  //   const mainThick = 2 * VALUE_SCALE
 
-    const thick = 0.6 * VALUE_SCALE
-    const viewRect = pw.simViewRect
-    const x0 = viewRect[0] - mainThick / 2
-    const y0 = viewRect[1]
-    const x1 = x0 + viewRect[2] + mainThick
-    const y1 = y0 + viewRect[3]
+  //   const thick = 0.6 * VALUE_SCALE
+  //   const viewRect = pw.simViewRect
+  //   const x0 = viewRect[0] - mainThick / 2
+  //   const y0 = viewRect[1]
+  //   const x1 = x0 + viewRect[2] + mainThick
+  //   const y1 = y0 + viewRect[3]
 
-    ctx.lineWidth = thick
-    ctx.strokeStyle = 'red'
-    ctx.beginPath()
+  //   ctx.lineWidth = thick
+  //   ctx.strokeStyle = 'red'
+  //   ctx.beginPath()
 
-    // outer left edge
-    ctx.moveTo(x0, y0)
-    ctx.lineTo(x0, y1)
+  //   // outer left edge
+  //   ctx.moveTo(x0, y0)
+  //   ctx.lineTo(x0, y1)
 
-    // outer right edge
-    ctx.moveTo(x1, y0)
-    ctx.lineTo(x1, y1)
+  //   // outer right edge
+  //   ctx.moveTo(x1, y0)
+  //   ctx.lineTo(x1, y1)
 
-    ctx.stroke()
-  }
+  //   ctx.stroke()
+  // }
 
-  private _drawBoundsInnerEdges(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
-    const mainThick = 2 * VALUE_SCALE
+  // private _drawBoundsInnerEdges(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
+  //   const mainThick = 2 * VALUE_SCALE
 
-    const thick = 0.6 * VALUE_SCALE
+  //   const thick = 0.6 * VALUE_SCALE
 
-    const viewRect = pw.simViewRect
-    const x0 = viewRect[0]
-    const y0 = viewRect[1]
-    const x1 = x0 + viewRect[2]
-    const y1 = y0 + viewRect[3]
+  //   const viewRect = pw.simViewRect
+  //   const x0 = viewRect[0]
+  //   const y0 = viewRect[1]
+  //   const x1 = x0 + viewRect[2]
+  //   const y1 = y0 + viewRect[3]
 
-    ctx.lineWidth = thick
-    ctx.strokeStyle = 'black'
-    ctx.beginPath()
+  //   ctx.lineWidth = thick
+  //   ctx.strokeStyle = 'black'
+  //   ctx.beginPath()
 
-    // left
-    ctx.moveTo(x0, y0)
-    ctx.lineTo(x0, y1)
+  //   // left
+  //   ctx.moveTo(x0, y0)
+  //   ctx.lineTo(x0, y1)
 
-    // right
-    ctx.moveTo(x1, y0)
-    ctx.lineTo(x1, y1)
+  //   // right
+  //   ctx.moveTo(x1, y0)
+  //   ctx.lineTo(x1, y1)
 
-    // bottom
-    ctx.moveTo(x0,y1)
-    ctx.lineTo(x1,y1)
+  //   // bottom
+  //   ctx.moveTo(x0,y1)
+  //   ctx.lineTo(x1,y1)
 
-    ctx.stroke()
-  }
+  //   ctx.stroke()
+  // }
 
-  private _drawBounds(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
-    // draw level bounds
-    const thick = 2 * VALUE_SCALE
+  // private _drawBounds(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
+  //   // draw level bounds
+  //   const thick = 2 * VALUE_SCALE
 
-    const viewRect = pw.simViewRect
-    const x0 = viewRect[0]
-    const y0 = viewRect[1]
-    const x1 = x0 + viewRect[2]
-    const y1 = y0 + viewRect[3]
-    ctx.fillStyle = OBSTACLE_FILL
-    ctx.fillRect(x0 - thick, y0, thick, y1 - y0)
-    ctx.fillRect(x1, y0, thick, y1 - y0)
-  }
+  //   const viewRect = pw.simViewRect
+  //   const x0 = viewRect[0]
+  //   const y0 = viewRect[1]
+  //   const x1 = x0 + viewRect[2]
+  //   const y1 = y0 + viewRect[3]
+  //   ctx.fillStyle = OBSTACLE_FILL
+  //   ctx.fillRect(x0 - thick, y0, thick, y1 - y0)
+  //   ctx.fillRect(x1, y0, thick, y1 - y0)
+  // }
 }
