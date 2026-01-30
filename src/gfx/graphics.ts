@@ -24,7 +24,6 @@ export const gutterPx = 4
 const leftGutterWidthPx = gutterPx
 const midGutterWidthPx = gutterPx
 const rightGutterWidthPx = gutterPx
-const barHeightPx = 60
 
 export class Graphics {
   static get cvs() { return this._getMainCanvas() }
@@ -45,6 +44,10 @@ export class Graphics {
     Graphics._glassCvs.style.setProperty('display', this.pixelAnim === 0 ? 'none' : 'block')
 
     this._updateCanvasDims() // update width and height if necessary
+  }
+
+  public static get cssLeft() {
+    return this._rootRect[0]
   }
 
   private static _rootRect: Rectangle = [1, 1, 1, 1]
@@ -123,12 +126,10 @@ export class Graphics {
     // cvs.width = Graphics.innerWidth
     // cvs.height = cvs.clientHeight * dpr
     // // Graphics.drawOffset[0] = 0
-    Graphics.cssLeft = simCssLeft
 
     // test new graphics
     const _root: Rectangle = [
       simCssLeft, 0,
-      // leftGutterWidthPx + simCssWidth + midGutterWidthPx + scrollbar[2] + rightGutterWidthPx,
       rootWidthPx,
       cssHeight,
     ]
@@ -156,6 +157,8 @@ export class Graphics {
 
     this._rootRect = _root
     this._updateCanvasDims()
+
+    const barHeightPx = 60 / dpr
 
     this._pxRegions = {
       'sim-gfx': [
@@ -217,8 +220,6 @@ export class Graphics {
   static _getMainCanvas() {
     return document.getElementById('test-canvas') as HTMLCanvasElement
   }
-
-  static cssLeft = 0
 
   private static _pxRegions: Partial<Record<GfxRegionName, Rectangle>> = {}
   private static _dpRegions: Partial<Record<GfxRegionName, Rectangle>> = {}

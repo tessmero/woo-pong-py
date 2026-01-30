@@ -78,6 +78,19 @@ export const PLAYING_LAYOUT = {
     left: 'auto',
     top: 'auto',
   },
+
+  _innerBsp: {
+    parent: 'bsp',
+    margin: () => im(),
+  },
+
+  bspCloseBtn: {
+    parent: '_innerBsp',
+    width: () => bh(),
+    height: () => bh(),
+    right: 0,
+  },
+
   resetBtn: {
     parent: 'screen',
     width: () => 400,

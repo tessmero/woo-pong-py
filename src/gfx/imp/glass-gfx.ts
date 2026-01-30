@@ -10,6 +10,7 @@ import type { Rectangle, Vec2 } from 'util/math-util'
 import { Graphics } from 'gfx/graphics'
 import type { SimGfx } from './sim-gfx'
 import { VALUE_SCALE } from 'simulation/constants'
+import { BallSelectionPanel } from 'ball-selection-panel'
 
 export class GlassGfx extends GfxRegion {
   private _xOffset: number = 0
@@ -65,7 +66,9 @@ export class GlassGfx extends GfxRegion {
   }
 
   down(pw: PinballWizard, mousePos: Vec2) {
-    // do nothing
+    if( Graphics.pixelAnim === 1 ){
+      BallSelectionPanel.hide(pw)
+    }
   }
 
   move(pw: PinballWizard, mousePos: Vec2) {

@@ -31,7 +31,7 @@ export class Scrollbar {
   // static cvs = cvs
   // static ctx = ctx
 
-  static get isDragging() { return isDragging }
+  public static isDragging = false
 
   static show() {
     // cvs.style.setProperty('display', 'block')

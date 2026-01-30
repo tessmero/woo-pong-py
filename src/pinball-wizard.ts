@@ -212,7 +212,7 @@ export class PinballWizard {
     if (this.hasBranched && !wasBranched) {
       // just branched
       // this.onResize()
-      BallSelectionPanel.hide()
+      BallSelectionPanel.hide(this)
     }
 
     if (this.hasFinished && !wasFinished) {
@@ -249,13 +249,28 @@ export class PinballWizard {
 
     // this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)
 
+    // jump to room with selected ball
+    if (this.selectedDiskIndex !== -1) {
+      if (this.camera.isIdle) {
+        const pos = this.activeSim.disks[this.selectedDiskIndex].interpolatedPos
+        const roomIndex = this.activeSim.level.rooms.findIndex(
+          room => rectContainsPoint(room.bounds, ...pos),
+        )
+        if (roomIndex != -1) {
+          this.camera.jumpToRoom(this, roomIndex)
+        }
+      }
+    }
+    else {
+      // no disk selected
     // check if next room was reached
-    const nextRoomIndex = this.currentRoomIndex + 1
-    if (nextRoomIndex < ROOM_COUNT) {
-      if (this.activeSim.maxBallY > this.activeSim.level.rooms[nextRoomIndex].bounds[1]) {
-      // just reached new room
-        this.currentRoomIndex = nextRoomIndex
-        this.camera.jumpToRoom(this, this.currentRoomIndex)
+      const nextRoomIndex = this.currentRoomIndex + 1
+      if (nextRoomIndex < ROOM_COUNT) {
+        if (this.activeSim.maxBallY > this.activeSim.level.rooms[nextRoomIndex].bounds[1]) {
+          // just reached new room
+          this.currentRoomIndex = nextRoomIndex
+          this.camera.jumpToRoom(this, this.currentRoomIndex)
+        }
       }
     }
 
@@ -320,8 +335,8 @@ export class PinballWizard {
   up(rawPos: Vec2, inputId: 'mouse' | number) {
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       // if (rectContainsPoint(rect, ...rawPos)) {
-        const gfx = GfxRegion.create(name as GfxRegionName)
-        if (typeof gfx.up === 'function') gfx.up(this, rawPos, inputId)
+      const gfx = GfxRegion.create(name as GfxRegionName)
+      if (typeof gfx.up === 'function') gfx.up(this, rawPos, inputId)
       // }
     }
   }

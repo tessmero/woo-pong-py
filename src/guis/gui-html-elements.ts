@@ -9,6 +9,7 @@ import { BUTTON_ICONS } from 'gfx/button-icons'
 import { type ElementId, type GuiElement } from 'guis/gui'
 import type { PinballWizard } from 'pinball-wizard'
 import type { Rectangle } from 'util/math-util'
+import { btnHeight } from './layout-util'
 
 // export const loadedImagesets: Record<string, ElementImageset> = {} // populated at startup
 
@@ -35,7 +36,7 @@ export function buildHtmlElement(id: ElementId, elem: GuiElement): HTMLElement {
           ${nonIconClasses.join(' ')}
         "
         >
-      ${elem.display.icon ? BUTTON_ICONS[elem.display.icon] : ''}
+      ${elem.display.icon ? resizeIcon(BUTTON_ICONS[elem.display.icon]) : ''}
       <span 
         ${elem.display.textAlign === 'left' ? 'style="width:100%;text-align:left;"' : ''}
       >
@@ -51,6 +52,13 @@ export function buildHtmlElement(id: ElementId, elem: GuiElement): HTMLElement {
   elem.htmlElem = html
 
   return html
+}
+
+export function resizeIcon(svg: string){
+  // Replace width and height attributes from 500 to 50
+  return svg
+    .replace(/width="\d+"/, `width="${btnHeight()}"`)
+    .replace(/height="\d+"/, `height="${btnHeight()}"`);
 }
 
 export function toggleElement(id: ElementId | GuiElement, isVisible: boolean) {

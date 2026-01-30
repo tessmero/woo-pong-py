@@ -10,7 +10,7 @@ import { GfxRegion } from 'gfx/gfx-region'
 import type { SimGfx } from 'gfx/imp/sim-gfx'
 import type { PinballWizard } from 'pinball-wizard'
 import { Scrollbar } from 'scrollbar'
-import { VALUE_SCALE } from 'simulation/constants'
+import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import { lerp } from 'util/math-util'
 
 export class Camera {
@@ -21,6 +21,8 @@ export class Camera {
   private _idleCountdown = 0
   private _cameraFriction = 1e-3 // fraction of speed lost per ms
   private _snapSpeed = 2e-3 // fraction lerped per ms
+
+  public get isIdle() { return this._idleCountdown <= 0 }
 
   jumpToRoom(pinballWizard: PinballWizard, roomIndex: number) {
     this.targetRoom = roomIndex
@@ -34,7 +36,6 @@ export class Camera {
   targetRoom = 0
 
   update(dt: number, pinballWizard: PinballWizard) {
-
     if (this.isDragging || Scrollbar.isDragging || pinballWizard.isHalted || pinballWizard.speed === 'paused') {
       // do nothing
       return
@@ -67,7 +68,12 @@ export class Camera {
       let roomIndex = this.targetRoom// topConfig.flatConfig.roomIndex
       roomIndex = Math.max(0, Math.min(rooms.length - 1, roomIndex))
       const room = rooms[roomIndex]
-      const targetPos = -room.bounds[1] - room.bounds[3] / 2
+
+      const flipperHeight = room.bounds[1] + room.bounds[3]
+      const viewHeight = pinballWizard.simViewRect[3]
+      const targetPos = -(flipperHeight - viewHeight) - 25 * DISK_RADIUS
+
+
 
       this.pos = lerp(this.pos, targetPos, this._snapSpeed * dt)
     }

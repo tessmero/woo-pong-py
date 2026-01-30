@@ -4,7 +4,7 @@
  * Used to check for collisions with obstacles and get normal angles.
  */
 
-import { DISK_RADIUS, OBSTACLE_DETAIL_SCALE, VALUE_SCALE } from 'simulation/constants'
+import { DISK_RADIUS, OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
 import { Lut } from '../lut'
 import { pio2, twopi, type Vec2 } from 'util/math-util'
 import { pointsOnPath } from 'points-on-path'
@@ -114,7 +114,15 @@ export function getDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
   return detailedPointsCache[shape] as ReadonlyArray<Vec2>
 }
 
-export function centeredPointsOnPath(path: string, truncate = false) {
+// const _cached: Record<string, Array<Vec2>> = {}
+export function centeredPointsOnPath(path: string, truncate = false): Array<Vec2> {
+  // if (!Object.hasOwn(_cached, path)) {
+  //   _cached[path] = _centeredPointsOnPath(path, truncate)
+  // }
+  // return [..._cached[path]]
+  return _centeredPointsOnPath(path,truncate)
+}
+function _centeredPointsOnPath(path: string, truncate = false): Array<Vec2> {
   let points = pointsOnPath(path, 0.05)[0]
   let minX = Infinity
   let maxX = -Infinity

@@ -185,30 +185,29 @@ function _initListeners(pinballWizard: PinballWizard) {
 
   // Mouse events
   Graphics.cvs.addEventListener('mousedown', (e) => {
-    mousePos[0] = e.offsetX
-    mousePos[1] = e.offsetY
+    mousePos[0] = e.clientX - Graphics.cssLeft
+    mousePos[1] = e.clientY
     pinballWizard.down(mousePos, 'mouse')
   })
-  Graphics.cvs.addEventListener('mousemove', (e) => {
-    mousePos[0] = e.offsetX
-    mousePos[1] = e.offsetY
+  document.addEventListener('mousemove', (e) => {
+    mousePos[0] = e.clientX - Graphics.cssLeft
+    mousePos[1] = e.clientY
     Graphics.cvs.style.setProperty('cursor', 'default')
     pinballWizard.move(mousePos, 'mouse')
   })
-  Graphics.cvs.addEventListener('mouseup', (e) => {
-    mousePos[0] = e.offsetX
-    mousePos[1] = e.offsetY
+  document.addEventListener('mouseup', (e) => {
+    mousePos[0] = e.clientX - Graphics.cssLeft
+    mousePos[1] = e.clientY
     pinballWizard.up(mousePos, 'mouse')
   })
-  Graphics.cvs.addEventListener('mouseleave', (e) => {
+  document.addEventListener('mouseleave', (e) => {
     pinballWizard.up(mousePos, 'mouse')
   })
 
   // Touch events
   Graphics.cvs.addEventListener('touchstart', (e) => {
     for (const touch of Array.from(e.changedTouches)) {
-      const rect = Graphics.cvs.getBoundingClientRect()
-      const pos: Vec2 = [touch.clientX - rect.left, touch.clientY - rect.top]
+      const pos: Vec2 = [touch.clientX - Graphics.cssLeft, touch.clientY]
       activeTouches[touch.identifier] = pos
       pinballWizard.down(pos, touch.identifier)
     }
@@ -217,8 +216,7 @@ function _initListeners(pinballWizard: PinballWizard) {
 
   Graphics.cvs.addEventListener('touchmove', (e) => {
     for (const touch of Array.from(e.changedTouches)) {
-      const rect = Graphics.cvs.getBoundingClientRect()
-      const pos: Vec2 = [touch.clientX - rect.left, touch.clientY - rect.top]
+      const pos: Vec2 = [touch.clientX - Graphics.cssLeft, touch.clientY]
       activeTouches[touch.identifier] = pos
       pinballWizard.move(pos, touch.identifier)
     }

@@ -20,30 +20,30 @@ export class ScrollbarGfx extends GfxRegion {
     GfxRegion.register('scrollbar-gfx', () => new ScrollbarGfx())
   }
 
-  private isDragging = false
+  // private isDragging = false
   private _drawRect: Rectangle = [1, 1, 1, 1]
   public isRepaintQueued = false
 
   down(pw: PinballWizard, mousePos: Vec2) {
-    pw.camera.pos = -(mousePos[1] * window.devicePixelRatio - this._drawRect[1]) / Scrollbar.drawScale
-    this.isDragging = true
+    pw.camera.pos = -(mousePos[1] * window.devicePixelRatio - this._drawRect[1]/2) / Scrollbar.drawScale
+    Scrollbar.isDragging = true
   }
 
   move(pw: PinballWizard, mousePos: Vec2) {
-    if (this.isDragging) {
-      pw.camera.pos = -(mousePos[1] * window.devicePixelRatio - this._drawRect[1]) / Scrollbar.drawScale
+    if (Scrollbar.isDragging) {
+      pw.camera.pos = -(mousePos[1] * window.devicePixelRatio - this._drawRect[1]/2) / Scrollbar.drawScale
     }
   }
 
   leave(pw: PinballWizard, mousePos: Vec2) {
-    if (this.isDragging) {
+    if (Scrollbar.isDragging) {
       // user started drag in scrollbar, now moving in another region while scrollbar is held
       pw.camera.pos = -(mousePos[1] * window.devicePixelRatio - this._drawRect[1]) / Scrollbar.drawScale
     }
   }
 
   up(pw: PinballWizard, mousePos: Vec2) {
-    this.isDragging = false
+    Scrollbar.isDragging = false
   }
 
   /**
@@ -55,13 +55,13 @@ export class ScrollbarGfx extends GfxRegion {
     const bctx = this._obstacleBuffer.getContext('2d')
     if (!bctx) return
     const [x, y, w, h] = obstacle.boundingRect as Rectangle
-    const shrink = 0.8 * DISK_RADIUS
+    const shrink = 0.5 * DISK_RADIUS
     bctx.clearRect(x + shrink, y + shrink, w - 2 * shrink, h - 2 * shrink)
   }
 
   // Buffer for obstacles rendering
   private _obstacleBuffer: HTMLCanvasElement | null = null
-  private _obstacleBufferSimId: any = null
+  public isObstacleRepaintQueued = true
 
   protected _draw(
     ctx: CanvasRenderingContext2D,
@@ -84,7 +84,9 @@ export class ScrollbarGfx extends GfxRegion {
     if (sim && sim.obstacles.length > 0) {
       // Use a simple sim id (could be a hash, here just reference)
       const simId = sim
-      if (!this._obstacleBuffer || this._obstacleBufferSimId !== simId) {
+      if (!this._obstacleBuffer || this.isObstacleRepaintQueued) {
+        this.isObstacleRepaintQueued = false
+
         // Create buffer
         const buffer = document.createElement('canvas')
         buffer.width = w
@@ -103,13 +105,16 @@ export class ScrollbarGfx extends GfxRegion {
         }
         // bctx.restore()
         this._obstacleBuffer = buffer
-        this._obstacleBufferSimId = simId
       }
       ctx.save()
       ctx.translate(x, y)
       ctx.drawImage(this._obstacleBuffer, 0, 0)
       ctx.restore()
     }
+  }
+
+  onResize(rect: Rectangle): void {
+    this.isObstacleRepaintQueued = true
   }
 
   drawDisks(

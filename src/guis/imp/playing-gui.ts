@@ -4,8 +4,7 @@
  * Placeholder used for games with no gui elements.
  */
 
-import { BallSelectionPanel } from 'ball-selection-panel'
-import { GfxRegion } from 'gfx/gfx-region'
+import { BallSelectionPanel, getBspHoveredDiskIndex } from 'ball-selection-panel'
 import { Graphics } from 'gfx/graphics'
 import type { GuiElement } from 'guis/gui'
 import { Gui } from 'guis/gui'
@@ -13,7 +12,6 @@ import { setElementLabel, toggleElement } from 'guis/gui-html-elements'
 import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
 import type { PinballWizard } from 'pinball-wizard'
-import { Scrollbar } from 'scrollbar'
 import type { Speed } from 'simulation/constants'
 import { SECONDS_BEFORE_BRANCH, stepsToSeconds } from 'simulation/constants'
 import type { Vec2 } from 'util/math-util'
@@ -39,8 +37,8 @@ export const ballsBtn: PlayingElem = {
     //   // MiniBsp.logMiniSvg(w,h,pw)
     // },
   },
-  click: () => {
-    BallSelectionPanel.toggle()
+  click: ({pinballWizard}) => {
+    BallSelectionPanel.toggle(pinballWizard)
   },
 }
 
@@ -143,11 +141,31 @@ export const ballSelectionPanel: PlayingElem = {
     type: 'diagram',
     draw: (ctx, pw, rect) => {
       // GfxRegion.create('bsp-gfx').draw(ctx, pw, rect)
-      BallSelectionPanel.draw(ctx,pw,rect)
+      BallSelectionPanel.draw(ctx, pw, rect)
     },
   },
-  down: () => BallSelectionPanel
+  down: ({pinballWizard,pointerEvent}) => {
+    
+      const i = getBspHoveredDiskIndex(pointerEvent)
+      pinballWizard.trySelectDisk(i)
+      // Graphicscvs.style.setProperty('cursor', 'default')
+  },
 }
+
+
+export const bspCloseBtn: PlayingElem = {
+  layoutKey: 'bspCloseBtn',
+  display: {
+    type: 'button',
+    icon: 'pause',
+  },
+  down: ({pinballWizard}) => BallSelectionPanel.hide(pinballWizard),
+}
+
+const bspElems: Array<PlayingElem> = [
+  ballSelectionPanel,
+  bspCloseBtn,
+]
 
 const elements: Array<PlayingElem> = [
   topLabel,
@@ -155,7 +173,7 @@ const elements: Array<PlayingElem> = [
   clock,
   ...Object.values(speedBtns),
   resetBtn,
-  ballSelectionPanel,
+  ...bspElems,
   // ...diskBtns,
 ]
 
@@ -205,7 +223,9 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
       toggleElement(elem, false)// !pinballWizard.isTitleScreen)
     }
 
-    toggleElement(ballSelectionPanel, BallSelectionPanel.isShowing)
+    for (const bspElem of bspElems) {
+      toggleElement(bspElem, BallSelectionPanel.isShowing)
+    }
     toggleElement(resetBtn, pinballWizard.activeSim.winningDiskIndex !== -1)
     // const hasBranched = pinballWizard.hasBranched
     // for (const btn of diskBtns) {

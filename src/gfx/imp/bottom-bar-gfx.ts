@@ -32,16 +32,9 @@ const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
 
 const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
   bsp: (pw) => {
-     BallSelectionPanel.toggle()
-     pw.onResize()
-    Graphics.targetPixelAnim = 1 - Graphics.targetPixelAnim
-     },
+    BallSelectionPanel.toggle(pw)
+  },
   clock: (pw) => {
-    //test
-    Graphics.targetPixelAnim = 1 - Graphics.targetPixelAnim
-    if( Graphics.targetPixelAnim === 1 ){
-      pw.speed = 'paused'
-    }
   },
   pause: (pw) => { pw.speed = 'paused' },
   play: (pw) => { pw.speed = 'normal' },
@@ -132,7 +125,8 @@ export class BottomBarGfx extends GfxRegion {
       // }
       // ctx.restore()
 
-      const fillStyle = isActive ? '#000' : (isHovered ? '#ccc' : '#eee')
+      let fillStyle = isActive ? '#000' : (isHovered ? '#ccc' : '#eee')
+      if( key === 'clock' ) fillStyle = '#eee'
       const strokeStyle = isActive ? '#fff' : '#000'
 
       ctx.lineWidth = isHovered ? 4 : 2

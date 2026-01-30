@@ -12,6 +12,7 @@ import { STEPS_BEFORE_BRANCH, stepsToSeconds } from 'simulation/constants'
 
 import { formatTime, getStatusText } from 'guis/imp/playing-gui'
 import { setupRubikText } from '../canvas-text-util'
+import { OBSTACLE_FILL } from 'gfx/graphics'
 
 
 
@@ -41,10 +42,10 @@ export class TopBarGfx extends GfxRegion {
 
     const progress = Math.min(1, pw.activeSim.stepCount / STEPS_BEFORE_BRANCH)
 
-    ctx.fillStyle = 'white'
+    ctx.fillStyle = '#999'
     ctx.fillRect(x, y, w, h)
 
-    ctx.fillStyle = '#ccc'
+    ctx.fillStyle = OBSTACLE_FILL
     ctx.fillRect(x, y, w * progress, h)
 
     const steps = pw.activeSim.stepCount

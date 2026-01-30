@@ -7,12 +7,11 @@
 import type { PinballWizard } from 'pinball-wizard'
 import { GfxRegion } from '../gfx-region'
 import { twopi, type Rectangle, type Vec2 } from 'util/math-util'
-import { Graphics, OBSTACLE_FILL } from 'gfx/graphics'
+import { Graphics } from 'gfx/graphics'
 import { CLICKABLE_RADSQ, DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
-import { drawDisk, drawDiskHalo } from 'gfx/disk-gfx-util'
+import { drawDisk, drawDiskCrown, drawDiskHalo } from 'gfx/disk-gfx-util'
 import { drawObstacles } from 'gfx/obstacle-gfx-util'
 import type { Barrier } from 'simulation/barrier'
-import type { Simulation } from 'simulation/simulation'
 
 const ballFlashDuration = 2000 // ms
 const ballFlashCycles = 5 // cycles per duration
@@ -44,8 +43,8 @@ export class SimGfx extends GfxRegion {
     const dpr = window.devicePixelRatio
 
     // compute mouse pos in terms of simulation units
-    let simMouseX = (mousePos[0] * dpr - this._drawRect[0]) / drawSimScale - drawOffset[0] / drawSimScale
-    let simMouseY = (mousePos[1] *dpr - this._drawRect[1]) / drawSimScale - drawOffset[1] / drawSimScale
+    const simMouseX = (mousePos[0] * dpr - this._drawRect[0]) / drawSimScale - drawOffset[0] / drawSimScale
+    const simMouseY = (mousePos[1] * dpr - this._drawRect[1]) / drawSimScale - drawOffset[1] / drawSimScale
     pw.simMousePos[0] = simMouseX
     pw.simMousePos[1] = simMouseY
 
@@ -181,7 +180,7 @@ export class SimGfx extends GfxRegion {
     ctx.clearRect(x, y, w, h)
 
     // debug
-    ctx.lineWidth = 3  * window.devicePixelRatio
+    ctx.lineWidth = 3 * window.devicePixelRatio
     ctx.strokeStyle = 'black'
     ctx.strokeRect(x, y, w, h)
 
@@ -200,18 +199,18 @@ export class SimGfx extends GfxRegion {
     // this._drawBoundsOuterEdges(ctx, pw)
 
     for (const [diskIndex, disk] of sim.disks.entries()) {
-      const isSelected = (diskIndex === selectedDiskIndex)
-      // const isHovered = (diskIndex === hoveredDiskIndex)
-      const isWinner = (diskIndex === sim.winningDiskIndex)
-      drawDisk(ctx, disk, isSelected, isWinner)
+      drawDisk(ctx, disk)
       if (isFlashOn) {
         drawDiskHalo(ctx, disk)
       }
     }
 
     if (hoveredDiskIndex !== -1) {
-      const disk = sim.disks[hoveredDiskIndex]
-      drawDiskHalo(ctx, disk)
+      drawDiskHalo(ctx, sim.disks[hoveredDiskIndex])
+    }
+
+    if (selectedDiskIndex !== -1) {
+      drawDiskCrown(ctx, sim.disks[selectedDiskIndex])
     }
 
     // for (const barrier of sim.barriers) {

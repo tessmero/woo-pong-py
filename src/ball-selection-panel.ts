@@ -6,6 +6,7 @@
 
 import type { DiskPattern } from 'gfx/disk-gfx-util'
 import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx-util'
+import { Graphics } from 'gfx/graphics'
 import { repaintDiagram } from 'guis/gui-html-elements'
 import { ballsBtn, ballSelectionPanel } from 'guis/imp/playing-gui'
 import type { PinballWizard } from 'pinball-wizard'
@@ -90,22 +91,26 @@ export class BallSelectionPanel {
     return cvs.style.display !== 'none'
   }
 
-  static show() {
+  static show(pw: PinballWizard) {
     cvs.style.setProperty('display', 'block')
     ballsBtn.htmlElem?.classList.add('active')
+    Graphics.targetPixelAnim = 1
+    pw.onResize()
   }
 
-  static hide() {
+  static hide(pw: PinballWizard) {
     cvs.style.setProperty('display', 'none')
     ballsBtn.htmlElem?.classList.remove('active')
+    Graphics.targetPixelAnim = 0
+    pw.onResize()
   }
 
-  static toggle() {
+  static toggle(pw: PinballWizard) {
     if (cvs.style.display === 'none') {
-      BallSelectionPanel.show()
+      BallSelectionPanel.show(pw)
     }
     else {
-      BallSelectionPanel.hide()
+      BallSelectionPanel.hide(pw)
     }
   }
 
@@ -115,13 +120,13 @@ export class BallSelectionPanel {
     }
     didInitListeners = true
     cvs.addEventListener('pointerdown', (e) => {
-      const i = getHoveredDiskIndex(e)
+      const i = getBspHoveredDiskIndex(e)
       pw.trySelectDisk(i)
       cvs.style.setProperty('cursor', 'default')
     })
 
     cvs.addEventListener('pointermove', (e) => {
-      const i = getHoveredDiskIndex(e)
+      const i = getBspHoveredDiskIndex(e)
       if (i === -1 || pw.hasBranched || i === pw.selectedDiskIndex) {
         cvs.style.setProperty('cursor', 'default')
       }
@@ -147,9 +152,8 @@ export class BallSelectionPanel {
     for (let i = 0; i < DISK_COUNT; i++) {
       const disk = pw.activeSim.disks[i]
       if (!disk) continue
-      const isSelected = (i === pw.selectedDiskIndex)
 
-      drawDisk(ctx, disk, isSelected, false,
+      drawDisk(ctx, disk,
         ...diskPositions[i],
       )
     }
@@ -177,14 +181,14 @@ export class BallSelectionPanel {
       if (!disk) continue
       const isSelected = (i === pw.selectedDiskIndex)
 
-      drawDisk(ctx, disk, isSelected, false,
+      drawDisk(ctx, disk, 
         ...diskPositions[i],
       )
     }
   }
 }
 
-function getHoveredDiskIndex(e: PointerEvent): number {
+export function getBspHoveredDiskIndex(e: PointerEvent): number {
   const mx = e.offsetX * window.devicePixelRatio
   const my = e.offsetY * window.devicePixelRatio
   for (const [diskIndex, [x, y]] of diskPositions.entries()) {
@@ -201,7 +205,6 @@ function getHoveredDiskIndex(e: PointerEvent): number {
 
 function drawDisk(
   ctx: CanvasRenderingContext2D, disk: Disk,
-  isSelected = false, _isWinner = false,
   cx: number, cy: number,
 ) {
   ctx.beginPath()
@@ -212,10 +215,10 @@ function drawDisk(
   ctx.translate(x0, y0)
   ctx.moveTo(cx - x0, cy - y0)
   ctx.arc(cx - x0, cy - y0, diskRadius, 0, twopi)
-  ctx.lineWidth = (isSelected ? 20 : 5)
+  ctx.lineWidth = 5
   ctx.lineCap = 'round'
   ctx.lineJoin = 'round'
-  ctx.strokeStyle = isSelected ? 'green' : 'black'
+  ctx.strokeStyle = 'black'
   ctx.stroke()
   ctx.fillStyle = getScaledPattern(disk.pattern)
   ctx.fill()

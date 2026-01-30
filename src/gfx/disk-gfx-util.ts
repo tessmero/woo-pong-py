@@ -6,6 +6,7 @@
 
 import { CLICKABLE_RADIUS, DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import { tailLength, type Disk } from 'simulation/disk'
+import type { Vec2 } from 'util/math-util'
 import { twopi } from 'util/math-util'
 
 const maxTailDistance = 3 * DISK_RADIUS
@@ -13,26 +14,98 @@ const maxTailDistance = 3 * DISK_RADIUS
 const isShowingTails = true
 
 export function drawDiskHalo(
-  ctx: CanvasRenderingContext2D, disk: Disk
+  ctx: CanvasRenderingContext2D, disk: Disk,
 ) {
   // const [cx, cy, _dx, _dy] = disk.currentState
   const [cx, cy] = disk.interpolatedPos
 
-  const edgeRad = VALUE_SCALE * 0.8
   ctx.strokeStyle = 'black'
+  ctx.lineWidth = VALUE_SCALE * 0.5
   ctx.beginPath()
   ctx.arc(cx, cy, CLICKABLE_RADIUS, 0, twopi)
   ctx.stroke()
 }
 
+/**
+ * Draws a crown shape sitting on top of the disk halo.
+ * The bottom edge of the crown follows the halo arc, and the top is a flat line above the halo.
+ */
+
+// Cache for the static geometry of the crown (angles and radii, not positions)
+let diskCrownCache: {
+  startAngle: number
+  endAngle: number
+  innerR: number
+  outerR: number
+  zigzagCount: number
+  zigzagDepth: number
+  outerPoints: Array<Vec2>
+} | null = null
+
+function getDiskCrownCache() {
+  if (diskCrownCache) return diskCrownCache
+  const haloRadius = CLICKABLE_RADIUS
+  const crownHeight = haloRadius * 0.5
+  const crownArcAngle = Math.PI / 4 // 90 degrees
+  const startAngle = -Math.PI / 2 - crownArcAngle / 2
+  const endAngle = -Math.PI / 2 + crownArcAngle / 2
+  const innerR = haloRadius
+  const outerR = haloRadius + crownHeight
+  const zigzagCount = 7
+  const zigzagDepth = crownHeight * 0.2
+  const outerPoints: Array<Vec2> = []
+  for (let i = 0; i < zigzagCount; i++) {
+    const t = i / (zigzagCount - 1)
+    const angle = startAngle + t * (endAngle - startAngle)
+    const isHigh = i % 2 === 0
+    const r = isHigh ? outerR : (outerR - zigzagDepth)
+    outerPoints.push([r * Math.cos(angle), r * Math.sin(angle)])
+  }
+  diskCrownCache = {
+    startAngle,
+    endAngle,
+    innerR,
+    outerR,
+    zigzagCount,
+    zigzagDepth,
+    outerPoints,
+  }
+  return diskCrownCache
+}
+
+export function drawDiskCrown(
+  ctx: CanvasRenderingContext2D, disk: Disk,
+) {
+  const [cx, cy] = disk.interpolatedPos
+  const cache = getDiskCrownCache()
+
+  ctx.save()
+  ctx.beginPath()
+  // Start at left of bottom arc
+  ctx.arc(cx, cy, cache.innerR, cache.startAngle, cache.endAngle, false)
+  // Draw zigzag along outer edge, right to left
+  for (let i = cache.zigzagCount - 1; i >= 0; i--) {
+    const pt = cache.outerPoints[i]
+    const x = cx + pt[0]
+    const y = cy + pt[1]
+    ctx.lineTo(x, y)
+  }
+  ctx.closePath()
+  ctx.fillStyle = 'black' // gold color
+  ctx.strokeStyle = 'black' // darker gold outline
+  ctx.lineWidth = 2
+  ctx.fill()
+  ctx.stroke()
+  ctx.restore()
+}
+
 export function drawDisk(
   ctx: CanvasRenderingContext2D, disk: Disk,
-  isSelected = false, _isWinner = false,
 ) {
   // const [cx, cy, _dx, _dy] = disk.currentState
   const [cx, cy] = disk.interpolatedPos
 
-  const edgeRad = VALUE_SCALE * 0.8 * (isSelected ? 5 : 1)
+  const edgeRad = VALUE_SCALE * 0.8
   const tailShrinkRatio = 2
   // ctx.strokeStyle = 'black'
   // ctx.beginPath()
@@ -59,7 +132,7 @@ export function drawDisk(
   ctx.lineWidth = edgeRad
   ctx.lineCap = 'round'
   ctx.lineJoin = 'round'
-  ctx.strokeStyle = isSelected ? 'green' : 'black'
+  ctx.strokeStyle = 'black'
   ctx.stroke()
   ctx.fillStyle = PATTERN_FILLERS[disk.pattern]
   ctx.imageSmoothingEnabled = false
