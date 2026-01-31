@@ -8,7 +8,7 @@ import type { PinballWizard } from 'pinball-wizard'
 import { GfxRegion } from '../gfx-region'
 import { twopi, type Rectangle, type Vec2 } from 'util/math-util'
 import { Graphics } from 'gfx/graphics'
-import { CLICKABLE_RADSQ, DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
+import { CLICKABLE_RADSQ, VALUE_SCALE } from 'simulation/constants'
 import { drawDisk, drawDiskCrown, drawDiskHalo } from 'gfx/disk-gfx-util'
 import { drawObstacles } from 'gfx/obstacle-gfx-util'
 import type { Barrier } from 'simulation/barrier'
@@ -28,6 +28,22 @@ export class SimGfx extends GfxRegion {
     Graphics.cvs.style.setProperty('cursor', 'default')
   }
 
+  screenToSimPos(screenPos: Vec2): Vec2 {
+    const dpr = window.devicePixelRatio
+    const { _drawRect, drawOffset, drawSimScale } = this
+    const x = (screenPos[0] * dpr - _drawRect[0]) / drawSimScale - drawOffset[0] / drawSimScale
+    const y = (screenPos[1] * dpr - _drawRect[1]) / drawSimScale - drawOffset[1] / drawSimScale
+    return [x, y]
+  }
+
+  simToScreenPos(simPos: Vec2): Vec2 {
+    const dpr = window.devicePixelRatio
+    const { _drawRect, drawOffset, drawSimScale } = this
+    const x = ((simPos[0] + drawOffset[0] / drawSimScale) * drawSimScale + _drawRect[0]) / dpr
+    const y = ((simPos[1] + drawOffset[1] / drawSimScale) * drawSimScale + _drawRect[1]) / dpr
+    return [x, y]
+  }
+
   move(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number) {
     if (pw.isMouseDown && inputId === 'mouse') {
       pw.camera.drag(pw.dragY, mousePos[1])
@@ -43,8 +59,7 @@ export class SimGfx extends GfxRegion {
     const dpr = window.devicePixelRatio
 
     // compute mouse pos in terms of simulation units
-    const simMouseX = (mousePos[0] * dpr - this._drawRect[0]) / drawSimScale - drawOffset[0] / drawSimScale
-    const simMouseY = (mousePos[1] * dpr - this._drawRect[1]) / drawSimScale - drawOffset[1] / drawSimScale
+    const [simMouseX,simMouseY] = this.screenToSimPos(mousePos)
     pw.simMousePos[0] = simMouseX
     pw.simMousePos[1] = simMouseY
 
@@ -123,12 +138,12 @@ export class SimGfx extends GfxRegion {
   locateDiskOnScreen(pw: PinballWizard, diskIndex: number): Rectangle {
     const disk = pw.activeSim.disks[diskIndex]
     const [rawx, rawy] = disk.interpolatedPos
-    const rad = 20 //DISK_RADIUS * VALUE_SCALE * this.drawSimScale
+    const rad = 20 // DISK_RADIUS * VALUE_SCALE * this.drawSimScale
     const x = this.drawOffset[0] + rawx * this.drawSimScale
     const y = this.drawOffset[1] + rawy * this.drawSimScale
     return [
-      x - rad + Graphics.cssLeft, 
-      y - rad + this._drawRect[1] / window.devicePixelRatio, 
+      x - rad + Graphics.cssLeft,
+      y - rad + this._drawRect[1] / window.devicePixelRatio,
       2 * rad, 2 * rad,
     ]
   }

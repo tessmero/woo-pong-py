@@ -146,7 +146,7 @@ export class PinballWizard {
 
   update(dt: number) {
     Graphics.updatePixelAnim(dt);
-    (GfxRegion.create('glass-gfx') as GlassGfx).update(dt)
+    (GfxRegion.create('glass-gfx') as GlassGfx).update(this,dt)
     const wasBranched = this.hasBranched
     const wasFinished = this.hasFinished
 

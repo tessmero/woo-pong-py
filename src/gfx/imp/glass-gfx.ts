@@ -70,18 +70,22 @@ export class GlassGfx extends GfxRegion {
     }
   }
 
+  screenPosToTileIndex(pos: Vec2): number {
+    const mult = window.devicePixelRatio / Graphics.glassPixelScale
+    const x = Math.floor(pos[0] * mult)
+    const y = Math.floor(pos[1] * mult)
+    const N = GlassGfx.GLASS_RES
+    const xL = (x + Math.floor(this._xOffset)) % N
+    const iL = ((y + Math.floor(this._yOffset)) % N) * N + xL
+    return iL
+  }
+
   move(_pw: PinballWizard, mousePos: Vec2) {
     if (!this._opacity) return
 
-    const mult = window.devicePixelRatio / Graphics.glassPixelScale
-    const x = Math.floor(mousePos[0] * mult)
-    const y = Math.floor(mousePos[1] * mult)
+    const tile = this.screenPosToTileIndex(mousePos)
 
-    const N = GlassGfx.GLASS_RES
-    // Interpolate between left and right opacity values for smooth scroll
-    const xL = (x + Math.floor(this._xOffset)) % N
-    const iL = ((y + Math.floor(this._yOffset)) % N) * N + xL
-    this._opacity[iL] = 1
+    this._opacity[tile] = 1
   }
 
   leave(_pw: PinballWizard, _mousePos: Vec2) {
@@ -138,16 +142,25 @@ export class GlassGfx extends GfxRegion {
   /**
    * Update the glass simulation. Call this regularly with dt in seconds.
    */
-  update(dt: number) {
+  update(pw: PinballWizard, dt: number) {
     this._initArrays()
+    const op = this._opacity
+    const vel = this._velocity
+    if (!op || !vel) return
+
+    // each disk acts like mouse move
+    const simGfx = GfxRegion.create('sim-gfx') as SimGfx
+    for (const disk of pw.activeSim.disks) {
+      const screenPos = simGfx.simToScreenPos(disk.interpolatedPos)
+      const tile = this.screenPosToTileIndex(screenPos)
+      op[tile] = 1
+    }
+
     // Advance the x and y offsets for scrolling
     this._xOffset = (this._xOffset + dt * GlassGfx.X_SCROLL_RATE) % GlassGfx.GLASS_RES
     this._yAnimOffset = (this._yAnimOffset + dt * GlassGfx.Y_SCROLL_RATE) % GlassGfx.GLASS_RES
 
     // update physics
-    const op = this._opacity
-    const vel = this._velocity
-    if (!op || !vel) return
     const N = GlassGfx.GLASS_RES
     const K = GlassGfx.SPRING_K
     const D = GlassGfx.DAMPING
