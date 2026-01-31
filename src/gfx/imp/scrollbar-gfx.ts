@@ -15,6 +15,7 @@ import type { Disk } from 'simulation/disk'
 import type { DiskPattern } from 'gfx/disk-gfx-util'
 import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx-util'
 import type { Obstacle } from 'simulation/obstacle'
+import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from 'gfx/canvas-rounded-rect-util'
 
 export class ScrollbarGfx extends GfxRegion {
   static {
@@ -61,6 +62,10 @@ export class ScrollbarGfx extends GfxRegion {
   private _obstacleBuffer: HTMLCanvasElement | null = null
   public isObstacleRepaintQueued = true
 
+  public fillRoundedMarginCorners(ctx: CanvasRenderingContext2D, _pw: PinballWizard) {
+    fillFrameBetweenRectAndRounded(ctx, this._drawRect, OBSTACLE_FILL)
+  }
+
   protected _draw(
     ctx: CanvasRenderingContext2D,
     pw: PinballWizard,
@@ -74,9 +79,10 @@ export class ScrollbarGfx extends GfxRegion {
 
     ctx.clearRect(x, y, w, h)
 
-    ctx.strokeStyle = 'black'
-    ctx.lineWidth = 3 * window.devicePixelRatio
-    ctx.strokeRect(x, y, w, h)
+    // ctx.strokeStyle = 'black'
+    // ctx.lineWidth = 3 * window.devicePixelRatio
+    // ctx.strokeRect(x, y, w, h)
+    strokeInnerRoundedRect(ctx, rect, 'black')
 
     // Draw obstacles from buffer
     if (sim && sim.obstacles.length > 0) {

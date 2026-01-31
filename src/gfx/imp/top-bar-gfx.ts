@@ -39,8 +39,13 @@ export class TopBarGfx extends GfxRegion {
 
     const progress = Math.min(1, pw.activeSim.stepCount / STEPS_BEFORE_BRANCH)
 
-    ctx.fillStyle = '#999'
+
+    ctx.fillStyle = '#fff'
     ctx.fillRect(x, y, w, h)
+    
+    ctx.strokeStyle = OBSTACLE_FILL
+    ctx.lineWidth = 10
+    ctx.strokeRect(x, y, w, h)
 
     ctx.fillStyle = OBSTACLE_FILL
     ctx.fillRect(x, y, w * progress, h)

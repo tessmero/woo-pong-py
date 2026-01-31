@@ -70,22 +70,41 @@ export class GlassGfx extends GfxRegion {
     }
   }
 
-  screenPosToTileIndex(pos: Vec2): number {
+  touchTile(pos: Vec2): void {
+    if (!this._opacity) return
     const mult = window.devicePixelRatio / Graphics.glassPixelScale
-    const x = Math.floor(pos[0] * mult)
-    const y = Math.floor(pos[1] * mult)
     const N = GlassGfx.GLASS_RES
-    const xL = (x + Math.floor(this._xOffset)) % N
-    const iL = ((y + Math.floor(this._yOffset)) % N) * N + xL
-    return iL
+    // Compute floating point tile position
+    const fx = pos[0] * mult + this._xOffset
+    const fy = pos[1] * mult + this._yOffset
+    // Integer tile indices
+    const x0 = Math.floor(fx) % N
+    const y0 = Math.floor(fy) % N
+    const x1 = (x0 + 1) % N
+    const y1 = (y0 + 1) % N
+    // Fractional part
+    const wx = fx - Math.floor(fx)
+    const wy = fy - Math.floor(fy)
+    // Bilinear weights
+    const w00 = (1 - wx) * (1 - wy)
+    const w10 = wx * (1 - wy)
+    const w01 = (1 - wx) * wy
+    const w11 = wx * wy
+    // Indices
+    const i00 = y0 * N + x0
+    const i10 = y0 * N + x1
+    const i01 = y1 * N + x0
+    const i11 = y1 * N + x1
+    // Apply weighted opacity
+    this._opacity[i00] = Math.max(this._opacity[i00], w00)
+    this._opacity[i10] = Math.max(this._opacity[i10], w10)
+    this._opacity[i01] = Math.max(this._opacity[i01], w01)
+    this._opacity[i11] = Math.max(this._opacity[i11], w11)
   }
 
   move(_pw: PinballWizard, mousePos: Vec2) {
     if (!this._opacity) return
-
-    const tile = this.screenPosToTileIndex(mousePos)
-
-    this._opacity[tile] = 1
+    this.touchTile(mousePos)
   }
 
   leave(_pw: PinballWizard, _mousePos: Vec2) {
@@ -152,8 +171,7 @@ export class GlassGfx extends GfxRegion {
     const simGfx = GfxRegion.create('sim-gfx') as SimGfx
     for (const disk of pw.activeSim.disks) {
       const screenPos = simGfx.simToScreenPos(disk.interpolatedPos)
-      const tile = this.screenPosToTileIndex(screenPos)
-      op[tile] = 1
+      this.touchTile(screenPos)
     }
 
     // Advance the x and y offsets for scrolling

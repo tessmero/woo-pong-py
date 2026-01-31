@@ -11,6 +11,7 @@ import type { PinballWizard } from 'pinball-wizard'
 import { type GfxRegionName } from 'imp-names'
 import { GfxRegion } from './gfx-region'
 import type { ScrollbarGfx } from './imp/scrollbar-gfx'
+import type { SimGfx } from './imp/sim-gfx'
 
 // const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
 // const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
@@ -241,6 +242,10 @@ export class Graphics {
     for (const rect of this._dpGutters) {
       ctx.fillRect(...rect)
     }
+
+    // fill regions near gutters to cut out rounded corners
+    ;(GfxRegion.create('sim-gfx') as SimGfx).fillRoundedMarginCorners(ctx, pw)
+    ;(GfxRegion.create('scrollbar-gfx') as ScrollbarGfx).fillRoundedMarginCorners(ctx, pw)
 
     // draw disks on scrollbar
     ;(GfxRegion.create('scrollbar-gfx') as ScrollbarGfx)

@@ -7,11 +7,12 @@
 import type { PinballWizard } from 'pinball-wizard'
 import { GfxRegion } from '../gfx-region'
 import { twopi, type Rectangle, type Vec2 } from 'util/math-util'
-import { Graphics } from 'gfx/graphics'
+import { Graphics, OBSTACLE_FILL } from 'gfx/graphics'
 import { CLICKABLE_RADSQ, VALUE_SCALE } from 'simulation/constants'
 import { drawDisk, drawDiskCrown, drawDiskHalo } from 'gfx/disk-gfx-util'
 import { drawObstacles } from 'gfx/obstacle-gfx-util'
 import type { Barrier } from 'simulation/barrier'
+import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from '../canvas-rounded-rect-util'
 
 const ballFlashDuration = 2000 // ms
 const ballFlashCycles = 5 // cycles per duration
@@ -51,15 +52,15 @@ export class SimGfx extends GfxRegion {
     }
 
     // idleCountdown = IDLE_DELAY
-    const { drawOffset, drawSimScale } = this
+    const { drawOffset } = this
 
     pw.mousePos[0] = (mousePos[0] - drawOffset[0] - this._drawRect[0])
     pw.mousePos[1] = (mousePos[1] - drawOffset[1] - this._drawRect[1])
 
-    const dpr = window.devicePixelRatio
+    // const dpr = window.devicePixelRatio
 
     // compute mouse pos in terms of simulation units
-    const [simMouseX,simMouseY] = this.screenToSimPos(mousePos)
+    const [simMouseX, simMouseY] = this.screenToSimPos(mousePos)
     pw.simMousePos[0] = simMouseX
     pw.simMousePos[1] = simMouseY
 
@@ -180,6 +181,10 @@ export class SimGfx extends GfxRegion {
     return isFlashOn
   }
 
+  public fillRoundedMarginCorners(ctx: CanvasRenderingContext2D, _pw: PinballWizard){
+    fillFrameBetweenRectAndRounded(ctx, this._drawRect, OBSTACLE_FILL)
+  }
+
   private _drawRect: Rectangle = [1, 1, 1, 1]
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
     const isFlashOn = this._updateFlashingState()
@@ -202,10 +207,9 @@ export class SimGfx extends GfxRegion {
 
     ctx.clearRect(x, y, w, h)
 
-    // debug
-    ctx.lineWidth = 3 * window.devicePixelRatio
-    ctx.strokeStyle = 'black'
-    ctx.strokeRect(x, y, w, h)
+    // trace edges around main view with a filled frame between rounded and regular rect
+    // fillFrameBetweenRectAndRounded(ctx, rect, 'rgba(0,0,0,0.15)')
+    strokeInnerRoundedRect(ctx, rect, 'black')
 
     ctx.save()
     ctx.translate(x, y + this.drawOffset[1])
