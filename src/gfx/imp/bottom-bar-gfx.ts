@@ -48,6 +48,18 @@ export class BottomBarGfx extends GfxRegion {
     GfxRegion.register('bottom-bar-gfx', () => new BottomBarGfx())
   }
 
+  public tsLocateElement(id: string): Rectangle | undefined {
+    id = id.replace('Btn', '')
+    if (this._layout && this._layout[id]) {
+      const [x, y, w, h] = this._layout[id]
+      return [
+        x / window.devicePixelRatio + Graphics.cssLeft, 
+        y / window.devicePixelRatio, 
+        w, h,
+      ]
+    }
+  }
+
   down(pw: PinballWizard, _mousePos: Vec2) {
     // console.log('bottom bar down', this._hovered)
     this._held = this._hovered
@@ -203,8 +215,10 @@ export class BottomBarGfx extends GfxRegion {
     }
   }
 
+  private _layoutBounds: Rectangle = [1, 1, 1, 1]
   private _layout: Layout | null = null
   private _computeLayout(rect: Rectangle) {
+    this._layoutBounds = rect
     let [x, y, w, h] = rect
     x += gutterPx
     y += ROUNDED_RECT_PADDING

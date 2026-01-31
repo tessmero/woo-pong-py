@@ -24,6 +24,17 @@ import { BreakoutRoom } from '../../src/rooms/imp/breakout-room'
 import { StartRoom } from '../../src/rooms/imp/start-room'
 import { FinishRoom } from '../../src/rooms/imp/finish-room'
 
+// GFX_REGION imports and placeholder variable
+import { SimGfx } from '../../src/gfx/imp/sim-gfx'
+import { ScrollbarGfx } from '../../src/gfx/imp/scrollbar-gfx'
+import { BottomBarGfx } from '../../src/gfx/imp/bottom-bar-gfx'
+import { TopBarGfx } from '../../src/gfx/imp/top-bar-gfx'
+import { GlassGfx } from '../../src/gfx/imp/glass-gfx'
+
+const _gfxRegions = [
+  SimGfx, ScrollbarGfx, BottomBarGfx, TopBarGfx, GlassGfx,
+]
+
 // excuse to import luts and have them registered
 const _luts = [
   DiskDiskLut, ObstacleLut, DiskNormalLut, DiskFrictionLut, RaceLut,
@@ -87,7 +98,7 @@ function getSnapshot(): string {
 const expectedSnapshot = `
 
 
-[[480436,1143889,167,410],[58732,1552746,-702,-512],[621768,1023903,-433,108],[471467,1020776,-172,225],[139960,708535,-90,-222],[812645,1169869,-143,335],[627596,774938,-297,-798],[441777,1543854,1162,180],[212041,1016310,344,32],[742578,1298194,-1406,574]]
+[[567189,925408,-447,-378],[431737,1348729,-244,235],[883874,980981,-591,-23],[767883,1187792,944,108],[597332,970549,-716,-633],[481272,1474620,-92,-1019],[373823,1168082,-634,-155],[364699,1381075,1004,-151],[322673,979911,524,552],[112552,1246835,115,86]]
 
 
 

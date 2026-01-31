@@ -9,6 +9,8 @@ import { topConfig } from 'configs/imp/top-config'
 import { Gui } from 'guis/gui'
 import { GfxRegion } from 'gfx/gfx-region'
 import type { SimGfx } from 'gfx/imp/sim-gfx'
+import { BottomBarGfx } from 'gfx/imp/bottom-bar-gfx'
+import { Graphics } from 'gfx/graphics'
 
 export function getTestSupport(pinballWizard: PinballWizard) {
   return {
@@ -34,6 +36,12 @@ export function getTestSupport(pinballWizard: PinballWizard) {
         return (GfxRegion.create('sim-gfx') as SimGfx).locateDiskOnScreen(pinballWizard, diskIndex)
       }
       else {
+
+        // locate elemnt in bottom bar gfx
+        const gfx = GfxRegion.create('bottom-bar-gfx') as BottomBarGfx
+        const rect = gfx.tsLocateElement(id)
+        if( rect ) return rect
+
         // locate element in gui
         const guisToCheck = [Gui.create('playing-gui')]
         for (const gui of guisToCheck) {
@@ -87,44 +95,15 @@ export function getTestSupport(pinballWizard: PinballWizard) {
     },
 
     getCursorState: () => {
+      let style =  (window as any).cursorForTestSupport  // eslint-disable-line @typescript-eslint/no-explicit-any
+      if( Graphics.cvs.style.cursor === 'pointer' ){
+        style = 'pointer'
+      }
       return {
         x: (window as any).mouseXForTestSupport, // eslint-disable-line @typescript-eslint/no-explicit-any
         y: (window as any).mouseYForTestSupport, // eslint-disable-line @typescript-eslint/no-explicit-any
-        style: (window as any).cursorForTestSupport, // eslint-disable-line @typescript-eslint/no-explicit-any
+        style,
       }
     },
-
-    // getCameraPos: () => {
-    //   const { x, y, z } = pinballWizard.graphics.camera.camera.position
-    //   return [x, y, z]
-    // },
-
-    // locateElement(id: string) {
-    //   const parts = id.split('-')
-    //   if (parts.length === 3 && DIRECTIONS.includes(parts[0] as Direction)) {
-    //     // id is side-box-rect e.g. 'S-1-1'
-    //     const side = parts[0] as Direction
-    //     const boxIndex = Number(parts[1])
-    //     const rectIndex = Number(parts[2])
-    //     if (pinballWizard.state.flatDirection !== side) {
-    //       return // side is not visible
-    //     }
-
-    //     const sideView = pinballWizard.level.sideViews[side]
-    //     const { worldRect } = sideView[boxIndex][rectIndex]
-    //     const screenRect = pinballWizard.locateWorldRectOnScreen(worldRect)
-    //     return screenRect
-    //   }
-
-    //   // id is layout key
-    //   const guisToCheck = [Gui.create('playing-gui')]
-    //   for (const gui of guisToCheck) {
-    //     const rect = gui.layoutRectangles[id]
-    //     if (!rect) continue
-    //     const [x, y, w, h] = rect
-    //     const ps = 1// seaBlock.config.flatConfig.pixelScale
-    //     return [x * ps, y * ps, w * ps, h * ps]
-    //   }
-    // },
   }
 }

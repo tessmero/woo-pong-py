@@ -123,11 +123,13 @@ export class SimGfx extends GfxRegion {
   locateDiskOnScreen(pw: PinballWizard, diskIndex: number): Rectangle {
     const disk = pw.activeSim.disks[diskIndex]
     const [rawx, rawy] = disk.interpolatedPos
-    const rad = DISK_RADIUS * VALUE_SCALE * this.drawSimScale
+    const rad = 20 //DISK_RADIUS * VALUE_SCALE * this.drawSimScale
     const x = this.drawOffset[0] + rawx * this.drawSimScale
     const y = this.drawOffset[1] + rawy * this.drawSimScale
     return [
-      x - rad + Graphics.cssLeft, y - rad, 2 * rad, 2 * rad,
+      x - rad + Graphics.cssLeft, 
+      y - rad + this._drawRect[1] / window.devicePixelRatio, 
+      2 * rad, 2 * rad,
     ]
   }
 
