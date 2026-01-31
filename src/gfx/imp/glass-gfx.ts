@@ -9,7 +9,6 @@ import { GfxRegion } from '../gfx-region'
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { Graphics } from 'gfx/graphics'
 import type { SimGfx } from './sim-gfx'
-import { VALUE_SCALE } from 'simulation/constants'
 import { BallSelectionPanel } from 'ball-selection-panel'
 
 export class GlassGfx extends GfxRegion {
@@ -17,7 +16,7 @@ export class GlassGfx extends GfxRegion {
   // private _yOffset: number = 0
   private _yAnimOffset: number = 0
   private get _yOffset() {
-    const simGfx = (GfxRegion.create('sim-gfx') as SimGfx)
+    const simGfx = GfxRegion.create('sim-gfx') as SimGfx
     const simOffset = simGfx.drawOffset
     const val = this._yAnimOffset - simOffset[1] / Graphics.glassPixelScale
     const n = GlassGfx.GLASS_RES
@@ -65,13 +64,13 @@ export class GlassGfx extends GfxRegion {
     this._didInit = true
   }
 
-  down(pw: PinballWizard, mousePos: Vec2) {
-    if( Graphics.pixelAnim === 1 ){
-      BallSelectionPanel.hide(pw)
+  down(_pw: PinballWizard, _mousePos: Vec2) {
+    if (Graphics.pixelAnim === 1) {
+      BallSelectionPanel.hide(_pw)
     }
   }
 
-  move(pw: PinballWizard, mousePos: Vec2) {
+  move(_pw: PinballWizard, mousePos: Vec2) {
     if (!this._opacity) return
 
     const mult = window.devicePixelRatio / Graphics.glassPixelScale
@@ -85,15 +84,15 @@ export class GlassGfx extends GfxRegion {
     this._opacity[iL] = 1
   }
 
-  leave(pw: PinballWizard, mousePos: Vec2) {
+  leave(_pw: PinballWizard, _mousePos: Vec2) {
     // do nothing
   }
 
-  up(pw: PinballWizard, mousePos: Vec2) {
+  up(_pw: PinballWizard, _mousePos: Vec2) {
     // do nothing
   }
 
-  protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
+  protected _draw(ctx: CanvasRenderingContext2D, _pw: PinballWizard, _rect: Rectangle) {
     this._initArrays()
     if (!this._opacity) return
     // Draw the low-res opacity field to the offscreen canvas using fillRect

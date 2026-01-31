@@ -14,6 +14,7 @@ import { Scrollbar } from 'scrollbar'
 import type { Disk } from 'simulation/disk'
 import type { DiskPattern } from 'gfx/disk-gfx-util'
 import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx-util'
+import type { Obstacle } from 'simulation/obstacle'
 
 export class ScrollbarGfx extends GfxRegion {
   static {
@@ -24,37 +25,34 @@ export class ScrollbarGfx extends GfxRegion {
   private _drawRect: Rectangle = [1, 1, 1, 1]
   public isRepaintQueued = false
 
-  down(pw: PinballWizard, mousePos: Vec2) {
-    pw.camera.pos = -(mousePos[1] * window.devicePixelRatio - this._drawRect[1]/2) / Scrollbar.drawScale
+  down(_pw: PinballWizard, _mousePos: Vec2) {
+    _pw.camera.pos = -(_mousePos[1] * window.devicePixelRatio - this._drawRect[1] / 2) / Scrollbar.drawScale
     Scrollbar.isDragging = true
   }
 
-  move(pw: PinballWizard, mousePos: Vec2) {
+  move(_pw: PinballWizard, _mousePos: Vec2) {
     if (Scrollbar.isDragging) {
-      pw.camera.pos = -(mousePos[1] * window.devicePixelRatio - this._drawRect[1]/2) / Scrollbar.drawScale
+      _pw.camera.pos = -(_mousePos[1] * window.devicePixelRatio - this._drawRect[1] / 2) / Scrollbar.drawScale
     }
   }
 
-  leave(pw: PinballWizard, mousePos: Vec2) {
+  leave(_pw: PinballWizard, _mousePos: Vec2) {
     if (Scrollbar.isDragging) {
       // user started drag in scrollbar, now moving in another region while scrollbar is held
-      pw.camera.pos = -(mousePos[1] * window.devicePixelRatio - this._drawRect[1]) / Scrollbar.drawScale
+      _pw.camera.pos = -(_mousePos[1] * window.devicePixelRatio - this._drawRect[1]) / Scrollbar.drawScale
     }
   }
 
-  up(pw: PinballWizard, mousePos: Vec2) {
+  up(_pw: PinballWizard, _mousePos: Vec2) {
     Scrollbar.isDragging = false
   }
 
-  /**
-       * Hide an obstacle by clearing its bounding rectangle on the buffer.
-       * @param obstacle The obstacle to hide
-       */
-  hideObstacle(obstacle: any) {
+  // clear rectangle in graphics buffer
+  hideObstacle(obstacle: Obstacle) {
     if (!this._obstacleBuffer) return
     const bctx = this._obstacleBuffer.getContext('2d')
     if (!bctx) return
-    const [x, y, w, h] = obstacle.boundingRect as Rectangle
+    const [x, y, w, h] = obstacle.boundingRect
     const shrink = 0.5 * DISK_RADIUS
     bctx.clearRect(x + shrink, y + shrink, w - 2 * shrink, h - 2 * shrink)
   }
@@ -83,7 +81,7 @@ export class ScrollbarGfx extends GfxRegion {
     // Draw obstacles from buffer
     if (sim && sim.obstacles.length > 0) {
       // Use a simple sim id (could be a hash, here just reference)
-      const simId = sim
+      const _simId = sim
       if (!this._obstacleBuffer || this.isObstacleRepaintQueued) {
         this.isObstacleRepaintQueued = false
 
@@ -113,7 +111,7 @@ export class ScrollbarGfx extends GfxRegion {
     }
   }
 
-  onResize(rect: Rectangle): void {
+  onResize(_rect: Rectangle): void {
     this.isObstacleRepaintQueued = true
   }
 
@@ -125,7 +123,7 @@ export class ScrollbarGfx extends GfxRegion {
     this._drawRect = rect
     const sim = pw.activeSim
 
-    const [x, y, w, h] = rect
+    const [x, y, w, _h] = rect
 
     const scale = w / 100 / VALUE_SCALE
     Scrollbar.drawScale = scale
@@ -141,9 +139,9 @@ export class ScrollbarGfx extends GfxRegion {
       // draw disks
       const selected = pw.selectedDiskIndex
       for (const [diskIndex, disk] of sim.disks.entries()) {
-        const isSelected = (diskIndex === selected)
-        if (isSelected) continue // selected disk will be drawn last
-        this.drawDisk(ctx, disk, isSelected)
+        const _isSelected = (diskIndex === selected)
+        if (_isSelected) continue // selected disk will be drawn last
+        this.drawDisk(ctx, disk, _isSelected)
       }
 
       // draw selected disk
@@ -163,7 +161,7 @@ export class ScrollbarGfx extends GfxRegion {
     pw: PinballWizard,
     rect: Rectangle,
   ) {
-    const [x, y, w, h] = rect
+    const [x, y, w, _h] = rect
 
     const scale = w / 100 / VALUE_SCALE
     Scrollbar.drawScale = scale

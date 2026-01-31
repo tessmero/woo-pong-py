@@ -4,7 +4,6 @@
  * Controls along the top of the screen.
  */
 
-
 import type { PinballWizard } from 'pinball-wizard'
 import { GfxRegion } from '../gfx-region'
 import type { Rectangle, Vec2 } from 'util/math-util'
@@ -14,26 +13,24 @@ import { formatTime, getStatusText } from 'guis/imp/playing-gui'
 import { setupRubikText } from '../canvas-text-util'
 import { OBSTACLE_FILL } from 'gfx/graphics'
 
-
-
 export class TopBarGfx extends GfxRegion {
   static {
     GfxRegion.register('top-bar-gfx', () => new TopBarGfx())
   }
 
-  down(pw: PinballWizard, mousePos: Vec2) {
+  down(_pw: PinballWizard, _mousePos: Vec2) {
     // do nothing
   }
 
-  move(pw: PinballWizard, mousePos: Vec2) {
+  move(_pw: PinballWizard, _mousePos: Vec2) {
     // do nothing
   }
 
-  leave(pw: PinballWizard, mousePos: Vec2) {
+  leave(_pw: PinballWizard, _mousePos: Vec2) {
     // do nothing
   }
 
-  up(pw: PinballWizard, mousePos: Vec2) {
+  up(_pw: PinballWizard, _mousePos: Vec2) {
     // do nothing
   }
 

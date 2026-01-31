@@ -43,10 +43,10 @@ export class RaceLut extends Lut<RaceLeaf> {
   blobHash = LUT_BLOBS.RACE_LUT?.hash ?? ''
   // Track stats for reporting and ETA
   private static _raceStats = {
-    startTime: Date.now(),
+    startTime: performance.now(),
     solved: 0,
     total: nRaces,
-    lastReport: Date.now(),
+    lastReport: performance.now(),
   }
 
   computeLeaf(index: Array<number>): Array<number> {
@@ -54,16 +54,16 @@ export class RaceLut extends Lut<RaceLeaf> {
     const stats = RaceLut._raceStats
     if (raceIndex === 0 && stats.solved !== 0) {
       // Reset stats if running again
-      stats.startTime = Date.now()
+      stats.startTime = performance.now()
       stats.solved = 0
-      stats.lastReport = Date.now()
+      stats.lastReport = performance.now()
     }
     console.log(`race-lut leaf ${raceIndex} / ${nRaces}`)// eslint-disable-line no-console
     while (true) {
       const result = _tryComputeLeaf()
       if (result) {
         stats.solved++
-        const now = Date.now()
+        const now = performance.now()
         const elapsed = (now - stats.startTime) / 1000 // seconds
         const avgPerRace = elapsed / stats.solved
         const remaining = stats.total - stats.solved
@@ -78,18 +78,23 @@ export class RaceLut extends Lut<RaceLeaf> {
             const etaSec = Math.round(eta % 60)
             if (etaH > 0) {
               etaStr = `ETA: ${etaH}h ${etaMin}m ${etaSec}s.`
-            } else if (etaMin > 0) {
+            }
+            else if (etaMin > 0) {
               etaStr = `ETA: ${etaMin}m ${etaSec}s.`
-            } else {
+            }
+            else {
               etaStr = `ETA: ${etaSec}s.`
             }
-          } else {
+          }
+          else {
             etaStr = 'All races complete!'
           }
+
+          // eslint-disable-next-line no-console
           console.log(
-            `[race-lut] Solved ${stats.solved}/${stats.total} races. ` +
-            `Elapsed: ${elapsed.toFixed(1)}s. ` +
-            etaStr
+            `[race-lut] Solved ${stats.solved}/${stats.total} races. `
+            + `Elapsed: ${elapsed.toFixed(1)}s. `
+            + etaStr,
           )
         }
         return result

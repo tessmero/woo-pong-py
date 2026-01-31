@@ -19,7 +19,6 @@ import { SHAPE_PATHS } from 'simulation/shapes'
 import { Gui } from 'guis/gui'
 import { Graphics } from 'gfx/graphics'
 import { TitleScreen } from 'title-screen'
-import { Scrollbar } from 'scrollbar'
 import { BallSelectionPanel } from 'ball-selection-panel'
 import { BottomBarGfx } from 'gfx/imp/bottom-bar-gfx'
 import { BASE_FONT_SIZE } from 'gfx/canvas-text-util'
@@ -35,6 +34,7 @@ async function ensureRubikFontLoaded() {
       // console.log('[RubikFont] loaded', fontStr);
     }
     catch (e) {
+      // eslint-disable-next-line no-console
       console.error('[RubikFont] Error loading font:', e)
     }
   }
@@ -102,7 +102,7 @@ async function main() {
 
   _initListeners(pinballWizard)
   pinballWizard.loadingState = 'D'
-  Scrollbar.initListeners(pinballWizard)
+  // Scrollbar.initListeners(pinballWizard)
   BallSelectionPanel.initListeners(pinballWizard)
   pinballWizard.loadingState = 'E'
   await _initLuts(startBtn)
@@ -124,7 +124,7 @@ async function main() {
     // Graphics.isTitleScreen = false
     pinballWizard.onResize()
     titleScreenElem.classList.add('hidden')
-    Scrollbar.show()
+    // Scrollbar.show()
     // BallSelectionPanel.show()
 
     isTitleAnimPlaying = false // break title screen loop
@@ -200,7 +200,7 @@ function _initListeners(pinballWizard: PinballWizard) {
     mousePos[1] = e.clientY
     pinballWizard.up(mousePos, 'mouse')
   })
-  document.addEventListener('mouseleave', (e) => {
+  document.addEventListener('mouseleave', (_e) => {
     pinballWizard.up(mousePos, 'mouse')
   })
 

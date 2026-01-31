@@ -17,12 +17,12 @@ import { BallSelectionPanel } from 'ball-selection-panel'
 import { setupRubikText } from '../canvas-text-util'
 import { drawRoundedRect, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
 
-const LAYOUT_KEYS = ['bsp', 'clock', 'pause', 'play', 'fast', 'faster'] as const
-type LayoutKey = (typeof LAYOUT_KEYS)[number]
+const _LAYOUT_KEYS = ['bsp', 'clock', 'pause', 'play', 'fast', 'faster'] as const
+type LayoutKey = (typeof _LAYOUT_KEYS)[number]
 type Layout = Record<LayoutKey, Rectangle>
 
 const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
-  bsp: () => false,
+  bsp: () => BallSelectionPanel.isShowing,
   clock: () => false,
   pause: pw => pw.speed === 'paused',
   play: pw => pw.speed === 'normal',
@@ -34,7 +34,8 @@ const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
   bsp: (pw) => {
     BallSelectionPanel.toggle(pw)
   },
-  clock: (pw) => {
+  clock: () => {
+    // do nothing
   },
   pause: (pw) => { pw.speed = 'paused' },
   play: (pw) => { pw.speed = 'normal' },
@@ -47,8 +48,8 @@ export class BottomBarGfx extends GfxRegion {
     GfxRegion.register('bottom-bar-gfx', () => new BottomBarGfx())
   }
 
-  down(pw: PinballWizard, mousePos: Vec2) {
-    console.log('bottom bar down', this._hovered)
+  down(pw: PinballWizard, _mousePos: Vec2) {
+    // console.log('bottom bar down', this._hovered)
     this._held = this._hovered
 
     if (this._held) {
@@ -82,11 +83,11 @@ export class BottomBarGfx extends GfxRegion {
     return label
   }
 
-  leave(pw: PinballWizard, mousePos: Vec2) {
+  leave(_pw: PinballWizard, _mousePos: Vec2) {
     this._hovered = null
   }
 
-  up(pw: PinballWizard, mousePos: Vec2) {
+  up(_pw: PinballWizard, _mousePos: Vec2) {
     this._held = null
   }
 
@@ -109,7 +110,7 @@ export class BottomBarGfx extends GfxRegion {
     for (const key of Object.keys(this._layout) as Array<LayoutKey>) {
       const innerRect = this._layout[key]
       const isHovered = this._hovered === key
-      const isHeld = this._held === key
+      // const isHeld = this._held === key
       const isActive = activeCheckers[key](pw)
 
       // // Draw button background
@@ -126,7 +127,7 @@ export class BottomBarGfx extends GfxRegion {
       // ctx.restore()
 
       let fillStyle = isActive ? '#000' : (isHovered ? '#ccc' : '#eee')
-      if( key === 'clock' ) fillStyle = '#eee'
+      if (key === 'clock') fillStyle = '#eee'
       const strokeStyle = isActive ? '#fff' : '#000'
 
       ctx.lineWidth = isHovered ? 4 : 2
@@ -247,7 +248,7 @@ export class BottomBarGfx extends GfxRegion {
           }
           img.onerror = () => {
             cache[icon] = null
-            resolve(null as any)
+            resolve(null as any) // eslint-disable-line @typescript-eslint/no-explicit-any
             URL.revokeObjectURL(url)
           }
           img.src = url

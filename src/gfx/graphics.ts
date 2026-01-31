@@ -18,7 +18,7 @@ import type { ScrollbarGfx } from './imp/scrollbar-gfx'
 export const OBSTACLE_FILL = '#888'
 export const OBSTACLE_STROKE = '#000'
 
-const pixelAnimSpeed = 1e-2// fraction per ms
+const pixelAnimSpeed = 8e-3// fraction per ms
 
 export const gutterPx = 4
 const leftGutterWidthPx = gutterPx
@@ -119,14 +119,6 @@ export class Graphics {
       simCssWidth = rootWidthPx - scrollbarWidth - leftGutterWidthPx - midGutterWidthPx - rightGutterWidthPx
     }
 
-    // // commit new layout
-    // cvs.style.setProperty('position', `absolute`)
-    // cvs.style.setProperty('width', `${cssWidth}px`)
-    // cvs.style.setProperty('left', `${cssLeft}px`)
-    // cvs.width = Graphics.innerWidth
-    // cvs.height = cvs.clientHeight * dpr
-    // // Graphics.drawOffset[0] = 0
-
     // test new graphics
     const _root: Rectangle = [
       simCssLeft, 0,
@@ -148,7 +140,7 @@ export class Graphics {
 
     this._mainCvs = mainCvs
     this._mainCtx = mainCvs.getContext('2d') as CanvasRenderingContext2D
-    this._mainCtx.imageSmoothingEnabled = false
+    // this._mainCtx.imageSmoothingEnabled = false
     // this._mainCtx.lineCap = 'butt'
 
     this._glassCvs = glassCvs

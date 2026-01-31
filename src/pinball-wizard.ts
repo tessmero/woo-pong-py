@@ -18,7 +18,6 @@ import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
 import type { GfxRegionName } from 'imp-names'
 import { GUI } from 'imp-names'
-import { Scrollbar } from 'scrollbar'
 import type { Speed } from 'simulation/constants'
 import {
   LOOK_AHEAD_STEPS,
@@ -225,19 +224,6 @@ export class PinballWizard {
 
     Graphics.draw(this)
 
-    // // update simViewRect y-value
-    // const { drawOffset, drawSimScale } = Graphics
-    // this.simViewRect[1] = -drawOffset[1] / drawSimScale
-
-    // always repaint scrollbar
-    Scrollbar.isRepaintQueued = true
-
-    // repaint scrollbar if necessary
-    if (Scrollbar.isRepaintQueued) {
-      Scrollbar.isRepaintQueued = false
-      // Scrollbar.repaint(this)
-    }
-
     // always repaint bsp
     BallSelectionPanel.isRepaintQueued = true
 
@@ -256,7 +242,7 @@ export class PinballWizard {
         const roomIndex = this.activeSim.level.rooms.findIndex(
           room => rectContainsPoint(room.bounds, ...pos),
         )
-        if (roomIndex != -1) {
+        if (roomIndex !== -1) {
           this.camera.jumpToRoom(this, roomIndex)
         }
       }
@@ -294,14 +280,14 @@ export class PinballWizard {
    * @param mousePos Position of input
    * @param inputId 'mouse' for mouse, or a touch identifier (number)
    */
-  move(mousePos: Vec2, inputId: 'mouse' | number): Vec2 {
+  move(_mousePos: Vec2, inputId: 'mouse' | number): Vec2 {
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       const gfx = GfxRegion.create(name as GfxRegionName)
-      if (rectContainsPoint(rect, ...mousePos)) {
-        if (typeof gfx.move === 'function') gfx.move(this, mousePos, inputId)
+      if (rectContainsPoint(rect, ..._mousePos)) {
+        if (typeof gfx.move === 'function') gfx.move(this, _mousePos, inputId)
       }
       else {
-        if (typeof gfx.leave === 'function') gfx.leave(this, mousePos, inputId)
+        if (typeof gfx.leave === 'function') gfx.leave(this, _mousePos, inputId)
       }
     }
     return this.mousePos
@@ -314,7 +300,7 @@ export class PinballWizard {
    * @param inputId 'mouse' for mouse, or a touch identifier (number)
    */
   down(rawPos: Vec2, inputId: 'mouse' | number) {
-    const mousePos = this.move(rawPos, inputId)
+    const _mousePos = this.move(rawPos, inputId)
 
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       if (rectContainsPoint(rect, ...rawPos)) {
@@ -333,7 +319,7 @@ export class PinballWizard {
    * @param inputId 'mouse' for mouse, or a touch identifier (number)
    */
   up(rawPos: Vec2, inputId: 'mouse' | number) {
-    for (const [name, rect] of Object.entries(Graphics.regions)) {
+    for (const [name, _rect] of Object.entries(Graphics.regions)) {
       // if (rectContainsPoint(rect, ...rawPos)) {
       const gfx = GfxRegion.create(name as GfxRegionName)
       if (typeof gfx.up === 'function') gfx.up(this, rawPos, inputId)

@@ -73,8 +73,6 @@ export class Camera {
       const viewHeight = pinballWizard.simViewRect[3]
       const targetPos = -(flipperHeight - viewHeight) - 25 * DISK_RADIUS
 
-
-
       this.pos = lerp(this.pos, targetPos, this._snapSpeed * dt)
     }
 

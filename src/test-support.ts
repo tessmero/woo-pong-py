@@ -7,9 +7,8 @@
 import { type PinballWizard } from 'pinball-wizard'
 import { topConfig } from 'configs/imp/top-config'
 import { Gui } from 'guis/gui'
-import { gfxConfig } from 'configs/imp/gfx-config'
 import { GfxRegion } from 'gfx/gfx-region'
-import { SimGfx } from 'gfx/imp/sim-gfx'
+import type { SimGfx } from 'gfx/imp/sim-gfx'
 
 export function getTestSupport(pinballWizard: PinballWizard) {
   return {
@@ -32,7 +31,7 @@ export function getTestSupport(pinballWizard: PinballWizard) {
       else if (id.startsWith('ball-')) {
         // locate disk in simulation
         const diskIndex = Number(id.split('-')[1])
-        return (GfxRegion.create('sim-gfx') as SimGfx).locateDiskOnScreen(pinballWizard,diskIndex)
+        return (GfxRegion.create('sim-gfx') as SimGfx).locateDiskOnScreen(pinballWizard, diskIndex)
       }
       else {
         // locate element in gui

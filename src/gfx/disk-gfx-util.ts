@@ -1,5 +1,5 @@
 /**
- * @file disk-gfx.ts
+ * @file disk-gfx-util.ts
  *
  * Disk graphics.
  */
@@ -135,7 +135,7 @@ export function drawDisk(
   ctx.strokeStyle = 'black'
   ctx.stroke()
   ctx.fillStyle = PATTERN_FILLERS[disk.pattern]
-  ctx.imageSmoothingEnabled = false
+  // ctx.imageSmoothingEnabled = false
   ctx.fill()
 }
 

@@ -120,7 +120,7 @@ function debugCollisionAtMousePos(
   }
 }
 
-function debugDetailedPoints(
+function _debugDetailedPoints(
   ctx: CanvasRenderingContext2D,
   obstacle: Obstacle,
 ) {
@@ -139,7 +139,7 @@ function debugDetailedPoints(
 }
 
 // show all adjusted positions for colliding disks
-function debugObstacleShell(
+function _debugObstacleShell(
   ctx: CanvasRenderingContext2D,
   obstacle: Obstacle,
 ) {
@@ -165,7 +165,8 @@ function debugObstacleShell(
         const y = lut.indexToYOffset(j - radj)
 
         // offset to adjust disk so it just touches obstacle
-        let [xAdj, yAdj, _normalIndex] = leaf
+        let xAdj = leaf[0]
+        const yAdj = leaf[1]
         if (isFlippedX) {
           xAdj *= -1
         }

@@ -23,7 +23,7 @@ export class BspGfx extends GfxRegion {
     // do nothing
   }
   leave(pw: PinballWizard, mousePos: Vec2) {
-	// do nothing
+    // do nothing
   }
 
   up(pw: PinballWizard, mousePos: Vec2) {

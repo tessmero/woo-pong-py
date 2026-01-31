@@ -37,7 +37,7 @@ export const ballsBtn: PlayingElem = {
     //   // MiniBsp.logMiniSvg(w,h,pw)
     // },
   },
-  click: ({pinballWizard}) => {
+  click: ({ pinballWizard }) => {
     BallSelectionPanel.toggle(pinballWizard)
   },
 }
@@ -130,6 +130,7 @@ const resetBtn: PlayingElem = {
     label: 'Play Again',
   },
   click: ({ pinballWizard }) => {
+    BallSelectionPanel.hide(pinballWizard, true)
     pinballWizard.reset()
     Graphics.targetPixelAnim = 0
   },
@@ -143,28 +144,27 @@ export const ballSelectionPanel: PlayingElem = {
       // GfxRegion.create('bsp-gfx').draw(ctx, pw, rect)
       BallSelectionPanel.draw(ctx, pw, rect)
     },
+    classes: ['transparent'],
   },
-  down: ({pinballWizard,pointerEvent}) => {
-    
-      const i = getBspHoveredDiskIndex(pointerEvent)
-      pinballWizard.trySelectDisk(i)
-      // Graphicscvs.style.setProperty('cursor', 'default')
+  down: ({ pinballWizard, pointerEvent }) => {
+    const i = getBspHoveredDiskIndex(pointerEvent)
+    pinballWizard.trySelectDisk(i)
+    // Graphicscvs.style.setProperty('cursor', 'default')
   },
 }
 
-
-export const bspCloseBtn: PlayingElem = {
-  layoutKey: 'bspCloseBtn',
-  display: {
-    type: 'button',
-    icon: 'pause',
-  },
-  down: ({pinballWizard}) => BallSelectionPanel.hide(pinballWizard),
-}
+// export const bspCloseBtn: PlayingElem = {
+//   layoutKey: 'bspCloseBtn',
+//   display: {
+//     type: 'button',
+//     icon: 'pause',
+//   },
+//   down: ({pinballWizard}) => BallSelectionPanel.hide(pinballWizard),
+// }
 
 const bspElems: Array<PlayingElem> = [
   ballSelectionPanel,
-  bspCloseBtn,
+  // bspCloseBtn,
 ]
 
 const elements: Array<PlayingElem> = [

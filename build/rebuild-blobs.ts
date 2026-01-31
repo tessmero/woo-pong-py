@@ -37,6 +37,17 @@ const _rooms = [
   BasicRoom, PongRoom, BreakoutRoom, StartRoom, FinishRoom,
 ]
 
+// GFX_REGION imports and placeholder variable
+import { SimGfx } from '../src/gfx/imp/sim-gfx'
+import { ScrollbarGfx } from '../src/gfx/imp/scrollbar-gfx'
+import { BottomBarGfx } from '../src/gfx/imp/bottom-bar-gfx'
+import { TopBarGfx } from '../src/gfx/imp/top-bar-gfx'
+import { GlassGfx } from '../src/gfx/imp/glass-gfx'
+
+const _gfxRegions = [
+  SimGfx, ScrollbarGfx, BottomBarGfx, TopBarGfx, GlassGfx,
+]
+
 // Remove existing files in public/luts
 const collisionsDir = join(__dirname, '../public/luts')
 const existingFiles = readdirSync(collisionsDir)

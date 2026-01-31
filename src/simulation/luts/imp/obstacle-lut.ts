@@ -115,14 +115,14 @@ export function getDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
 }
 
 // const _cached: Record<string, Array<Vec2>> = {}
-export function centeredPointsOnPath(path: string, truncate = false): Array<Vec2> {
+export function centeredPointsOnPath(path: string, _truncate = false): Array<Vec2> {
   // if (!Object.hasOwn(_cached, path)) {
-  //   _cached[path] = _centeredPointsOnPath(path, truncate)
+  //   _cached[path] = _centeredPointsOnPath(path, _truncate)
   // }
   // return [..._cached[path]]
-  return _centeredPointsOnPath(path,truncate)
+  return _centeredPointsOnPath(path, _truncate)
 }
-function _centeredPointsOnPath(path: string, truncate = false): Array<Vec2> {
+function _centeredPointsOnPath(path: string, _truncate = false): Array<Vec2> {
   let points = pointsOnPath(path, 0.05)[0]
   let minX = Infinity
   let maxX = -Infinity
@@ -144,7 +144,7 @@ function _centeredPointsOnPath(path: string, truncate = false): Array<Vec2> {
     p[1] -= midY
   }
 
-  if (truncate) {
+  if (_truncate) {
     points = points.filter(p => p[0] < 100)
   }
 
@@ -161,8 +161,8 @@ function computeDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
     isPathReversed = false,
   } = shapeParams
 
-  const truncate = (shape === 'flipper')
-  let points = centeredPointsOnPath(baseSvg, truncate)
+  const isTruncated = (shape === 'flipper')
+  let points = centeredPointsOnPath(baseSvg, isTruncated)
 
   // Distance threshold to add midpoints
   const threshold = DISK_RADIUS / 10 / scale / Math.max(xScale, yScale)
@@ -225,7 +225,6 @@ function findNearestPoint(points: ReadonlyArray<Vec2>, pos: Vec2): number {
   // locate nearest point
   let minDistSquared = Infinity
   let nearestPointIndex = 0
-  const nearestPoint = points[0]
   for (const [i, point] of points.entries()) {
     const dx = point[0] - pos[0]
     const dy = point[1] - pos[1]

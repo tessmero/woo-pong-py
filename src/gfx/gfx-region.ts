@@ -10,7 +10,7 @@ import type { Rectangle, Vec2 } from 'util/math-util'
 
 type Registered = () => GfxRegion
 
-const GFX_DEBUG_COLORS: Record<GfxRegionName, string> = {
+const _GFX_DEBUG_COLORS: Record<GfxRegionName, string> = {
   'bottom-bar-gfx': 'white',
   'top-bar-gfx': 'lightblue',
   'scrollbar-gfx': 'orange',
@@ -22,7 +22,7 @@ const GFX_DEBUG_COLORS: Record<GfxRegionName, string> = {
 export abstract class GfxRegion {
   readonly name: GfxRegionName = '' as GfxRegionName // assigned when registered
 
-  onResize(rect: Rectangle){
+  onResize(_rect: Rectangle) {
     // do nothing
   }
 

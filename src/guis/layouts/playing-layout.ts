@@ -10,7 +10,7 @@ import type { CssLayout } from 'util/layout-parser'
 
 const om = () => layoutConfig.flatConfig.outerMargin
 const im = () => layoutConfig.flatConfig.innerMargin
-const bw = btnWidth
+const _bw = btnWidth
 const bh = btnHeight
 
 export const PLAYING_LAYOUT = {

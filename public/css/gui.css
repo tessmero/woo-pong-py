@@ -105,9 +105,10 @@
 }
 
 .transparent {
-  opacity: .5;
+  opacity: 1;
   cursor: default;
   border: none;
+  background: transparent;
 }
 
 .gui-element.hidden {

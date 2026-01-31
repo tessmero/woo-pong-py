@@ -13,7 +13,7 @@ import type { PinballWizard } from 'pinball-wizard'
 import { DISK_COUNT, VALUE_SCALE } from 'simulation/constants'
 import type { Disk } from 'simulation/disk'
 import type { Vec2 } from 'util/math-util'
-import { twopi, type Rectangle } from 'util/math-util'
+import { lerp2, twopi, type Rectangle } from 'util/math-util'
 
 const cvs = ((typeof document === 'undefined')
   ? null
@@ -28,8 +28,8 @@ const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
 // const cvs = document.getElementById('scrollbar-canvas') as HTMLCanvasElement
 // const ctx = cvs.getContext('2d') as CanvasRenderingContext2D
 
-const lastWidth = -1
-const lastHeight = -1
+const _lastWidth = -1
+const _lastHeight = -1
 
 let didInitListeners = false
 
@@ -74,6 +74,9 @@ for (const row of drawRows) {
   }
   rowIndex++
 }
+const centerDiskPos = lerp2(diskPositions[4], diskPositions[5])
+
+const _drawOffset: Vec2 = [0, 0]
 
 export class BallSelectionPanel {
   static isRepaintQueued = false
@@ -98,11 +101,13 @@ export class BallSelectionPanel {
     pw.onResize()
   }
 
-  static hide(pw: PinballWizard) {
+  static hide(pw: PinballWizard, skipResize = false) {
     cvs.style.setProperty('display', 'none')
     ballsBtn.htmlElem?.classList.remove('active')
     Graphics.targetPixelAnim = 0
-    pw.onResize()
+    if (!skipResize) {
+      pw.onResize()
+    }
   }
 
   static toggle(pw: PinballWizard) {
@@ -141,10 +146,22 @@ export class BallSelectionPanel {
     //   return // not visible
     // }
 
-    const [x, y, w, h] = rect
+    const [_x, _y, w, h] = rect
 
-    ctx.fillStyle = 'rgb(221,221,221)'
-    ctx.fillRect(0, 0, w, h)
+    const _dpr = window.devicePixelRatio
+    // ctx.fillStyle = 'rgb(221,221,221)'
+    ctx.clearRect(0, 0, w, h)
+
+    const x0 = w / 2 - centerDiskPos[0]
+    const y0 = h / 2 - centerDiskPos[1]
+
+    _drawOffset[0] = x0
+    _drawOffset[1] = y0
+
+    // // debug
+    // ctx.strokeStyle = 'red'
+    // ctx.lineWidth = 4
+    // ctx.strokeRect(0, 0, w, h)
 
     if (!pw.activeSim) return
 
@@ -153,8 +170,9 @@ export class BallSelectionPanel {
       const disk = pw.activeSim.disks[i]
       if (!disk) continue
 
+      const [x, y] = diskPositions[i]
       drawDisk(ctx, disk,
-        ...diskPositions[i],
+        x0 + x, y0 + y,
       )
     }
   }
@@ -179,9 +197,9 @@ export class BallSelectionPanel {
     for (let i = 0; i < DISK_COUNT; i++) {
       const disk = pw.activeSim.disks[i]
       if (!disk) continue
-      const isSelected = (i === pw.selectedDiskIndex)
+      const _isSelected = (i === pw.selectedDiskIndex)
 
-      drawDisk(ctx, disk, 
+      drawDisk(ctx, disk,
         ...diskPositions[i],
       )
     }

@@ -94,11 +94,11 @@ export class SimGfx extends GfxRegion {
     return result
   }
 
-  leave(pw: PinballWizard, mousePos: Vec2) {
+  leave(_pw: PinballWizard, _mousePos: Vec2) {
     // do nothing
   }
 
-  up(pw: PinballWizard, mousePos: Vec2) {
+  up(pw: PinballWizard, _mousePos: Vec2) {
     pw.isMouseDown = false
     pw.camera.endDrag()
   }
@@ -147,8 +147,7 @@ export class SimGfx extends GfxRegion {
     this._flashStartTime = performance.now()
   }
 
-  private _drawRect: Rectangle = [1, 1, 1, 1]
-  protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
+  private _updateFlashingState(): boolean {
     let isFlashOn = false
     if (this._flashStartTime > -1) {
       const t = performance.now()
@@ -161,10 +160,17 @@ export class SimGfx extends GfxRegion {
       }
     }
 
+    return isFlashOn
+  }
+
+  private _drawRect: Rectangle = [1, 1, 1, 1]
+  protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
+    const isFlashOn = this._updateFlashingState()
+
     this._drawRect = rect
     const [x, y, w, h] = rect
     const sim = pw.activeSim
-    const { selectedDiskIndex, hoveredDiskIndex, simViewRect } = pw
+    const { selectedDiskIndex, hoveredDiskIndex } = pw
     const scale = (w) / 100 / VALUE_SCALE
     this.drawSimScale = scale
     const dpr = window.devicePixelRatio
@@ -198,7 +204,7 @@ export class SimGfx extends GfxRegion {
     // this._drawBounds(ctx, pw)
     // this._drawBoundsOuterEdges(ctx, pw)
 
-    for (const [diskIndex, disk] of sim.disks.entries()) {
+    for (const [_diskIndex, disk] of sim.disks.entries()) {
       drawDisk(ctx, disk)
       if (isFlashOn) {
         drawDiskHalo(ctx, disk)
@@ -269,73 +275,4 @@ export class SimGfx extends GfxRegion {
     // ctx.lineWidth = 1
     // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
   }
-
-  // private _drawBoundsOuterEdges(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
-  //   const mainThick = 2 * VALUE_SCALE
-
-  //   const thick = 0.6 * VALUE_SCALE
-  //   const viewRect = pw.simViewRect
-  //   const x0 = viewRect[0] - mainThick / 2
-  //   const y0 = viewRect[1]
-  //   const x1 = x0 + viewRect[2] + mainThick
-  //   const y1 = y0 + viewRect[3]
-
-  //   ctx.lineWidth = thick
-  //   ctx.strokeStyle = 'red'
-  //   ctx.beginPath()
-
-  //   // outer left edge
-  //   ctx.moveTo(x0, y0)
-  //   ctx.lineTo(x0, y1)
-
-  //   // outer right edge
-  //   ctx.moveTo(x1, y0)
-  //   ctx.lineTo(x1, y1)
-
-  //   ctx.stroke()
-  // }
-
-  // private _drawBoundsInnerEdges(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
-  //   const mainThick = 2 * VALUE_SCALE
-
-  //   const thick = 0.6 * VALUE_SCALE
-
-  //   const viewRect = pw.simViewRect
-  //   const x0 = viewRect[0]
-  //   const y0 = viewRect[1]
-  //   const x1 = x0 + viewRect[2]
-  //   const y1 = y0 + viewRect[3]
-
-  //   ctx.lineWidth = thick
-  //   ctx.strokeStyle = 'black'
-  //   ctx.beginPath()
-
-  //   // left
-  //   ctx.moveTo(x0, y0)
-  //   ctx.lineTo(x0, y1)
-
-  //   // right
-  //   ctx.moveTo(x1, y0)
-  //   ctx.lineTo(x1, y1)
-
-  //   // bottom
-  //   ctx.moveTo(x0,y1)
-  //   ctx.lineTo(x1,y1)
-
-  //   ctx.stroke()
-  // }
-
-  // private _drawBounds(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
-  //   // draw level bounds
-  //   const thick = 2 * VALUE_SCALE
-
-  //   const viewRect = pw.simViewRect
-  //   const x0 = viewRect[0]
-  //   const y0 = viewRect[1]
-  //   const x1 = x0 + viewRect[2]
-  //   const y1 = y0 + viewRect[3]
-  //   ctx.fillStyle = OBSTACLE_FILL
-  //   ctx.fillRect(x0 - thick, y0, thick, y1 - y0)
-  //   ctx.fillRect(x1, y0, thick, y1 - y0)
-  // }
 }

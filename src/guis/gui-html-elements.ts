@@ -54,11 +54,11 @@ export function buildHtmlElement(id: ElementId, elem: GuiElement): HTMLElement {
   return html
 }
 
-export function resizeIcon(svg: string){
+export function resizeIcon(svg: string) {
   // Replace width and height attributes from 500 to 50
   return svg
     .replace(/width="\d+"/, `width="${btnHeight()}"`)
-    .replace(/height="\d+"/, `height="${btnHeight()}"`);
+    .replace(/height="\d+"/, `height="${btnHeight()}"`)
 }
 
 export function toggleElement(id: ElementId | GuiElement, isVisible: boolean) {
