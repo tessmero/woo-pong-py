@@ -7,7 +7,7 @@
 import type { PinballWizard } from 'pinball-wizard'
 import { GfxRegion } from '../gfx-region'
 import { twopi, type Rectangle, type Vec2 } from 'util/math-util'
-import { Graphics, OBSTACLE_FILL } from 'gfx/graphics'
+import { Graphics } from 'gfx/graphics'
 import { CLICKABLE_RADSQ, VALUE_SCALE } from 'simulation/constants'
 import { drawDisk, drawDiskCrown, drawDiskHalo } from 'gfx/disk-gfx-util'
 import { drawObstacles } from 'gfx/obstacle-gfx-util'
@@ -150,8 +150,18 @@ export class SimGfx extends GfxRegion {
   }
 
   drawFinish(ctx: CanvasRenderingContext2D, finish: Barrier) {
-    ctx.fillStyle = 'rgba(0,255,0,0.5)'
-    ctx.fillRect(...finish.xywh)
+    // Checker size is 1/10 the width, height is 4 squares
+    let [x, y, w, _h] = finish.xywh;
+    const squareSize = w / 10;
+    const nCols = 10;
+    const nRows = 4;
+    const h = nRows * squareSize;
+    for (let row = 0; row < nRows; row++) {
+      for (let col = 0; col < nCols; col++) {
+        ctx.fillStyle = (row + col) % 2 === 0 ? 'white' : 'black';
+        ctx.fillRect(x + col * squareSize, y + row * squareSize, squareSize, squareSize);
+      }
+    }
   }
 
   drawBarrier(ctx: CanvasRenderingContext2D, barrier: Barrier) {
@@ -181,7 +191,7 @@ export class SimGfx extends GfxRegion {
     return isFlashOn
   }
 
-  public fillRoundedMarginCorners(ctx: CanvasRenderingContext2D, _pw: PinballWizard){
+  public fillRoundedMarginCorners(ctx: CanvasRenderingContext2D, _pw: PinballWizard) {
     fillFrameBetweenRectAndRounded(ctx, this._drawRect)
   }
 
@@ -207,13 +217,20 @@ export class SimGfx extends GfxRegion {
 
     ctx.clearRect(x, y, w, h)
 
+    
+    ctx.save()
+    ctx.translate(x, y + this.drawOffset[1])
+    ctx.scale(this.drawSimScale, this.drawSimScale)
+    this.drawFinish(ctx, sim.finish)
+    ctx.restore()
+
     // trace edges around main view with a filled frame between rounded and regular rect
     // fillFrameBetweenRectAndRounded(ctx, rect, 'rgba(0,0,0,0.15)')
     strokeInnerRoundedRect(ctx, rect, 'black')
 
     ctx.save()
     ctx.translate(x, y + this.drawOffset[1])
-    ctx.scale(scale, scale)
+    ctx.scale(this.drawSimScale, this.drawSimScale)
     ctx.lineWidth = VALUE_SCALE
 
     // Disk.updateHistory(sim.disks) // add to graphical tail
@@ -243,7 +260,6 @@ export class SimGfx extends GfxRegion {
     // for (const barrier of sim.barriers) {
     //   Graphics.drawBarrier(barrier)
     // }
-    this.drawFinish(ctx, sim.finish)
 
     // // debug camera target height
     // ctx.strokeStyle = 'green'

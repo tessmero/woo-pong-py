@@ -16,6 +16,9 @@ import type { DiskPattern } from 'gfx/disk-gfx-util'
 import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx-util'
 import type { Obstacle } from 'simulation/obstacle'
 import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from 'gfx/canvas-rounded-rect-util'
+import type { Barrier } from 'simulation/barrier'
+
+const buffer = document.createElement('canvas')
 
 export class ScrollbarGfx extends GfxRegion {
   static {
@@ -92,7 +95,6 @@ export class ScrollbarGfx extends GfxRegion {
         this.isObstacleRepaintQueued = false
 
         // Create buffer
-        const buffer = document.createElement('canvas')
         buffer.width = w
         buffer.height = h
         const bctx = buffer.getContext('2d')!
@@ -107,6 +109,10 @@ export class ScrollbarGfx extends GfxRegion {
           bctx.fill()
           bctx.stroke()
         }
+        drawFinish(bctx, sim.finish)
+
+        
+
         // bctx.restore()
         this._obstacleBuffer = buffer
       }
@@ -212,6 +218,24 @@ export class ScrollbarGfx extends GfxRegion {
       ctx.beginPath()
       ctx.arc(cx, cy, baseRad + edgeRad / 2, 0, twopi)
       ctx.stroke()
+    }
+  }
+}
+
+function drawFinish(ctx: CanvasRenderingContext2D, finish: Barrier) {
+  // Checker size is 1/10 the width, height is 4 squares
+  let [x, y, w, _h] = finish.xywh
+  const pad = w / 10
+  x += pad
+  w -= 2 * pad
+  const squareSize = w / 10
+  const nCols = 10
+  const nRows = 4
+  const h = nRows * squareSize
+  for (let row = 0; row < nRows; row++) {
+    for (let col = 0; col < nCols; col++) {
+      ctx.fillStyle = (row + col) % 2 === 0 ? 'white' : 'black'
+      ctx.fillRect(x + col * squareSize, y + row * squareSize, squareSize, squareSize)
     }
   }
 }

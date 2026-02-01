@@ -69,7 +69,7 @@ export function traceObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle)
   ctx.closePath()
 }
 
-function debugCollisionAtMousePos(
+function _debugCollisionAtMousePos(
   ctx: CanvasRenderingContext2D,
   obstacle: Obstacle,
   mousePos: Vec2,

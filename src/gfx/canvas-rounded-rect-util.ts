@@ -83,7 +83,7 @@ export const ROUNDED_RECT_PADDING = 3
 export type Rectangle = [number, number, number, number]
 const shadedColor = '#888'
 const litColor = '#eee'
-const activeShadedColor = '#777'
+const activeShadedColor = '#858585'
 const activeLitColor = '#bbb'
 
 export function drawRoundedRect(
@@ -112,50 +112,48 @@ export function drawRoundedRect(
   ctx.lineWidth = 2 * window.devicePixelRatio
   ctx.stroke()
 
-  if( !skipSlivers ){
-    
+  if (!skipSlivers) {
   // --- Draw lit top sliver ---
-  const sliverFrac = 0.2 // fraction of height for sliver thickness
-  const sliverCurve = 10
-  const sliverPad = pad + 1
-  const sliverR = Math.max(r - 1, 2)
-  const sliverH = Math.max(2, Math.floor((height - 2 * sliverPad) * sliverFrac))
-  ctx.beginPath()
-  ctx.moveTo(x + sliverPad + sliverR, y + sliverPad)
-  ctx.lineTo(x + width - sliverPad - sliverR, y + sliverPad)
-  ctx.quadraticCurveTo(x + width - sliverPad, y + sliverPad, x + width - sliverPad, y + sliverPad + sliverR)
-  ctx.lineTo(x + width - sliverPad, y + sliverPad + sliverH)
+    const sliverFrac = 0.2 // fraction of height for sliver thickness
+    const sliverCurve = 10
+    const sliverPad = pad + 1
+    const sliverR = Math.max(r - 1, 2)
+    const sliverH = Math.max(2, Math.floor((height - 2 * sliverPad) * sliverFrac))
+    ctx.beginPath()
+    ctx.moveTo(x + sliverPad + sliverR, y + sliverPad)
+    ctx.lineTo(x + width - sliverPad - sliverR, y + sliverPad)
+    ctx.quadraticCurveTo(x + width - sliverPad, y + sliverPad, x + width - sliverPad, y + sliverPad + sliverR)
+    ctx.lineTo(x + width - sliverPad, y + sliverPad + sliverH)
 
-  // ctx.lineTo(x + sliverPad, y + sliverPad + sliverH)
-  ctx.quadraticCurveTo(
-    x + width / 2, y + sliverPad + sliverH - sliverCurve, // control
-    x + sliverPad, y + sliverPad + sliverH, // end
-  )
+    // ctx.lineTo(x + sliverPad, y + sliverPad + sliverH)
+    ctx.quadraticCurveTo(
+      x + width / 2, y + sliverPad + sliverH - sliverCurve, // control
+      x + sliverPad, y + sliverPad + sliverH, // end
+    )
 
-  ctx.lineTo(x + sliverPad, y + sliverPad + sliverR)
-  ctx.quadraticCurveTo(x + sliverPad, y + sliverPad, x + sliverPad + sliverR, y + sliverPad)
-  ctx.closePath()
-  ctx.fillStyle = isActive ? activeShadedColor : litColor // top
-  ctx.fill()
+    ctx.lineTo(x + sliverPad, y + sliverPad + sliverR)
+    ctx.quadraticCurveTo(x + sliverPad, y + sliverPad, x + sliverPad + sliverR, y + sliverPad)
+    ctx.closePath()
+    ctx.fillStyle = isActive ? activeShadedColor : litColor // top
+    ctx.fill()
 
-  // --- Draw shaded bottom sliver ---
-  ctx.beginPath()
-  ctx.moveTo(x + sliverPad + sliverR, y + height - sliverPad)
-  ctx.lineTo(x + width - sliverPad - sliverR, y + height - sliverPad)
-  ctx.quadraticCurveTo(x + width - sliverPad, y + height - sliverPad, x + width - sliverPad, y + height - sliverPad - sliverR)
-  ctx.lineTo(x + width - sliverPad, y + height - sliverPad - sliverH)
+    // --- Draw shaded bottom sliver ---
+    ctx.beginPath()
+    ctx.moveTo(x + sliverPad + sliverR, y + height - sliverPad)
+    ctx.lineTo(x + width - sliverPad - sliverR, y + height - sliverPad)
+    ctx.quadraticCurveTo(x + width - sliverPad, y + height - sliverPad, x + width - sliverPad, y + height - sliverPad - sliverR)
+    ctx.lineTo(x + width - sliverPad, y + height - sliverPad - sliverH)
 
-  // ctx.lineTo(x + sliverPad, y + height - sliverPad - sliverH)
-  ctx.quadraticCurveTo(
-    x + width / 2, y + height - sliverPad - sliverH + sliverCurve, // control
-    x + sliverPad, y + height - sliverPad - sliverH, // end
-  )
+    // ctx.lineTo(x + sliverPad, y + height - sliverPad - sliverH)
+    ctx.quadraticCurveTo(
+      x + width / 2, y + height - sliverPad - sliverH + sliverCurve, // control
+      x + sliverPad, y + height - sliverPad - sliverH, // end
+    )
 
-  ctx.lineTo(x + sliverPad, y + height - sliverPad - sliverR)
-  ctx.quadraticCurveTo(x + sliverPad, y + height - sliverPad, x + sliverPad + sliverR, y + height - sliverPad)
-  ctx.closePath()
-  ctx.fillStyle = isActive ? activeLitColor : shadedColor // bottom
-  ctx.fill()
+    ctx.lineTo(x + sliverPad, y + height - sliverPad - sliverR)
+    ctx.quadraticCurveTo(x + sliverPad, y + height - sliverPad, x + sliverPad + sliverR, y + height - sliverPad)
+    ctx.closePath()
+    ctx.fillStyle = isActive ? activeLitColor : shadedColor // bottom
+    ctx.fill()
   }
-
 }

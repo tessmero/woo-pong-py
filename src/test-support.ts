@@ -9,7 +9,7 @@ import { topConfig } from 'configs/imp/top-config'
 import { Gui } from 'guis/gui'
 import { GfxRegion } from 'gfx/gfx-region'
 import type { SimGfx } from 'gfx/imp/sim-gfx'
-import { BottomBarGfx } from 'gfx/imp/bottom-bar-gfx'
+import type { BottomBarGfx } from 'gfx/imp/bottom-bar-gfx'
 import { Graphics } from 'gfx/graphics'
 
 export function getTestSupport(pinballWizard: PinballWizard) {
@@ -36,11 +36,10 @@ export function getTestSupport(pinballWizard: PinballWizard) {
         return (GfxRegion.create('sim-gfx') as SimGfx).locateDiskOnScreen(pinballWizard, diskIndex)
       }
       else {
-
         // locate elemnt in bottom bar gfx
         const gfx = GfxRegion.create('bottom-bar-gfx') as BottomBarGfx
         const rect = gfx.tsLocateElement(id)
-        if( rect ) return rect
+        if (rect) return rect
 
         // locate element in gui
         const guisToCheck = [Gui.create('playing-gui')]
@@ -95,8 +94,8 @@ export function getTestSupport(pinballWizard: PinballWizard) {
     },
 
     getCursorState: () => {
-      let style =  (window as any).cursorForTestSupport  // eslint-disable-line @typescript-eslint/no-explicit-any
-      if( Graphics.cvs.style.cursor === 'pointer' ){
+      let style = (window as any).cursorForTestSupport // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (Graphics.cvs.style.cursor === 'pointer') {
         style = 'pointer'
       }
       return {

@@ -94,7 +94,7 @@ export function drawDiskCrown(
   ctx.closePath()
   ctx.fillStyle = CROWN_FILL // gold color
   ctx.strokeStyle = 'black' // darker gold outline
-  ctx.lineWidth = .4 * VALUE_SCALE
+  ctx.lineWidth = 0.4 * VALUE_SCALE
   ctx.fill()
   ctx.stroke()
   ctx.restore()

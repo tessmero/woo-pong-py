@@ -10,7 +10,7 @@ import { GfxRegion } from 'gfx/gfx-region'
 import type { SimGfx } from 'gfx/imp/sim-gfx'
 import type { PinballWizard } from 'pinball-wizard'
 import { Scrollbar } from 'scrollbar'
-import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
+import { VALUE_SCALE } from 'simulation/constants'
 import { lerp } from 'util/math-util'
 
 export class Camera {

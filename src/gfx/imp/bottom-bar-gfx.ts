@@ -53,8 +53,8 @@ export class BottomBarGfx extends GfxRegion {
     if (this._layout && this._layout[id]) {
       const [x, y, w, h] = this._layout[id]
       return [
-        x / window.devicePixelRatio + Graphics.cssLeft, 
-        y / window.devicePixelRatio, 
+        x / window.devicePixelRatio + Graphics.cssLeft,
+        y / window.devicePixelRatio,
         w, h,
       ]
     }
@@ -140,7 +140,7 @@ export class BottomBarGfx extends GfxRegion {
 
       let fillStyle = isActive ? '#888' : (isHovered ? '#aaa' : '#ccc')
       if (key === 'clock') fillStyle = '#eee'
-      const strokeStyle = 'black'//isActive ? '#fff' : '#000'
+      const strokeStyle = 'black'// isActive ? '#fff' : '#000'
 
       ctx.lineWidth = isHovered ? 4 : 2
       drawRoundedRect(ctx, innerRect, isActive, key === 'clock')
@@ -154,7 +154,7 @@ export class BottomBarGfx extends GfxRegion {
         const [x, y, w, h] = innerRect
         ctx.save()
         ctx.translate(x + w / 2, y + h / 2)
-        setupRubikText(ctx, h, 'black')//isActive ? 'white' : 'black')
+        setupRubikText(ctx, h, 'black')// isActive ? 'white' : 'black')
         ctx.fillText(this.getCurrentTime(pw), 0, 0)
         ctx.restore()
       }

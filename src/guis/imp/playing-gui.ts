@@ -4,7 +4,7 @@
  * Placeholder used for games with no gui elements.
  */
 
-import { BallSelectionPanel, getBspHoveredDiskIndexPe } from 'ball-selection-panel'
+import { BallSelectionPanel } from 'ball-selection-panel'
 import { Graphics } from 'gfx/graphics'
 import type { GuiElement } from 'guis/gui'
 import { Gui } from 'guis/gui'
@@ -145,13 +145,6 @@ export const ballSelectionPanel: PlayingElem = {
       BallSelectionPanel.draw(ctx, pw, rect)
     },
     classes: ['transparent'],
-  },
-  down: ({ pinballWizard, pointerEvent }) => {
-    console.log('playing-gui.ts bsp down')
-    // const i = getBspHoveredDiskIndex(pointerEvent)
-    // pinballWizard.trySelectDisk(i)
-
-    // Graphicscvs.style.setProperty('cursor', 'default')
   },
 }
 

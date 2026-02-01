@@ -285,24 +285,19 @@ export class PinballWizard {
    * @param inputId 'mouse' for mouse, or a touch identifier (number)
    */
   move(rawPos: Vec2, inputId: 'mouse' | number): Vec2 {
-
-    
     if (BallSelectionPanel.isShowing) {
-      console.log('pinball-wizard.ts move bsp shoing')
       const bcr = ballSelectionPanel.htmlElem!.getBoundingClientRect()
       const rect: Rectangle = [bcr.left, bcr.top, bcr.width, bcr.height]
       const screenPos: Vec2 = [rawPos[0] + Graphics.cssLeft, rawPos[1]]
-      console.log(JSON.stringify([rect, screenPos]))
       if (rectContainsPoint(rect, ...screenPos)) {
         const hoveredDisk = getBspHoveredDiskIndex(
           screenPos[0] - rect[0], screenPos[1] - rect[1])
-        if( hoveredDisk !== -1 ){
+        if (hoveredDisk !== -1) {
           this.hoveredDiskIndex = hoveredDisk
           return this.mousePos
         }
       }
     }
-
 
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       const gfx = GfxRegion.create(name as GfxRegionName)
@@ -335,7 +330,7 @@ export class PinballWizard {
       if (rectContainsPoint(rect, ...screenPos)) {
         const clickedDisk = getBspHoveredDiskIndex(
           screenPos[0] - rect[0], screenPos[1] - rect[1])
-        if( clickedDisk !== -1 ){
+        if (clickedDisk !== -1) {
           this.trySelectDisk(clickedDisk)
           return
         }
