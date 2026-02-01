@@ -12,6 +12,7 @@ import { type GfxRegionName } from 'imp-names'
 import { GfxRegion } from './gfx-region'
 import type { ScrollbarGfx } from './imp/scrollbar-gfx'
 import type { SimGfx } from './imp/sim-gfx'
+import { BallSelectionPanel } from 'ball-selection-panel'
 
 // const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
 // const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
@@ -72,12 +73,10 @@ export class Graphics {
     }
 
     // comput glass canvas dimensions wtih big pixels
-    const glassWidth = Math.floor(_root[2] * dpr / Graphics.glassPixelScale)
-    const glassHeight = Math.floor(_root[3] * dpr / Graphics.glassPixelScale)
-    if (glassWidth !== glassCvs.width || glassHeight !== glassCvs.height) {
-      glassCvs.width = glassWidth
-      glassCvs.height = glassHeight
-    }
+    const glassWidth = _root[2] * dpr / Graphics.glassPixelScale
+    const glassHeight = _root[3] * dpr / Graphics.glassPixelScale
+    glassCvs.width = glassWidth
+    glassCvs.height = glassHeight
 
     // bsp always has small pixels
     bspCvs.width = _root[2] * dpr
@@ -105,14 +104,14 @@ export class Graphics {
     // compute sim bounds
     const maxWidth = 600 * dpr
     this.hasSpaceOnSides = (screenWidth > maxWidth)
-    if (this.hasSpaceOnSides && pw && !pw.isTitleScreen) {
-      Graphics.cvs.style.setProperty('border-left', '2px solid black')
-      Graphics.cvs.style.setProperty('border-right', '2px solid black')
-    }
-    else {
-      Graphics.cvs.style.setProperty('border-left', 'none')
-      Graphics.cvs.style.setProperty('border-right', 'none')
-    }
+    // if (this.hasSpaceOnSides && pw && !pw.isTitleScreen) {
+    //   Graphics.cvs.style.setProperty('border-left', '2px solid black')
+    //   Graphics.cvs.style.setProperty('border-right', '2px solid black')
+    // }
+    // else {
+    //   Graphics.cvs.style.setProperty('border-left', 'none')
+    //   Graphics.cvs.style.setProperty('border-right', 'none')
+    // }
     const rootWidth = Math.min(maxWidth, screenWidth)
     const rootWidthPx = Math.floor(rootWidth / dpr)
     const cssHeight = Math.floor(screenHeight / dpr)
@@ -138,7 +137,7 @@ export class Graphics {
 
     const mainCvs = this._getMainCanvas() // new canvas in front
     const glassCvs = this._getGlassCanvas()
-    const bspCvs = this._getGlassCanvas()
+    const bspCvs = this._getBspCanvas()
 
     for (const cvs of ([mainCvs, glassCvs, bspCvs] as const)) {
       cvs.style.setProperty('position', `absolute`)
@@ -157,8 +156,8 @@ export class Graphics {
     this._glassCtx = glassCvs.getContext('2d') as CanvasRenderingContext2D
     this._glassCtx.imageSmoothingEnabled = false
 
-    this._bspCvs = glassCvs
-    this._bspCtx = glassCvs.getContext('2d') as CanvasRenderingContext2D
+    this._bspCvs = bspCvs
+    this._bspCtx = bspCvs.getContext('2d') as CanvasRenderingContext2D
     this._bspCtx.imageSmoothingEnabled = false
 
     this._rootRect = _root
@@ -195,6 +194,7 @@ export class Graphics {
         _root[2], _root[3],
       ],
     }
+    this.revRegionNames = Object.keys(this._pxRegions).reverse() as Array<GfxRegionName>
 
     const gutterHeightPx = _root[3] - 2 * barHeightPx
     this._pxGutters = [
@@ -235,6 +235,7 @@ export class Graphics {
     return document.getElementById('test-canvas') as HTMLCanvasElement
   }
 
+  public static revRegionNames: Array<GfxRegionName> = []
   private static _pxRegions: Partial<Record<GfxRegionName, Rectangle>> = {}
   private static _dpRegions: Partial<Record<GfxRegionName, Rectangle>> = {}
 
@@ -254,10 +255,17 @@ export class Graphics {
     // draw all regions
     Object.keys(this._dpRegions).forEach((gfxName) => {
       let ctx = this._mainCtx
+
       if (gfxName === 'glass-gfx') {
-        ctx = this._glassCtx
+        if (!BallSelectionPanel.isShowing) {
+          return // skip drawing glass effect
+        }
+        // ctx = this._glassCtx
       }
       else if (gfxName === 'bsp-gfx') {
+        if (!BallSelectionPanel.isShowing) {
+          return // skip drawing ball selection panel
+        }
         ctx = this._bspCtx
       }
       GfxRegion.create(gfxName as GfxRegionName)

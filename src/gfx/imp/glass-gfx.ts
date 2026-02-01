@@ -68,6 +68,7 @@ export class GlassGfx extends GfxRegion {
     if (Graphics.pixelAnim === 1) {
       BallSelectionPanel.hide(_pw)
     }
+    return false
   }
 
   touchTile(pos: Vec2): void {
@@ -116,12 +117,19 @@ export class GlassGfx extends GfxRegion {
   }
 
   protected _draw(ctx: CanvasRenderingContext2D, _pw: PinballWizard, _rect: Rectangle) {
-    this._initArrays()
+
     if (!this._opacity) return
+    
+    // ctx.fillStyle = 'red'
+    // ctx.fillRect(10,10,10,10)
+    // const test = true
+    // if( test ) return
+
+    this._initArrays()
     // Draw the low-res opacity field to the offscreen canvas using fillRect
     const N = GlassGfx.GLASS_RES
-    const size = 1 // each pixel is 1x1 on the offscreen canvas
-    ctx.clearRect(0, 0, N, N)
+    const size = Graphics.glassPixelScale // each pixel is 1x1 on the offscreen canvas
+    // ctx.clearRect(0, 0, N*size, N * size)
     ctx.fillStyle = 'black'
     ctx.globalCompositeOperation = 'source-over'
     const xOffsetInt = Math.floor(this._xOffset)
@@ -148,10 +156,10 @@ export class GlassGfx extends GfxRegion {
         const opB = opLB * (1 - xOffsetFrac) + opRB * xOffsetFrac
         // Interpolate vertically
         const interpOp = opT * (1 - yOffsetFrac) + opB * yOffsetFrac
-        const alpha = Math.max(0, Math.min(1, interpOp * Graphics.pixelAnim))
+        let alpha = Math.max(0, Math.min(1, interpOp * Graphics.pixelAnim))
         if (alpha > 0) {
           ctx.globalAlpha = alpha * 0.5
-          ctx.fillRect(x - 0.5, y - 0.5, size, size)
+          ctx.fillRect(x * size - .5, y * size - .5, size, size)
         }
       }
     }

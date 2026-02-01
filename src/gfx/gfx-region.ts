@@ -14,7 +14,7 @@ const _GFX_DEBUG_COLORS: Record<GfxRegionName, string> = {
   'bottom-bar-gfx': 'white',
   'top-bar-gfx': 'lightblue',
   'scrollbar-gfx': 'orange',
-  // 'bsp-gfx': 'violet',
+  'bsp-gfx': 'violet',
   'sim-gfx': 'green',
   'glass-gfx': 'yellow',
 }
@@ -35,7 +35,7 @@ export abstract class GfxRegion {
     this._draw(ctx, pw, rect)
   }
 
-  abstract down(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
+  abstract down(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): boolean
   abstract move(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
   abstract leave(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
   abstract up(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void

@@ -4,7 +4,9 @@
  * Ball selection panel.
  */
 
+import { GfxRegion } from 'gfx/gfx-region'
 import { Graphics } from 'gfx/graphics'
+import { BspGfx } from 'gfx/imp/bsp-gfx'
 import { ballsBtn } from 'guis/imp/playing-gui'
 import type { PinballWizard } from 'pinball-wizard'
 import { type Rectangle } from 'util/math-util'
@@ -20,27 +22,31 @@ export class BallSelectionPanel {
   }
 
   static show(pw: PinballWizard) {
+    Graphics._glassCvs.style.setProperty('display', 'block')
     Graphics._bspCvs.style.setProperty('display', 'block')
     ballsBtn.htmlElem?.classList.add('active')
     Graphics.targetPixelAnim = 1
+    ;(GfxRegion.create('bsp-gfx') as BspGfx).startEntrance()
     pw.onResize()
   }
 
   static hide(pw: PinballWizard, skipResize = false) {
+    Graphics._glassCvs.style.setProperty('display', 'none')
     Graphics._bspCvs.style.setProperty('display', 'none')
     ballsBtn.htmlElem?.classList.remove('active')
     Graphics.targetPixelAnim = 0
+    ;(GfxRegion.create('bsp-gfx') as BspGfx).startExit()
     if (!skipResize) {
       pw.onResize()
     }
   }
 
   static toggle(pw: PinballWizard) {
-    if (Graphics._bspCvs.style.display === 'none') {
-      BallSelectionPanel.show(pw)
+    if (BallSelectionPanel.isShowing) {
+      BallSelectionPanel.hide(pw)
     }
     else {
-      BallSelectionPanel.hide(pw)
+      BallSelectionPanel.show(pw)
     }
   }
 

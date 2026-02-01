@@ -38,6 +38,7 @@ export class ScrollbarGfx extends GfxRegion {
   down(pw: PinballWizard, mousePos: Vec2) {
     pw.camera.pos = this._computeCamPos(pw, mousePos)
     Scrollbar.isDragging = true
+    return false
   }
 
   move(pw: PinballWizard, mousePos: Vec2) {
@@ -197,7 +198,7 @@ export class ScrollbarGfx extends GfxRegion {
     const [cx, cy] = disk.interpolatedPos
 
     ctx.imageSmoothingEnabled = false
-    const edgeRad = VALUE_SCALE * 2 * (isSelected ? 5 : 1)
+    const edgeRad = VALUE_SCALE * 2 * (isSelected ? 5 : 1.5)
     ctx.strokeStyle = isSelected ? CROWN_FILL : 'black'
     ctx.lineWidth = edgeRad
     ctx.fillStyle = getScaledPattern(disk.pattern)

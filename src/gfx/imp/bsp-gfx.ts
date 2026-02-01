@@ -68,9 +68,22 @@ const centerDiskPos = lerp2(diskPositions[4], diskPositions[5])
 const _drawOffset: Vec2 = [0, 0]
 let _drawScale = 1
 
+const entranceDur = 1000
+const exitDur = 1000
+
 export class BspGfx extends GfxRegion {
   static {
     GfxRegion.register('bsp-gfx', () => new BspGfx())
+  }
+
+  _entranceStartTime = 0
+  startEntrance() {
+    this._entranceStartTime = performance.now()
+  }
+
+  _exitStartTime = 0
+  startExit() {
+    this._exitStartTime = performance.now()
   }
 
   down(pw: PinballWizard, mousePos: Vec2) {
@@ -78,9 +91,10 @@ export class BspGfx extends GfxRegion {
       const clickedDisk = getBspHoveredDiskIndex(...mousePos)
       if (clickedDisk !== -1) {
         pw.trySelectDisk(clickedDisk)
-        return
+        return true
       }
     }
+    return false
   }
 
   move(pw: PinballWizard, mousePos: Vec2) {
@@ -102,6 +116,11 @@ export class BspGfx extends GfxRegion {
   }
 
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
+    let testAnim = 1 // 0-1 animation state
+
+    // check if starte ntrance recently
+    const t = performance.now()
+
     // if (cvs.style.display === 'none') {
     //   return // not visible
     // }
@@ -141,9 +160,27 @@ export class BspGfx extends GfxRegion {
       if (!disk) continue
 
       const [x, y] = diskPositions[i]
+
+      const diskEntrStagger = entranceDur * i / DISK_COUNT / 2
+      const diskEntrDur = entranceDur * .5
+      const diskEntrStart = this._entranceStartTime + diskEntrStagger
+
+      const diskExitStagger = exitDur * i / DISK_COUNT / 2
+      const diskExitDur = exitDur * .5
+      const diskExitStart = this._exitStartTime + diskExitStagger
+
+      const entrElapsed = t - diskEntrStart
+      const exitElapsed = t - diskExitStart
+      if (entrElapsed < diskEntrDur) {
+        testAnim = Math.pow(entrElapsed / diskEntrDur, 0.3)
+      }
+      else if (exitElapsed < diskExitDur) {
+        testAnim = 1 - Math.pow(exitElapsed / diskExitDur, 0.3)
+      }
+
       drawDisk(ctx, disk,
         x0 + x * scale, y0 + y * scale,
-        scale,
+        scale * testAnim,
         i === pw.selectedDiskIndex,
         i === pw.hoveredDiskIndex,
         i === pw.followDiskIndex,

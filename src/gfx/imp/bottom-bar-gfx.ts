@@ -67,6 +67,7 @@ export class BottomBarGfx extends GfxRegion {
     if (this._held) {
       clickActions[this._held](pw)
     }
+    return false
   }
 
   private _hovered: LayoutKey | null = null

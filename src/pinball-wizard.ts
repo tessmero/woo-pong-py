@@ -301,10 +301,13 @@ export class PinballWizard {
   down(rawPos: Vec2, inputId: 'mouse' | number) {
     const _mousePos = this.move(rawPos, inputId)
 
-    for (const [name, rect] of Object.entries(Graphics.regions)) {
+    // for (const [name, rect] of Object.entries(Graphics.regions)) {
+    for (const name of Graphics.revRegionNames) {
+      const rect = Graphics.regions[name] as Rectangle
       if (rectContainsPoint(rect, ...rawPos)) {
         const gfx = GfxRegion.create(name as GfxRegionName)
-        gfx.down(this, rawPos, inputId)
+        const isConsumed = gfx.down(this, rawPos, inputId)
+        if (isConsumed) break
       }
     }
     // this.isMouseDown = true

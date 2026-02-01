@@ -25,12 +25,13 @@ export class SimGfx extends GfxRegion {
 
   down(pw: PinballWizard, mousePos: Vec2) {
     if (BallSelectionPanel.isShowing) {
-      return
+      return false
     }
     pw.isMouseDown = true
     pw.dragY = mousePos[1]
     pw.trySelectDisk(pw.hoveredDiskIndex)
     Graphics.cvs.style.setProperty('cursor', 'default')
+    return false
   }
 
   screenToSimPos(screenPos: Vec2): Vec2 {
