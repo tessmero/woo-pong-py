@@ -284,14 +284,33 @@ export class PinballWizard {
    * @param mousePos Position of input
    * @param inputId 'mouse' for mouse, or a touch identifier (number)
    */
-  move(_mousePos: Vec2, inputId: 'mouse' | number): Vec2 {
+  move(rawPos: Vec2, inputId: 'mouse' | number): Vec2 {
+
+    
+    if (BallSelectionPanel.isShowing) {
+      console.log('pinball-wizard.ts move bsp shoing')
+      const bcr = ballSelectionPanel.htmlElem!.getBoundingClientRect()
+      const rect: Rectangle = [bcr.left, bcr.top, bcr.width, bcr.height]
+      const screenPos: Vec2 = [rawPos[0] + Graphics.cssLeft, rawPos[1]]
+      console.log(JSON.stringify([rect, screenPos]))
+      if (rectContainsPoint(rect, ...screenPos)) {
+        const hoveredDisk = getBspHoveredDiskIndex(
+          screenPos[0] - rect[0], screenPos[1] - rect[1])
+        if( hoveredDisk !== -1 ){
+          this.hoveredDiskIndex = hoveredDisk
+          return this.mousePos
+        }
+      }
+    }
+
+
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       const gfx = GfxRegion.create(name as GfxRegionName)
-      if (rectContainsPoint(rect, ..._mousePos)) {
-        if (typeof gfx.move === 'function') gfx.move(this, _mousePos, inputId)
+      if (rectContainsPoint(rect, ...rawPos)) {
+        if (typeof gfx.move === 'function') gfx.move(this, rawPos, inputId)
       }
       else {
-        if (typeof gfx.leave === 'function') gfx.leave(this, _mousePos, inputId)
+        if (typeof gfx.leave === 'function') gfx.leave(this, rawPos, inputId)
       }
     }
     return this.mousePos
@@ -314,10 +333,12 @@ export class PinballWizard {
       const screenPos: Vec2 = [rawPos[0] + Graphics.cssLeft, rawPos[1]]
       console.log(JSON.stringify([rect, screenPos]))
       if (rectContainsPoint(rect, ...screenPos)) {
-        const hoveredDisk = getBspHoveredDiskIndex(
+        const clickedDisk = getBspHoveredDiskIndex(
           screenPos[0] - rect[0], screenPos[1] - rect[1])
-        console.log('pinball-wizard.ts down bsp contains', hoveredDisk)
-        return
+        if( clickedDisk !== -1 ){
+          this.trySelectDisk(clickedDisk)
+          return
+        }
       }
     }
 

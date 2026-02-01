@@ -69,9 +69,11 @@ export class Camera {
       roomIndex = Math.max(0, Math.min(rooms.length - 1, roomIndex))
       const room = rooms[roomIndex]
 
-      const flipperHeight = room.bounds[1] + room.bounds[3]
-      const viewHeight = pinballWizard.simViewRect[3]
-      const targetPos = -(flipperHeight - viewHeight) - 25 * DISK_RADIUS
+      const targetPos = -room.bounds[1] - room.bounds[3] / 2
+
+      // const flipperHeight = room.bounds[1] + room.bounds[3]
+      // const viewHeight = pinballWizard.simViewRect[3]
+      // const targetPos = -(flipperHeight - viewHeight) - 25 * DISK_RADIUS
 
       this.pos = lerp(this.pos, targetPos, this._snapSpeed * dt)
     }

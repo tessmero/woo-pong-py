@@ -6,7 +6,7 @@
 
 import type { DiskPattern } from 'gfx/disk-gfx-util'
 import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx-util'
-import { Graphics } from 'gfx/graphics'
+import { CROWN_FILL, Graphics } from 'gfx/graphics'
 import { repaintDiagram } from 'guis/gui-html-elements'
 import { ballsBtn, ballSelectionPanel } from 'guis/imp/playing-gui'
 import type { PinballWizard } from 'pinball-wizard'
@@ -173,6 +173,8 @@ export class BallSelectionPanel {
       const [x, y] = diskPositions[i]
       drawDisk(ctx, disk,
         x0 + x, y0 + y,
+        i === pw.selectedDiskIndex,
+        i === pw.hoveredDiskIndex,
       )
     }
   }
@@ -185,8 +187,8 @@ export function getBspHoveredDiskIndexPe(e: PointerEvent): number {
 }
 
 export function getBspHoveredDiskIndex(offsetX: number, offsetY: number): number {
-  const mx = offsetX * window.devicePixelRatio
-  const my = offsetY * window.devicePixelRatio
+  const mx = -_drawOffset[0] + offsetX * window.devicePixelRatio
+  const my = -_drawOffset[1] +offsetY * window.devicePixelRatio
   for (const [diskIndex, [x, y]] of diskPositions.entries()) {
     const dx = x - mx
     const dy = y - my
@@ -199,25 +201,49 @@ export function getBspHoveredDiskIndex(offsetX: number, offsetY: number): number
   return -1
 }
 
+
 function drawDisk(
   ctx: CanvasRenderingContext2D, disk: Disk,
   cx: number, cy: number,
+  isSelected = false, isHovered = false,
 ) {
-  ctx.beginPath()
 
   const [x0, y0] = disk.interpolatedPos.map(v => -v / VALUE_SCALE)
 
   ctx.save()
   ctx.translate(x0, y0)
+  ctx.beginPath()
   ctx.moveTo(cx - x0, cy - y0)
   ctx.arc(cx - x0, cy - y0, diskRadius, 0, twopi)
-  ctx.lineWidth = 5
-  ctx.lineCap = 'round'
-  ctx.lineJoin = 'round'
-  ctx.strokeStyle = 'black'
-  ctx.stroke()
+    ctx.lineWidth = isSelected ? 20 : 5
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+      ctx.strokeStyle = 'black';
+      ctx.stroke();
   ctx.fillStyle = getScaledPattern(disk.pattern)
   ctx.fill()
+
+    
+    if (isSelected) {
+      ctx.lineWidth = 5
+  ctx.beginPath()
+  const crownRad = diskRadius + 5
+  ctx.moveTo(cx - x0 + crownRad, cy - y0)
+  ctx.arc(cx - x0, cy - y0, crownRad, 0, twopi)
+      ctx.strokeStyle = CROWN_FILL;
+      ctx.stroke();
+    }
+
+    if (isHovered) {
+      ctx.lineWidth = 5
+  ctx.beginPath()
+  const haloRad = diskRadius + 10
+  ctx.moveTo(cx - x0 + haloRad, cy - y0)
+  ctx.arc(cx - x0, cy - y0, haloRad, 0, twopi)
+      ctx.strokeStyle = 'black';
+      ctx.stroke();
+    }
+
   ctx.restore()
 }
 
