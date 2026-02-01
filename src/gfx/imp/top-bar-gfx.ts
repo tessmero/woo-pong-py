@@ -12,6 +12,7 @@ import { STEPS_BEFORE_BRANCH, stepsToSeconds } from 'simulation/constants'
 import { formatTime, getStatusText } from 'guis/imp/playing-gui'
 import { setupRubikText } from '../canvas-text-util'
 import { OBSTACLE_FILL } from 'gfx/graphics'
+import { fillFrameBetweenRectAndRounded } from 'gfx/canvas-rounded-rect-util'
 
 export class TopBarGfx extends GfxRegion {
   static {
@@ -39,13 +40,14 @@ export class TopBarGfx extends GfxRegion {
 
     const progress = Math.min(1, pw.activeSim.stepCount / STEPS_BEFORE_BRANCH)
 
-
-    ctx.fillStyle = '#fff'
+    ctx.fillStyle = '#ccc'
     ctx.fillRect(x, y, w, h)
-    
-    ctx.strokeStyle = OBSTACLE_FILL
-    ctx.lineWidth = 10
-    ctx.strokeRect(x, y, w, h)
+
+    const pad = 8
+    fillFrameBetweenRectAndRounded(ctx,
+      [x + pad, y + pad, w - 2 * pad, h - 2 * pad],
+      pad,
+    )
 
     ctx.fillStyle = OBSTACLE_FILL
     ctx.fillRect(x, y, w * progress, h)

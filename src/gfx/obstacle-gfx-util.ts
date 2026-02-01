@@ -43,8 +43,8 @@ export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard) 
     // debug detailed points
     // debugDetailedPoints(ctx, obstacle)
 
-    // debug just adjusted position for mouse
-    debugCollisionAtMousePos(ctx, obstacle, pw.simMousePos)
+    // // debug just adjusted position for mouse
+    // debugCollisionAtMousePos(ctx, obstacle, pw.simMousePos)
 
     // // debug
     // ctx.strokeStyle = 'red'

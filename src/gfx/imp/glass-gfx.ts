@@ -122,7 +122,7 @@ export class GlassGfx extends GfxRegion {
     const N = GlassGfx.GLASS_RES
     const size = 1 // each pixel is 1x1 on the offscreen canvas
     ctx.clearRect(0, 0, N, N)
-    ctx.fillStyle = 'black'
+    ctx.fillStyle = 'white'
     ctx.globalCompositeOperation = 'source-over'
     const xOffsetInt = Math.floor(this._xOffset)
     const xOffsetFrac = this._xOffset - xOffsetInt

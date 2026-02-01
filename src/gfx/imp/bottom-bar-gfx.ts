@@ -138,12 +138,12 @@ export class BottomBarGfx extends GfxRegion {
       // }
       // ctx.restore()
 
-      let fillStyle = isActive ? '#000' : (isHovered ? '#ccc' : '#eee')
+      let fillStyle = isActive ? '#888' : (isHovered ? '#aaa' : '#ccc')
       if (key === 'clock') fillStyle = '#eee'
-      const strokeStyle = isActive ? '#fff' : '#000'
+      const strokeStyle = 'black'//isActive ? '#fff' : '#000'
 
       ctx.lineWidth = isHovered ? 4 : 2
-      drawRoundedRect(ctx, innerRect, fillStyle, strokeStyle)
+      drawRoundedRect(ctx, innerRect, isActive)
 
       // // Draw border
       // ctx.strokeStyle = isHovered ? 'red' : (isActive ? 'white' : 'blue')
@@ -154,7 +154,7 @@ export class BottomBarGfx extends GfxRegion {
         const [x, y, w, h] = innerRect
         ctx.save()
         ctx.translate(x + w / 2, y + h / 2)
-        setupRubikText(ctx, h, isActive ? 'white' : 'black')
+        setupRubikText(ctx, h, 'black')//isActive ? 'white' : 'black')
         ctx.fillText(this.getCurrentTime(pw), 0, 0)
         ctx.restore()
       }
@@ -198,12 +198,12 @@ export class BottomBarGfx extends GfxRegion {
       }
       const drawX = x + (w - drawW) / 2
       const drawY = y + (h - drawH) / 2
-      ctx.save()
-      if (active) {
-        ctx.globalCompositeOperation = 'destination-out'
-      }
+      // ctx.save()
+      // if (active) {
+      //   ctx.globalCompositeOperation = 'destination-out'
+      // }
       ctx.drawImage(img, drawX, drawY, drawW, drawH)
-      ctx.restore()
+      // ctx.restore()
     }
     else {
       // Draw a placeholder

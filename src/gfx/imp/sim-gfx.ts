@@ -182,7 +182,7 @@ export class SimGfx extends GfxRegion {
   }
 
   public fillRoundedMarginCorners(ctx: CanvasRenderingContext2D, _pw: PinballWizard){
-    fillFrameBetweenRectAndRounded(ctx, this._drawRect, OBSTACLE_FILL)
+    fillFrameBetweenRectAndRounded(ctx, this._drawRect)
   }
 
   private _drawRect: Rectangle = [1, 1, 1, 1]

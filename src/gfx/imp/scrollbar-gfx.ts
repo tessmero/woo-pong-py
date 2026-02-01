@@ -63,7 +63,7 @@ export class ScrollbarGfx extends GfxRegion {
   public isObstacleRepaintQueued = true
 
   public fillRoundedMarginCorners(ctx: CanvasRenderingContext2D, _pw: PinballWizard) {
-    fillFrameBetweenRectAndRounded(ctx, this._drawRect, OBSTACLE_FILL)
+    fillFrameBetweenRectAndRounded(ctx, this._drawRect)
   }
 
   protected _draw(
