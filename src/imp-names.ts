@@ -78,9 +78,9 @@ export const GFX_REGION = {
     // always visible
     'sim-gfx', 'scrollbar-gfx', 'bottom-bar-gfx', 'top-bar-gfx',
 
-    // 'bsp-gfx', // toggleable ball selection panel
+    'glass-gfx', // overlay that covers main view
 
-    'glass-gfx', // effect overlay that covers all other regions
+    'bsp-gfx', // toggleable ball selection panel
   ],
   SOURCES: ['src/gfx/imp/'],
 } as const satisfies ImpManifest

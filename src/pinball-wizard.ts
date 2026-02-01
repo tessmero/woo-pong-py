@@ -4,7 +4,7 @@
  * Main object constructed once in main.ts.
  */
 
-import { BallSelectionPanel, getBspHoveredDiskIndex } from 'ball-selection-panel'
+import { BallSelectionPanel } from 'ball-selection-panel'
 import { Camera } from 'camera'
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
 import { topConfig } from 'configs/imp/top-config'
@@ -50,6 +50,7 @@ export class PinballWizard {
   public loadingState: string | null = 'A'
   public isTitleScreen = true
   public selectedDiskIndex = -1
+  public followDiskIndex = -1
   public currentRoomIndex = 0 // greatest room index that has had balls
 
   public camera = new Camera()
@@ -240,9 +241,9 @@ export class PinballWizard {
     // this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)
 
     // jump to room with selected ball
-    if (this.selectedDiskIndex !== -1) {
+    if (this.followDiskIndex !== -1) {
       if (this.camera.isIdle) {
-        const pos = this.activeSim.disks[this.selectedDiskIndex].interpolatedPos
+        const pos = this.activeSim.disks[this.followDiskIndex].interpolatedPos
         const roomIndex = this.activeSim.level.rooms.findIndex(
           room => rectContainsPoint(room.bounds, ...pos),
         )
@@ -280,32 +281,15 @@ export class PinballWizard {
   public readonly simMousePos: Vec2 = [0, 0]
   public readonly simViewRect: Rectangle = [1, 1, 1, 1]
   public hoveredDiskIndex = -1
-  /**
-   * @param mousePos Position of input
-   * @param inputId 'mouse' for mouse, or a touch identifier (number)
-   */
-  move(rawPos: Vec2, inputId: 'mouse' | number): Vec2 {
-    if (BallSelectionPanel.isShowing) {
-      const bcr = ballSelectionPanel.htmlElem!.getBoundingClientRect()
-      const rect: Rectangle = [bcr.left, bcr.top, bcr.width, bcr.height]
-      const screenPos: Vec2 = [rawPos[0] + Graphics.cssLeft, rawPos[1]]
-      if (rectContainsPoint(rect, ...screenPos)) {
-        const hoveredDisk = getBspHoveredDiskIndex(
-          screenPos[0] - rect[0], screenPos[1] - rect[1])
-        if (hoveredDisk !== -1) {
-          this.hoveredDiskIndex = hoveredDisk
-          return this.mousePos
-        }
-      }
-    }
 
+  move(rawPos: Vec2, inputId: 'mouse' | number): Vec2 {
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       const gfx = GfxRegion.create(name as GfxRegionName)
       if (rectContainsPoint(rect, ...rawPos)) {
-        if (typeof gfx.move === 'function') gfx.move(this, rawPos, inputId)
+        gfx.move(this, rawPos, inputId)
       }
       else {
-        if (typeof gfx.leave === 'function') gfx.leave(this, rawPos, inputId)
+        gfx.leave(this, rawPos, inputId)
       }
     }
     return this.mousePos
@@ -314,33 +298,13 @@ export class PinballWizard {
   public isMouseDown = false
   public dragY = 0
 
-  /**
-   * @param rawPos Position of input
-   * @param inputId 'mouse' for mouse, or a touch identifier (number)
-   */
   down(rawPos: Vec2, inputId: 'mouse' | number) {
     const _mousePos = this.move(rawPos, inputId)
-
-    if (BallSelectionPanel.isShowing) {
-      console.log('pinball-wizard.ts down bsp shoing')
-      const bcr = ballSelectionPanel.htmlElem!.getBoundingClientRect()
-      const rect: Rectangle = [bcr.left, bcr.top, bcr.width, bcr.height]
-      const screenPos: Vec2 = [rawPos[0] + Graphics.cssLeft, rawPos[1]]
-      console.log(JSON.stringify([rect, screenPos]))
-      if (rectContainsPoint(rect, ...screenPos)) {
-        const clickedDisk = getBspHoveredDiskIndex(
-          screenPos[0] - rect[0], screenPos[1] - rect[1])
-        if (clickedDisk !== -1) {
-          this.trySelectDisk(clickedDisk)
-          return
-        }
-      }
-    }
 
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       if (rectContainsPoint(rect, ...rawPos)) {
         const gfx = GfxRegion.create(name as GfxRegionName)
-        if (typeof gfx.down === 'function') gfx.down(this, rawPos, inputId)
+        gfx.down(this, rawPos, inputId)
       }
     }
     // this.isMouseDown = true
@@ -349,24 +313,24 @@ export class PinballWizard {
     // Graphics.cvs.style.setProperty('cursor', 'default')
   }
 
-  /**
-   * @param rawPos Position of input
-   * @param inputId 'mouse' for mouse, or a touch identifier (number)
-   */
   up(rawPos: Vec2, inputId: 'mouse' | number) {
     for (const [name, _rect] of Object.entries(Graphics.regions)) {
       // if (rectContainsPoint(rect, ...rawPos)) {
       const gfx = GfxRegion.create(name as GfxRegionName)
-      if (typeof gfx.up === 'function') gfx.up(this, rawPos, inputId)
+      gfx.up(this, rawPos, inputId)
       // }
     }
   }
 
   trySelectDisk(diskIndex: number) {
     if (diskIndex === -1) return
-    if (this.hasBranched) return
+    if (this.hasBranched) {
+      this.followDiskIndex = diskIndex
+      return
+    }
 
     this.selectedDiskIndex = diskIndex
+    this.followDiskIndex = diskIndex
     BallSelectionPanel.isRepaintQueued = true
 
     if (this._isHalted) {

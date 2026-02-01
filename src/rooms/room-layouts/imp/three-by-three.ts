@@ -15,7 +15,7 @@ export class ThreeByThree extends RoomLayout {
 
   computePositions(): Array<[number, Vec2]> {
     const dx = 270000
-    const dy = 220000
+    const dy = 270000
     const x0 = 150000
     const y0 = 140000
     const positions: Array<[number, Vec2]> = []

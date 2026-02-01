@@ -138,12 +138,10 @@ export class BottomBarGfx extends GfxRegion {
       // }
       // ctx.restore()
 
-      let fillStyle = isActive ? '#888' : (isHovered ? '#aaa' : '#ccc')
-      if (key === 'clock') fillStyle = '#eee'
-      const strokeStyle = 'black'// isActive ? '#fff' : '#000'
-
-      ctx.lineWidth = isHovered ? 4 : 2
-      drawRoundedRect(ctx, innerRect, isActive, key === 'clock')
+      drawRoundedRect(ctx, innerRect, isActive,
+        isHovered && key !== 'clock', // no change when hovering over clock
+        key === 'clock', // no light/shadow slivers for clock
+      )
 
       // // Draw border
       // ctx.strokeStyle = isHovered ? 'red' : (isActive ? 'white' : 'blue')
@@ -220,10 +218,12 @@ export class BottomBarGfx extends GfxRegion {
   private _computeLayout(rect: Rectangle) {
     this._layoutBounds = rect
     let [x, y, w, h] = rect
-    x += gutterPx
-    y += ROUNDED_RECT_PADDING
-    w -= 2 * (gutterPx)
-    h -= 2 * ROUNDED_RECT_PADDING
+    const shrinkX = gutterPx + 2
+    const shrinkY = ROUNDED_RECT_PADDING + 2
+    x += shrinkX
+    y += shrinkY
+    w -= 2 * shrinkX
+    h -= 2 * shrinkY
 
     const clockWidthFactor = 3 // how many btn widths in clock width
     const btnWidth = w / (5 + clockWidthFactor)

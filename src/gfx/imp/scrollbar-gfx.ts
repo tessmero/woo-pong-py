@@ -18,7 +18,9 @@ import type { Obstacle } from 'simulation/obstacle'
 import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from 'gfx/canvas-rounded-rect-util'
 import type { Barrier } from 'simulation/barrier'
 
-const buffer = document.createElement('canvas')
+const buffer = (typeof document === 'undefined')
+  ? null
+  : document.createElement('canvas') as HTMLCanvasElement
 
 export class ScrollbarGfx extends GfxRegion {
   static {
@@ -29,21 +31,25 @@ export class ScrollbarGfx extends GfxRegion {
   private _drawRect: Rectangle = [1, 1, 1, 1]
   public isRepaintQueued = false
 
-  down(_pw: PinballWizard, _mousePos: Vec2) {
-    _pw.camera.pos = -(_mousePos[1] * window.devicePixelRatio - this._drawRect[1] / 2) / Scrollbar.drawScale
+  private _computeCamPos(pw: PinballWizard, mousePos: Vec2): number {
+    return -(mousePos[1] * window.devicePixelRatio - this._drawRect[1]) / Scrollbar.drawScale
+  }
+
+  down(pw: PinballWizard, mousePos: Vec2) {
+    pw.camera.pos = this._computeCamPos(pw, mousePos)
     Scrollbar.isDragging = true
   }
 
-  move(_pw: PinballWizard, _mousePos: Vec2) {
+  move(pw: PinballWizard, mousePos: Vec2) {
     if (Scrollbar.isDragging) {
-      _pw.camera.pos = -(_mousePos[1] * window.devicePixelRatio - this._drawRect[1] / 2) / Scrollbar.drawScale
+      pw.camera.pos = this._computeCamPos(pw, mousePos)
     }
   }
 
-  leave(_pw: PinballWizard, _mousePos: Vec2) {
+  leave(pw: PinballWizard, mousePos: Vec2) {
     if (Scrollbar.isDragging) {
       // user started drag in scrollbar, now moving in another region while scrollbar is held
-      _pw.camera.pos = -(_mousePos[1] * window.devicePixelRatio - this._drawRect[1]) / Scrollbar.drawScale
+      pw.camera.pos = this._computeCamPos(pw, mousePos)
     }
   }
 
@@ -88,7 +94,7 @@ export class ScrollbarGfx extends GfxRegion {
     strokeInnerRoundedRect(ctx, rect, 'black')
 
     // Draw obstacles from buffer
-    if (sim && sim.obstacles.length > 0) {
+    if (buffer && sim && sim.obstacles.length > 0) {
       // Use a simple sim id (could be a hash, here just reference)
       const _simId = sim
       if (!this._obstacleBuffer || this.isObstacleRepaintQueued) {
@@ -110,8 +116,6 @@ export class ScrollbarGfx extends GfxRegion {
           bctx.stroke()
         }
         drawFinish(bctx, sim.finish)
-
-        
 
         // bctx.restore()
         this._obstacleBuffer = buffer

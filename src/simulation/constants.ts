@@ -17,7 +17,7 @@ export const SPEEDS: Record<Speed, number> = {
 export const DISK_COUNT = 10
 export const BOBRICK_COUNT = 30
 
-export const ROOM_COUNT = 10
+export const ROOM_COUNT = 15
 
 export const RESTITUTION = 1
 
@@ -25,7 +25,7 @@ export const STEP_DURATION = 4
 export const VALUE_SCALE = 1e4
 export const OBSTACLE_DETAIL_SCALE = 1e3
 
-export const DISK_RADIUS = 3 * VALUE_SCALE
+export const DISK_RADIUS = 4 * VALUE_SCALE
 export const DISK_RADSQ = DISK_RADIUS * DISK_RADIUS
 
 // radius for purposes of clicking disks in simulation

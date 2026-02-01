@@ -29,8 +29,8 @@ export class Honeycomb extends RoomLayout {
   }
 
   computePositions(): Array<[number, Vec2]> {
-    const dx = 22 * VALUE_SCALE
-    const dy = 22 * VALUE_SCALE
+    const dx = 28 * VALUE_SCALE
+    const dy = 25 * VALUE_SCALE
     const diskRadius = DISK_RADIUS
     const padding = Math.floor(DISK_RADIUS * 0.1)
 
@@ -60,16 +60,16 @@ export class Honeycomb extends RoomLayout {
     // center obstacle in it's own group
     positions[centerIndex][0] = 1
 
-    // add 4 obstacles at corners
-    const dxc = 230000
-    const dyc = 190000
-    const x0c = 150000
-    const y0c = 140000
-    for (let row = 0; row < 4; row += 3) {
-      for (let col = 0; col < 4; col += 3) {
-        positions.push([2, [x0c + col * dxc, y0c + row * dyc]])
-      }
-    }
+    // // add 4 obstacles at corners
+    // const dxc = 230000
+    // const dyc = 190000
+    // const x0c = 150000
+    // const y0c = 140000
+    // for (let row = 0; row < 4; row += 3) {
+    //   for (let col = 0; col < 4; col += 3) {
+    //     positions.push([2, [x0c + col * dxc, y0c + row * dyc]])
+    //   }
+    // }
 
     return positions
   }

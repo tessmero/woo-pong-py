@@ -22,7 +22,7 @@ export const OBSTACLE_STROKE = '#000'
 
 const pixelAnimSpeed = 8e-3// fraction per ms
 
-export const gutterPx = 4
+export const gutterPx = 3
 const leftGutterWidthPx = gutterPx
 const midGutterWidthPx = gutterPx
 const rightGutterWidthPx = gutterPx
@@ -44,6 +44,7 @@ export class Graphics {
       this.pixelAnim = Math.max(this.targetPixelAnim, this.pixelAnim - delta)
     }
     Graphics._glassCvs.style.setProperty('display', this.pixelAnim === 0 ? 'none' : 'block')
+    Graphics._bspCvs.style.setProperty('display', this.pixelAnim === 0 ? 'none' : 'block')
 
     this._updateCanvasDims() // update width and height if necessary
   }
@@ -54,27 +55,33 @@ export class Graphics {
 
   private static _rootRect: Rectangle = [1, 1, 1, 1]
   private static _updateCanvasDims() {
+    const dpr = window.devicePixelRatio
     const _root = Graphics._rootRect
     const mainCvs = Graphics._mainCvs
     const glassCvs = Graphics._glassCvs
+    const bspCvs = Graphics._bspCvs
 
     // compute main canvas dimensions (maybe big pixels)
-    const mainWidth = Math.floor(_root[2] * window.devicePixelRatio / Graphics.mainPixelScale)
-    const mainHeight = Math.floor(_root[3] * window.devicePixelRatio / Graphics.mainPixelScale)
+    const mainWidth = Math.floor(_root[2] * dpr / Graphics.mainPixelScale)
+    const mainHeight = Math.floor(_root[3] * dpr / Graphics.mainPixelScale)
     if (mainWidth !== mainCvs.width || mainHeight !== mainCvs.height) {
       mainCvs.width = mainWidth
       mainCvs.height = mainHeight
-      const scale = mainWidth / (_root[2] * window.devicePixelRatio)
+      const scale = mainWidth / (_root[2] * dpr)
       this._mainCtx.setTransform(scale, 0, 0, scale, 0, 0)
     }
 
     // comput glass canvas dimensions wtih big pixels
-    const glassWidth = _root[2] * window.devicePixelRatio / Graphics.glassPixelScale
-    const glassHeight = _root[3] * window.devicePixelRatio / Graphics.glassPixelScale
+    const glassWidth = Math.floor(_root[2] * dpr / Graphics.glassPixelScale)
+    const glassHeight = Math.floor(_root[3] * dpr / Graphics.glassPixelScale)
     if (glassWidth !== glassCvs.width || glassHeight !== glassCvs.height) {
       glassCvs.width = glassWidth
       glassCvs.height = glassHeight
     }
+
+    // bsp always has small pixels
+    bspCvs.width = _root[2] * dpr
+    bspCvs.height = _root[3] * dpr
   }
 
   // public static isTitleScreen = true
@@ -84,7 +91,7 @@ export class Graphics {
     // return Math.floor(4 + this.pixelAnim * 6)// physical pixels per big pixel
   }
 
-  public static glassPixelScale = 40 // physical pixels per big pixel
+  public static glassPixelScale = 80 // physical pixels per big pixel
 
   public static hasSpaceOnSides = false // if true, draw extra outer left and right edges
 
@@ -121,7 +128,7 @@ export class Graphics {
       simCssWidth = rootWidthPx - scrollbarWidth - leftGutterWidthPx - midGutterWidthPx - rightGutterWidthPx
     }
 
-    // test new graphics
+    //
     const _root: Rectangle = [
       simCssLeft, 0,
       rootWidthPx,
@@ -131,8 +138,9 @@ export class Graphics {
 
     const mainCvs = this._getMainCanvas() // new canvas in front
     const glassCvs = this._getGlassCanvas()
+    const bspCvs = this._getGlassCanvas()
 
-    for (const cvs of ([mainCvs, glassCvs] as const)) {
+    for (const cvs of ([mainCvs, glassCvs, bspCvs] as const)) {
       cvs.style.setProperty('position', `absolute`)
       cvs.style.setProperty('left', `${_root[0]}px`)
       cvs.style.setProperty('top', `${_root[1]}px`)
@@ -149,10 +157,14 @@ export class Graphics {
     this._glassCtx = glassCvs.getContext('2d') as CanvasRenderingContext2D
     this._glassCtx.imageSmoothingEnabled = false
 
+    this._bspCvs = glassCvs
+    this._bspCtx = glassCvs.getContext('2d') as CanvasRenderingContext2D
+    this._bspCtx.imageSmoothingEnabled = false
+
     this._rootRect = _root
     this._updateCanvasDims()
 
-    const barHeightPx = 60 / dpr
+    const barHeightPx = 50 // / dpr
 
     this._pxRegions = {
       'sim-gfx': [
@@ -175,6 +187,10 @@ export class Graphics {
         barHeightPx,
       ],
       'glass-gfx': [
+        0, 0,
+        _root[2], _root[3],
+      ],
+      'bsp-gfx': [
         0, 0,
         _root[2], _root[3],
       ],
@@ -211,6 +227,10 @@ export class Graphics {
     return document.getElementById('glass-canvas') as HTMLCanvasElement
   }
 
+  static _getBspCanvas() {
+    return document.getElementById('bsp-canvas') as HTMLCanvasElement
+  }
+
   static _getMainCanvas() {
     return document.getElementById('test-canvas') as HTMLCanvasElement
   }
@@ -225,13 +245,21 @@ export class Graphics {
   public static _mainCtx: CanvasRenderingContext2D
   public static _glassCvs: HTMLCanvasElement
   public static _glassCtx: CanvasRenderingContext2D
+  public static _bspCvs: HTMLCanvasElement
+  public static _bspCtx: CanvasRenderingContext2D
 
   static get regions() { return Graphics._pxRegions }
 
   static draw(pw: PinballWizard) {
     // draw all regions
     Object.keys(this._dpRegions).forEach((gfxName) => {
-      const ctx = gfxName === 'glass-gfx' ? this._glassCtx : this._mainCtx
+      let ctx = this._mainCtx
+      if (gfxName === 'glass-gfx') {
+        ctx = this._glassCtx
+      }
+      else if (gfxName === 'bsp-gfx') {
+        ctx = this._bspCtx
+      }
       GfxRegion.create(gfxName as GfxRegionName)
         .draw(ctx, pw, this._dpRegions[gfxName])
     })

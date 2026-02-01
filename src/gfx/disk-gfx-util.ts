@@ -148,7 +148,7 @@ export type DiskPattern = (typeof DISK_PATTERNS)[number]
 
 function createHexDotsPattern(
   dotColor = '#000', bgColor = '#fff',
-  dotRadius = 12, spacing = 32,
+  dotRadius = 24, spacing = 64,
 ) {
   if (typeof document === 'undefined') return null
   const c = document.createElement('canvas')
@@ -291,15 +291,15 @@ export const PATTERN_CANVASES = {
   'h-stripe': createHorizontalStripePattern(),
   'checkered': createCheckeredPattern(),
   'hex-a': createHexDotsPattern('#000', '#fff'),
-  'hex-b': createHexDotsPattern('#fff', '#000', 4),
+  'hex-b': createHexDotsPattern('#fff', '#000', 10),
 } as const satisfies Partial<Record<DiskPattern, HTMLCanvasElement | null>>
 
 export const PATTERN_SCALES: Record<DiskPattern, number> = {
   'black': VALUE_SCALE,
   'white': VALUE_SCALE,
-  'h-stripe': VALUE_SCALE,
-  'v-stripe': VALUE_SCALE,
-  'checkered': VALUE_SCALE / 50,
+  'h-stripe': VALUE_SCALE * 2,
+  'v-stripe': VALUE_SCALE * 2,
+  'checkered': VALUE_SCALE / 25,
   'hex-a': VALUE_SCALE / 10,
   'hex-b': VALUE_SCALE / 10,
 }

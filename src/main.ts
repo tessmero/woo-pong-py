@@ -103,7 +103,7 @@ async function main() {
   _initListeners(pinballWizard)
   pinballWizard.loadingState = 'D'
   // Scrollbar.initListeners(pinballWizard)
-  BallSelectionPanel.initListeners(pinballWizard)
+  // BallSelectionPanel.initListeners(pinballWizard)
   pinballWizard.loadingState = 'E'
   await _initLuts(startBtn)
   pinballWizard.loadingState = 'F'

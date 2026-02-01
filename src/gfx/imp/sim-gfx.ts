@@ -13,6 +13,7 @@ import { drawDisk, drawDiskCrown, drawDiskHalo } from 'gfx/disk-gfx-util'
 import { drawObstacles } from 'gfx/obstacle-gfx-util'
 import type { Barrier } from 'simulation/barrier'
 import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from '../canvas-rounded-rect-util'
+import { BallSelectionPanel } from 'ball-selection-panel'
 
 const ballFlashDuration = 2000 // ms
 const ballFlashCycles = 5 // cycles per duration
@@ -23,6 +24,9 @@ export class SimGfx extends GfxRegion {
   }
 
   down(pw: PinballWizard, mousePos: Vec2) {
+    if (BallSelectionPanel.isShowing) {
+      return
+    }
     pw.isMouseDown = true
     pw.dragY = mousePos[1]
     pw.trySelectDisk(pw.hoveredDiskIndex)
@@ -46,6 +50,11 @@ export class SimGfx extends GfxRegion {
   }
 
   move(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number) {
+    if (BallSelectionPanel.isShowing) {
+      pw.isMouseDown = false
+      return
+    }
+
     if (pw.isMouseDown && inputId === 'mouse') {
       pw.camera.drag(pw.dragY, mousePos[1])
       pw.dragY = mousePos[1]
@@ -151,15 +160,15 @@ export class SimGfx extends GfxRegion {
 
   drawFinish(ctx: CanvasRenderingContext2D, finish: Barrier) {
     // Checker size is 1/10 the width, height is 4 squares
-    let [x, y, w, _h] = finish.xywh;
-    const squareSize = w / 10;
-    const nCols = 10;
-    const nRows = 4;
-    const h = nRows * squareSize;
+    const [x, y, w, _h] = finish.xywh
+    const squareSize = w / 10
+    const nCols = 10
+    const nRows = 4
+    const h = nRows * squareSize
     for (let row = 0; row < nRows; row++) {
       for (let col = 0; col < nCols; col++) {
-        ctx.fillStyle = (row + col) % 2 === 0 ? 'white' : 'black';
-        ctx.fillRect(x + col * squareSize, y + row * squareSize, squareSize, squareSize);
+        ctx.fillStyle = (row + col) % 2 === 0 ? '#eee' : '#555'
+        ctx.fillRect(x + col * squareSize, y + row * squareSize, squareSize, squareSize)
       }
     }
   }
@@ -202,7 +211,7 @@ export class SimGfx extends GfxRegion {
     this._drawRect = rect
     const [x, y, w, h] = rect
     const sim = pw.activeSim
-    const { selectedDiskIndex, hoveredDiskIndex } = pw
+    const { followDiskIndex, selectedDiskIndex: selectedDiskIndex, hoveredDiskIndex } = pw
     const scale = (w) / 100 / VALUE_SCALE
     this.drawSimScale = scale
     const dpr = window.devicePixelRatio
@@ -217,7 +226,6 @@ export class SimGfx extends GfxRegion {
 
     ctx.clearRect(x, y, w, h)
 
-    
     ctx.save()
     ctx.translate(x, y + this.drawOffset[1])
     ctx.scale(this.drawSimScale, this.drawSimScale)
@@ -251,6 +259,9 @@ export class SimGfx extends GfxRegion {
 
     if (hoveredDiskIndex !== -1) {
       drawDiskHalo(ctx, sim.disks[hoveredDiskIndex])
+    }
+    if (followDiskIndex !== -1) {
+      drawDiskHalo(ctx, sim.disks[followDiskIndex])
     }
 
     if (selectedDiskIndex !== -1) {
