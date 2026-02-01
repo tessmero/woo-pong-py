@@ -143,7 +143,7 @@ export class BottomBarGfx extends GfxRegion {
       const strokeStyle = 'black'//isActive ? '#fff' : '#000'
 
       ctx.lineWidth = isHovered ? 4 : 2
-      drawRoundedRect(ctx, innerRect, isActive)
+      drawRoundedRect(ctx, innerRect, isActive, key === 'clock')
 
       // // Draw border
       // ctx.strokeStyle = isHovered ? 'red' : (isActive ? 'white' : 'blue')

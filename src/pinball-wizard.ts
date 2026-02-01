@@ -4,7 +4,7 @@
  * Main object constructed once in main.ts.
  */
 
-import { BallSelectionPanel } from 'ball-selection-panel'
+import { BallSelectionPanel, getBspHoveredDiskIndex } from 'ball-selection-panel'
 import { Camera } from 'camera'
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
 import { topConfig } from 'configs/imp/top-config'
@@ -15,7 +15,8 @@ import type { GlassGfx } from 'gfx/imp/glass-gfx'
 import type { SimGfx } from 'gfx/imp/sim-gfx'
 import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
-import { toggleElement } from 'guis/gui-html-elements'
+import { repaintDiagram, toggleElement } from 'guis/gui-html-elements'
+import { ballSelectionPanel } from 'guis/imp/playing-gui'
 import type { GfxRegionName } from 'imp-names'
 import { GUI } from 'imp-names'
 import type { Speed } from 'simulation/constants'
@@ -146,7 +147,7 @@ export class PinballWizard {
 
   update(dt: number) {
     Graphics.updatePixelAnim(dt);
-    (GfxRegion.create('glass-gfx') as GlassGfx).update(this,dt)
+    (GfxRegion.create('glass-gfx') as GlassGfx).update(this, dt)
     const wasBranched = this.hasBranched
     const wasFinished = this.hasFinished
 
@@ -216,7 +217,8 @@ export class PinballWizard {
 
     if (this.hasFinished && !wasFinished) {
       // just finished
-      this.onResize()
+      BallSelectionPanel.hide(this)
+      // this.onResize()
       Graphics.targetPixelAnim = 1
     }
 
@@ -225,12 +227,14 @@ export class PinballWizard {
     Graphics.draw(this)
 
     // always repaint bsp
-    BallSelectionPanel.isRepaintQueued = true
+    if (BallSelectionPanel.isShowing) {
+      BallSelectionPanel.isRepaintQueued = true
+    }
 
     // repaint ball selection panel if necessary
     if (BallSelectionPanel.isRepaintQueued) {
       BallSelectionPanel.isRepaintQueued = false
-      BallSelectionPanel.repaint(this)
+      repaintDiagram(this, ballSelectionPanel)
     }
 
     // this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)
@@ -295,12 +299,27 @@ export class PinballWizard {
 
   public isMouseDown = false
   public dragY = 0
+
   /**
    * @param rawPos Position of input
    * @param inputId 'mouse' for mouse, or a touch identifier (number)
    */
   down(rawPos: Vec2, inputId: 'mouse' | number) {
     const _mousePos = this.move(rawPos, inputId)
+
+    if (BallSelectionPanel.isShowing) {
+      console.log('pinball-wizard.ts down bsp shoing')
+      const bcr = ballSelectionPanel.htmlElem!.getBoundingClientRect()
+      const rect: Rectangle = [bcr.left, bcr.top, bcr.width, bcr.height]
+      const screenPos: Vec2 = [rawPos[0] + Graphics.cssLeft, rawPos[1]]
+      console.log(JSON.stringify([rect, screenPos]))
+      if (rectContainsPoint(rect, ...screenPos)) {
+        const hoveredDisk = getBspHoveredDiskIndex(
+          screenPos[0] - rect[0], screenPos[1] - rect[1])
+        console.log('pinball-wizard.ts down bsp contains', hoveredDisk)
+        return
+      }
+    }
 
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       if (rectContainsPoint(rect, ...rawPos)) {

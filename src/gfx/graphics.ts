@@ -16,6 +16,7 @@ import type { SimGfx } from './imp/sim-gfx'
 // const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
 // const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
 
+export const CROWN_FILL = 'rgb(255, 208, 52)'
 export const OBSTACLE_FILL = '#888'
 export const OBSTACLE_STROKE = '#000'
 

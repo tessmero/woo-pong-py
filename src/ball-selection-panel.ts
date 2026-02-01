@@ -125,13 +125,13 @@ export class BallSelectionPanel {
     }
     didInitListeners = true
     cvs.addEventListener('pointerdown', (e) => {
-      const i = getBspHoveredDiskIndex(e)
+      const i = getBspHoveredDiskIndexPe(e)
       pw.trySelectDisk(i)
       cvs.style.setProperty('cursor', 'default')
     })
 
     cvs.addEventListener('pointermove', (e) => {
-      const i = getBspHoveredDiskIndex(e)
+      const i = getBspHoveredDiskIndexPe(e)
       if (i === -1 || pw.hasBranched || i === pw.selectedDiskIndex) {
         cvs.style.setProperty('cursor', 'default')
       }
@@ -177,38 +177,16 @@ export class BallSelectionPanel {
     }
   }
 
-  static repaint(pw: PinballWizard) {
-    repaintDiagram(pw, ballSelectionPanel)
-    return
-
-    // if (cvs.style.display === 'none') {
-    //   return // not visible
-    // }
-
-    const w = cvs.width
-    const h = cvs.height
-
-    ctx.fillStyle = 'rgb(221,221,221)'
-    ctx.fillRect(0, 0, w, h)
-
-    if (!pw.activeSim) return
-
-    // draw balls
-    for (let i = 0; i < DISK_COUNT; i++) {
-      const disk = pw.activeSim.disks[i]
-      if (!disk) continue
-      const _isSelected = (i === pw.selectedDiskIndex)
-
-      drawDisk(ctx, disk,
-        ...diskPositions[i],
-      )
-    }
-  }
 }
 
-export function getBspHoveredDiskIndex(e: PointerEvent): number {
-  const mx = e.offsetX * window.devicePixelRatio
-  const my = e.offsetY * window.devicePixelRatio
+
+export function getBspHoveredDiskIndexPe(e: PointerEvent): number {
+  return getBspHoveredDiskIndex(e.offsetX,e.offsetY)
+}
+
+export function getBspHoveredDiskIndex(offsetX: number, offsetY: number): number {
+  const mx = offsetX * window.devicePixelRatio
+  const my = offsetY * window.devicePixelRatio
   for (const [diskIndex, [x, y]] of diskPositions.entries()) {
     const dx = x - mx
     const dy = y - my

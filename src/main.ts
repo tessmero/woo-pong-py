@@ -118,6 +118,7 @@ async function main() {
   pinballWizard.loadingState = 'I'
 
   startBtn.onclick = async () => {
+    document.documentElement.requestFullscreen()
     await pinballWizard.init()
     pinballWizard.gui = Gui.create('playing-gui')
     pinballWizard.isTitleScreen = false

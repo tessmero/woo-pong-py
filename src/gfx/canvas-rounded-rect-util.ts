@@ -84,11 +84,11 @@ export type Rectangle = [number, number, number, number]
 const shadedColor = '#888'
 const litColor = '#eee'
 const activeShadedColor = '#777'
-const activeLitColor = '#ccc'
+const activeLitColor = '#bbb'
 
 export function drawRoundedRect(
   ctx: CanvasRenderingContext2D, rect: Rectangle,
-  isActive = false,
+  isActive = false, skipSlivers = false,
 ) {
   const [x, y, width, height] = rect
   const r = Math.min(ROUNDED_RECT_RADIUS, width / 2, height / 2)
@@ -112,13 +112,14 @@ export function drawRoundedRect(
   ctx.lineWidth = 2 * window.devicePixelRatio
   ctx.stroke()
 
+  if( !skipSlivers ){
+    
   // --- Draw lit top sliver ---
   const sliverFrac = 0.2 // fraction of height for sliver thickness
   const sliverCurve = 10
   const sliverPad = pad + 1
   const sliverR = Math.max(r - 1, 2)
   const sliverH = Math.max(2, Math.floor((height - 2 * sliverPad) * sliverFrac))
-  ctx.save()
   ctx.beginPath()
   ctx.moveTo(x + sliverPad + sliverR, y + sliverPad)
   ctx.lineTo(x + width - sliverPad - sliverR, y + sliverPad)
@@ -134,13 +135,10 @@ export function drawRoundedRect(
   ctx.lineTo(x + sliverPad, y + sliverPad + sliverR)
   ctx.quadraticCurveTo(x + sliverPad, y + sliverPad, x + sliverPad + sliverR, y + sliverPad)
   ctx.closePath()
-  ctx.globalAlpha = 1
   ctx.fillStyle = isActive ? activeShadedColor : litColor // top
   ctx.fill()
-  ctx.restore()
 
   // --- Draw shaded bottom sliver ---
-  ctx.save()
   ctx.beginPath()
   ctx.moveTo(x + sliverPad + sliverR, y + height - sliverPad)
   ctx.lineTo(x + width - sliverPad - sliverR, y + height - sliverPad)
@@ -156,10 +154,8 @@ export function drawRoundedRect(
   ctx.lineTo(x + sliverPad, y + height - sliverPad - sliverR)
   ctx.quadraticCurveTo(x + sliverPad, y + height - sliverPad, x + sliverPad + sliverR, y + height - sliverPad)
   ctx.closePath()
-  ctx.globalAlpha = 1
   ctx.fillStyle = isActive ? activeLitColor : shadedColor // bottom
   ctx.fill()
-  ctx.restore()
+  }
 
-  ctx.restore()
 }

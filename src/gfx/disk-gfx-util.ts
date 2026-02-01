@@ -8,6 +8,7 @@ import { CLICKABLE_RADIUS, DISK_RADIUS, VALUE_SCALE } from 'simulation/constants
 import { tailLength, type Disk } from 'simulation/disk'
 import type { Vec2 } from 'util/math-util'
 import { twopi } from 'util/math-util'
+import { CROWN_FILL } from './graphics'
 
 const maxTailDistance = 3 * DISK_RADIUS
 
@@ -91,9 +92,9 @@ export function drawDiskCrown(
     ctx.lineTo(x, y)
   }
   ctx.closePath()
-  ctx.fillStyle = 'black' // gold color
+  ctx.fillStyle = CROWN_FILL // gold color
   ctx.strokeStyle = 'black' // darker gold outline
-  ctx.lineWidth = 2
+  ctx.lineWidth = .4 * VALUE_SCALE
   ctx.fill()
   ctx.stroke()
   ctx.restore()
@@ -135,7 +136,7 @@ export function drawDisk(
   ctx.strokeStyle = 'black'
   ctx.stroke()
   ctx.fillStyle = PATTERN_FILLERS[disk.pattern]
-  // ctx.imageSmoothingEnabled = false
+  ctx.imageSmoothingEnabled = false
   ctx.fill()
 }
 

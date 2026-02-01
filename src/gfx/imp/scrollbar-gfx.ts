@@ -9,7 +9,7 @@ import { GfxRegion } from '../gfx-region'
 import { traceObstacle } from 'gfx/obstacle-gfx-util'
 import type { PinballWizard } from 'pinball-wizard'
 import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
-import { Graphics, OBSTACLE_FILL } from 'gfx/graphics'
+import { CROWN_FILL, Graphics, OBSTACLE_FILL } from 'gfx/graphics'
 import { Scrollbar } from 'scrollbar'
 import type { Disk } from 'simulation/disk'
 import type { DiskPattern } from 'gfx/disk-gfx-util'
@@ -186,15 +186,33 @@ export class ScrollbarGfx extends GfxRegion {
   drawDisk(ctx: CanvasRenderingContext2D, disk: Disk, isSelected: boolean) {
     const [cx, cy] = disk.interpolatedPos
 
+    ctx.imageSmoothingEnabled = false
     const edgeRad = VALUE_SCALE * 2 * (isSelected ? 5 : 1)
-    ctx.strokeStyle = isSelected ? 'green' : 'black'
+    ctx.strokeStyle = isSelected ? CROWN_FILL : 'black'
     ctx.lineWidth = edgeRad
     ctx.fillStyle = getScaledPattern(disk.pattern)
 
+    let baseRad = DISK_RADIUS * 5
+    if (isSelected) {
+      baseRad += edgeRad / 2
+    }
     ctx.beginPath()
-    ctx.arc(cx, cy, DISK_RADIUS * 5, 0, twopi)
+    ctx.arc(cx, cy, baseRad, 0, twopi)
     ctx.fill()
     ctx.stroke()
+
+    if (isSelected) {
+      // draw two thin black edges
+
+      ctx.lineWidth = 3 * VALUE_SCALE
+      ctx.strokeStyle = 'black'
+      ctx.beginPath()
+      ctx.arc(cx, cy, baseRad - edgeRad / 2, 0, twopi)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.arc(cx, cy, baseRad + edgeRad / 2, 0, twopi)
+      ctx.stroke()
+    }
   }
 }
 
