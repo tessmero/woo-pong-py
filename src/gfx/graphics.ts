@@ -21,7 +21,7 @@ export const CROWN_FILL = 'rgb(255, 208, 52)'
 export const OBSTACLE_FILL = '#888'
 export const OBSTACLE_STROKE = '#000'
 
-const pixelAnimSpeed = 8e-3// fraction per ms
+const pixelAnimSpeed = 2e-3// fraction per ms
 
 export const gutterPx = 3
 const leftGutterWidthPx = gutterPx
@@ -54,7 +54,7 @@ export class Graphics {
     return this._rootRect[0]
   }
 
-  private static _rootRect: Rectangle = [1, 1, 1, 1]
+  public static _rootRect: Rectangle = [1, 1, 1, 1]
   private static _updateCanvasDims() {
     const dpr = window.devicePixelRatio
     const _root = Graphics._rootRect
@@ -86,11 +86,11 @@ export class Graphics {
   // public static isTitleScreen = true
   public static get mainPixelScale() {
     // if( this.isTitleScreen ) return 10
-    return Math.floor(1 + this.pixelAnim * 9)// physical pixels per big pixel
+    return Math.floor(1 + this.pixelAnim * 9 * window.devicePixelRatio)// physical pixels per big pixel
     // return Math.floor(4 + this.pixelAnim * 6)// physical pixels per big pixel
   }
 
-  public static glassPixelScale = 80 // physical pixels per big pixel
+  public static get glassPixelScale() { return 60 * window.devicePixelRatio }
 
   public static hasSpaceOnSides = false // if true, draw extra outer left and right edges
 
@@ -121,8 +121,9 @@ export class Graphics {
 
     if (pw) {
       // compute scrollbar bounds
+      const levelShape = [...(pw?.activeSim?.level?.bounds ?? [1, 1, 1, 1])]
+      levelShape[3] *= 1.2
       const scrollbarHeight = Math.min(600, window.innerHeight)
-      const levelShape = pw?.activeSim?.level?.bounds ?? [1, 1, 1, 1]
       scrollbarWidth = scrollbarHeight * (levelShape[2] / levelShape[3])
       simCssWidth = rootWidthPx - scrollbarWidth - leftGutterWidthPx - midGutterWidthPx - rightGutterWidthPx
     }
@@ -280,17 +281,21 @@ export class Graphics {
       ctx.fillRect(...rect)
     }
 
+    const sim = GfxRegion.create('sim-gfx') as SimGfx
+    const scrollbar = GfxRegion.create('scrollbar-gfx') as ScrollbarGfx
+
     // fill regions near gutters to cut out rounded corners
-    ;(GfxRegion.create('sim-gfx') as SimGfx).fillRoundedMarginCorners(ctx, pw)
-    ;(GfxRegion.create('scrollbar-gfx') as ScrollbarGfx).fillRoundedMarginCorners(ctx, pw)
+    sim.fillRoundedMarginCorners(ctx, pw)
+    scrollbar.fillRoundedMarginCorners(ctx, pw)
 
     // draw disks on scrollbar
-    ;(GfxRegion.create('scrollbar-gfx') as ScrollbarGfx)
-      .drawDisks(ctx, pw, this._dpRegions['scrollbar-gfx'] as Rectangle)
+    scrollbar.drawDisks(ctx, pw, this._dpRegions['scrollbar-gfx'] as Rectangle)
 
     // draw view cursor on scrollbar
-    ;(GfxRegion.create('scrollbar-gfx') as ScrollbarGfx)
-      .drawViewRect(ctx, pw, this._dpRegions['scrollbar-gfx'] as Rectangle)
+    scrollbar.drawViewRect(ctx, pw, this._dpRegions['scrollbar-gfx'] as Rectangle)
+
+    // draw annotations for hovered and selected disks in sim
+    sim.drawHalos(ctx, pw)
 
     // // draw top edge of gutters
     // ctx.strokeStyle = 'black'
@@ -329,11 +334,5 @@ export class Graphics {
     ctx.moveTo(x, y)
     ctx.arc(x, y, DISK_RADIUS, 0, twopi)
     ctx.fill()
-  }
-
-  static drawViewRect(ctx: CanvasRenderingContext2D, rect: Rectangle) {
-    ctx.strokeStyle = 'black'
-    ctx.lineWidth = DISK_RADIUS * 3
-    ctx.strokeRect(...rect)
   }
 }

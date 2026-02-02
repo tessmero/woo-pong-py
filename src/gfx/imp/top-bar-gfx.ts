@@ -19,8 +19,9 @@ export class TopBarGfx extends GfxRegion {
     GfxRegion.register('top-bar-gfx', () => new TopBarGfx())
   }
 
-  down(_pw: PinballWizard, _mousePos: Vec2) {
+  down(_pw: PinballWizard, _mousePos: Vec2): boolean {
     // do nothing
+    return false
   }
 
   move(_pw: PinballWizard, _mousePos: Vec2) {
@@ -56,7 +57,7 @@ export class TopBarGfx extends GfxRegion {
     const seconds = stepsToSeconds(steps)
 
     ctx.save()
-    ctx.translate(x + w / 2, y + h / 2)
+    ctx.translate(x + w / 2, y + h / 2 + 3 * window.devicePixelRatio)
     setupRubikText(ctx, h, 'black')
     ctx.fillText(getStatusText(pw, seconds), 0, 0)
     ctx.restore()

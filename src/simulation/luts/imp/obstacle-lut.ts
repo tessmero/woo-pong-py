@@ -261,14 +261,21 @@ function computeCollision(lut: ObstacleLut, pos: Vec2): ObstacleCollision {
     const b = points[(nearestPointIndex - 1 + n) % n]
     const normAngle = Math.atan2(b[1] - a[1], b[0] - a[0]) - pio2
 
-    const offsetPoint: Vec2 = [
-      nearestPoint[0] + (DISK_RADIUS * Math.cos(normAngle)),
-      nearestPoint[1] + (DISK_RADIUS * Math.sin(normAngle)),
-    ]
+    // compute offset for disk to stop overlapping
+    const offsetDist = DISK_RADIUS - distToNearestPoint
     const offset: Vec2 = [
-      Math.round(offsetPoint[0] - pos[0]),
-      Math.round(offsetPoint[1] - pos[1]),
+      Math.round(offsetDist * Math.cos(normAngle)),
+      Math.round(offsetDist * Math.sin(normAngle)),
     ]
+
+    // const offsetPoint: Vec2 = [
+    //   nearestPoint[0] + (DISK_RADIUS * Math.cos(normAngle)),
+    //   nearestPoint[1] + (DISK_RADIUS * Math.sin(normAngle)),
+    // ]
+    // const offset: Vec2 = [
+    //   Math.round(offsetPoint[0] - pos[0]),
+    //   Math.round(offsetPoint[1] - pos[1]),
+    // ]
 
     return [
       offset[0], offset[1],

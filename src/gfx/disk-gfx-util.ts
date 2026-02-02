@@ -14,7 +14,7 @@ const maxTailDistance = 3 * DISK_RADIUS
 
 const isShowingTails = true
 
-export function drawDiskHalo(
+export function drawDiskHoverHalo(
   ctx: CanvasRenderingContext2D, disk: Disk,
 ) {
   // const [cx, cy, _dx, _dy] = disk.currentState
@@ -27,6 +27,38 @@ export function drawDiskHalo(
   ctx.stroke()
 }
 
+export function drawDiskFollowHalo(
+  ctx: CanvasRenderingContext2D, disk: Disk,
+) {
+  // const [cx, cy, _dx, _dy] = disk.currentState
+  const [cx, cy] = disk.interpolatedPos
+
+  // compute dash that lines up with one circum
+  const dashCycles = 7
+  const dashShrink = 0.2
+  const circumference = 2 * Math.PI * CLICKABLE_RADIUS
+  const baseLength = circumference / dashCycles
+  const dashLength = baseLength * dashShrink
+  const gapLength = baseLength * (1 - dashShrink)
+  ctx.setLineDash([dashLength, gapLength])
+  ctx.lineDashOffset = (baseLength * performance.now() * 1e-3) % circumference
+  ctx.lineCap = 'round'
+  const thick = VALUE_SCALE * 1
+
+  ctx.strokeStyle = 'black'
+  ctx.lineWidth = VALUE_SCALE * 0.5 + thick
+  ctx.beginPath()
+  ctx.arc(cx, cy, CLICKABLE_RADIUS, 0, twopi)
+  ctx.stroke()
+
+  ctx.strokeStyle = 'red'
+  ctx.lineWidth = thick
+  ctx.beginPath()
+  ctx.arc(cx, cy, CLICKABLE_RADIUS, 0, twopi)
+  ctx.stroke()
+
+  ctx.setLineDash([])
+}
 /**
  * Draws a crown shape sitting on top of the disk halo.
  * The bottom edge of the crown follows the halo arc, and the top is a flat line above the halo.
@@ -148,7 +180,7 @@ export type DiskPattern = (typeof DISK_PATTERNS)[number]
 
 function createHexDotsPattern(
   dotColor = '#000', bgColor = '#fff',
-  dotRadius = 24, spacing = 64,
+  dotRadius = 240, spacing = 640,
 ) {
   if (typeof document === 'undefined') return null
   const c = document.createElement('canvas')
@@ -291,7 +323,7 @@ export const PATTERN_CANVASES = {
   'h-stripe': createHorizontalStripePattern(),
   'checkered': createCheckeredPattern(),
   'hex-a': createHexDotsPattern('#000', '#fff'),
-  'hex-b': createHexDotsPattern('#fff', '#000', 10),
+  'hex-b': createHexDotsPattern('#fff', '#000', 100),
 } as const satisfies Partial<Record<DiskPattern, HTMLCanvasElement | null>>
 
 export const PATTERN_SCALES: Record<DiskPattern, number> = {
@@ -300,8 +332,8 @@ export const PATTERN_SCALES: Record<DiskPattern, number> = {
   'h-stripe': VALUE_SCALE * 2,
   'v-stripe': VALUE_SCALE * 2,
   'checkered': VALUE_SCALE / 25,
-  'hex-a': VALUE_SCALE / 10,
-  'hex-b': VALUE_SCALE / 10,
+  'hex-a': VALUE_SCALE / 100,
+  'hex-b': VALUE_SCALE / 100,
 }
 
 export const PATTERN_FILLERS: Record<DiskPattern, CanvasPattern | string> = {

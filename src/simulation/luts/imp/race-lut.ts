@@ -12,7 +12,7 @@ import { Simulation } from 'simulation/simulation'
 
 export type RaceLeaf = Array<number>
 
-const nRaces = 1
+const nRaces = 100
 const maxStepsTotal = 1e7
 
 export type BranchDatum = {
@@ -123,7 +123,7 @@ function _tryComputeLeaf(): Array<number> | null {
   // // skip simulations and return dummy race-lut
   // return [
   //   commonStartSeed,
-  //   ...branches.map(({ midSeed }) => midSeed),
+  //   ...branches.map(({ midSeed }) => 12345),
   //   // ...breakoutSolution,
   // ]
 
@@ -178,6 +178,7 @@ function _tryComputeLeaf(): Array<number> | null {
     }
 
     if (_stepCount > maxStepsTotal) {
+      // console.log('')
       break
     }
   }
@@ -227,5 +228,27 @@ function _tryComputeLeaf(): Array<number> | null {
   // console.log(result)
   // eslint-disable-next-line no-console
   console.log(`solved race with start seed ${commonStartSeed}`)
+
+  // verify solution
+  for (const [winningDiskIndex, { midSeed }] of branches.entries()) {
+    const sim = new Simulation(commonStartSeed)
+    for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
+      sim.step()
+      _stepCount++
+    }
+    if (sim.winningDiskIndex !== -1) {
+      throw new Error('failed verification (win before branching)')
+    }
+    const branchSeed = midSeed
+    Perturbations.setSeed(branchSeed)
+    while (sim.winningDiskIndex === -1 && _stepCount < maxStepsTotal) {
+      sim.step()
+      _stepCount++
+    }
+    if (sim.winningDiskIndex !== winningDiskIndex) {
+      throw new Error('failed verification (wrong winning disk)')
+    }
+  }
+
   return result
 }

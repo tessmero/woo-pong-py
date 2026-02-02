@@ -7,7 +7,7 @@
 
 import { topConfig } from 'configs/imp/top-config'
 import { GfxRegion } from 'gfx/gfx-region'
-import type { SimGfx } from 'gfx/imp/sim-gfx'
+import { SimGfx } from 'gfx/imp/sim-gfx'
 import type { PinballWizard } from 'pinball-wizard'
 import { Scrollbar } from 'scrollbar'
 import { VALUE_SCALE } from 'simulation/constants'
@@ -36,6 +36,9 @@ export class Camera {
   targetRoom = 0
 
   update(dt: number, pinballWizard: PinballWizard) {
+    if (Scrollbar.isDragging || this.isDragging) {
+      this._idleCountdown = this._idleDelay
+    }
     if (this.isDragging || Scrollbar.isDragging || pinballWizard.isHalted || pinballWizard.speed === 'paused') {
       // do nothing
       return
@@ -69,12 +72,17 @@ export class Camera {
       roomIndex = Math.max(0, Math.min(rooms.length - 1, roomIndex))
       const room = rooms[roomIndex]
 
-      const targetPos = -room.bounds[1] - room.bounds[3] / 2
+      // top of room in center of view
+      // const targetPos = -room.bounds[1]
 
-      // const flipperHeight = room.bounds[1] + room.bounds[3]
-      // const viewHeight = pinballWizard.simViewRect[3]
-      // const targetPos = -(flipperHeight - viewHeight) - 25 * DISK_RADIUS
+      // // bottom of room (flippers) in center of view
+      // const targetPos = -room.bounds[1] - room.bounds[3]
 
+      // bottom of room (flippers) at bottom of view
+      const viewHeight = pinballWizard.simViewRect[3] // view height in units of room bounds
+      const targetPos = -room.bounds[1] - room.bounds[3] + viewHeight / 2
+
+      SimGfx.debugTargetPos = targetPos
       this.pos = lerp(this.pos, targetPos, this._snapSpeed * dt)
     }
 
@@ -91,6 +99,8 @@ export class Camera {
 
     const { scrollSpeed } = topConfig.flatConfig
     this.pos += delta * scrollSpeed
+
+    // console.log('camera not idle (scroll)')
     this._idleCountdown = this._idleDelay
   }
 
@@ -103,12 +113,16 @@ export class Camera {
     const posDelta = mouseDelta / (GfxRegion.create('sim-gfx') as SimGfx).drawSimScale * window.devicePixelRatio
     this.pos += posDelta
     // this.vel = posDelta / timeDelta // set velocity in case mouse is released
+
+    // console.log('camera not idle (drag)')
     this._idleCountdown = this._idleDelay
     this.isDragging = true
     this.lastDragTime = t
   }
 
   endDrag() {
+    if (!this.isDragging) return
+    // console.log('camera not idle (end drag)')
     this._idleCountdown = this._idleDelay
     this.isDragging = false
   }

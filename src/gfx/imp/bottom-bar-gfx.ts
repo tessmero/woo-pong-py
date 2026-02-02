@@ -16,6 +16,7 @@ import { formatTime } from 'guis/imp/playing-gui'
 import { BallSelectionPanel } from 'ball-selection-panel'
 import { setupRubikText } from '../canvas-text-util'
 import { drawRoundedRect, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
+import { shortVibrate } from 'util/vibrate'
 
 const _LAYOUT_KEYS = ['bsp', 'clock', 'pause', 'play', 'fast', 'faster'] as const
 type LayoutKey = (typeof _LAYOUT_KEYS)[number]
@@ -32,6 +33,9 @@ const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
 
 const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
   bsp: (pw) => {
+    if (!BallSelectionPanel.isShowing) {
+      shortVibrate()
+    }
     BallSelectionPanel.toggle(pw)
   },
   clock: () => {
@@ -172,7 +176,7 @@ export class BottomBarGfx extends GfxRegion {
    * Draws the icon. Only draws if already loaded (never triggers async load).
    * If active, draws icon in white; otherwise, uses currentColor (black).
    */
-  private _drawBtn(ctx: CanvasRenderingContext2D, rect: Rectangle, icon: IconName, active: boolean) {
+  private _drawBtn(ctx: CanvasRenderingContext2D, rect: Rectangle, icon: IconName, _active: boolean) {
     const [x, y, w, h] = rect
     const cache = BottomBarGfx._iconCache
     const PADDING_FRAC = 0.18 // 18% padding on each side
@@ -218,9 +222,11 @@ export class BottomBarGfx extends GfxRegion {
   private _layout: Layout | null = null
   private _computeLayout(rect: Rectangle) {
     this._layoutBounds = rect
+    const dpr = window.devicePixelRatio
+    const shrinkX = (gutterPx + 2) * dpr
+    const shrinkY = (ROUNDED_RECT_PADDING + 2) * dpr
+
     let [x, y, w, h] = rect
-    const shrinkX = gutterPx + 2
-    const shrinkY = ROUNDED_RECT_PADDING + 2
     x += shrinkX
     y += shrinkY
     w -= 2 * shrinkX

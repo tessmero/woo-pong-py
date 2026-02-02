@@ -4,9 +4,9 @@
  * Graphics region for BSP (Binary Space Partitioning) visuals.
  */
 
-import type { PinballWizard } from 'pinball-wizard'
+import type { InputId, PinballWizard } from 'pinball-wizard'
 import { GfxRegion } from '../gfx-region'
-import { lerp2, twopi, type Rectangle, type Vec2 } from 'util/math-util'
+import { lerp2, shuffle, twopi, type Rectangle, type Vec2 } from 'util/math-util'
 import { BallSelectionPanel } from 'ball-selection-panel'
 import { DISK_COUNT, VALUE_SCALE } from 'simulation/constants'
 import type { DiskPattern } from 'gfx/disk-gfx-util'
@@ -65,11 +65,11 @@ export const BSP_DISK_X_MIN = Math.min(...diskPositions.map(([x]) => x))
 export const BSP_DISK_X_MAX = Math.max(...diskPositions.map(([x]) => x))
 const centerDiskPos = lerp2(diskPositions[4], diskPositions[5])
 
+const diskStaggerOrder = Array.from({ length: DISK_COUNT }, (_, i) => i)
+shuffle(diskStaggerOrder)
+
 const _drawOffset: Vec2 = [0, 0]
 let _drawScale = 1
-
-const entranceDur = 1000
-const exitDur = 1000
 
 export class BspGfx extends GfxRegion {
   static {
@@ -87,6 +87,7 @@ export class BspGfx extends GfxRegion {
   }
 
   down(pw: PinballWizard, mousePos: Vec2) {
+    if (pw.hasFinished) return false
     if (BallSelectionPanel.isShowing) {
       const clickedDisk = getBspHoveredDiskIndex(...mousePos)
       if (clickedDisk !== -1) {
@@ -97,11 +98,13 @@ export class BspGfx extends GfxRegion {
     return false
   }
 
-  move(pw: PinballWizard, mousePos: Vec2) {
+  move(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
+    if (pw.hasFinished) return
     if (BallSelectionPanel.isShowing) {
-      const hoveredDisk = getBspHoveredDiskIndex(...mousePos)
+      const hoveredDisk = inputId === 'mouse' ? getBspHoveredDiskIndex(...mousePos) : -1
+
+      pw.hoveredDiskIndex = hoveredDisk
       if (hoveredDisk !== -1) {
-        pw.hoveredDiskIndex = hoveredDisk
         Graphics.cvs.style.setProperty('cursor', 'pointer')
       }
     }
@@ -116,15 +119,6 @@ export class BspGfx extends GfxRegion {
   }
 
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
-    let testAnim = 1 // 0-1 animation state
-
-    // check if starte ntrance recently
-    const t = performance.now()
-
-    // if (cvs.style.display === 'none') {
-    //   return // not visible
-    // }
-
     ctx.imageSmoothingEnabled = false
 
     const [,, w, h] = rect
@@ -132,6 +126,8 @@ export class BspGfx extends GfxRegion {
     const _dpr = window.devicePixelRatio
     // ctx.fillStyle = 'rgb(221,221,221)'
     ctx.clearRect(0, 0, w, h)
+
+    if (pw.hasFinished) return
 
     // Compute scale so disks take up a fixed fraction of screen width
     const diskAreaWidth = BSP_DISK_X_MAX - BSP_DISK_X_MIN + 2 * diskRadius
@@ -161,26 +157,19 @@ export class BspGfx extends GfxRegion {
 
       const [x, y] = diskPositions[i]
 
-      const diskEntrStagger = entranceDur * i / DISK_COUNT / 2
-      const diskEntrDur = entranceDur * .5
-      const diskEntrStart = this._entranceStartTime + diskEntrStagger
+      const diskStagger = diskStaggerOrder[i] / DISK_COUNT
 
-      const diskExitStagger = exitDur * i / DISK_COUNT / 2
-      const diskExitDur = exitDur * .5
-      const diskExitStart = this._exitStartTime + diskExitStagger
-
-      const entrElapsed = t - diskEntrStart
-      const exitElapsed = t - diskExitStart
-      if (entrElapsed < diskEntrDur) {
-        testAnim = Math.pow(entrElapsed / diskEntrDur, 0.3)
+      let diskAnim = Graphics.pixelAnim * 2 + diskStagger - 0.5
+      if (diskAnim <= 0) {
+        continue
       }
-      else if (exitElapsed < diskExitDur) {
-        testAnim = 1 - Math.pow(exitElapsed / diskExitDur, 0.3)
+      if (diskAnim > 1) {
+        diskAnim = 1
       }
 
       drawDisk(ctx, disk,
         x0 + x * scale, y0 + y * scale,
-        scale * testAnim,
+        scale * diskAnim,
         i === pw.selectedDiskIndex,
         i === pw.hoveredDiskIndex,
         i === pw.followDiskIndex,
@@ -208,25 +197,42 @@ function drawDisk(
   ctx.beginPath()
   ctx.moveTo(cx - x0 * scale + scaledRadius, cy - y0 * scale)
   ctx.arc(cx - x0 * scale, cy - y0 * scale, scaledRadius, 0, twopi)
-  ctx.lineWidth = (isSelected ? 20 : 5) * scale
+  // ctx.lineWidth = (isSelected ? 20 : 5) * scale
+  ctx.lineWidth = 5 * scale
   ctx.lineCap = 'round'
   ctx.lineJoin = 'round'
   ctx.strokeStyle = 'black'
+  if (isSelected) {
+    ctx.strokeStyle = CROWN_FILL
+  }
+  else if (isFollowed) {
+    ctx.strokeStyle = 'red'
+  }
   ctx.stroke()
   ctx.fillStyle = getScaledPattern(disk.pattern)
   ctx.fill()
 
-  if (isSelected) {
-    ctx.lineWidth = 5 * scale
-    ctx.beginPath()
-    const crownRad = scaledRadius + 5 * scale
-    ctx.moveTo(cx - x0 * scale + crownRad, cy - y0 * scale)
-    ctx.arc(cx - x0 * scale, cy - y0 * scale, crownRad, 0, twopi)
-    ctx.strokeStyle = CROWN_FILL
-    ctx.stroke()
-  }
+  // if (isSelected) {
+  //   ctx.lineWidth = 5 * scale
+  //   ctx.beginPath()
+  //   const crownRad = scaledRadius + 5 * scale
+  //   ctx.moveTo(cx - x0 * scale + crownRad, cy - y0 * scale)
+  //   ctx.arc(cx - x0 * scale, cy - y0 * scale, crownRad, 0, twopi)
+  //   ctx.strokeStyle = CROWN_FILL
+  //   ctx.stroke()
+  // }
 
-  if (isHovered || isFollowed) {
+  //  else if (isFollowed) {
+  //   ctx.lineWidth = 5 * scale
+  //   ctx.beginPath()
+  //   const crownRad = scaledRadius + 5 * scale
+  //   ctx.moveTo(cx - x0 * scale + crownRad, cy - y0 * scale)
+  //   ctx.arc(cx - x0 * scale, cy - y0 * scale, crownRad, 0, twopi)
+  //   ctx.strokeStyle = 'red'
+  //   ctx.stroke()
+  // }
+
+  if (isHovered) {
     ctx.lineWidth = 5 * scale
     ctx.beginPath()
     const haloRad = scaledRadius + 10 * scale

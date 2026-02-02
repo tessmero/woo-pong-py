@@ -4,12 +4,12 @@
  * Graphics region for sim (Binary Space Partitioning) visuals.
  */
 
-import type { PinballWizard } from 'pinball-wizard'
+import type { InputId, PinballWizard } from 'pinball-wizard'
 import { GfxRegion } from '../gfx-region'
 import { twopi, type Rectangle, type Vec2 } from 'util/math-util'
 import { Graphics } from 'gfx/graphics'
 import { CLICKABLE_RADSQ, VALUE_SCALE } from 'simulation/constants'
-import { drawDisk, drawDiskCrown, drawDiskHalo } from 'gfx/disk-gfx-util'
+import { drawDisk, drawDiskCrown, drawDiskFollowHalo, drawDiskHoverHalo } from 'gfx/disk-gfx-util'
 import { drawObstacles } from 'gfx/obstacle-gfx-util'
 import type { Barrier } from 'simulation/barrier'
 import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from '../canvas-rounded-rect-util'
@@ -23,13 +23,16 @@ export class SimGfx extends GfxRegion {
     GfxRegion.register('sim-gfx', () => new SimGfx())
   }
 
-  down(pw: PinballWizard, mousePos: Vec2) {
+  down(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
     if (BallSelectionPanel.isShowing) {
       return false
     }
-    pw.isMouseDown = true
-    pw.dragY = mousePos[1]
-    pw.trySelectDisk(pw.hoveredDiskIndex)
+    if (pw.isMouseDown === null) {
+      pw.isMouseDown = inputId
+      pw.dragY = mousePos[1]
+    }
+    const hoveredDiskIndex = this.getHoveredDiskIndex(pw)
+    pw.trySelectDisk(hoveredDiskIndex)
     Graphics.cvs.style.setProperty('cursor', 'default')
     return false
   }
@@ -50,13 +53,14 @@ export class SimGfx extends GfxRegion {
     return [x, y]
   }
 
-  move(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number) {
+  move(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
     if (BallSelectionPanel.isShowing) {
-      pw.isMouseDown = false
+      pw.isMouseDown = null
+      pw.camera.endDrag()
       return
     }
 
-    if (pw.isMouseDown && inputId === 'mouse') {
+    if (pw.isMouseDown === inputId) {
       pw.camera.drag(pw.dragY, mousePos[1])
       pw.dragY = mousePos[1]
     }
@@ -94,7 +98,7 @@ export class SimGfx extends GfxRegion {
 
     // this.gui.move(this, this.mousePos)
 
-    pw.hoveredDiskIndex = this.getHoveredDiskIndex(pw)
+    pw.hoveredDiskIndex = inputId === 'mouse' ? this.getHoveredDiskIndex(pw) : -1
 
     if (pw.hoveredDiskIndex === -1 || pw.hasBranched || pw.hoveredDiskIndex === pw.selectedDiskIndex) {
       Graphics.cvs.style.setProperty('cursor', 'default')
@@ -120,13 +124,24 @@ export class SimGfx extends GfxRegion {
     return result
   }
 
-  leave(_pw: PinballWizard, _mousePos: Vec2) {
-    // do nothing
+  leave(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
+    if (BallSelectionPanel.isShowing) {
+      pw.isMouseDown = null
+      pw.camera.endDrag()
+      return
+    }
+
+    if (pw.isMouseDown === inputId) {
+      pw.camera.drag(pw.dragY, mousePos[1])
+      pw.dragY = mousePos[1]
+    }
   }
 
-  up(pw: PinballWizard, _mousePos: Vec2) {
-    pw.isMouseDown = false
-    pw.camera.endDrag()
+  up(pw: PinballWizard, _mousePos: Vec2, inputId: InputId) {
+    if (inputId === pw.isMouseDown) {
+      pw.isMouseDown = null
+      pw.camera.endDrag()
+    }
   }
 
   public drawSimScale: number = 1 // set in drawSim
@@ -165,7 +180,7 @@ export class SimGfx extends GfxRegion {
     const squareSize = w / 10
     const nCols = 10
     const nRows = 4
-    const h = nRows * squareSize
+    // const h = nRows * squareSize
     for (let row = 0; row < nRows; row++) {
       for (let col = 0; col < nCols; col++) {
         ctx.fillStyle = (row + col) % 2 === 0 ? '#eee' : '#555'
@@ -205,6 +220,8 @@ export class SimGfx extends GfxRegion {
     fillFrameBetweenRectAndRounded(ctx, this._drawRect)
   }
 
+  static debugTargetPos = 0
+
   private _drawRect: Rectangle = [1, 1, 1, 1]
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
     const isFlashOn = this._updateFlashingState()
@@ -212,7 +229,7 @@ export class SimGfx extends GfxRegion {
     this._drawRect = rect
     const [x, y, w, h] = rect
     const sim = pw.activeSim
-    const { followDiskIndex, selectedDiskIndex: selectedDiskIndex, hoveredDiskIndex } = pw
+    // const { followDiskIndex, selectedDiskIndex: selectedDiskIndex, hoveredDiskIndex } = pw
     const scale = (w) / 100 / VALUE_SCALE
     this.drawSimScale = scale
     const dpr = window.devicePixelRatio
@@ -221,7 +238,7 @@ export class SimGfx extends GfxRegion {
     this.drawOffset[1] = (y * dpr * this.drawSimScale)
       + (pw.camera.pos * scale)
       // + Graphics.cvs.height / 2
-      + rect[3] * window.devicePixelRatio / 2
+      + rect[3] / 2
 
     this._updateSimViewRect(pw)
 
@@ -254,20 +271,11 @@ export class SimGfx extends GfxRegion {
     for (const [_diskIndex, disk] of sim.disks.entries()) {
       drawDisk(ctx, disk)
       if (isFlashOn) {
-        drawDiskHalo(ctx, disk)
+        drawDiskHoverHalo(ctx, disk)
       }
     }
 
-    if (hoveredDiskIndex !== -1) {
-      drawDiskHalo(ctx, sim.disks[hoveredDiskIndex])
-    }
-    if (followDiskIndex !== -1) {
-      drawDiskHalo(ctx, sim.disks[followDiskIndex])
-    }
-
-    if (selectedDiskIndex !== -1) {
-      drawDiskCrown(ctx, sim.disks[selectedDiskIndex])
-    }
+    // this.drawHalos(ctx,pw)
 
     // for (const barrier of sim.barriers) {
     //   Graphics.drawBarrier(barrier)
@@ -301,13 +309,25 @@ export class SimGfx extends GfxRegion {
     //   const [x, y, w, h] = room.bounds
     //   // console.log(`room bounds: ${JSON.stringify(room.bounds)}`)
     //   ctx.strokeRect(x * gfxScale, y * gfxScale, w * gfxScale, h * gfxScale)
-    //   if (room.name === 'breakout-room') {
-    //     ctx.fillText(`SCORE: ${(room as BreakoutRoom).score}`, x * gfxScale, y * gfxScale)
-    //   }
-    //   else {
-    //     ctx.fillText(room.name, x * gfxScale, y * gfxScale)
-    //   }
+    //   // draw center of room bounds
+    //   const rad = .1 * VALUE_SCALE
+    //   ctx.strokeRect((x+w/2) * gfxScale - rad, (y+h/2) * gfxScale - rad, 2 * rad, 2 * rad)
+    //   // if (room.name === 'breakout-room') {
+    //   //   ctx.fillText(`SCORE: ${(room as BreakoutRoom).score}`, x * gfxScale, y * gfxScale)
+    //   // }
+    //   // else {
+    //   //   ctx.fillText(room.name, x * gfxScale, y * gfxScale)
+    //   // }
     // }
+
+    // // debugTargetPos
+    //   const [rx,ry,rw,rh] = sim.level.rooms[0].bounds as Rectangle
+    //   const rad = .1 * VALUE_SCALE
+    //   ctx.fillStyle = CROWN_FILL
+    //   ctx.fillRect(
+    //     (rx+rw/2) * gfxScale - rad,
+    //     (-SimGfx.debugTargetPos) * gfxScale - rad,
+    //     2 * rad, 2 * rad)
 
     // // draw labels on breakout bricks
     // for (const obstacle of sim.obstacles) {
@@ -323,5 +343,26 @@ export class SimGfx extends GfxRegion {
     // ctx.strokeStyle = 'red'
     // ctx.lineWidth = 1
     // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
+  }
+
+  public drawHalos(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
+    const [x, y] = this._drawRect
+    ctx.translate(x, y + this.drawOffset[1])
+    ctx.scale(this.drawSimScale, this.drawSimScale)
+
+    const sim = pw.activeSim
+    const { hoveredDiskIndex, followDiskIndex, selectedDiskIndex } = pw
+    if (hoveredDiskIndex !== -1) {
+      drawDiskHoverHalo(ctx, sim.disks[hoveredDiskIndex])
+    }
+    if (followDiskIndex !== -1) {
+      drawDiskFollowHalo(ctx, sim.disks[followDiskIndex])
+    }
+
+    if (selectedDiskIndex !== -1) {
+      drawDiskCrown(ctx, sim.disks[selectedDiskIndex])
+    }
+
+    ctx.restore()
   }
 }

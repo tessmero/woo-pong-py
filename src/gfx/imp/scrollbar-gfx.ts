@@ -7,9 +7,9 @@
 import { twopi, type Rectangle, type Vec2 } from 'util/math-util'
 import { GfxRegion } from '../gfx-region'
 import { traceObstacle } from 'gfx/obstacle-gfx-util'
-import type { PinballWizard } from 'pinball-wizard'
+import type { InputId, PinballWizard } from 'pinball-wizard'
 import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
-import { CROWN_FILL, Graphics, OBSTACLE_FILL } from 'gfx/graphics'
+import { CROWN_FILL, OBSTACLE_FILL } from 'gfx/graphics'
 import { Scrollbar } from 'scrollbar'
 import type { Disk } from 'simulation/disk'
 import type { DiskPattern } from 'gfx/disk-gfx-util'
@@ -17,6 +17,7 @@ import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx-util'
 import type { Obstacle } from 'simulation/obstacle'
 import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from 'gfx/canvas-rounded-rect-util'
 import type { Barrier } from 'simulation/barrier'
+import { BallSelectionPanel } from 'ball-selection-panel'
 
 const buffer = (typeof document === 'undefined')
   ? null
@@ -35,27 +36,41 @@ export class ScrollbarGfx extends GfxRegion {
     return -(mousePos[1] * window.devicePixelRatio - this._drawRect[1]) / Scrollbar.drawScale
   }
 
-  down(pw: PinballWizard, mousePos: Vec2) {
+  down(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
     pw.camera.pos = this._computeCamPos(pw, mousePos)
-    Scrollbar.isDragging = true
+    if (Scrollbar.isDragging === null) {
+      Scrollbar.isDragging = inputId
+    }
     return false
   }
 
   move(pw: PinballWizard, mousePos: Vec2) {
-    if (Scrollbar.isDragging) {
+    if (BallSelectionPanel.isShowing) {
+      Scrollbar.isDragging = null
+      return
+    }
+
+    if (Scrollbar.isDragging !== null) {
       pw.camera.pos = this._computeCamPos(pw, mousePos)
     }
   }
 
   leave(pw: PinballWizard, mousePos: Vec2) {
+    if (BallSelectionPanel.isShowing) {
+      Scrollbar.isDragging = null
+      return
+    }
+
     if (Scrollbar.isDragging) {
       // user started drag in scrollbar, now moving in another region while scrollbar is held
       pw.camera.pos = this._computeCamPos(pw, mousePos)
     }
   }
 
-  up(_pw: PinballWizard, _mousePos: Vec2) {
-    Scrollbar.isDragging = false
+  up(_pw: PinballWizard, _mousePos: Vec2, inputId: InputId) {
+    if (inputId === Scrollbar.isDragging) {
+      Scrollbar.isDragging = null
+    }
   }
 
   // clear rectangle in graphics buffer
@@ -154,17 +169,24 @@ export class ScrollbarGfx extends GfxRegion {
 
     if (sim) {
       // draw disks
-      const selected = pw.selectedDiskIndex
+      const { selectedDiskIndex, followDiskIndex } = pw
       for (const [diskIndex, disk] of sim.disks.entries()) {
-        const _isSelected = (diskIndex === selected)
-        if (_isSelected) continue // selected disk will be drawn last
-        this.drawDisk(ctx, disk, _isSelected)
+        const isSelected = diskIndex === selectedDiskIndex
+        const isFollowed = diskIndex === followDiskIndex
+        if (isSelected) continue // followed disk will be drawn last
+        if (isFollowed) continue // followed disk will be drawn last
+        this.drawDisk(ctx, disk)
       }
 
-      // draw selected disk
-      if (selected !== -1) {
-        const disk = sim.disks[selected]
-        this.drawDisk(ctx, disk, true)
+      // draw selected disk with gold ring
+      if (selectedDiskIndex !== -1) {
+        const disk = sim.disks[selectedDiskIndex]
+        this.drawDisk(ctx, disk, CROWN_FILL)
+      }
+      // draw followed disk with red ring
+      if (followDiskIndex !== -1 && followDiskIndex !== selectedDiskIndex) {
+        const disk = sim.disks[followDiskIndex]
+        this.drawDisk(ctx, disk, 'red')
       }
 
       // Graphics.drawViewRect(ctx, pw.simViewRect)
@@ -186,25 +208,50 @@ export class ScrollbarGfx extends GfxRegion {
     ctx.save()
     ctx.translate(x, y)
     ctx.scale(scale, scale)
-    ctx.lineWidth = 1 * window.devicePixelRatio / scale
+    // ctx.lineWidth = 1 * window.devicePixelRatio / scale
 
-    Graphics.drawViewRect(ctx, pw.simViewRect)
+    // compute dash that lines up with one circum
+    const dashCycles = 2
+    const dashShrink = 0.2
+    const circumference = 2 * pw.simViewRect[2] + 2 * pw.simViewRect[3]
+    const baseLength = circumference / dashCycles
+    const dashLength = baseLength * dashShrink
+    const gapLength = baseLength * (1 - dashShrink)
+    ctx.setLineDash([dashLength, gapLength])
+    ctx.lineCap = 'round'
 
+    ctx.lineDashOffset = dashLength / 2
+
+    ctx.strokeStyle = 'black'
+    ctx.lineWidth = DISK_RADIUS * 3
+    ctx.strokeRect(...pw.simViewRect)
+    ctx.strokeStyle = 'red'
+    ctx.lineWidth = DISK_RADIUS * 2
+    ctx.strokeRect(...pw.simViewRect)
+
+    ctx.lineDashOffset = pw.simViewRect[3] + dashLength / 2
+
+    ctx.strokeStyle = 'black'
+    ctx.lineWidth = DISK_RADIUS * 3
+    ctx.strokeRect(...pw.simViewRect)
+    ctx.strokeStyle = 'red'
+    ctx.lineWidth = DISK_RADIUS * 2
+    ctx.strokeRect(...pw.simViewRect)
     ctx.restore()
   }
 
   // draw mini view of disk in scrollbar
-  drawDisk(ctx: CanvasRenderingContext2D, disk: Disk, isSelected: boolean) {
+  drawDisk(ctx: CanvasRenderingContext2D, disk: Disk, ringFill?: string) {
     const [cx, cy] = disk.interpolatedPos
 
     ctx.imageSmoothingEnabled = false
-    const edgeRad = VALUE_SCALE * 2 * (isSelected ? 5 : 1.5)
-    ctx.strokeStyle = isSelected ? CROWN_FILL : 'black'
+    const edgeRad = VALUE_SCALE * 2 * (ringFill ? 5 : 1.5)
+    ctx.strokeStyle = ringFill ?? 'black'
     ctx.lineWidth = edgeRad
     ctx.fillStyle = getScaledPattern(disk.pattern)
 
     let baseRad = DISK_RADIUS * 5
-    if (isSelected) {
+    if (ringFill) {
       baseRad += edgeRad / 2
     }
     ctx.beginPath()
@@ -212,9 +259,8 @@ export class ScrollbarGfx extends GfxRegion {
     ctx.fill()
     ctx.stroke()
 
-    if (isSelected) {
+    if (ringFill) {
       // draw two thin black edges
-
       ctx.lineWidth = 3 * VALUE_SCALE
       ctx.strokeStyle = 'black'
       ctx.beginPath()
@@ -229,14 +275,16 @@ export class ScrollbarGfx extends GfxRegion {
 
 function drawFinish(ctx: CanvasRenderingContext2D, finish: Barrier) {
   // Checker size is 1/10 the width, height is 4 squares
-  let [x, y, w, _h] = finish.xywh
+  let x = finish.xywh[0]
+  const y = finish.xywh[1]
+  let w = finish.xywh[2]
   const pad = w / 10
   x += pad
   w -= 2 * pad
   const squareSize = w / 10
   const nCols = 10
   const nRows = 4
-  const h = nRows * squareSize
+  // const h = nRows * squareSize
   for (let row = 0; row < nRows; row++) {
     for (let col = 0; col < nCols; col++) {
       ctx.fillStyle = (row + col) % 2 === 0 ? 'white' : 'black'

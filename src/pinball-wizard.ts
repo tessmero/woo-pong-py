@@ -15,8 +15,7 @@ import type { GlassGfx } from 'gfx/imp/glass-gfx'
 import type { SimGfx } from 'gfx/imp/sim-gfx'
 import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
-import { repaintDiagram, toggleElement } from 'guis/gui-html-elements'
-import { ballSelectionPanel } from 'guis/imp/playing-gui'
+import { toggleElement } from 'guis/gui-html-elements'
 import type { GfxRegionName } from 'imp-names'
 import { GUI } from 'imp-names'
 import type { Speed } from 'simulation/constants'
@@ -30,6 +29,7 @@ import { Simulation } from 'simulation/simulation'
 import { showControls } from 'util/debug-controls'
 import type { Rectangle } from 'util/math-util'
 import { lerp, rectContainsPoint, shuffle, type Vec2 } from 'util/math-util'
+import { shortVibrate } from 'util/vibrate'
 
 // can only be constructed once
 let didConstruct = false
@@ -41,6 +41,8 @@ export type SpeedAnim = {
   startSpeed: number
   // end speed number is inferred from "speed" property
 }
+
+export type InputId = 'mouse' | number
 
 export class PinballWizard {
   // sim for live toppling/rewind
@@ -66,12 +68,20 @@ export class PinballWizard {
   private _speed: Speed = 'normal'
   public get speed() { return this._speed }
   public set speed(s: Speed) {
-    if (this._isHalted) {
+    if (this._isHalted && s !== 'paused') {
+      shortVibrate()
+
       // user tried to advance, but must select a ball first
       const gfx = GfxRegion.create('sim-gfx') as SimGfx
       gfx.startFlashing()
       return
     }
+
+    if (this._speed === s) {
+      return
+    }
+
+    shortVibrate()
 
     this._speed = s
     const targetMult = SPEEDS[s]
@@ -102,6 +112,7 @@ export class PinballWizard {
 
   reset() {
     this.selectedDiskIndex = -1
+    this.followDiskIndex = -1
     this.currentRoomIndex = 0 // greatest room index that has had balls
     this.camera = new Camera()
     this._isHalted = false
@@ -147,6 +158,19 @@ export class PinballWizard {
   private _speedBeforeHalt: Speed = 'normal'
 
   update(dt: number) {
+    // check if mouse has moved since last update
+    if (!this._hasMoved) {
+      // emulate mouse move
+      this.move(this._lastRawPos, this._lastInputId)
+      // this.move([-100,-100],'mouse')
+      // this.hoveredDiskIndex = -1
+      // console.log('mouse was emulated')
+    }
+    else {
+      // console.log('mouse was really moved')
+    }
+    this._hasMoved = false
+
     Graphics.updatePixelAnim(dt);
     (GfxRegion.create('glass-gfx') as GlassGfx).update(this, dt)
     const wasBranched = this.hasBranched
@@ -160,6 +184,8 @@ export class PinballWizard {
         this._speedBeforeHalt = this._speed
         this.speed = 'paused'
       }
+
+      BallSelectionPanel.show(this)
 
       // console.log('sim may need to halt soon, near branching time with no selection')
 
@@ -195,8 +221,8 @@ export class PinballWizard {
       this._speedMult = 0
       this._speed = 'paused'
       this._speedAnim = null
-      // BallSelectionPanel.show()
-      this.onResize()
+      BallSelectionPanel.show(this)
+      // this.onResize()
       // console.log('sim halted, near branching time with no selection')
     }
 
@@ -213,14 +239,14 @@ export class PinballWizard {
     if (this.hasBranched && !wasBranched) {
       // just branched
       // this.onResize()
-      BallSelectionPanel.hide(this)
+      // BallSelectionPanel.hide(this)
     }
 
     if (this.hasFinished && !wasFinished) {
       // just finished
-      BallSelectionPanel.hide(this)
-      // this.onResize()
-      Graphics.targetPixelAnim = 1
+      // BallSelectionPanel.hide(this)
+      this.onResize()
+      // Graphics.targetPixelAnim = 1
     }
 
     this.camera.update(dt, this)
@@ -232,11 +258,11 @@ export class PinballWizard {
       BallSelectionPanel.isRepaintQueued = true
     }
 
-    // repaint ball selection panel if necessary
-    if (BallSelectionPanel.isRepaintQueued) {
-      BallSelectionPanel.isRepaintQueued = false
-      repaintDiagram(this, ballSelectionPanel)
-    }
+    // // repaint ball selection panel if necessary
+    // if (BallSelectionPanel.isRepaintQueued) {
+    //   BallSelectionPanel.isRepaintQueued = false
+    //   repaintDiagram(this, ballSelectionPanel)
+    // }
 
     // this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)
 
@@ -282,7 +308,13 @@ export class PinballWizard {
   public readonly simViewRect: Rectangle = [1, 1, 1, 1]
   public hoveredDiskIndex = -1
 
-  move(rawPos: Vec2, inputId: 'mouse' | number): Vec2 {
+  private _hasMoved = false
+  private _lastRawPos: Vec2 = [0, 0]
+  private _lastInputId: InputId = -1
+  move(rawPos: Vec2, inputId: InputId): Vec2 {
+    this._hasMoved = true
+    this._lastRawPos = rawPos
+    this._lastInputId = inputId
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       const gfx = GfxRegion.create(name as GfxRegionName)
       if (rectContainsPoint(rect, ...rawPos)) {
@@ -295,10 +327,10 @@ export class PinballWizard {
     return this.mousePos
   }
 
-  public isMouseDown = false
+  public isMouseDown: InputId | null = null
   public dragY = 0
 
-  down(rawPos: Vec2, inputId: 'mouse' | number) {
+  down(rawPos: Vec2, inputId: InputId) {
     const _mousePos = this.move(rawPos, inputId)
 
     // for (const [name, rect] of Object.entries(Graphics.regions)) {
@@ -316,7 +348,7 @@ export class PinballWizard {
     // Graphics.cvs.style.setProperty('cursor', 'default')
   }
 
-  up(rawPos: Vec2, inputId: 'mouse' | number) {
+  up(rawPos: Vec2, inputId: InputId) {
     for (const [name, _rect] of Object.entries(Graphics.regions)) {
       // if (rectContainsPoint(rect, ...rawPos)) {
       const gfx = GfxRegion.create(name as GfxRegionName)
@@ -325,20 +357,32 @@ export class PinballWizard {
     }
   }
 
+  private _tryFollowdisk(diskIndex: number) {
+    if (this.hasBranched && this.followDiskIndex === diskIndex) {
+      this.followDiskIndex = -1 // deselect
+    }
+    else {
+      this.followDiskIndex = diskIndex
+    }
+  }
+
   trySelectDisk(diskIndex: number) {
     if (diskIndex === -1) return
     if (this.hasBranched) {
-      this.followDiskIndex = diskIndex
+      this._tryFollowdisk(diskIndex)
       return
     }
 
     this.selectedDiskIndex = diskIndex
-    this.followDiskIndex = diskIndex
+    this._tryFollowdisk(diskIndex)
+    shortVibrate()
     BallSelectionPanel.isRepaintQueued = true
 
     if (this._isHalted) {
       this._isHalted = false
       this.speed = this._speedBeforeHalt
+
+      BallSelectionPanel.hide(this)
     }
 
     // this.onResize()

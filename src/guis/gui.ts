@@ -8,9 +8,10 @@
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { parseLayoutRectangles, type ComputedRects, type CssLayout } from 'util/layout-parser'
 import type { GuiName } from 'imp-names'
-import type { PinballWizard } from 'pinball-wizard'
+import type { InputId, PinballWizard } from 'pinball-wizard'
 import { buildHtmlElement, updateElement } from './gui-html-elements'
 import type { IconName } from 'gfx/button-icons'
+import { Graphics } from 'gfx/graphics'
 
 // export function setMouseCursor(cursor: 'pointer' | 'default') {
 //   document.documentElement.style.cursor = cursor; // set displayed cursor
@@ -101,8 +102,8 @@ export abstract class Gui<TLayoutKey extends string = string> {
   public elements: Record<ElementId, GuiElement<TLayoutKey>> = {}
 
   abstract update(pinballWizard: PinballWizard, dt: number)
-  abstract move(pinballWizard: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
-  abstract down(pinballWizard: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
+  abstract move(pinballWizard: PinballWizard, mousePos: Vec2, inputId: InputId): void
+  abstract down(pinballWizard: PinballWizard, mousePos: Vec2, inputId: InputId): void
   abstract showHideElements(pinballWizard: PinballWizard)
 
   // assigned in create -> init
@@ -174,7 +175,7 @@ export abstract class Gui<TLayoutKey extends string = string> {
 
   // recompute gui element rectangles based on css layout
   public refreshLayout(context: PinballWizard): void {
-    const pxScreenRectangle: Rectangle = [0, 0, window.innerWidth, window.innerHeight]
+    const pxScreenRectangle: Rectangle = Graphics._rootRect// [0, 0, window.innerWidth, window.innerHeight]
 
     this.guiLayout = this.layoutFactory(context)
 

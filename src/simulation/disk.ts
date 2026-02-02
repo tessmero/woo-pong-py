@@ -13,7 +13,7 @@ import { Lut } from './luts/lut'
 import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/disk-normal-lut'
 import type { DiskPattern } from 'gfx/disk-gfx-util'
 import { DISK_RADIUS } from './constants'
-import { applyFrictionX, applyFrictionY } from './luts/imp/disk-friction-lut'
+import { applyFrictionX } from './luts/imp/disk-friction-lut'
 
 // export const DISK_STYLES = ['red', 'green', 'blue', 'yellow'] as const
 // export type DiskStyle = (typeof DISK_STYLES)[number]
@@ -254,13 +254,15 @@ export class Disk {
         applyFrictionX(this.nextState)
       }
     }
-    if ((this.nextState.y - DISK_RADIUS) < bounds[1]) {
-      this.nextState.y = bounds[1] + DISK_RADIUS
-      if (this.nextState.dy < 0) {
-        this.nextState.dy *= -1
-        applyFrictionY(this.nextState)
-      }
-    }
+
+    // // top
+    // if ((this.nextState.y - DISK_RADIUS) < bounds[1]) {
+    //   this.nextState.y = bounds[1] + DISK_RADIUS
+    //   if (this.nextState.dy < 0) {
+    //     this.nextState.dy *= -1
+    //     applyFrictionY(this.nextState)
+    //   }
+    // }
 
     if ((this.nextState.x + DISK_RADIUS) > (bounds[0] + bounds[2])) {
       this.nextState.x = bounds[0] + bounds[2] - DISK_RADIUS

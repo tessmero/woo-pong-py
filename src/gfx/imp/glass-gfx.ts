@@ -10,6 +10,7 @@ import type { Rectangle, Vec2 } from 'util/math-util'
 import { Graphics } from 'gfx/graphics'
 import type { SimGfx } from './sim-gfx'
 import { BallSelectionPanel } from 'ball-selection-panel'
+import { shortVibrate } from 'util/vibrate'
 
 export class GlassGfx extends GfxRegion {
   private _xOffset: number = 0
@@ -65,8 +66,14 @@ export class GlassGfx extends GfxRegion {
   }
 
   down(_pw: PinballWizard, _mousePos: Vec2) {
-    if (Graphics.pixelAnim === 1) {
+    // if (Graphics.pixelAnim === 1) {
+    //   BallSelectionPanel.hide(_pw)
+    // }
+
+    if (BallSelectionPanel.isShowing) {
       BallSelectionPanel.hide(_pw)
+      shortVibrate()
+      return true // consume event
     }
     return false
   }
@@ -117,9 +124,8 @@ export class GlassGfx extends GfxRegion {
   }
 
   protected _draw(ctx: CanvasRenderingContext2D, _pw: PinballWizard, _rect: Rectangle) {
-
     if (!this._opacity) return
-    
+
     // ctx.fillStyle = 'red'
     // ctx.fillRect(10,10,10,10)
     // const test = true
@@ -130,7 +136,7 @@ export class GlassGfx extends GfxRegion {
     const N = GlassGfx.GLASS_RES
     const size = Graphics.glassPixelScale // each pixel is 1x1 on the offscreen canvas
     // ctx.clearRect(0, 0, N*size, N * size)
-    ctx.fillStyle = 'black'
+    ctx.fillStyle = '#555'
     ctx.globalCompositeOperation = 'source-over'
     const xOffsetInt = Math.floor(this._xOffset)
     const xOffsetFrac = this._xOffset - xOffsetInt
@@ -156,10 +162,10 @@ export class GlassGfx extends GfxRegion {
         const opB = opLB * (1 - xOffsetFrac) + opRB * xOffsetFrac
         // Interpolate vertically
         const interpOp = opT * (1 - yOffsetFrac) + opB * yOffsetFrac
-        let alpha = Math.max(0, Math.min(1, interpOp * Graphics.pixelAnim))
+        const alpha = Math.max(0, Math.min(1, interpOp * Graphics.pixelAnim))
         if (alpha > 0) {
-          ctx.globalAlpha = alpha * 0.5
-          ctx.fillRect(x * size - .5, y * size - .5, size, size)
+          ctx.globalAlpha = 1 - Math.pow(1 - alpha, 2)
+          ctx.fillRect(x * size - 0.5, y * size - 0.5, size, size)
         }
       }
     }
@@ -175,12 +181,12 @@ export class GlassGfx extends GfxRegion {
     const vel = this._velocity
     if (!op || !vel) return
 
-    // each disk acts like mouse move
-    const simGfx = GfxRegion.create('sim-gfx') as SimGfx
-    for (const disk of pw.activeSim.disks) {
-      const screenPos = simGfx.simToScreenPos(disk.interpolatedPos)
-      this.touchTile(screenPos)
-    }
+    // // each disk acts like mouse move
+    // const simGfx = GfxRegion.create('sim-gfx') as SimGfx
+    // for (const disk of pw.activeSim.disks) {
+    //   const screenPos = simGfx.simToScreenPos(disk.interpolatedPos)
+    //   this.touchTile(screenPos)
+    // }
 
     // Advance the x and y offsets for scrolling
     this._xOffset = (this._xOffset + dt * GlassGfx.X_SCROLL_RATE) % GlassGfx.GLASS_RES

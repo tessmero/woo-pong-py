@@ -68,7 +68,7 @@ function _drawTitleSim() {
   const ctx = Graphics._mainCtx
   if (!ctx) return
   const w = cvs.width, h = cvs.height
-  const scale = Math.min(w, h) * 0.5
+  const scale = Math.min(w, h) * 1
   // White background
   ctx.save()
   ctx.globalAlpha = 1.0
@@ -81,6 +81,7 @@ function _drawTitleSim() {
   ctx.fillStyle = '#888'
   //   ctx.setLineDash([4, 6])
   //   ctx.lineWidth = 2
+  const rad = 1 * window.devicePixelRatio
   for (const body of bodies) {
     if (body.trail.length > 1) {
       // ctx.beginPath();
@@ -88,7 +89,7 @@ function _drawTitleSim() {
         const [tx, ty] = body.trail[i]
         const px = w / 2 + tx * scale
         const py = h / 2 + ty * scale
-        ctx.fillRect(px, py, 1, 1)
+        ctx.fillRect(px - rad, py - rad, 2 * rad, 2 * rad)
         // if (i === 0) ctx.moveTo(px, py);
         // else ctx.lineTo(px, py);
       }
@@ -102,10 +103,10 @@ function _drawTitleSim() {
   for (const body of bodies) {
     const [x, y] = [w / 2 + body.pos[0] * scale, h / 2 + body.pos[1] * scale]
     ctx.beginPath()
-    ctx.arc(x, y, BODY_RADIUS, 0, 2 * Math.PI)
+    ctx.arc(x, y, BODY_RADIUS * window.devicePixelRatio, 0, 2 * Math.PI)
     ctx.fillStyle = '#aaa'
     ctx.shadowColor = '#999'
-    ctx.shadowBlur = 8
+    ctx.shadowBlur = 8 * window.devicePixelRatio
     ctx.fill()
     ctx.shadowBlur = 0
   }

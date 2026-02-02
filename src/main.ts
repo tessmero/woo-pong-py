@@ -19,9 +19,9 @@ import { SHAPE_PATHS } from 'simulation/shapes'
 import { Gui } from 'guis/gui'
 import { Graphics } from 'gfx/graphics'
 import { TitleScreen } from 'title-screen'
-import { BallSelectionPanel } from 'ball-selection-panel'
 import { BottomBarGfx } from 'gfx/imp/bottom-bar-gfx'
 import { BASE_FONT_SIZE } from 'gfx/canvas-text-util'
+import { shortVibrate } from 'util/vibrate'
 
 // Utility to ensure Rubik font is loaded before drawing
 async function ensureRubikFontLoaded() {
@@ -118,6 +118,8 @@ async function main() {
   pinballWizard.loadingState = 'I'
 
   startBtn.onclick = async () => {
+    shortVibrate()
+
     // document.documentElement.requestFullscreen()
     await pinballWizard.init()
     pinballWizard.gui = Gui.create('playing-gui')

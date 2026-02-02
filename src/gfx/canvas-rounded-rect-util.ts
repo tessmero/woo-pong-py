@@ -160,7 +160,6 @@ export function drawRoundedRect(
     ctx.fill()
   }
 
-  
   // stroke main rounded rect
   ctx.beginPath()
   ctx.moveTo(x + pad + r, y + pad)

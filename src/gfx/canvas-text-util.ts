@@ -5,7 +5,7 @@
  */
 
 export const BASE_FONT_SIZE = 100
-export const FONT_WEIGHT = 350
+export const FONT_WEIGHT = 400
 
 /**
  * Set up the canvas context for Rubik font text, centered at (0,0), scaled to fit the given height.

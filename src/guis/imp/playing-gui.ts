@@ -8,47 +8,47 @@ import { BallSelectionPanel } from 'ball-selection-panel'
 import { Graphics } from 'gfx/graphics'
 import type { GuiElement } from 'guis/gui'
 import { Gui } from 'guis/gui'
-import { setElementLabel, toggleElement } from 'guis/gui-html-elements'
+import { toggleElement } from 'guis/gui-html-elements'
 import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
-import type { PinballWizard } from 'pinball-wizard'
-import type { Speed } from 'simulation/constants'
-import { SECONDS_BEFORE_BRANCH, stepsToSeconds } from 'simulation/constants'
+import type { InputId, PinballWizard } from 'pinball-wizard'
+import { SECONDS_BEFORE_BRANCH } from 'simulation/constants'
 import type { Vec2 } from 'util/math-util'
+import { shortVibrate } from 'util/vibrate'
 
 export type PlayingElem = GuiElement<PlayingLayoutKey>
 
-export const topLabel: PlayingElem = {
-  layoutKey: 'topBar',
-  display: {
-    type: 'panel',
-    label: '',
-  },
-}
+// export const topLabel: PlayingElem = {
+//   layoutKey: 'topBar',
+//   display: {
+//     type: 'panel',
+//     label: '',
+//   },
+// }
 
-export const ballsBtn: PlayingElem = {
-  layoutKey: 'ballsBtn',
-  display: {
-    type: 'button',
-    icon: 'bsp',
-    // draw: (ctx, pw, rect) => {
-    //   const [_x, _y, w, h] = rect
-    //   MiniBsp.drawMiniView(ctx, w, h, pw)
-    //   // MiniBsp.logMiniSvg(w,h,pw)
-    // },
-  },
-  click: ({ pinballWizard }) => {
-    BallSelectionPanel.toggle(pinballWizard)
-  },
-}
+// export const ballsBtn: PlayingElem = {
+//   layoutKey: 'ballsBtn',
+//   display: {
+//     type: 'button',
+//     icon: 'bsp',
+//     // draw: (ctx, pw, rect) => {
+//     //   const [_x, _y, w, h] = rect
+//     //   MiniBsp.drawMiniView(ctx, w, h, pw)
+//     //   // MiniBsp.logMiniSvg(w,h,pw)
+//     // },
+//   },
+//   click: ({ pinballWizard }) => {
+//     BallSelectionPanel.toggle(pinballWizard)
+//   },
+// }
 
-export const clock: PlayingElem = {
-  layoutKey: 'clock',
-  display: {
-    type: 'panel',
-    label: '00:00',
-  },
-}
+// export const clock: PlayingElem = {
+//   layoutKey: 'clock',
+//   display: {
+//     type: 'panel',
+//     label: '00:00',
+//   },
+// }
 export function formatTime(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = Math.floor(totalSeconds % 60)
@@ -60,55 +60,55 @@ export function formatTime(totalSeconds) {
   return `${formattedMinutes}:${formattedSeconds}`
 }
 
-export const pauseBtn: PlayingElem = {
-  layoutKey: 'pauseBtn',
-  display: {
-    type: 'button',
-    icon: 'pause',
-  },
-  click: ({ pinballWizard }) => {
-    pinballWizard.speed = 'paused'
-  },
-}
-export const playBtn: PlayingElem = {
-  layoutKey: 'playBtn',
-  display: {
-    type: 'button',
-    icon: 'play',
-  },
-  click: ({ pinballWizard }) => {
-    pinballWizard.speed = 'normal'
-  },
-}
+// export const pauseBtn: PlayingElem = {
+//   layoutKey: 'pauseBtn',
+//   display: {
+//     type: 'button',
+//     icon: 'pause',
+//   },
+//   click: ({ pinballWizard }) => {
+//     pinballWizard.speed = 'paused'
+//   },
+// }
+// export const playBtn: PlayingElem = {
+//   layoutKey: 'playBtn',
+//   display: {
+//     type: 'button',
+//     icon: 'play',
+//   },
+//   click: ({ pinballWizard }) => {
+//     pinballWizard.speed = 'normal'
+//   },
+// }
 
-export const fastBtn: PlayingElem = {
-  layoutKey: 'fastBtn',
-  display: {
-    type: 'button',
-    icon: 'fast',
-  },
-  click: ({ pinballWizard }) => {
-    pinballWizard.speed = 'fast'
-  },
-}
+// export const fastBtn: PlayingElem = {
+//   layoutKey: 'fastBtn',
+//   display: {
+//     type: 'button',
+//     icon: 'fast',
+//   },
+//   click: ({ pinballWizard }) => {
+//     pinballWizard.speed = 'fast'
+//   },
+// }
 
-export const fasterBtn: PlayingElem = {
-  layoutKey: 'fasterBtn',
-  display: {
-    type: 'button',
-    icon: 'faster',
-  },
-  click: ({ pinballWizard }) => {
-    pinballWizard.speed = 'faster'
-  },
-}
+// export const fasterBtn: PlayingElem = {
+//   layoutKey: 'fasterBtn',
+//   display: {
+//     type: 'button',
+//     icon: 'faster',
+//   },
+//   click: ({ pinballWizard }) => {
+//     pinballWizard.speed = 'faster'
+//   },
+// }
 
-export const speedBtns: Record<Speed, PlayingElem> = {
-  paused: pauseBtn,
-  normal: playBtn,
-  fast: fastBtn,
-  faster: fasterBtn,
-}
+// export const speedBtns: Record<Speed, PlayingElem> = {
+//   paused: pauseBtn,
+//   normal: playBtn,
+//   fast: fastBtn,
+//   faster: fasterBtn,
+// }
 
 // export const diskBtns: Array<PlayingElem> = Array.from({ length: DISK_COUNT }, (_, i) => ({
 //   layoutKey: `disk${i}` as PlayingLayoutKey,
@@ -131,22 +131,23 @@ const resetBtn: PlayingElem = {
   },
   click: ({ pinballWizard }) => {
     BallSelectionPanel.hide(pinballWizard, true)
+    shortVibrate()
     pinballWizard.reset()
     Graphics.targetPixelAnim = 0
   },
 }
 
-export const ballSelectionPanel: PlayingElem = {
-  layoutKey: 'bsp',
-  display: {
-    type: 'diagram',
-    draw: (ctx, pw, rect) => {
-      // GfxRegion.create('bsp-gfx').draw(ctx, pw, rect)
-      BallSelectionPanel.draw(ctx, pw, rect)
-    },
-    classes: ['transparent'],
-  },
-}
+// export const ballSelectionPanel: PlayingElem = {
+//   layoutKey: 'bsp',
+//   display: {
+//     type: 'diagram',
+//     draw: (ctx, pw, rect) => {
+//       // GfxRegion.create('bsp-gfx').draw(ctx, pw, rect)
+//       BallSelectionPanel.draw(ctx, pw, rect)
+//     },
+//     classes: ['transparent'],
+//   },
+// }
 
 // export const bspCloseBtn: PlayingElem = {
 //   layoutKey: 'bspCloseBtn',
@@ -157,18 +158,18 @@ export const ballSelectionPanel: PlayingElem = {
 //   down: ({pinballWizard}) => BallSelectionPanel.hide(pinballWizard),
 // }
 
-const bspElems: Array<PlayingElem> = [
-  ballSelectionPanel,
-  // bspCloseBtn,
-]
+// const bspElems: Array<PlayingElem> = [
+//   ballSelectionPanel,
+//   // bspCloseBtn,
+// ]
 
 const elements: Array<PlayingElem> = [
-  topLabel,
-  ballsBtn,
-  clock,
-  ...Object.values(speedBtns),
+  // topLabel,
+  // ballsBtn,
+  // clock,
+  // ...Object.values(speedBtns),
   resetBtn,
-  ...bspElems,
+  // ...bspElems,
   // ...diskBtns,
 ]
 
@@ -183,44 +184,44 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
 
   // private lastSpeed: Speed | null = null
   // private lastStatus: string | null = null
-  update(pinballWizard: PinballWizard, _dt: number) {
-    // update clock display
-    const steps = pinballWizard.activeSim.stepCount
-    const seconds = stepsToSeconds(steps)
-    const label = formatTime(seconds)
-    setElementLabel(clock, label)
+  update(_pinballWizard: PinballWizard, _dt: number) {
+    // // update clock display
+    // const steps = pinballWizard.activeSim.stepCount
+    // const seconds = stepsToSeconds(steps)
+    // const label = formatTime(seconds)
+    // setElementLabel(clock, label)
 
-    // update active speed button
-    // if (pinballWizard.speed !== this.lastSpeed) {
-    for (const [speed, btn] of Object.entries(speedBtns)) {
-      const isActive = (speed === pinballWizard.speed)
-      btn.htmlElem!.classList.toggle('active', isActive)
-    }
+    // // update active speed button
+    // // if (pinballWizard.speed !== this.lastSpeed) {
+    // for (const [speed, btn] of Object.entries(speedBtns)) {
+    //   const isActive = (speed === pinballWizard.speed)
+    //   btn.htmlElem!.classList.toggle('active', isActive)
     // }
-    // this.lastSpeed = pinballWizard.speed
+    // // }
+    // // this.lastSpeed = pinballWizard.speed
 
-    // update status text
-    const status = getStatusText(pinballWizard, seconds)
-    setElementLabel(topLabel, status)
-    // this.lastStatus = status
+    // // update status text
+    // const status = getStatusText(pinballWizard, seconds)
+    // setElementLabel(topLabel, status)
+    // // this.lastStatus = status
 
-    // repaintDiagram(pinballWizard, ballsBtn)
+    // // repaintDiagram(pinballWizard, ballsBtn)
   }
 
-  move(_pinballWizard: PinballWizard, _mousePos: Vec2, _inputId: 'mouse' | number) {
+  move(_pinballWizard: PinballWizard, _mousePos: Vec2, _inputId: InputId) {
   }
 
-  down(_pinballWizard: PinballWizard, _mousePos: Vec2, _inputId: 'mouse' | number) {
+  down(_pinballWizard: PinballWizard, _mousePos: Vec2, _inputId: InputId) {
   }
 
   showHideElements(pinballWizard: PinballWizard) {
-    for (const elem of elements) {
-      toggleElement(elem, false)// !pinballWizard.isTitleScreen)
-    }
+    // for (const elem of elements) {
+    //   toggleElement(elem, false)// !pinballWizard.isTitleScreen)
+    // }
 
-    for (const bspElem of bspElems) {
-      toggleElement(bspElem, BallSelectionPanel.isShowing)
-    }
+    // for (const bspElem of bspElems) {
+    //   toggleElement(bspElem, BallSelectionPanel.isShowing)
+    // }
     toggleElement(resetBtn, pinballWizard.activeSim.winningDiskIndex !== -1)
     // const hasBranched = pinballWizard.hasBranched
     // for (const btn of diskBtns) {
@@ -246,7 +247,7 @@ export function getStatusText(
     return `${remainingSeconds} sec choose a ball`
   }
   if (pinballWizard.hasBranched) {
-    return `Choice locked. Wait to finish.`
+    return `Choice locked`
   }
 
   // const patternName = pinballWizard.activeSim.disks[i].pattern

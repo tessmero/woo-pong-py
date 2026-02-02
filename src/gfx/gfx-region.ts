@@ -5,7 +5,7 @@
  */
 
 import type { GfxRegionName } from 'imp-names'
-import type { PinballWizard } from 'pinball-wizard'
+import type { InputId, PinballWizard } from 'pinball-wizard'
 import type { Rectangle, Vec2 } from 'util/math-util'
 
 type Registered = () => GfxRegion
@@ -35,10 +35,10 @@ export abstract class GfxRegion {
     this._draw(ctx, pw, rect)
   }
 
-  abstract down(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): boolean
-  abstract move(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
-  abstract leave(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
-  abstract up(pw: PinballWizard, mousePos: Vec2, inputId: 'mouse' | number): void
+  abstract down(pw: PinballWizard, mousePos: Vec2, inputId: InputId): boolean
+  abstract move(pw: PinballWizard, mousePos: Vec2, inputId: InputId): void
+  abstract leave(pw: PinballWizard, mousePos: Vec2, inputId: InputId): void
+  abstract up(pw: PinballWizard, mousePos: Vec2, inputId: InputId): void
   protected abstract _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle)
 
   // static registry pattern
