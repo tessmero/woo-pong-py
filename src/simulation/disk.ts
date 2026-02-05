@@ -14,6 +14,7 @@ import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/dis
 import type { DiskPattern } from 'gfx/disk-gfx-util'
 import { DISK_RADIUS } from './constants'
 import { applyFrictionX } from './luts/imp/disk-friction-lut'
+import { playImpact } from 'audio/collision-sounds'
 
 // export const DISK_STYLES = ['red', 'green', 'blue', 'yellow'] as const
 // export type DiskStyle = (typeof DISK_STYLES)[number]
@@ -225,7 +226,11 @@ export class Disk {
           this.nextState.dy = ndy
 
           hasNoHits = false
-          return
+
+          // play sound
+          playImpact(false)
+
+          return // disk can't bounce more than once per step
         }
       }
     }
@@ -236,6 +241,8 @@ export class Disk {
       this.nextState.y = ny
     }
     else {
+      throw new Error('this should be unreachable')
+
       // apply changed velocity
       this.nextState.x += ndx
       this.nextState.y += ndy

@@ -22,6 +22,7 @@ import { TitleScreen } from 'title-screen'
 import { BottomBarGfx } from 'gfx/imp/bottom-bar-gfx'
 import { BASE_FONT_SIZE } from 'gfx/canvas-text-util'
 import { shortVibrate } from 'util/vibrate'
+import { loadAllSounds } from 'audio/sound-asset-loader'
 
 // Utility to ensure Rubik font is loaded before drawing
 async function ensureRubikFontLoaded() {
@@ -105,7 +106,7 @@ async function main() {
   // Scrollbar.initListeners(pinballWizard)
   // BallSelectionPanel.initListeners(pinballWizard)
   pinballWizard.loadingState = 'E'
-  await _initLuts(startBtn)
+  await _initAssets(startBtn)
   pinballWizard.loadingState = 'F'
   startBtn.innerHTML = 'START'
   pinballWizard.loadingState = 'G'
@@ -249,17 +250,13 @@ function _initListeners(pinballWizard: PinballWizard) {
   })
 }
 
-function _initRlayouts() {
-  // const isComputing = false
-  // for (const name of ROOM_LAYOUT.NAMES) {
-  // }
-}
 
-async function _initLuts(loadingLabel: HTMLElement) {
+async function _initAssets(loadingLabel: HTMLElement) {
   const isComputing = false
 
   const totalTasks = Object.keys(SHAPE_PATHS).length + (LUT.NAMES.length - 1)
   let tasksFinished = 0
+
 
   async function finishTask() {
     // // simulate lag
@@ -269,6 +266,9 @@ async function _initLuts(loadingLabel: HTMLElement) {
     const pctFinished = Math.floor(100 * tasksFinished / totalTasks)
     if (loadingLabel) loadingLabel.innerHTML = `LOADING (${pctFinished}%)`
   }
+
+  await loadAllSounds()
+  await finishTask()
 
   for (const lutName of LUT.NAMES) {
     if (lutName === 'obstacle-lut') {
