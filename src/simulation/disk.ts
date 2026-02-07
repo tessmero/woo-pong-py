@@ -12,9 +12,10 @@ import { type ObstacleCollision } from './luts/imp/obstacle-lut'
 import { Lut } from './luts/lut'
 import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/disk-normal-lut'
 import type { DiskPattern } from 'gfx/disk-gfx-util'
-import { DISK_RADIUS } from './constants'
+import { DISK_RADIUS, TAIL_STEPS } from './constants'
 import { applyFrictionX } from './luts/imp/disk-friction-lut'
 import { playImpact } from 'audio/collision-sounds'
+import { SimHistory } from './sim-history'
 
 // export const DISK_STYLES = ['red', 'green', 'blue', 'yellow'] as const
 // export type DiskStyle = (typeof DISK_STYLES)[number]
@@ -76,11 +77,6 @@ export class DiskState {
   }
 }
 
-
-const tailEps = 0// 0.1 * DISK_RADIUS // skip drawing tail segments within eps of neighbors
-
-const dummy: [number, number, number] = [0, 0, 0]
-
 export class Disk {
   pattern: DiskPattern = 'white'
 
@@ -97,43 +93,6 @@ export class Disk {
     }
   }
 
-  // x,y,cumulative distance along graphical tail
-  tail(): Array<[number, number, number]> {
-    const result: Array<[number, number, number]> = []
-    // let lastX = 0
-    // let lastY = 0
-    // let cumulativeDistance = 0
-    // let lastDrawnCumDist = 0
-    // for (let i = 0; i < tailLength; i += 10) {
-    //   const realIndex = 2 * ((Disk.historyIndex + tailLength - i) % tailLength)
-    //   const x = this._history[realIndex]
-    //   const y = this._history[realIndex + 1]
-
-    //   if (i > 0) {
-    //     const segLen = Math.hypot(x - lastX, y - lastY)
-    //     cumulativeDistance += segLen
-    //   }
-    //   lastX = x
-    //   lastY = y
-
-    //   if (
-    //     ((cumulativeDistance - lastDrawnCumDist) < tailEps)
-    //     && (i < (tailLength - 1))
-    //   ) {
-    //     // skip drawing small segment
-
-    //   }
-    //   else {
-    //     dummy[0] = Math.round(x)
-    //     dummy[1] = Math.round(y)
-    //     dummy[2] = Math.round(cumulativeDistance)
-
-    //     result.push([...dummy])
-    //     lastDrawnCumDist = cumulativeDistance
-    //   }
-    // }
-    return result
-  }
 
   static fromJson(obj: object) {
     const d = new Disk()
@@ -148,7 +107,7 @@ export class Disk {
   }
 
   // move one tick
-  advance(obstacles: Array<Obstacle>) {
+  advance(obstacles: Array<Obstacle>, stepIndex: number) {
     const x = this.currentState.x
     const y = this.currentState.y
     const dx = this.currentState.dx
@@ -163,7 +122,7 @@ export class Disk {
     let oi = 0
     for (; oi < obstacles.length; oi++) {
       const obs = obstacles[oi]
-      if (obs.isHidden) continue
+      if (obs.hideOnStep !== -1) continue // obstacle is hidden for purposes of simulation
       if (rectContainsPoint(obs.collisionRect, nx, ny)) {
         const xRad = (obs.lut as ObstacleLut).obsOffsetDetailX
         const yRad = (obs.lut as ObstacleLut).obsOffsetDetailY
@@ -184,7 +143,7 @@ export class Disk {
         }
         const col = obs.lut.tree[i0 + xRad]![i1 + yRad] as null | ObstacleCollision
         if (col) {
-          obs.room?.obstacleHit(obs)
+          obs.room?.obstacleHit(obs, stepIndex)
 
           // collided with obstacle
           const [xAdj, yAdj, normIndex] = col

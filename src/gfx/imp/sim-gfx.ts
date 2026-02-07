@@ -14,6 +14,7 @@ import { drawObstacles } from 'gfx/obstacle-gfx-util'
 import type { Barrier } from 'simulation/barrier'
 import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from '../canvas-rounded-rect-util'
 import { BallSelectionPanel } from 'ball-selection-panel'
+import { topConfig } from 'configs/imp/top-config'
 
 const ballFlashDuration = 2000 // ms
 const ballFlashCycles = 5 // cycles per duration
@@ -268,8 +269,8 @@ export class SimGfx extends GfxRegion {
     // this._drawBounds(ctx, pw)
     // this._drawBoundsOuterEdges(ctx, pw)
 
-    for (const [_diskIndex, disk] of sim.disks.entries()) {
-      drawDisk(ctx, disk)
+    for (const [diskIndex, disk] of sim.disks.entries()) {
+      drawDisk(ctx, diskIndex, disk)
       if (isFlashOn) {
         drawDiskHoverHalo(ctx, disk)
       }
@@ -299,11 +300,11 @@ export class SimGfx extends GfxRegion {
     // Graphics.drawViewRect(ctx, pw.simViewRect)
 
     // // debug room bounds
-    // ctx.strokeStyle = 'blue'
-    // ctx.fillStyle = 'blue'
-    // const gfxScale = 1 / 10 // extra scale factor needed to support text
-    // ctx.scale(1 / gfxScale, 1 / gfxScale)
-    // ctx.font = `${1 * VALUE_SCALE}px serif`
+    ctx.strokeStyle = 'blue'
+    ctx.fillStyle = 'blue'
+    const gfxScale = 1 / 10 // extra scale factor needed to support text
+    ctx.scale(1 / gfxScale, 1 / gfxScale)
+    ctx.font = `${Math.floor(0.3 * VALUE_SCALE)}px serif`
     // ctx.lineWidth = 0.2 * VALUE_SCALE * gfxScale
     // for (const room of sim.level.rooms) {
     //   const [x, y, w, h] = room.bounds
@@ -335,6 +336,13 @@ export class SimGfx extends GfxRegion {
     //     const [x, y] = obstacle.pos
     //     ctx.fillText(obstacle.label, x * gfxScale, y * gfxScale)
     //   }
+    // }
+
+    // // debug hideOnStep for breakout bricks
+    // const displayStep = sim.stepCount - topConfig.flatConfig.audioLatencySteps
+    // for (const obstacle of sim.obstacles) {
+    //   const [x, y] = obstacle.pos
+    //   ctx.fillText(`${obstacle.hideOnStep} (${displayStep})`, x * gfxScale, y * gfxScale)
     // }
 
     ctx.restore()

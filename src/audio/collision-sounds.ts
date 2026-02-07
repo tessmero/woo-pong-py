@@ -23,15 +23,7 @@ export function setSimAudibleRect(rect: Rectangle) {
   simAudibleRect[3] = rect[3]
 }
 
-export function playImpact(simPos: DiskState, isBallBall: boolean) {
-  const { x, y } = simPos
-  if (!rectContainsPoint(simAudibleRect, x, y)) {
-    return // don't play sound, ball is outside of audible region
-  }
-
-  // console.log('play impact')
-
-  const url = isBallBall ? ballBallImpact : ballObstacleImpact
+export function playSound(url: SoundAssetUrl, volume = 0.1) {
   const sound: Howl = getSound(url)
   const vol = 0.1
   // const x = 0
@@ -41,4 +33,16 @@ export function playImpact(simPos: DiskState, isBallBall: boolean) {
   const _id = sound.play()
   // sound.volume(vol, id)
   // sound.stereo(pan, id)
+}
+
+export function playImpact(simPos: DiskState, isBallBall: boolean) {
+  const { x, y } = simPos
+  if (!rectContainsPoint(simAudibleRect, x, y)) {
+    return // don't play sound, ball is outside of audible region
+  }
+
+  // console.log('play impact')
+
+  const url = isBallBall ? ballBallImpact : ballObstacleImpact
+  playSound(url)
 }

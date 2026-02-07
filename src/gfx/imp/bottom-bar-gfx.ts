@@ -17,6 +17,7 @@ import { BallSelectionPanel } from 'ball-selection-panel'
 import { setupRubikText } from '../canvas-text-util'
 import { drawRoundedRect, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
 import { shortVibrate } from 'util/vibrate'
+import { playSound } from 'audio/collision-sounds'
 
 const _LAYOUT_KEYS = ['bsp', 'clock', 'pause', 'play', 'fast', 'faster'] as const
 type LayoutKey = (typeof _LAYOUT_KEYS)[number]
@@ -70,6 +71,7 @@ export class BottomBarGfx extends GfxRegion {
 
     if (this._held) {
       clickActions[this._held](pw)
+      playSound('click_002.ogg')
     }
     return false
   }

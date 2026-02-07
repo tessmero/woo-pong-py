@@ -38,6 +38,7 @@ export class Obstacle {
 
   get isFlippedX() { return this._isFlippedX }
 
+  hideOnStep = -1
   isHidden = false
   label: string | null = null
 

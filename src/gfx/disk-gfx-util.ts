@@ -9,6 +9,7 @@ import { type Disk } from 'simulation/disk'
 import type { Vec2 } from 'util/math-util'
 import { twopi } from 'util/math-util'
 import { CROWN_FILL } from './graphics'
+import { SimHistory } from 'simulation/sim-history'
 
 const maxTailDistance = 3 * DISK_RADIUS
 
@@ -133,7 +134,7 @@ export function drawDiskCrown(
 }
 
 export function drawDisk(
-  ctx: CanvasRenderingContext2D, disk: Disk,
+  ctx: CanvasRenderingContext2D, diskIndex: number, disk: Disk,
 ) {
   // const [cx, cy, _dx, _dy] = disk.currentState
   const [cx, cy] = disk.displayPos
@@ -151,7 +152,7 @@ export function drawDisk(
   ctx.moveTo(cx, cy)
   ctx.arc(cx, cy, DISK_RADIUS * (1 - i * tailShrinkRatio / TAIL_STEPS), 0, twopi)
   if (isShowingTails) {
-    for (const [x, y, distance] of disk.tail()) {
+    for (const [x, y, distance] of SimHistory.tail(diskIndex)) {
       // draw point in tail
       const rad = DISK_RADIUS * (1 - (Math.min(distance, maxTailDistance) / maxTailDistance))
 

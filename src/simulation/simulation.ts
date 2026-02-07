@@ -106,7 +106,7 @@ export class Simulation {
 
     // collide disks with barriers
     for (const [diskIndex, disk] of this.disks.entries()) {
-      disk.advance(this.obstacles)
+      disk.advance(this.obstacles, this._stepCount)
 
       disk.pushInBounds(this.level.bounds)
 
