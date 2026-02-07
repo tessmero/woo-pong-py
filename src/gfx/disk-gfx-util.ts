@@ -4,8 +4,8 @@
  * Disk graphics.
  */
 
-import { CLICKABLE_RADIUS, DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
-import { tailLength, type Disk } from 'simulation/disk'
+import { CLICKABLE_RADIUS, DISK_RADIUS, TAIL_STEPS, VALUE_SCALE } from 'simulation/constants'
+import { type Disk } from 'simulation/disk'
 import type { Vec2 } from 'util/math-util'
 import { twopi } from 'util/math-util'
 import { CROWN_FILL } from './graphics'
@@ -18,7 +18,7 @@ export function drawDiskHoverHalo(
   ctx: CanvasRenderingContext2D, disk: Disk,
 ) {
   // const [cx, cy, _dx, _dy] = disk.currentState
-  const [cx, cy] = disk.interpolatedPos
+  const [cx, cy] = disk.displayPos
 
   ctx.strokeStyle = 'black'
   ctx.lineWidth = VALUE_SCALE * 0.5
@@ -31,7 +31,7 @@ export function drawDiskFollowHalo(
   ctx: CanvasRenderingContext2D, disk: Disk,
 ) {
   // const [cx, cy, _dx, _dy] = disk.currentState
-  const [cx, cy] = disk.interpolatedPos
+  const [cx, cy] = disk.displayPos
 
   // compute dash that lines up with one circum
   const dashCycles = 7
@@ -109,7 +109,7 @@ function getDiskCrownCache() {
 export function drawDiskCrown(
   ctx: CanvasRenderingContext2D, disk: Disk,
 ) {
-  const [cx, cy] = disk.interpolatedPos
+  const [cx, cy] = disk.displayPos
   const cache = getDiskCrownCache()
 
   ctx.save()
@@ -136,7 +136,7 @@ export function drawDisk(
   ctx: CanvasRenderingContext2D, disk: Disk,
 ) {
   // const [cx, cy, _dx, _dy] = disk.currentState
-  const [cx, cy] = disk.interpolatedPos
+  const [cx, cy] = disk.displayPos
 
   const edgeRad = VALUE_SCALE * 0.8
   const tailShrinkRatio = 2
@@ -149,9 +149,9 @@ export function drawDisk(
   ctx.beginPath()
   let i = 0
   ctx.moveTo(cx, cy)
-  ctx.arc(cx, cy, DISK_RADIUS * (1 - i * tailShrinkRatio / tailLength), 0, twopi)
+  ctx.arc(cx, cy, DISK_RADIUS * (1 - i * tailShrinkRatio / TAIL_STEPS), 0, twopi)
   if (isShowingTails) {
-    for (const [x, y, distance] of disk.history()) {
+    for (const [x, y, distance] of disk.tail()) {
       // draw point in tail
       const rad = DISK_RADIUS * (1 - (Math.min(distance, maxTailDistance) / maxTailDistance))
 

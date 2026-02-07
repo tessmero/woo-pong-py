@@ -242,7 +242,7 @@ export class ScrollbarGfx extends GfxRegion {
 
   // draw mini view of disk in scrollbar
   drawDisk(ctx: CanvasRenderingContext2D, disk: Disk, ringFill?: string) {
-    const [cx, cy] = disk.interpolatedPos
+    const [cx, cy] = disk.displayPos
 
     ctx.imageSmoothingEnabled = false
     const edgeRad = VALUE_SCALE * 2 * (ringFill ? 5 : 1.5)

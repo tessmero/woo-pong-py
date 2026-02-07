@@ -21,7 +21,6 @@ export class BallSelectionPanel {
   }
 
   static show(pw: PinballWizard) {
-    Graphics._glassCvs.style.setProperty('display', 'block')
     Graphics._bspCvs.style.setProperty('display', 'block')
     // ballsBtn.htmlElem?.classList.add('active')
     Graphics.targetPixelAnim = 1
@@ -30,7 +29,6 @@ export class BallSelectionPanel {
   }
 
   static hide(pw: PinballWizard, skipResize = false) {
-    Graphics._glassCvs.style.setProperty('display', 'none')
     Graphics._bspCvs.style.setProperty('display', 'none')
     // ballsBtn.htmlElem?.classList.remove('active')
     Graphics.targetPixelAnim = 0

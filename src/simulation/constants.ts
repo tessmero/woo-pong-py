@@ -21,7 +21,7 @@ export const ROOM_COUNT = 8
 
 export const RESTITUTION = 1
 
-export const STEP_DURATION = 4
+export const STEP_DURATION = 4 // millisecs per step
 export const VALUE_SCALE = 1e4
 export const OBSTACLE_DETAIL_SCALE = 1e3
 
@@ -32,8 +32,14 @@ export const DISK_RADSQ = DISK_RADIUS * DISK_RADIUS
 export const CLICKABLE_RADIUS = DISK_RADIUS * 2
 export const CLICKABLE_RADSQ = CLICKABLE_RADIUS * CLICKABLE_RADIUS
 
-export const STEPS_BEFORE_BRANCH = 1.5e4 // number of steps before branching
-export const LOOK_AHEAD_STEPS = 200 // start halting when this close to branch time with no selection
+// number of past steps to store for purposes of drawing tails behind disks
+export const TAIL_STEPS = 100
+
+// number of steps to simulate ahead of time to support audio latency correction
+export const LATENCY_LOOK_AHEAD_STEPS = Math.floor(1000 / STEP_DURATION) // (1 second)
+
+export const STEPS_BEFORE_BRANCH = 1.5e4 // number of steps before branching (30 sec)
+export const HALT_LOOK_AHEAD_STEPS = 200 // start halting when this close to branch time with no selection
 
 export function stepsToSeconds(steps: number) {
   return Math.floor(steps * STEP_DURATION / SPEEDS.normal / 1000)

@@ -76,7 +76,6 @@ export class DiskState {
   }
 }
 
-export const tailLength = 100 // number of past positions to remember
 
 const tailEps = 0// 0.1 * DISK_RADIUS // skip drawing tail segments within eps of neighbors
 
@@ -85,69 +84,55 @@ const dummy: [number, number, number] = [0, 0, 0]
 export class Disk {
   pattern: DiskPattern = 'white'
 
-  private readonly _history: Float32Array = new Float32Array(tailLength * 2) // positions along tail
   readonly currentState: DiskState = new DiskState(0, 0, 0, 0)
   readonly nextState: DiskState = new DiskState(0, 0, 0, 0)
 
   stepFrac = 0
-  readonly lastStepPos: Vec2 = [0, 0]
-  readonly interpolatedPos: Vec2 = [0, 0]
+  readonly displayPos: Vec2 = [0, 0]
 
   // called once at end of step
   static flushStates(disks: Array<Disk>) {
     for (const d of disks) {
-      d.lastStepPos[0] = d.currentState.x
-      d.lastStepPos[1] = d.currentState.y
       d.currentState.copy(d.nextState)
     }
   }
 
-  history(): Array<[number, number, number]> {
+  // x,y,cumulative distance along graphical tail
+  tail(): Array<[number, number, number]> {
     const result: Array<[number, number, number]> = []
-    let lastX = 0
-    let lastY = 0
-    let cumulativeDistance = 0
-    let lastDrawnCumDist = 0
-    for (let i = 0; i < tailLength; i += 10) {
-      const realIndex = 2 * ((Disk.historyIndex + tailLength - i) % tailLength)
-      const x = this._history[realIndex]
-      const y = this._history[realIndex + 1]
+    // let lastX = 0
+    // let lastY = 0
+    // let cumulativeDistance = 0
+    // let lastDrawnCumDist = 0
+    // for (let i = 0; i < tailLength; i += 10) {
+    //   const realIndex = 2 * ((Disk.historyIndex + tailLength - i) % tailLength)
+    //   const x = this._history[realIndex]
+    //   const y = this._history[realIndex + 1]
 
-      if (i > 0) {
-        const segLen = Math.hypot(x - lastX, y - lastY)
-        cumulativeDistance += segLen
-      }
-      lastX = x
-      lastY = y
+    //   if (i > 0) {
+    //     const segLen = Math.hypot(x - lastX, y - lastY)
+    //     cumulativeDistance += segLen
+    //   }
+    //   lastX = x
+    //   lastY = y
 
-      if (
-        ((cumulativeDistance - lastDrawnCumDist) < tailEps)
-        && (i < (tailLength - 1))
-      ) {
-        // skip drawing small segment
+    //   if (
+    //     ((cumulativeDistance - lastDrawnCumDist) < tailEps)
+    //     && (i < (tailLength - 1))
+    //   ) {
+    //     // skip drawing small segment
 
-      }
-      else {
-        dummy[0] = Math.round(x)
-        dummy[1] = Math.round(y)
-        dummy[2] = Math.round(cumulativeDistance)
+    //   }
+    //   else {
+    //     dummy[0] = Math.round(x)
+    //     dummy[1] = Math.round(y)
+    //     dummy[2] = Math.round(cumulativeDistance)
 
-        result.push([...dummy])
-        lastDrawnCumDist = cumulativeDistance
-      }
-    }
+    //     result.push([...dummy])
+    //     lastDrawnCumDist = cumulativeDistance
+    //   }
+    // }
     return result
-  }
-
-  static historyIndex = 0 // rolling index in history arrays
-  static updateHistory(disks: Array<Disk>) {
-    Disk.historyIndex = (Disk.historyIndex + 1) % tailLength
-    const realIndex = Disk.historyIndex * 2
-    for (const d of disks) {
-      // push current position to history
-      d._history[realIndex] = d.currentState.x
-      d._history[realIndex + 1] = d.currentState.y
-    }
   }
 
   static fromJson(obj: object) {
@@ -228,7 +213,7 @@ export class Disk {
           hasNoHits = false
 
           // play sound
-          playImpact(false)
+          playImpact(this.nextState, false)
 
           return // disk can't bounce more than once per step
         }

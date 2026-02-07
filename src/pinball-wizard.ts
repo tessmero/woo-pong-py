@@ -4,6 +4,7 @@
  * Main object constructed once in main.ts.
  */
 
+import { setSimAudibleRect } from 'audio/collision-sounds'
 import { BallSelectionPanel } from 'ball-selection-panel'
 import { Camera } from 'camera'
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
@@ -20,7 +21,7 @@ import type { GfxRegionName } from 'imp-names'
 import { GUI } from 'imp-names'
 import type { Speed } from 'simulation/constants'
 import {
-  LOOK_AHEAD_STEPS,
+  HALT_LOOK_AHEAD_STEPS,
   ROOM_COUNT,
   SPEEDS, STEPS_BEFORE_BRANCH,
 } from 'simulation/constants'
@@ -178,7 +179,7 @@ export class PinballWizard {
 
     // anticipate halting needed soon
     if ((!this._isHalted)
-      && (this.activeSim.stepCount >= (STEPS_BEFORE_BRANCH - LOOK_AHEAD_STEPS))
+      && (this.activeSim.stepCount >= (STEPS_BEFORE_BRANCH - HALT_LOOK_AHEAD_STEPS))
       && (this.selectedDiskIndex === -1)) {
       if (this._speed !== 'paused') {
         this._speedBeforeHalt = this._speed
@@ -227,6 +228,10 @@ export class PinballWizard {
     }
 
     const isBranchingAllowed = this.selectedDiskIndex !== -1
+
+    setSimAudibleRect(this.simViewRect) // update reiogn in sim where sounds are audible
+
+    // advance physics, append to sim-history, set display positions, play sounds
     this.activeSim.update(dt * this._speedMult, isBranchingAllowed)
 
     if (this.activeSim.winningDiskIndex !== -1) {
@@ -269,7 +274,7 @@ export class PinballWizard {
     // jump to room with selected ball
     if (this.followDiskIndex !== -1) {
       if (this.camera.isIdle) {
-        const pos = this.activeSim.disks[this.followDiskIndex].interpolatedPos
+        const pos = this.activeSim.disks[this.followDiskIndex].displayPos
         const roomIndex = this.activeSim.level.rooms.findIndex(
           room => rectContainsPoint(room.bounds, ...pos),
         )

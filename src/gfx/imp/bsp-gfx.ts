@@ -189,7 +189,7 @@ function drawDisk(
   scale: number,
   isSelected = false, isHovered = false, isFollowed = false,
 ) {
-  const [x0, y0] = disk.interpolatedPos.map(v => -v / VALUE_SCALE)
+  const [x0, y0] = disk.displayPos.map(v => -v / VALUE_SCALE)
   const scaledRadius = diskRadius * scale
 
   ctx.save()

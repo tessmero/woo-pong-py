@@ -7,9 +7,9 @@
 import { Configurable } from '../configurable'
 import type { ConfigTree } from '../config-tree'
 import type { PinballWizard } from 'pinball-wizard'
-import { SPEEDS } from 'simulation/constants'
+import { SPEEDS, STEP_DURATION } from 'simulation/constants'
 
-export const isDevMode = false
+export const isDevMode = true
 export async function applyDevMode(pinballWizard: PinballWizard) {
   pinballWizard.rebuildControls() // show controls gui on startup
 
@@ -54,13 +54,6 @@ const topConfigTree = {
       },
     },
 
-    speedLerp: {
-      value: 4e-3,
-      min: 0,
-      max: 1,
-      onChange: () => topConfig.refreshConfig(),
-    },
-
     speedAnimDur: {
       value: 1e3,
       min: 0,
@@ -72,6 +65,14 @@ const topConfigTree = {
       value: 0,
       min: -1,
       max: 10,
+      step: 1,
+      onChange: () => topConfig.refreshConfig(),
+    },
+
+    audioLatencySteps: {
+      value: 0,
+      min: 0,
+      max: Math.floor( 1000 / STEP_DURATION ),
       step: 1,
       onChange: () => topConfig.refreshConfig(),
     },

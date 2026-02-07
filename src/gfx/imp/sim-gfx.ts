@@ -112,7 +112,7 @@ export class SimGfx extends GfxRegion {
     let minD2 = CLICKABLE_RADSQ
     let result = -1
     for (const [diskIndex, disk] of pw.activeSim.disks.entries()) {
-      const [x, y] = disk.interpolatedPos
+      const [x, y] = disk.displayPos
       const distSquared
         = Math.pow(pw.simMousePos[0] - x, 2)
           + Math.pow(pw.simMousePos[1] - y, 2)
@@ -163,7 +163,7 @@ export class SimGfx extends GfxRegion {
 
   locateDiskOnScreen(pw: PinballWizard, diskIndex: number): Rectangle {
     const disk = pw.activeSim.disks[diskIndex]
-    const [rawx, rawy] = disk.interpolatedPos
+    const [rawx, rawy] = disk.displayPos
     const rad = 20 // DISK_RADIUS * VALUE_SCALE * this.drawSimScale
     const x = this.drawOffset[0] + rawx * this.drawSimScale
     const y = this.drawOffset[1] + rawy * this.drawSimScale

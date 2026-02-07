@@ -44,7 +44,6 @@ export class Graphics {
     if (this.pixelAnim > this.targetPixelAnim) {
       this.pixelAnim = Math.max(this.targetPixelAnim, this.pixelAnim - delta)
     }
-    Graphics._glassCvs.style.setProperty('display', this.pixelAnim === 0 ? 'none' : 'block')
     Graphics._bspCvs.style.setProperty('display', this.pixelAnim === 0 ? 'none' : 'block')
 
     this._updateCanvasDims() // update width and height if necessary
@@ -59,7 +58,6 @@ export class Graphics {
     const dpr = window.devicePixelRatio
     const _root = Graphics._rootRect
     const mainCvs = Graphics._mainCvs
-    const glassCvs = Graphics._glassCvs
     const bspCvs = Graphics._bspCvs
 
     // compute main canvas dimensions (maybe big pixels)
@@ -71,12 +69,6 @@ export class Graphics {
       const scale = mainWidth / (_root[2] * dpr)
       this._mainCtx.setTransform(scale, 0, 0, scale, 0, 0)
     }
-
-    // comput glass canvas dimensions wtih big pixels
-    const glassWidth = _root[2] * dpr / Graphics.glassPixelScale
-    const glassHeight = _root[3] * dpr / Graphics.glassPixelScale
-    glassCvs.width = glassWidth
-    glassCvs.height = glassHeight
 
     // bsp always has small pixels
     bspCvs.width = _root[2] * dpr
@@ -136,11 +128,10 @@ export class Graphics {
     ]
     Graphics.innerWidth = _root[2] * dpr
 
-    const mainCvs = this._getMainCanvas() // new canvas in front
-    const glassCvs = this._getGlassCanvas()
+    const mainCvs = this._getMainCanvas()
     const bspCvs = this._getBspCanvas()
 
-    for (const cvs of ([mainCvs, glassCvs, bspCvs] as const)) {
+    for (const cvs of ([mainCvs, bspCvs] as const)) {
       cvs.style.setProperty('position', `absolute`)
       cvs.style.setProperty('left', `${_root[0]}px`)
       cvs.style.setProperty('top', `${_root[1]}px`)
@@ -152,10 +143,6 @@ export class Graphics {
     this._mainCtx = mainCvs.getContext('2d') as CanvasRenderingContext2D
     // this._mainCtx.imageSmoothingEnabled = false
     // this._mainCtx.lineCap = 'butt'
-
-    this._glassCvs = glassCvs
-    this._glassCtx = glassCvs.getContext('2d') as CanvasRenderingContext2D
-    this._glassCtx.imageSmoothingEnabled = false
 
     this._bspCvs = bspCvs
     this._bspCtx = bspCvs.getContext('2d') as CanvasRenderingContext2D
@@ -245,8 +232,6 @@ export class Graphics {
 
   public static _mainCvs: HTMLCanvasElement
   public static _mainCtx: CanvasRenderingContext2D
-  public static _glassCvs: HTMLCanvasElement
-  public static _glassCtx: CanvasRenderingContext2D
   public static _bspCvs: HTMLCanvasElement
   public static _bspCtx: CanvasRenderingContext2D
 

@@ -9,10 +9,11 @@ import { DISK_COUNT, STEP_DURATION, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './c
 import { Disk } from './disk'
 import { collideDisks } from './luts/imp/disk-disk-lut'
 import type { Obstacle } from './obstacle'
-import { lerp, type Rectangle } from 'util/math-util'
+import { type Rectangle } from 'util/math-util'
 import { Perturbations } from './perturbations'
 import { DISK_PATTERNS } from 'gfx/disk-gfx-util'
 import { Level } from 'level'
+import { SimHistory } from './sim-history'
 
 const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 5; i++) {
@@ -109,10 +110,7 @@ export class Simulation {
 
       disk.pushInBounds(this.level.bounds)
 
-      // check if bounced
-      // if (disk.currentState[2] !== disk.nextState[2] || disk.currentState[3] !== disk.nextState[3]) {
       Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
-      // }
 
       disk.nextState.dy += 1 // gravity
 
@@ -129,15 +127,9 @@ export class Simulation {
       }
     }
 
-    // // randomly blink inner walls
-    // for (let i = 4; i < this.barriers.length; i++) {
-    //   const barrier = this.barriers[i]
-    //   Perturbations.blinkBarrier(barrier)
-    // }
-
     Disk.flushStates(this.disks) // commit updates after collisions
 
-    Disk.updateHistory(this.disks) // add to graphical tail
+    // Disk.updateHistory(this.disks) // add to graphical tail
 
     if (this._stepCount === (STEPS_BEFORE_BRANCH) && this.branchSeed !== -1) {
       // console.log('set mid seed')
@@ -151,8 +143,8 @@ export class Simulation {
     this.t += dt
     const stepIndex = Math.ceil(this.t / STEP_DURATION)
 
-    // fraction of last step
-    const stepFrac = (this.t - ((stepIndex - 1) * STEP_DURATION)) / STEP_DURATION
+    // // fraction of last step
+    // const stepFrac = (this.t - ((stepIndex - 1) * STEP_DURATION)) / STEP_DURATION
 
     // advance the simulation by n steps
     while (this._stepCount < stepIndex) {
@@ -163,14 +155,17 @@ export class Simulation {
 
       this.step()
 
+      SimHistory.takeSnapshot(this)
+
       // sanityCheck();
     }
 
-    // compute interpolated positions
-    for (const disk of this.disks) {
-      disk.stepFrac = stepFrac
-      disk.interpolatedPos[0] = lerp(disk.lastStepPos[0], disk.currentState.x, stepFrac)
-      disk.interpolatedPos[1] = lerp(disk.lastStepPos[1], disk.currentState.y, stepFrac)
-    }
+    // // compute interpolated positions
+    // for (const disk of this.disks) {
+    //   disk.stepFrac = stepFrac
+    //   disk.interpolatedPos[0] = lerp(disk.lastStepPos[0], disk.currentState.x, stepFrac)
+    //   disk.interpolatedPos[1] = lerp(disk.lastStepPos[1], disk.currentState.y, stepFrac)
+    // }
+    SimHistory.updateDisplay(this)
   }
 }
