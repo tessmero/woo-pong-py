@@ -4,8 +4,8 @@
  * Main object constructed once in main.ts.
  */
 
-import { setSimAudibleRect } from 'audio/collision-sounds'
-import { BallSelectionPanel } from 'ball-selection-panel'
+import { playSound, setSimAudibleRect } from 'audio/collision-sounds'
+import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { Camera } from 'camera'
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
 import { topConfig } from 'configs/imp/top-config'
@@ -71,6 +71,7 @@ export class PinballWizard {
   public set speed(s: Speed) {
     if (this._isHalted && s !== 'paused') {
       shortVibrate()
+      playSound('click_002.ogg')
 
       // user tried to advance, but must select a ball first
       const gfx = GfxRegion.create('sim-gfx') as SimGfx
@@ -145,7 +146,6 @@ export class PinballWizard {
 
     this.gui = Gui.create('playing-gui')
     this.camera.jumpToRoom(this, 0)
-    BallSelectionPanel.isRepaintQueued = true
     this.onResize()
   }
 
@@ -186,7 +186,7 @@ export class PinballWizard {
         this.speed = 'paused'
       }
 
-      BallSelectionPanel.show(this)
+      ballSelectionPanel.show(this)
 
       // console.log('sim may need to halt soon, near branching time with no selection')
 
@@ -222,7 +222,7 @@ export class PinballWizard {
       this._speedMult = 0
       this._speed = 'paused'
       this._speedAnim = null
-      BallSelectionPanel.show(this)
+      ballSelectionPanel.show(this)
       // this.onResize()
       // console.log('sim halted, near branching time with no selection')
     }
@@ -244,12 +244,12 @@ export class PinballWizard {
     if (this.hasBranched && !wasBranched) {
       // just branched
       // this.onResize()
-      // BallSelectionPanel.hide(this)
+      // ballSelectionPanel.hide(this)
     }
 
     if (this.hasFinished && !wasFinished) {
       // just finished
-      // BallSelectionPanel.hide(this)
+      // ballSelectionPanel.hide(this)
       this.onResize()
       // Graphics.targetPixelAnim = 1
     }
@@ -258,14 +258,9 @@ export class PinballWizard {
 
     Graphics.draw(this)
 
-    // always repaint bsp
-    if (BallSelectionPanel.isShowing) {
-      BallSelectionPanel.isRepaintQueued = true
-    }
-
     // // repaint ball selection panel if necessary
-    // if (BallSelectionPanel.isRepaintQueued) {
-    //   BallSelectionPanel.isRepaintQueued = false
+    // if (ballSelectionPanel.isRepaintQueued) {
+    //   ballSelectionPanel.isRepaintQueued = false
     //   repaintDiagram(this, ballSelectionPanel)
     // }
 
@@ -381,13 +376,12 @@ export class PinballWizard {
     this.selectedDiskIndex = diskIndex
     this._tryFollowdisk(diskIndex)
     shortVibrate()
-    BallSelectionPanel.isRepaintQueued = true
 
     if (this._isHalted) {
       this._isHalted = false
       this.speed = this._speedBeforeHalt
 
-      BallSelectionPanel.hide(this)
+      ballSelectionPanel.hide(this)
     }
 
     // this.onResize()

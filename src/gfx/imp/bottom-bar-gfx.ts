@@ -13,18 +13,19 @@ import { Graphics, gutterPx } from 'gfx/graphics'
 
 import { stepsToSeconds } from 'simulation/constants'
 import { formatTime } from 'guis/imp/playing-gui'
-import { BallSelectionPanel } from 'ball-selection-panel'
 import { setupRubikText } from '../canvas-text-util'
 import { drawRoundedRect, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
 import { shortVibrate } from 'util/vibrate'
 import { playSound } from 'audio/collision-sounds'
+import { drawButton } from 'gfx/btn-gfx-util'
+import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 
 const _LAYOUT_KEYS = ['bsp', 'clock', 'pause', 'play', 'fast', 'faster'] as const
 type LayoutKey = (typeof _LAYOUT_KEYS)[number]
 type Layout = Record<LayoutKey, Rectangle>
 
 const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
-  bsp: () => BallSelectionPanel.isShowing,
+  bsp: () => ballSelectionPanel.isShowing,
   clock: () => false,
   pause: pw => pw.speed === 'paused',
   play: pw => pw.speed === 'normal',
@@ -34,10 +35,10 @@ const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
 
 const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
   bsp: (pw) => {
-    if (!BallSelectionPanel.isShowing) {
+    if (!ballSelectionPanel.isShowing) {
       shortVibrate()
     }
-    BallSelectionPanel.toggle(pw)
+    ballSelectionPanel.toggle(pw)
   },
   clock: () => {
     // do nothing
@@ -71,7 +72,6 @@ export class BottomBarGfx extends GfxRegion {
 
     if (this._held) {
       clickActions[this._held](pw)
-      playSound('click_002.ogg')
     }
     return false
   }
@@ -165,58 +165,8 @@ export class BottomBarGfx extends GfxRegion {
       }
       else if (BUTTON_ICONS[key]) {
         // Draw icon
-        this._drawBtn(ctx, innerRect, key, isActive)
+        drawButton(ctx, innerRect, key, isActive)
       }
-    }
-  }
-
-  // Efficient SVG icon rendering: cache per icon as ImageBitmap
-  private static _iconCache: Partial<Record<IconName, ImageBitmap | null>> = {}
-  private static _iconCachePending: Partial<Record<IconName, Promise<ImageBitmap> | null>> = {}
-
-  /**
-   * Draws the icon. Only draws if already loaded (never triggers async load).
-   * If active, draws icon in white; otherwise, uses currentColor (black).
-   */
-  private _drawBtn(ctx: CanvasRenderingContext2D, rect: Rectangle, icon: IconName, _active: boolean) {
-    const [x, y, w, h] = rect
-    const cache = BottomBarGfx._iconCache
-    const PADDING_FRAC = 0.18 // 18% padding on each side
-    if (cache[icon]) {
-      const img = cache[icon]!
-      // Calculate padded area
-      const padW = w * PADDING_FRAC
-      const padH = h * PADDING_FRAC
-      const availW = w - 2 * padW
-      const availH = h - 2 * padH
-      // Maintain aspect ratio
-      const imgAspect = img.width / img.height
-      const rectAspect = availW / availH
-      let drawW = availW, drawH = availH
-      if (imgAspect > rectAspect) {
-        drawW = availW
-        drawH = availW / imgAspect
-      }
-      else {
-        drawH = availH
-        drawW = availH * imgAspect
-      }
-      const drawX = x + (w - drawW) / 2
-      const drawY = y + (h - drawH) / 2
-      // ctx.save()
-      // if (active) {
-      //   ctx.globalCompositeOperation = 'destination-out'
-      // }
-      ctx.drawImage(img, drawX, drawY, drawW, drawH)
-      // ctx.restore()
-    }
-    else {
-      // Draw a placeholder
-      ctx.save()
-      ctx.globalAlpha = 0.2
-      ctx.fillStyle = '#888'
-      ctx.fillRect(x, y, w, h)
-      ctx.restore()
     }
   }
 
@@ -245,41 +195,6 @@ export class BottomBarGfx extends GfxRegion {
       fast: [x + btnWidth + clockWidth + 2 * btnWidth, y, btnWidth, h],
       faster: [x + btnWidth + clockWidth + 3 * btnWidth, y, btnWidth, h],
     }
-  }
-
-  /**
-   * Preload all icon SVGs as ImageBitmaps. Call this once at startup.
-   */
-  static async loadAllImages() {
-    const iconNames = Object.keys(BUTTON_ICONS) as Array<IconName>
-    const cache = BottomBarGfx._iconCache
-    const pending = BottomBarGfx._iconCachePending
-    const promises: Array<Promise<void>> = []
-    for (const icon of iconNames) {
-      if (!cache[icon] && !pending[icon]) {
-        const svg = BUTTON_ICONS[icon]
-        const svgBlob = new Blob([svg], { type: 'image/svg+xml' })
-        const url = URL.createObjectURL(svgBlob)
-        const img = new window.Image()
-        pending[icon] = new Promise<ImageBitmap>((resolve) => {
-          img.onload = () => {
-            createImageBitmap(img).then((bitmap) => {
-              cache[icon] = bitmap
-              resolve(bitmap)
-              URL.revokeObjectURL(url)
-            })
-          }
-          img.onerror = () => {
-            cache[icon] = null
-            resolve(null as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-            URL.revokeObjectURL(url)
-          }
-          img.src = url
-        })
-        promises.push(pending[icon]!.then(() => {}))
-      }
-    }
-    await Promise.all(promises)
   }
 }
 

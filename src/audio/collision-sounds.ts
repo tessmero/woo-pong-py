@@ -15,7 +15,7 @@ const limitPan = 0.5
 const ballBallImpact: SoundAssetUrl = 'impactMetal_medium_002.ogg'
 const ballObstacleImpact: SoundAssetUrl = 'impactMetal_medium_002.ogg'
 
-const simAudibleRect: Rectangle = [0, 0, 0, 0]
+export const simAudibleRect: Rectangle = [0, 0, 0, 0]
 export function setSimAudibleRect(rect: Rectangle) {
   simAudibleRect[0] = rect[0]
   simAudibleRect[1] = rect[1]

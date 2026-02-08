@@ -7,7 +7,7 @@
 import type { InputId, PinballWizard } from 'pinball-wizard'
 import { GfxRegion } from '../gfx-region'
 import { lerp2, shuffle, twopi, type Rectangle, type Vec2 } from 'util/math-util'
-import { BallSelectionPanel } from 'ball-selection-panel'
+import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { DISK_COUNT, VALUE_SCALE } from 'simulation/constants'
 import type { DiskPattern } from 'gfx/disk-gfx-util'
 import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx-util'
@@ -88,7 +88,7 @@ export class BspGfx extends GfxRegion {
 
   down(pw: PinballWizard, mousePos: Vec2) {
     if (pw.hasFinished) return false
-    if (BallSelectionPanel.isShowing) {
+    if (ballSelectionPanel.isShowing) {
       const clickedDisk = getBspHoveredDiskIndex(...mousePos)
       if (clickedDisk !== -1) {
         pw.trySelectDisk(clickedDisk)
@@ -100,7 +100,7 @@ export class BspGfx extends GfxRegion {
 
   move(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
     if (pw.hasFinished) return
-    if (BallSelectionPanel.isShowing) {
+    if (ballSelectionPanel.isShowing) {
       const hoveredDisk = inputId === 'mouse' ? getBspHoveredDiskIndex(...mousePos) : -1
 
       pw.hoveredDiskIndex = hoveredDisk

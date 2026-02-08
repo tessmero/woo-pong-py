@@ -13,7 +13,7 @@ import { drawDisk, drawDiskCrown, drawDiskFollowHalo, drawDiskHoverHalo } from '
 import { drawObstacles } from 'gfx/obstacle-gfx-util'
 import type { Barrier } from 'simulation/barrier'
 import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from '../canvas-rounded-rect-util'
-import { BallSelectionPanel } from 'ball-selection-panel'
+import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { topConfig } from 'configs/imp/top-config'
 
 const ballFlashDuration = 2000 // ms
@@ -25,7 +25,7 @@ export class SimGfx extends GfxRegion {
   }
 
   down(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
-    if (BallSelectionPanel.isShowing) {
+    if (ballSelectionPanel.isShowing) {
       return false
     }
     if (pw.isMouseDown === null) {
@@ -55,7 +55,7 @@ export class SimGfx extends GfxRegion {
   }
 
   move(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
-    if (BallSelectionPanel.isShowing) {
+    if (ballSelectionPanel.isShowing) {
       pw.isMouseDown = null
       pw.camera.endDrag()
       return
@@ -126,7 +126,7 @@ export class SimGfx extends GfxRegion {
   }
 
   leave(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
-    if (BallSelectionPanel.isShowing) {
+    if (ballSelectionPanel.isShowing) {
       pw.isMouseDown = null
       pw.camera.endDrag()
       return

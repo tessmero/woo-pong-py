@@ -81,6 +81,7 @@ export const GFX_REGION = {
     'glass-gfx', // overlay that covers main view
 
     'bsp-gfx', // toggleable ball selection panel
+    'settings-gfx', // toggleable settings panel
   ],
   SOURCES: ['src/gfx/imp/'],
 } as const satisfies ImpManifest

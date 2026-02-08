@@ -4,13 +4,13 @@
  * Placeholder used for games with no gui elements.
  */
 
-import { BallSelectionPanel } from 'ball-selection-panel'
 import { Graphics } from 'gfx/graphics'
 import type { GuiElement } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
 import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
+import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import type { InputId, PinballWizard } from 'pinball-wizard'
 import { SECONDS_BEFORE_BRANCH } from 'simulation/constants'
 import type { Vec2 } from 'util/math-util'
@@ -38,7 +38,7 @@ export type PlayingElem = GuiElement<PlayingLayoutKey>
 //     // },
 //   },
 //   click: ({ pinballWizard }) => {
-//     BallSelectionPanel.toggle(pinballWizard)
+//     ballSelectionPanel.toggle(pinballWizard)
 //   },
 // }
 
@@ -130,7 +130,7 @@ const resetBtn: PlayingElem = {
     label: 'Play Again',
   },
   click: ({ pinballWizard }) => {
-    BallSelectionPanel.hide(pinballWizard, true)
+    ballSelectionPanel.hide(pinballWizard, true)
     shortVibrate()
     pinballWizard.reset()
     Graphics.targetPixelAnim = 0
@@ -143,7 +143,7 @@ const resetBtn: PlayingElem = {
 //     type: 'diagram',
 //     draw: (ctx, pw, rect) => {
 //       // GfxRegion.create('bsp-gfx').draw(ctx, pw, rect)
-//       BallSelectionPanel.draw(ctx, pw, rect)
+//       ballSelectionPanel.draw(ctx, pw, rect)
 //     },
 //     classes: ['transparent'],
 //   },
@@ -155,7 +155,7 @@ const resetBtn: PlayingElem = {
 //     type: 'button',
 //     icon: 'pause',
 //   },
-//   down: ({pinballWizard}) => BallSelectionPanel.hide(pinballWizard),
+//   down: ({pinballWizard}) => ballSelectionPanel.hide(pinballWizard),
 // }
 
 // const bspElems: Array<PlayingElem> = [
@@ -220,7 +220,7 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
     // }
 
     // for (const bspElem of bspElems) {
-    //   toggleElement(bspElem, BallSelectionPanel.isShowing)
+    //   toggleElement(bspElem, ballSelectionPanel.isShowing)
     // }
     toggleElement(resetBtn, pinballWizard.activeSim.winningDiskIndex !== -1)
     // const hasBranched = pinballWizard.hasBranched

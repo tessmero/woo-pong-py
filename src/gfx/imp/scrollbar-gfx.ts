@@ -17,7 +17,7 @@ import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx-util'
 import type { Obstacle } from 'simulation/obstacle'
 import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from 'gfx/canvas-rounded-rect-util'
 import type { Barrier } from 'simulation/barrier'
-import { BallSelectionPanel } from 'ball-selection-panel'
+import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 
 const buffer = (typeof document === 'undefined')
   ? null
@@ -45,7 +45,7 @@ export class ScrollbarGfx extends GfxRegion {
   }
 
   move(pw: PinballWizard, mousePos: Vec2) {
-    if (BallSelectionPanel.isShowing) {
+    if (ballSelectionPanel.isShowing) {
       Scrollbar.isDragging = null
       return
     }
@@ -56,7 +56,7 @@ export class ScrollbarGfx extends GfxRegion {
   }
 
   leave(pw: PinballWizard, mousePos: Vec2) {
-    if (BallSelectionPanel.isShowing) {
+    if (ballSelectionPanel.isShowing) {
       Scrollbar.isDragging = null
       return
     }

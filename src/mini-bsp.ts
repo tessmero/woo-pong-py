@@ -7,7 +7,7 @@
 // export class MiniBsp {
 // static logMiniSvg(w: number, h: number, pw?: PinballWizard) {
 //   if (!pw || !pw.activeSim) return
-//   const { totalWidth, totalHeight, diskPositions, diskRadius } = BallSelectionPanel
+//   const { totalWidth, totalHeight, diskPositions, diskRadius } = ballSelectionPanel
 //   const scale = Math.min(w / totalWidth, h / totalHeight)
 //   const drawW = totalWidth * scale
 //   const drawH = totalHeight * scale
@@ -40,7 +40,7 @@
 //     // Use a dummy PinballWizard if not provided (for preview/testing)
 //     // If not provided, skip drawing
 //     if (!pw || !pw.activeSim) return
-//     const { totalWidth, totalHeight, diskPositions } = BallSelectionPanel
+//     const { totalWidth, totalHeight, diskPositions } = ballSelectionPanel
 
 //     // Compute scale to fit the original panel into (w, h)
 //     const scale = Math.min(w / totalWidth, h / totalHeight)
@@ -78,7 +78,7 @@
 
 //   const [x0, y0] = disk.interpolatedPos.map(v => -v / VALUE_SCALE)
 
-//   const diskRadius = BallSelectionPanel.diskRadius * 0.8
+//   const diskRadius = ballSelectionPanel.diskRadius * 0.8
 
 //   ctx.save()
 //   ctx.translate(x0, y0)

@@ -23,6 +23,7 @@ import { BottomBarGfx } from 'gfx/imp/bottom-bar-gfx'
 import { BASE_FONT_SIZE } from 'gfx/canvas-text-util'
 import { shortVibrate } from 'util/vibrate'
 import { loadAllSounds } from 'audio/sound-asset-loader'
+import { loadAllButtonImages } from 'gfx/btn-gfx-util'
 
 // Utility to ensure Rubik font is loaded before drawing
 async function ensureRubikFontLoaded() {
@@ -81,7 +82,7 @@ async function main() {
   // const layeredViewport = new LayeredViewport()
   gfxConfig.refreshConfig()
 
-  await BottomBarGfx.loadAllImages()
+  await loadAllButtonImages()
 
   const pinballWizard = new PinballWizard()
   pinballWizard.loadingState = 'B'
@@ -104,7 +105,7 @@ async function main() {
   _initListeners(pinballWizard)
   pinballWizard.loadingState = 'D'
   // Scrollbar.initListeners(pinballWizard)
-  // BallSelectionPanel.initListeners(pinballWizard)
+  // ballSelectionPanel.initListeners(pinballWizard)
   pinballWizard.loadingState = 'E'
   await _initAssets(startBtn)
   pinballWizard.loadingState = 'F'
@@ -129,7 +130,7 @@ async function main() {
     pinballWizard.onResize()
     titleScreenElem.classList.add('hidden')
     // Scrollbar.show()
-    // BallSelectionPanel.show()
+    // ballSelectionPanel.show()
 
     isTitleAnimPlaying = false // break title screen loop
     document.removeEventListener('resize', titleAnimResize)

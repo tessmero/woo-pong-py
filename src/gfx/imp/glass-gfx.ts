@@ -9,7 +9,7 @@ import { GfxRegion } from '../gfx-region'
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { Graphics } from 'gfx/graphics'
 import type { SimGfx } from './sim-gfx'
-import { BallSelectionPanel } from 'ball-selection-panel'
+import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { shortVibrate } from 'util/vibrate'
 
 export class GlassGfx extends GfxRegion {
@@ -67,11 +67,11 @@ export class GlassGfx extends GfxRegion {
 
   down(_pw: PinballWizard, _mousePos: Vec2) {
     // if (Graphics.pixelAnim === 1) {
-    //   BallSelectionPanel.hide(_pw)
+    //   ballSelectionPanel.hide(_pw)
     // }
 
-    if (BallSelectionPanel.isShowing) {
-      BallSelectionPanel.hide(_pw)
+    if (ballSelectionPanel.isShowing) {
+      ballSelectionPanel.hide(_pw)
       shortVibrate()
       return true // consume event
     }

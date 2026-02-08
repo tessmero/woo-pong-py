@@ -17,6 +17,7 @@ const _GFX_DEBUG_COLORS: Record<GfxRegionName, string> = {
   'bsp-gfx': 'violet',
   'sim-gfx': 'green',
   'glass-gfx': 'yellow',
+  'settings-gfx': 'black',
 }
 
 export abstract class GfxRegion {

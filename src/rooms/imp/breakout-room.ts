@@ -5,7 +5,7 @@
  * The total score always ends up at exactly 100.
  */
 
-import { playSound } from 'audio/collision-sounds'
+import { playSound, simAudibleRect } from 'audio/collision-sounds'
 import { solveBreakout } from 'breakout-solver'
 import { Room } from 'rooms/room'
 import { ROOM_LAYOUT_POSITIONS } from 'rooms/room-layouts/set-by-build'
@@ -13,6 +13,7 @@ import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
 import { type ShapeName } from 'simulation/shapes'
+import { rectContainsPoint } from 'util/math-util'
 
 export class BreakoutRoom extends Room {
   static {
@@ -35,7 +36,11 @@ export class BreakoutRoom extends Room {
 
     // console.log(`hide brick with index ${brickIndex} at step ${stepIndex}`)
     obstacle.hideOnStep = stepIndex // brick disappears when hit
-    playSound('drop_004.ogg')
+
+    // play sound if on-screen
+    if (rectContainsPoint(simAudibleRect, ...obstacle.pos)) {
+      playSound('drop_004.ogg')
+    }
 
     if (this.hitSequence.includes(brickIndex)) {
       throw new Error('brick has already been hit')

@@ -12,7 +12,8 @@ import { type GfxRegionName } from 'imp-names'
 import { GfxRegion } from './gfx-region'
 import type { ScrollbarGfx } from './imp/scrollbar-gfx'
 import type { SimGfx } from './imp/sim-gfx'
-import { BallSelectionPanel } from 'ball-selection-panel'
+import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
+import { settingsPanel } from 'overlay-panels/settings-panel'
 
 // const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
 // const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
@@ -58,7 +59,6 @@ export class Graphics {
     const dpr = window.devicePixelRatio
     const _root = Graphics._rootRect
     const mainCvs = Graphics._mainCvs
-    const bspCvs = Graphics._bspCvs
 
     // compute main canvas dimensions (maybe big pixels)
     const mainWidth = Math.floor(_root[2] * dpr / Graphics.mainPixelScale)
@@ -71,8 +71,12 @@ export class Graphics {
     }
 
     // bsp always has small pixels
-    bspCvs.width = _root[2] * dpr
-    bspCvs.height = _root[3] * dpr
+    Graphics._bspCvs.width = _root[2] * dpr
+    Graphics._bspCvs.height = _root[3] * dpr
+
+    // settings always has small pixels
+    Graphics._settingsCvs.width = _root[2] * dpr
+    Graphics._settingsCvs.height = _root[3] * dpr
   }
 
   // public static isTitleScreen = true
@@ -130,8 +134,9 @@ export class Graphics {
 
     const mainCvs = this._getMainCanvas()
     const bspCvs = this._getBspCanvas()
+    const settingsCvs = this._getSettingsCanvas()
 
-    for (const cvs of ([mainCvs, bspCvs] as const)) {
+    for (const cvs of ([mainCvs, bspCvs, settingsCvs] as const)) {
       cvs.style.setProperty('position', `absolute`)
       cvs.style.setProperty('left', `${_root[0]}px`)
       cvs.style.setProperty('top', `${_root[1]}px`)
@@ -147,6 +152,10 @@ export class Graphics {
     this._bspCvs = bspCvs
     this._bspCtx = bspCvs.getContext('2d') as CanvasRenderingContext2D
     this._bspCtx.imageSmoothingEnabled = false
+
+    this._settingsCvs = settingsCvs
+    this._settingsCtx = settingsCvs.getContext('2d') as CanvasRenderingContext2D
+    this._settingsCtx.imageSmoothingEnabled = false
 
     this._rootRect = _root
     this._updateCanvasDims()
@@ -181,6 +190,10 @@ export class Graphics {
         0, 0,
         _root[2], _root[3],
       ],
+      'settings-gfx': [
+        0, 0,
+        _root[2], _root[3],
+      ],
     }
     this.revRegionNames = Object.keys(this._pxRegions).reverse() as Array<GfxRegionName>
 
@@ -211,8 +224,8 @@ export class Graphics {
     })
   }
 
-  static _getGlassCanvas() {
-    return document.getElementById('glass-canvas') as HTMLCanvasElement
+  static _getSettingsCanvas() {
+    return document.getElementById('settings-canvas') as HTMLCanvasElement
   }
 
   static _getBspCanvas() {
@@ -220,7 +233,7 @@ export class Graphics {
   }
 
   static _getMainCanvas() {
-    return document.getElementById('test-canvas') as HTMLCanvasElement
+    return document.getElementById('main-canvas') as HTMLCanvasElement
   }
 
   public static revRegionNames: Array<GfxRegionName> = []
@@ -234,6 +247,8 @@ export class Graphics {
   public static _mainCtx: CanvasRenderingContext2D
   public static _bspCvs: HTMLCanvasElement
   public static _bspCtx: CanvasRenderingContext2D
+  public static _settingsCvs: HTMLCanvasElement
+  public static _settingsCtx: CanvasRenderingContext2D
 
   static get regions() { return Graphics._pxRegions }
 
@@ -243,16 +258,22 @@ export class Graphics {
       let ctx = this._mainCtx
 
       if (gfxName === 'glass-gfx') {
-        if (!BallSelectionPanel.isShowing) {
+        if (!ballSelectionPanel.isShowing) {
           return // skip drawing glass effect
         }
         // ctx = this._glassCtx
       }
       else if (gfxName === 'bsp-gfx') {
-        if (!BallSelectionPanel.isShowing) {
+        if (!ballSelectionPanel.isShowing) {
           return // skip drawing ball selection panel
         }
         ctx = this._bspCtx
+      }
+      else if (gfxName === 'settings-gfx') {
+        if( !settingsPanel.isShowing ){
+          return // skip drawing settings panel
+        }
+        ctx = this._settingsCtx
       }
       GfxRegion.create(gfxName as GfxRegionName)
         .draw(ctx, pw, this._dpRegions[gfxName])
