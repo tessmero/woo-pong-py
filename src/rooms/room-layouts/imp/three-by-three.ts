@@ -14,10 +14,10 @@ export class ThreeByThree extends RoomLayout {
   }
 
   computePositions(): Array<[number, Vec2]> {
-    const dx = 270000
-    const dy = 270000
-    const x0 = 150000
-    const y0 = 140000
+    const dx = 27 * VALUE_SCALE
+    const dy = 27 * VALUE_SCALE
+    const x0 = 15 * VALUE_SCALE
+    const y0 = 14 * VALUE_SCALE
     const positions: Array<[number, Vec2]> = []
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {

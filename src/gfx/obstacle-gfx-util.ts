@@ -83,13 +83,13 @@ function _debugCollisionAtMousePos(
   const i = lut.offsetToXIndex(mousePos[0] - pos[0]) + radi
   const j = lut.offsetToYIndex(mousePos[1] - pos[1]) + radj
 
-  // adjusted position in world
-  ctx.fillStyle = 'black'
-  ctx.fillRect(
-    mousePos[0] - rad,
-    mousePos[1] - rad,
-    2 * rad, 2 * rad,
-  )
+  // // adjusted position in world
+  // ctx.fillStyle = 'black'
+  // ctx.fillRect(
+  //   mousePos[0] - rad,
+  //   mousePos[1] - rad,
+  //   2 * rad, 2 * rad,
+  // )
 
   let leaf
   try {

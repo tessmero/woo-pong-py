@@ -89,7 +89,9 @@ export type GfxRegionName = (typeof GFX_REGION.NAMES)[number]
 
 export const PATTERN = {
   NAMES: [
-    'white', 'black', 'stripe-v', 'stripe-h', 'checkered', 'hex-a', 'hex-b', 'fence',
+    'white', 'black', 
+    'stripe-v', 'stripe-h', 'hex-a', 'hex-b', 'fence',
+    'diamond-a', 'diamond-b', 'brick', 
   ],
   SOURCES: ['src/gfx/patterns/imp'],
 } as const satisfies ImpManifest
