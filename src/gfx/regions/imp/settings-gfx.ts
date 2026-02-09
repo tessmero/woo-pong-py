@@ -28,10 +28,26 @@ export class SettingsGfx extends GfxRegion {
     this._exitStartTime = performance.now()
   }
 
+  private _isDragging = false
+
+  private _setSlider(x: number) {
+    const [sx, sy, sw, sh] = this.sliderBar
+    const fraction = Math.max(0, Math.min(1, (x - sx) / sw))
+    const value = Math.floor(fraction * 250)
+    const item = topConfig.tree.children.audioLatencySteps
+    item.value = value
+    item.onChange()
+  }
+
   down(pw: PinballWizard, mousePos: Vec2, inputId: InputId): boolean {
     const x = mousePos[0] * window.devicePixelRatio
     const y = mousePos[1] * window.devicePixelRatio
     if (rectContainsPoint(this.inner, x, y)) {
+      if (rectContainsPoint(this.sliderBar, x, y)) {
+        this._isDragging = true
+        this._setSlider(x)
+      }
+
       return true // consume event
     }
     // throw new Error('Method not implemented.')
@@ -44,19 +60,27 @@ export class SettingsGfx extends GfxRegion {
     if (rectContainsPoint(this.sliderBar, x, y)) {
       Graphics.cvs.style.setProperty('cursor', 'pointer')
     }
+
+    if (this._isDragging) {
+      this._setSlider(x)
+    }
   }
 
   leave(pw: PinballWizard, mousePos: Vec2, inputId: InputId): void {
-    // throw new Error('Method not implemented.')
+    const x = mousePos[0] * window.devicePixelRatio
+    if (this._isDragging) {
+      this._setSlider(x)
+    }
   }
 
   up(pw: PinballWizard, mousePos: Vec2, inputId: InputId): void {
-    // throw new Error('Method not implemented.')
+    this._isDragging = false
   }
 
   private readonly inner: Rectangle = [0, 0, 1, 1]
   private readonly topLabel: Rectangle = [0, 0, 1, 1]
   private readonly sliderBar: Rectangle = [0, 0, 1, 1]
+  private readonly slider: Rectangle = [0, 0, 1, 1]
   private readonly sliderLabel: Rectangle = [0, 0, 1, 1]
   private readonly details: Rectangle = [0, 0, 1, 1]
 
@@ -70,7 +94,7 @@ export class SettingsGfx extends GfxRegion {
     // const sizeInPx = size / dpr
     // console.log('size in px', sizeInPx)
 
-    const { inner, sliderBar, topLabel, sliderLabel, details } = this
+    const { inner, sliderBar, slider, topLabel, sliderLabel, details } = this
 
     const centerX = x + w / 2
     const centerY = y + h / 2
@@ -93,6 +117,14 @@ export class SettingsGfx extends GfxRegion {
     sliderBar[2] = inner[2] - 2 * sliderPadding
     sliderBar[3] = sliderThickness
 
+    const fraction = topConfig.flatConfig.audioLatencySteps / 250
+    const sliderWidth = sliderBar[3]
+    const sliderMotionWidth = sliderBar[2] - sliderWidth
+    slider[0] = sliderBar[0] + fraction * sliderMotionWidth
+    slider[1] = sliderBar[1]
+    slider[2] = sliderWidth
+    slider[3] = sliderBar[3]
+
     sliderLabel[0] = sliderBar[0]
     sliderLabel[1] = sliderBar[1] - sliderBar[3]
     sliderLabel[2] = sliderBar[2]
@@ -110,6 +142,7 @@ export class SettingsGfx extends GfxRegion {
     // drawRoundedRect(ctx, topLabel, false, false, true)
     // drawRoundedRect(ctx, sliderLabel, false, false, true)
     drawRoundedRect(ctx, sliderBar, false, false, true)
+    drawRoundedRect(ctx, slider, this._isDragging, false, false)
     // drawRoundedRect(ctx, details, false, false, true)
 
     if (Graphics.stgAnim < 1) return // skip drawing labels when small

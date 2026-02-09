@@ -31,6 +31,7 @@ import { shortVibrate } from 'util/vibrate'
 import type { SimGfx } from 'gfx/regions/imp/sim-gfx'
 import type { GlassGfx } from 'gfx/regions/imp/glass-gfx'
 import { settingsPanel } from 'overlay-panels/settings-panel'
+import { Scrollbar } from 'scrollbar'
 
 // can only be constructed once
 let didConstruct = false
@@ -112,6 +113,9 @@ export class PinballWizard {
   }
 
   reset() {
+    settingsPanel.hide(this, true)
+    ballSelectionPanel.hide(this, true)
+
     this.selectedDiskIndex = -1
     this.followDiskIndex = -1
     this.currentRoomIndex = 0 // greatest room index that has had balls
@@ -377,6 +381,7 @@ export class PinballWizard {
     if (diskIndex === -1) return
     if (this.hasBranched) {
       this._tryFollowdisk(diskIndex)
+      shortVibrate()
       return
     }
 
