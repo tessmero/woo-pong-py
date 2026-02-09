@@ -31,7 +31,7 @@ export abstract class Panel {
   }
 
   public show(pw: PinballWizard, skipResize = false) {
-    this._cvs.style.setProperty('display', 'block')
+    // this._cvs.style.setProperty('display', 'block')
     this._show(pw)
     if (!skipResize) {
       pw.onResize()
@@ -39,7 +39,7 @@ export abstract class Panel {
   }
 
   public hide(pw: PinballWizard, skipResize = false) {
-    this._cvs.style.setProperty('display', 'none')
+    // this._cvs.style.setProperty('display', 'none')
     this._hide(pw)
     if (!skipResize) {
       pw.onResize()

@@ -11,6 +11,7 @@ import type { SimGfx } from './sim-gfx'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { shortVibrate } from 'util/vibrate'
 import { GfxRegion } from '../gfx-region'
+import { settingsPanel } from 'overlay-panels/settings-panel'
 
 export class GlassGfx extends GfxRegion {
   private _xOffset: number = 0
@@ -65,13 +66,24 @@ export class GlassGfx extends GfxRegion {
     this._didInit = true
   }
 
-  down(_pw: PinballWizard, _mousePos: Vec2) {
+  down(pw: PinballWizard, _mousePos: Vec2) {
     // if (Graphics.pixelAnim === 1) {
     //   ballSelectionPanel.hide(_pw)
     // }
 
+    let didSomething = false
+
     if (ballSelectionPanel.isShowing) {
-      ballSelectionPanel.hide(_pw)
+      ballSelectionPanel.hide(pw)
+      didSomething = true
+    }
+
+    if (settingsPanel.isShowing) {
+      settingsPanel.hide(pw)
+      didSomething = true
+    }
+
+    if (didSomething) {
       shortVibrate()
       return true // consume event
     }
@@ -162,7 +174,7 @@ export class GlassGfx extends GfxRegion {
         const opB = opLB * (1 - xOffsetFrac) + opRB * xOffsetFrac
         // Interpolate vertically
         const interpOp = opT * (1 - yOffsetFrac) + opB * yOffsetFrac
-        const alpha = Math.max(0, Math.min(1, interpOp * Graphics.pixelAnim))
+        const alpha = Math.max(0, Math.min(1, interpOp * Graphics.bspAnim))
         if (alpha > 0) {
           ctx.globalAlpha = 1 - Math.pow(1 - alpha, 2)
           ctx.fillRect(x * size - 0.5, y * size - 0.5, size, size)

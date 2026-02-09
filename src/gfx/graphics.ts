@@ -34,18 +34,34 @@ export class Graphics {
 
   static innerWidth = 1
 
-  static pixelAnim = 0 // 0-1 state
-  static targetPixelAnim = 0 // 0 or 1 target state
-  static updatePixelAnim(dt: number) {
-    if (this.pixelAnim === this.targetPixelAnim) return
+  static bspAnim = 0 // 0-1 state
+  static targetBspAnim = 0 // 0 or 1 target state
+  static updateBspAnim(dt: number) {
+    if (this.bspAnim === this.targetBspAnim) return
     const delta = dt * pixelAnimSpeed
-    if (this.pixelAnim < this.targetPixelAnim) {
-      this.pixelAnim = Math.min(this.targetPixelAnim, this.pixelAnim + delta)
+    if (this.bspAnim < this.targetBspAnim) {
+      this.bspAnim = Math.min(this.targetBspAnim, this.bspAnim + delta)
     }
-    if (this.pixelAnim > this.targetPixelAnim) {
-      this.pixelAnim = Math.max(this.targetPixelAnim, this.pixelAnim - delta)
+    if (this.bspAnim > this.targetBspAnim) {
+      this.bspAnim = Math.max(this.targetBspAnim, this.bspAnim - delta)
     }
-    Graphics._bspCvs.style.setProperty('display', this.pixelAnim === 0 ? 'none' : 'block')
+    Graphics._bspCvs.style.setProperty('display', this.bspAnim === 0 ? 'none' : 'block')
+
+    this._updateCanvasDims() // update width and height if necessary
+  }
+
+  static stgAnim = 0 // 0-1 state
+  static targetStgAnim = 0 // 0 or 1 target state
+  static updateStgAnim(dt: number) {
+    if (this.stgAnim === this.targetStgAnim) return
+    const delta = dt * pixelAnimSpeed
+    if (this.stgAnim < this.targetStgAnim) {
+      this.stgAnim = Math.min(this.targetStgAnim, this.stgAnim + delta)
+    }
+    if (this.stgAnim > this.targetStgAnim) {
+      this.stgAnim = Math.max(this.targetStgAnim, this.stgAnim - delta)
+    }
+    Graphics._settingsCvs.style.setProperty('display', this.stgAnim === 0 ? 'none' : 'block')
 
     this._updateCanvasDims() // update width and height if necessary
   }
@@ -82,7 +98,10 @@ export class Graphics {
   // public static isTitleScreen = true
   public static get mainPixelScale() {
     // if( this.isTitleScreen ) return 10
-    return Math.floor(1 + this.pixelAnim * 9 * window.devicePixelRatio)// physical pixels per big pixel
+
+    const pixelAnim = Math.max(this.bspAnim, this.stgAnim)
+
+    return Math.floor(1 + pixelAnim * 9 * window.devicePixelRatio)// physical pixels per big pixel
     // return Math.floor(4 + this.pixelAnim * 6)// physical pixels per big pixel
   }
 

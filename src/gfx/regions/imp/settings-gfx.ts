@@ -4,6 +4,7 @@
  * Setttings panel.
  */
 
+import { Graphics } from 'gfx/graphics'
 import { GfxRegion } from 'gfx/regions/gfx-region'
 import type { PinballWizard, InputId } from 'pinball-wizard'
 import type { Vec2, Rectangle } from 'util/math-util'
@@ -44,6 +45,11 @@ export class SettingsGfx extends GfxRegion {
     const [x, y, w, h] = rect
 
     ctx.fillStyle = 'red'
-    ctx.fillRect(x + 100, y + 100, 100, 100)
+    const size = 100 * Graphics.stgAnim
+    ctx.fillRect(
+      x + w / 2 - size / 2,
+      y + h / 2 - size / 2,
+      size, size,
+    )
   }
 }

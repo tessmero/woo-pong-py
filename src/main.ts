@@ -23,6 +23,7 @@ import { BASE_FONT_SIZE } from 'gfx/canvas-text-util'
 import { shortVibrate } from 'util/vibrate'
 import { loadAllSounds } from 'audio/sound-asset-loader'
 import { loadAllButtonImages } from 'gfx/btn-gfx-util'
+import { initListeners } from 'input'
 
 // Utility to ensure Rubik font is loaded before drawing
 async function ensureRubikFontLoaded() {
@@ -101,7 +102,7 @@ async function main() {
   titleScreenElem.classList.remove('hidden')
   pinballWizard.loadingState = 'K'
 
-  _initListeners(pinballWizard)
+  initListeners(pinballWizard)
   pinballWizard.loadingState = 'D'
   // Scrollbar.initListeners(pinballWizard)
   // ballSelectionPanel.initListeners(pinballWizard)
@@ -183,72 +184,6 @@ async function main() {
 
 main()
 
-function _initListeners(pinballWizard: PinballWizard) {
-  const activeTouches: Record<number, Vec2> = {}
-  const mousePos: Vec2 = [0, 0]
-
-  // Mouse events
-  Graphics.cvs.addEventListener('mousedown', (e) => {
-    mousePos[0] = e.clientX - Graphics.cssLeft
-    mousePos[1] = e.clientY
-    pinballWizard.down(mousePos, 'mouse')
-  })
-  document.addEventListener('mousemove', (e) => {
-    mousePos[0] = e.clientX - Graphics.cssLeft
-    mousePos[1] = e.clientY
-    Graphics.cvs.style.setProperty('cursor', 'default')
-    pinballWizard.move(mousePos, 'mouse')
-  })
-  document.addEventListener('mouseup', (e) => {
-    mousePos[0] = e.clientX - Graphics.cssLeft
-    mousePos[1] = e.clientY
-    pinballWizard.up(mousePos, 'mouse')
-  })
-  document.addEventListener('mouseleave', (_e) => {
-    pinballWizard.up(mousePos, 'mouse')
-  })
-
-  // Touch events
-  Graphics.cvs.addEventListener('touchstart', (e) => {
-    for (const touch of Array.from(e.changedTouches)) {
-      const pos: Vec2 = [touch.clientX - Graphics.cssLeft, touch.clientY]
-      activeTouches[touch.identifier] = pos
-      pinballWizard.down(pos, touch.identifier)
-    }
-    e.preventDefault()
-  }, { passive: false })
-
-  Graphics.cvs.addEventListener('touchmove', (e) => {
-    for (const touch of Array.from(e.changedTouches)) {
-      const pos: Vec2 = [touch.clientX - Graphics.cssLeft, touch.clientY]
-      activeTouches[touch.identifier] = pos
-      pinballWizard.move(pos, touch.identifier)
-    }
-    e.preventDefault()
-  }, { passive: false })
-
-  Graphics.cvs.addEventListener('touchend', (e) => {
-    for (const touch of Array.from(e.changedTouches)) {
-      const pos = activeTouches[touch.identifier] || [0, 0]
-      pinballWizard.up(pos, touch.identifier)
-      delete activeTouches[touch.identifier]
-    }
-    e.preventDefault()
-  }, { passive: false })
-
-  Graphics.cvs.addEventListener('touchcancel', (e) => {
-    for (const touch of Array.from(e.changedTouches)) {
-      const pos = activeTouches[touch.identifier] || [0, 0]
-      pinballWizard.up(pos, touch.identifier)
-      delete activeTouches[touch.identifier]
-    }
-    e.preventDefault()
-  }, { passive: false })
-
-  Graphics.cvs.addEventListener('wheel', (e) => {
-    pinballWizard.camera.scroll(e.deltaY)
-  })
-}
 
 async function _initAssets(loadingLabel: HTMLElement) {
   const isComputing = false

@@ -170,7 +170,8 @@ export class PinballWizard {
     }
     this._hasMoved = false
 
-    Graphics.updatePixelAnim(dt);
+    Graphics.updateBspAnim(dt);
+    Graphics.updateStgAnim(dt);
     (GfxRegion.create('glass-gfx') as GlassGfx).update(this, dt)
     const wasBranched = this.hasBranched
     const wasFinished = this.hasFinished

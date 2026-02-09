@@ -13,11 +13,13 @@ import { SettingsGfx } from 'gfx/regions/imp/settings-gfx'
 class SettingsPanel extends Panel {
   protected _show(pw: PinballWizard) {
     // ballsBtn.htmlElem?.classList.add('active')
+    Graphics.targetStgAnim = 1
     ;(GfxRegion.create('settings-gfx') as SettingsGfx).startEntrance()
   }
 
   protected _hide(pw: PinballWizard) {
     // ballsBtn.htmlElem?.classList.remove('active')
+    Graphics.targetStgAnim = 0
     ;(GfxRegion.create('settings-gfx') as SettingsGfx).startExit()
   }
 }

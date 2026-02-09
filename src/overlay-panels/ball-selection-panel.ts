@@ -13,13 +13,13 @@ import { BspGfx } from 'gfx/regions/imp/bsp-gfx';
 class BallSelectionPanel extends Panel {
   protected _show(pw: PinballWizard) {
     // ballsBtn.htmlElem?.classList.add('active')
-    Graphics.targetPixelAnim = 1
+    Graphics.targetBspAnim = 1
     ;(GfxRegion.create('bsp-gfx') as BspGfx).startEntrance()
   }
 
   protected _hide(pw: PinballWizard) {
     // ballsBtn.htmlElem?.classList.remove('active')
-    Graphics.targetPixelAnim = 0
+    Graphics.targetBspAnim = 0
     ;(GfxRegion.create('bsp-gfx') as BspGfx).startExit()
   }
 }

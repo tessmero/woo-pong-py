@@ -160,7 +160,7 @@ export class BspGfx extends GfxRegion {
 
       const diskStagger = diskStaggerOrder[i] / DISK_COUNT
 
-      let diskAnim = Graphics.pixelAnim * 2 + diskStagger - 0.5
+      let diskAnim = Graphics.bspAnim * 2 + diskStagger - 0.5
       if (diskAnim <= 0) {
         continue
       }

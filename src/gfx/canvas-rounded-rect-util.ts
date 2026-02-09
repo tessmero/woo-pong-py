@@ -4,6 +4,7 @@
  * Canvas rounded rectangles.
  */
 
+import { isTouchDevice } from 'input'
 import { OBSTACLE_FILL } from './graphics'
 
 /**
@@ -90,6 +91,11 @@ export function drawRoundedRect(
   ctx: CanvasRenderingContext2D, rect: Rectangle,
   isActive = false, isHovered = false, skipSlivers = false,
 ) {
+  // disable hovered button appearance on touch dvices
+  if (isTouchDevice) {
+    isHovered = false
+  }
+
   const [x, y, width, height] = rect
   const r = Math.min(ROUNDED_RECT_RADIUS * window.devicePixelRatio, width / 2, height / 2)
   const pad = ROUNDED_RECT_PADDING * window.devicePixelRatio
