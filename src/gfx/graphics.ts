@@ -22,7 +22,8 @@ export const CROWN_FILL = 'rgb(255, 208, 52)'
 export const OBSTACLE_FILL = '#888'
 export const OBSTACLE_STROKE = '#000'
 
-const pixelAnimSpeed = 2e-3// fraction per ms
+const bspAnimSpeed = 2e-3// fraction per ms
+const stgAnimSpeed = 4e-3// fraction per ms
 
 export const gutterPx = 3
 const leftGutterWidthPx = gutterPx
@@ -38,7 +39,7 @@ export class Graphics {
   static targetBspAnim = 0 // 0 or 1 target state
   static updateBspAnim(dt: number) {
     if (this.bspAnim === this.targetBspAnim) return
-    const delta = dt * pixelAnimSpeed
+    const delta = dt * bspAnimSpeed
     if (this.bspAnim < this.targetBspAnim) {
       this.bspAnim = Math.min(this.targetBspAnim, this.bspAnim + delta)
     }
@@ -54,7 +55,7 @@ export class Graphics {
   static targetStgAnim = 0 // 0 or 1 target state
   static updateStgAnim(dt: number) {
     if (this.stgAnim === this.targetStgAnim) return
-    const delta = dt * pixelAnimSpeed
+    const delta = dt * stgAnimSpeed
     if (this.stgAnim < this.targetStgAnim) {
       this.stgAnim = Math.min(this.targetStgAnim, this.stgAnim + delta)
     }

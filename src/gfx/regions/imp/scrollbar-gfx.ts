@@ -39,38 +39,38 @@ export class ScrollbarGfx extends GfxRegion {
 
   down(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
     pw.camera.pos = this._computeCamPos(pw, mousePos)
-    if (Scrollbar.isDragging === null) {
-      Scrollbar.isDragging = inputId
+    if (Scrollbar.draggingId === null) {
+      Scrollbar.draggingId = inputId
     }
     return false
   }
 
-  move(pw: PinballWizard, mousePos: Vec2) {
+  move(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
     if (ballSelectionPanel.isShowing) {
-      Scrollbar.isDragging = null
+      Scrollbar.draggingId = null
       return
     }
 
-    if (Scrollbar.isDragging !== null) {
+    if (Scrollbar.draggingId === inputId) {
       pw.camera.pos = this._computeCamPos(pw, mousePos)
     }
   }
 
-  leave(pw: PinballWizard, mousePos: Vec2) {
+  leave(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
     if (ballSelectionPanel.isShowing) {
-      Scrollbar.isDragging = null
+      Scrollbar.draggingId = null
       return
     }
 
-    if (Scrollbar.isDragging) {
+    if (Scrollbar.draggingId === inputId) {
       // user started drag in scrollbar, now moving in another region while scrollbar is held
       pw.camera.pos = this._computeCamPos(pw, mousePos)
     }
   }
 
   up(_pw: PinballWizard, _mousePos: Vec2, inputId: InputId) {
-    if (inputId === Scrollbar.isDragging) {
-      Scrollbar.isDragging = null
+    if (inputId === Scrollbar.draggingId) {
+      Scrollbar.draggingId = null
     }
   }
 

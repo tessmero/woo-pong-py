@@ -7,7 +7,6 @@
 import { rectContainsPoint, type Rectangle, type Vec2 } from 'util/math-util'
 import { GfxRegion } from '../gfx-region'
 import type { PinballWizard } from 'pinball-wizard'
-import type { IconName } from 'gfx/button-icons'
 import { BUTTON_ICONS } from 'gfx/button-icons'
 import { Graphics, gutterPx } from 'gfx/graphics'
 
@@ -16,9 +15,9 @@ import { formatTime } from 'guis/imp/playing-gui'
 import { setupRubikText } from '../../canvas-text-util'
 import { drawRoundedRect, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
 import { shortVibrate } from 'util/vibrate'
-import { playSound } from 'audio/collision-sounds'
 import { drawButton } from 'gfx/btn-gfx-util'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
+import { settingsPanel } from 'overlay-panels/settings-panel'
 
 const _LAYOUT_KEYS = ['bsp', 'clock', 'pause', 'play', 'fast', 'faster'] as const
 type LayoutKey = (typeof _LAYOUT_KEYS)[number]
@@ -79,6 +78,11 @@ export class BottomBarGfx extends GfxRegion {
   private _hovered: LayoutKey | null = null
   private _held: LayoutKey | null = null
   move(pw: PinballWizard, mousePos: Vec2) {
+    if (ballSelectionPanel.isShowing || settingsPanel.isShowing) {
+      this._hovered = null
+      this._held = null
+      return
+    }
     // console.log('bottom-bar move', JSON.stringify(mousePos))
 
     this._hovered = null

@@ -37,9 +37,11 @@ function createFencePattern(
   ctx.fillRect(0, 0, patternCanvas.width, patternCanvas.height)
 
   ctx.strokeStyle = color1
-  ctx.lineWidth = resolution / 30
+  ctx.lineWidth = resolution / 40
 
-  const spacing = resolution / 5
+  ctx.scale(1,2)
+
+  const spacing = resolution / 6
   const slopes = [-1, 1]
   const y0 = 0
   const y1 = resolution
@@ -55,7 +57,7 @@ function createFencePattern(
   ctx.stroke()
 
   // fill squares at intersection points
-  const squareSize = resolution / 17
+  const squareSize = resolution / 22
   ctx.fillStyle = 'black'
   for (let xA = -resolution; xA < 2 * resolution; xA += spacing) {
     for (let xB = -resolution; xB < 2 * resolution; xB += spacing) {

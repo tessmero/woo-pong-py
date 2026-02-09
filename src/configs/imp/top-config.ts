@@ -9,7 +9,7 @@ import type { ConfigTree } from '../config-tree'
 import type { PinballWizard } from 'pinball-wizard'
 import { SPEEDS, STEP_DURATION } from 'simulation/constants'
 
-export const isDevMode = true
+export const isDevMode = false
 export async function applyDevMode(pinballWizard: PinballWizard) {
   pinballWizard.rebuildControls() // show controls gui on startup
 

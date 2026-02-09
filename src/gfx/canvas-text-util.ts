@@ -4,6 +4,8 @@
  * Utilities for consistent canvas text rendering.
  */
 
+import type { Rectangle } from 'util/math-util'
+
 export const BASE_FONT_SIZE = 100
 export const FONT_WEIGHT = 400
 
@@ -22,4 +24,12 @@ export function setupRubikText(ctx: CanvasRenderingContext2D, h: number, color: 
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillStyle = color
+}
+
+export function drawText(ctx: CanvasRenderingContext2D, [x, y, w, h]: Rectangle, label: string) {
+  ctx.save()
+  ctx.translate(x + w / 2, y + h / 2 + 3 * window.devicePixelRatio)
+  setupRubikText(ctx, h, 'black')
+  ctx.fillText(label, 0, 0)
+  ctx.restore()
 }

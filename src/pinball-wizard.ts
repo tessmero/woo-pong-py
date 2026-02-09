@@ -4,7 +4,7 @@
  * Main object constructed once in main.ts.
  */
 
-import { playSound, setSimAudibleRect } from 'audio/collision-sounds'
+import { setSimAudibleRect } from 'audio/collision-sounds'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { Camera } from 'camera'
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
@@ -28,8 +28,9 @@ import { showControls } from 'util/debug-controls'
 import type { Rectangle } from 'util/math-util'
 import { lerp, rectContainsPoint, shuffle, type Vec2 } from 'util/math-util'
 import { shortVibrate } from 'util/vibrate'
-import { SimGfx } from 'gfx/regions/imp/sim-gfx'
-import { GlassGfx } from 'gfx/regions/imp/glass-gfx'
+import type { SimGfx } from 'gfx/regions/imp/sim-gfx'
+import type { GlassGfx } from 'gfx/regions/imp/glass-gfx'
+import { settingsPanel } from 'overlay-panels/settings-panel'
 
 // can only be constructed once
 let didConstruct = false
@@ -170,7 +171,7 @@ export class PinballWizard {
     }
     this._hasMoved = false
 
-    Graphics.updateBspAnim(dt);
+    Graphics.updateBspAnim(dt)
     Graphics.updateStgAnim(dt);
     (GfxRegion.create('glass-gfx') as GlassGfx).update(this, dt)
     const wasBranched = this.hasBranched
@@ -185,6 +186,7 @@ export class PinballWizard {
         this.speed = 'paused'
       }
 
+      settingsPanel.hide(this)
       ballSelectionPanel.show(this)
 
       // console.log('sim may need to halt soon, near branching time with no selection')
@@ -221,6 +223,8 @@ export class PinballWizard {
       this._speedMult = 0
       this._speed = 'paused'
       this._speedAnim = null
+
+      settingsPanel.hide(this)
       ballSelectionPanel.show(this)
       // this.onResize()
       // console.log('sim halted, near branching time with no selection')
@@ -326,7 +330,11 @@ export class PinballWizard {
     return this.mousePos
   }
 
-  public isMouseDown: InputId | null = null
+  public draggingId: InputId | null = null
+  public get isMouseDown() {
+    return this.draggingId !== null
+  }
+
   public dragY = 0
 
   down(rawPos: Vec2, inputId: InputId) {

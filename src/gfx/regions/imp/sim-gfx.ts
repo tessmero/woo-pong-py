@@ -14,6 +14,8 @@ import type { Barrier } from 'simulation/barrier'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { GfxRegion } from '../gfx-region'
 import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from 'gfx/canvas-rounded-rect-util'
+import { settingsPanel } from 'overlay-panels/settings-panel'
+import { Scrollbar } from 'scrollbar'
 
 const ballFlashDuration = 2000 // ms
 const ballFlashCycles = 5 // cycles per duration
@@ -27,8 +29,8 @@ export class SimGfx extends GfxRegion {
     if (ballSelectionPanel.isShowing) {
       return false
     }
-    if (pw.isMouseDown === null) {
-      pw.isMouseDown = inputId
+    if (pw.draggingId === null && !Scrollbar.isDragging) {
+      pw.draggingId = inputId
       pw.dragY = mousePos[1]
     }
     const hoveredDiskIndex = this.getHoveredDiskIndex(pw)
@@ -54,13 +56,13 @@ export class SimGfx extends GfxRegion {
   }
 
   move(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
-    if (ballSelectionPanel.isShowing) {
-      pw.isMouseDown = null
+    if (ballSelectionPanel.isShowing || settingsPanel.isShowing) {
+      pw.draggingId = null
       pw.camera.endDrag()
       return
     }
 
-    if (pw.isMouseDown === inputId) {
+    if (pw.draggingId === inputId) {
       pw.camera.drag(pw.dragY, mousePos[1])
       pw.dragY = mousePos[1]
     }
@@ -126,20 +128,20 @@ export class SimGfx extends GfxRegion {
 
   leave(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
     if (ballSelectionPanel.isShowing) {
-      pw.isMouseDown = null
+      pw.draggingId = null
       pw.camera.endDrag()
       return
     }
 
-    if (pw.isMouseDown === inputId) {
+    if (pw.draggingId === inputId) {
       pw.camera.drag(pw.dragY, mousePos[1])
       pw.dragY = mousePos[1]
     }
   }
 
   up(pw: PinballWizard, _mousePos: Vec2, inputId: InputId) {
-    if (inputId === pw.isMouseDown) {
-      pw.isMouseDown = null
+    if (inputId === pw.draggingId) {
+      pw.draggingId = null
       pw.camera.endDrag()
     }
   }

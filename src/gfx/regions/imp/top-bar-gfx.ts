@@ -16,7 +16,9 @@ import { drawButton } from 'gfx/btn-gfx-util'
 import { shortVibrate } from 'util/vibrate'
 import { settingsPanel } from 'overlay-panels/settings-panel'
 import { GfxRegion } from '../gfx-region'
-import { setupRubikText } from 'gfx/canvas-text-util'
+import { drawText } from 'gfx/canvas-text-util'
+import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
+import { Scrollbar } from 'scrollbar'
 
 const _LAYOUT_KEYS = ['settings', 'status'] as const
 type LayoutKey = (typeof _LAYOUT_KEYS)[number]
@@ -85,6 +87,12 @@ export class TopBarGfx extends GfxRegion {
   move(pw: PinballWizard, mousePos: Vec2) {
     // console.log('bottom-bar move', JSON.stringify(mousePos))
 
+    if (ballSelectionPanel.isShowing || settingsPanel.isShowing) {
+      this._hovered = null
+      this._held = null
+      return
+    }
+
     this._hovered = null
     if (!this._layout) return
 
@@ -114,7 +122,6 @@ export class TopBarGfx extends GfxRegion {
     // const [x, y, w, h] = rect
     // ctx.strokeRect(x + pad / 2, y + pad / 2, w - pad, h - pad)
     ctx.fillRect(...rect)
-
 
     if (!this._layout) return
 
@@ -160,7 +167,7 @@ export class TopBarGfx extends GfxRegion {
     const progress = Math.min(1, pw.activeSim.stepCount / STEPS_BEFORE_BRANCH)
 
     ctx.fillStyle = '#ccc'
-    ctx.fillRect(x+1, y+1, w-2, h-2)
+    ctx.fillRect(x + 1, y + 1, w - 2, h - 2)
 
     const pad = 8
     fillFrameBetweenRectAndRounded(ctx,
@@ -174,11 +181,10 @@ export class TopBarGfx extends GfxRegion {
     const steps = pw.activeSim.stepCount
     const seconds = stepsToSeconds(steps)
 
-    ctx.save()
-    ctx.translate(x + w / 2, y + h / 2 + 3 * window.devicePixelRatio)
-    setupRubikText(ctx, h, 'black')
-    ctx.fillText(getStatusText(pw, seconds), 0, 0)
-    ctx.restore()
+    const label = getStatusText(pw, seconds)
+    //debug
+    // const label = `${Scrollbar.isDragging}`
+    drawText(ctx, rect, label)
   }
 
   private getCurrentTime(pw: PinballWizard) {
