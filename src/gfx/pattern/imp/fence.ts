@@ -20,7 +20,6 @@ export class Fence extends Pattern {
   }
 }
 
-
 function createFencePattern(
   color1 = '#000',
   color2 = '#fff',
@@ -39,7 +38,7 @@ function createFencePattern(
   ctx.strokeStyle = color1
   ctx.lineWidth = resolution / 40
 
-  ctx.scale(1,2)
+  ctx.scale(1, 2)
 
   const spacing = resolution / 6
   const slopes = [-1, 1]

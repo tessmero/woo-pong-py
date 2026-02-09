@@ -25,11 +25,11 @@ import { StartRoom } from '../../src/rooms/imp/start-room'
 import { FinishRoom } from '../../src/rooms/imp/finish-room'
 
 // GFX_REGION imports and placeholder variable
-import { SimGfx } from '../../src/gfx/imp/sim-gfx'
-import { ScrollbarGfx } from '../../src/gfx/imp/scrollbar-gfx'
-import { BottomBarGfx } from '../../src/gfx/imp/bottom-bar-gfx'
-import { TopBarGfx } from '../../src/gfx/imp/top-bar-gfx'
-import { GlassGfx } from '../../src/gfx/imp/glass-gfx'
+import { SimGfx } from '../../src/gfx/regions/imp/sim-gfx'
+import { ScrollbarGfx } from '../../src/gfx/regions/imp/scrollbar-gfx'
+import { BottomBarGfx } from '../../src/gfx/regions/imp/bottom-bar-gfx'
+import { TopBarGfx } from '../../src/gfx/regions/imp/top-bar-gfx'
+import { GlassGfx } from '../../src/gfx/regions/imp/glass-gfx'
 
 const _gfxRegions = [
   SimGfx, ScrollbarGfx, BottomBarGfx, TopBarGfx, GlassGfx,
@@ -98,7 +98,8 @@ function getSnapshot(): string {
 const expectedSnapshot = `
 
 
-[[622357,2304830,-20,1247],[181503,2041017,-10,996],[748450,1259832,-298,-67],[112093,1467634,709,-370],[370731,1495131,961,-418],[924766,1311017,-81,-574],[156567,720303,-781,273],[454797,912705,919,487],[522919,822345,359,933],[481447,1095776,223,291]]
+
+[[519940,1798112,-981,-724],[175702,1646944,330,-1023],[504671,822175,1011,-249],[408033,1538074,-744,737],[499056,1594412,532,-658],[711281,1372740,108,704],[173384,90976,-504,-216],[646254,1024714,-244,183],[444737,1063698,371,276],[81051,1773288,396,512]]
 
 
 

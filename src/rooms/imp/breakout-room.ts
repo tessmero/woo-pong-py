@@ -39,7 +39,7 @@ export class BreakoutRoom extends Room {
 
     // play sound if on-screen
     if (rectContainsPoint(simAudibleRect, ...obstacle.pos)) {
-      playSound('drop_004.ogg', .04, obstacle.pos[0])
+      playSound('drop_004.ogg', 0.04, obstacle.pos[0])
     }
 
     if (this.hitSequence.includes(brickIndex)) {

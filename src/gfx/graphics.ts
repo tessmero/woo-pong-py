@@ -12,8 +12,8 @@ import { type GfxRegionName } from 'imp-names'
 import { GfxRegion } from './regions/gfx-region'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { settingsPanel } from 'overlay-panels/settings-panel'
-import { SimGfx } from './regions/imp/sim-gfx'
-import { ScrollbarGfx } from './regions/imp/scrollbar-gfx'
+import type { SimGfx } from './regions/imp/sim-gfx'
+import type { ScrollbarGfx } from './regions/imp/scrollbar-gfx'
 
 // const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
 // const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
@@ -290,7 +290,7 @@ export class Graphics {
         ctx = this._bspCtx
       }
       else if (gfxName === 'settings-gfx') {
-        if( !settingsPanel.isShowing ){
+        if (!settingsPanel.isShowing) {
           return // skip drawing settings panel
         }
         ctx = this._settingsCtx

@@ -11,7 +11,6 @@ import { gfxConfig } from './configs/imp/gfx-config'
 import { PinballWizard } from './pinball-wizard'
 import { getTestSupport } from 'test-support'
 import { applyDevMode, isDevMode } from 'configs/imp/top-config'
-import type { Vec2 } from 'util/math-util'
 import { Lut } from 'simulation/luts/lut'
 import { GUI, LUT } from 'imp-names'
 import type { ShapeName } from 'simulation/shapes'
@@ -183,7 +182,6 @@ async function main() {
 }
 
 main()
-
 
 async function _initAssets(loadingLabel: HTMLElement) {
   const isComputing = false

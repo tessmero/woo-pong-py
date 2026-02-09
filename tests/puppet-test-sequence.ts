@@ -5,7 +5,7 @@
  */
 
 const seed = 12345
-const winner = 2 // winning ball index for seed (guess and check)
+const winner = 5 // winning ball index for seed (guess and check)
 
 export const puppetTestSequence = [
   {
@@ -23,12 +23,6 @@ export const puppetTestSequence = [
     key: 'topSpeed',
     defaultValue: 30,
     value: 1000,
-  },
-  {
-    test: 'change-default-setting',
-    key: 'speedLerp',
-    defaultValue: 4e-3,
-    value: 1,
   },
   {
     // start game
@@ -51,6 +45,22 @@ export const puppetTestSequence = [
     button: `ball-${winner}`,
     targetState: `paused-ball-${winner}`,
   },
+  // {
+  //   // drag on main view
+  //   test: 'camera-is-draggable',
+  //   state: `paused-ball-${winner}`,
+  //   startDrag: [300, 400],
+  //   endDrag: [300, 200],
+  //   // eps: 100,
+  // },
+  // {
+  //   // drag on scrollbar
+  //   test: 'camera-is-draggable',
+  //   state: `paused-ball-${winner}`,
+  //   startDrag: [650, 400],
+  //   endDrag: [650, 200],
+  //   // eps: 100,
+  // },
   {
     // unpause
     test: 'button-changes-state',

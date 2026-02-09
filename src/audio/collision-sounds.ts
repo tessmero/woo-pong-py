@@ -6,7 +6,7 @@
 
 import type { SoundAssetUrl } from './sound-asset-urls'
 import { getSound } from './sound-asset-loader'
-import type { Rectangle, Vec2 } from 'util/math-util'
+import type { Rectangle } from 'util/math-util'
 import { rectContainsPoint } from 'util/math-util'
 import type { DiskState } from 'simulation/disk'
 import { VALUE_SCALE } from 'simulation/constants'
@@ -36,9 +36,8 @@ export function playSound(url: SoundAssetUrl, volume = 0.1, x = midX) {
   // const x = 0
   const pan = Math.max(-limitPan, Math.min(limitPan, (x - midX) / midX))
 
-
-  if( ballSelectionPanel.isShowing ){
-    volume *= .2
+  if (ballSelectionPanel.isShowing) {
+    volume *= 0.2
   }
 
   sound.volume(0)
@@ -77,7 +76,7 @@ export function playImpact(simPos: DiskState, isBallBall: boolean, magnitude: nu
   // console.log('play impact')
 
   const url = isBallBall ? ballBallImpact : ballObstacleImpact
-  let volume = 5e-5 * (magnitude - minMagnitude)
+  const volume = 5e-5 * (magnitude - minMagnitude)
 
   // if (recentImpacts.length < 1000) {
   //   recentImpacts.push({

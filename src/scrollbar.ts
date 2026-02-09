@@ -7,10 +7,9 @@
 import type { InputId } from 'pinball-wizard'
 
 export class Scrollbar {
-
   public static draggingId: InputId | null = null
 
-  public static get isDragging(){
+  public static get isDragging() {
     return this.draggingId !== null
   }
 

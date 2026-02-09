@@ -20,6 +20,8 @@ import { Scrollbar } from 'scrollbar'
 const ballFlashDuration = 2000 // ms
 const ballFlashCycles = 5 // cycles per duration
 
+const dummy: Vec2 = [0, 0]
+
 export class SimGfx extends GfxRegion {
   static {
     GfxRegion.register('sim-gfx', () => new SimGfx())
@@ -42,17 +44,17 @@ export class SimGfx extends GfxRegion {
   screenToSimPos(screenPos: Vec2): Vec2 {
     const dpr = window.devicePixelRatio
     const { _drawRect, drawOffset, drawSimScale } = this
-    const x = (screenPos[0] * dpr - _drawRect[0]) / drawSimScale - drawOffset[0] / drawSimScale
-    const y = (screenPos[1] * dpr - _drawRect[1]) / drawSimScale - drawOffset[1] / drawSimScale
-    return [x, y]
+    dummy[0] = (screenPos[0] * dpr - _drawRect[0]) / drawSimScale - drawOffset[0] / drawSimScale
+    dummy[1] = (screenPos[1] * dpr - _drawRect[1]) / drawSimScale - drawOffset[1] / drawSimScale
+    return dummy
   }
 
   simToScreenPos(simPos: Vec2): Vec2 {
     const dpr = window.devicePixelRatio
     const { _drawRect, drawOffset, drawSimScale } = this
-    const x = ((simPos[0] + drawOffset[0] / drawSimScale) * drawSimScale + _drawRect[0]) / dpr
-    const y = ((simPos[1] + drawOffset[1] / drawSimScale) * drawSimScale + _drawRect[1]) / dpr
-    return [x, y]
+    dummy[0] = ((simPos[0] + drawOffset[0] / drawSimScale) * drawSimScale + _drawRect[0]) / dpr
+    dummy[1] = ((simPos[1] + drawOffset[1] / drawSimScale) * drawSimScale + _drawRect[1]) / dpr
+    return dummy
   }
 
   move(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {

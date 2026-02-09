@@ -52,7 +52,7 @@ function createBrickPattern(
   let j = 0
 
   function brick() {
-    const sizeY = squareSize 
+    const sizeY = squareSize
     const sizeX = 2 * squareSize
     ctx.strokeRect(x, y, sizeX, sizeY)
   }
@@ -60,7 +60,7 @@ function createBrickPattern(
   for (x = x0; x < x1; x += squareSize) {
     j = 0
     for (y = x0; y < x1; y += squareSize) {
-      if (i % 2 == j % 2) {
+      if (i % 2 === j % 2) {
         brick()
       }
       j++

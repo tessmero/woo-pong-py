@@ -31,7 +31,7 @@ export class SettingsGfx extends GfxRegion {
   private _isDragging = false
 
   private _setSlider(x: number) {
-    const [sx, sy, sw, sh] = this.sliderBar
+    const [sx, _sy, sw, _sh] = this.sliderBar
     const fraction = Math.max(0, Math.min(1, (x - sx) / sw))
     const value = Math.floor(fraction * 250)
     const item = topConfig.tree.children.audioLatencySteps
@@ -39,7 +39,7 @@ export class SettingsGfx extends GfxRegion {
     item.onChange()
   }
 
-  down(pw: PinballWizard, mousePos: Vec2, inputId: InputId): boolean {
+  down(_pw: PinballWizard, mousePos: Vec2, _inputId: InputId): boolean {
     const x = mousePos[0] * window.devicePixelRatio
     const y = mousePos[1] * window.devicePixelRatio
     if (rectContainsPoint(this.inner, x, y)) {
@@ -54,7 +54,7 @@ export class SettingsGfx extends GfxRegion {
     return false // do not consume event
   }
 
-  move(pw: PinballWizard, mousePos: Vec2, inputId: InputId): void {
+  move(_pw: PinballWizard, mousePos: Vec2, _inputId: InputId): void {
     const x = mousePos[0] * window.devicePixelRatio
     const y = mousePos[1] * window.devicePixelRatio
     if (rectContainsPoint(this.sliderBar, x, y)) {
@@ -66,14 +66,14 @@ export class SettingsGfx extends GfxRegion {
     }
   }
 
-  leave(pw: PinballWizard, mousePos: Vec2, inputId: InputId): void {
+  leave(_pw: PinballWizard, mousePos: Vec2, _inputId: InputId): void {
     const x = mousePos[0] * window.devicePixelRatio
     if (this._isDragging) {
       this._setSlider(x)
     }
   }
 
-  up(pw: PinballWizard, mousePos: Vec2, inputId: InputId): void {
+  up(_pw: PinballWizard, _mousePos: Vec2, _inputId: InputId): void {
     this._isDragging = false
   }
 

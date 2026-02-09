@@ -24,6 +24,8 @@ const buffer = (typeof document === 'undefined')
   ? null
   : document.createElement('canvas') as HTMLCanvasElement
 
+const _dash = [1, 1] // dummy used for setLineDash
+
 export class ScrollbarGfx extends GfxRegion {
   static {
     GfxRegion.register('scrollbar-gfx', () => new ScrollbarGfx())
@@ -218,7 +220,9 @@ export class ScrollbarGfx extends GfxRegion {
     const baseLength = circumference / dashCycles
     const dashLength = baseLength * dashShrink
     const gapLength = baseLength * (1 - dashShrink)
-    ctx.setLineDash([dashLength, gapLength])
+    _dash[0] = dashLength
+    _dash[1] = gapLength
+    ctx.setLineDash(_dash)
     ctx.lineCap = 'round'
 
     ctx.lineDashOffset = dashLength / 2

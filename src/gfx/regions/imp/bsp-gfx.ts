@@ -11,7 +11,7 @@ import { DISK_COUNT, VALUE_SCALE } from 'simulation/constants'
 import { CROWN_FILL, Graphics } from 'gfx/graphics'
 import type { Disk } from 'simulation/disk'
 import { GfxRegion } from '../gfx-region'
-import { PatternName } from 'imp-names'
+import type { PatternName } from 'imp-names'
 import { Pattern } from 'gfx/pattern/pattern'
 import { buildFillStyle } from 'gfx/pattern/pattern-util'
 

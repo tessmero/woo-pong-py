@@ -141,7 +141,7 @@ export function collideDisks(a: Disk, b: Disk): boolean {
   b.nextState.dx += cdx
   b.nextState.dy += cdy
 
-  playImpact(a.nextState, true, 2*Math.hypot(cdx, cdy))
+  playImpact(a.nextState, true, 2 * Math.hypot(cdx, cdy))
 
   return true
 }

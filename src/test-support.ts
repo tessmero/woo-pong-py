@@ -55,7 +55,7 @@ export function getTestSupport(pinballWizard: PinballWizard) {
     },
 
     getCameraPos: () => {
-      return [0, 0]
+      return [0, pinballWizard.camera.pos]
     },
 
     getSetting: (key) => {

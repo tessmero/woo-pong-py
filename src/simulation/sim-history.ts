@@ -10,8 +10,7 @@ import { DISK_COUNT, LATENCY_LOOK_AHEAD_STEPS, TAIL_STEPS } from './constants'
 import type { Simulation } from './simulation'
 import type { Vec2 } from 'util/math-util'
 import { GfxRegion } from 'gfx/regions/gfx-region'
-import { playImpact, playSound } from 'audio/collision-sounds'
-import { ScrollbarGfx } from 'gfx/regions/imp/scrollbar-gfx'
+import type { ScrollbarGfx } from 'gfx/regions/imp/scrollbar-gfx'
 
 const entryLength = DISK_COUNT * 2 // xy per disk
 const nEntries = LATENCY_LOOK_AHEAD_STEPS + TAIL_STEPS // number of steps to store
@@ -43,12 +42,12 @@ export class SimHistory {
       if (obs.isHidden) continue
       if (obs.hideOnStep === -1) continue
       if (displayStep >= obs.hideOnStep) {
-
         obs.isHidden = true
 
         // clear rectangle in scrollbar obstacle graphics buffer
         ;(GfxRegion.create('scrollbar-gfx') as ScrollbarGfx).hideObstacle(obs)
-      } else {
+      }
+      else {
         // // obstacle will be hidden soon
         // console.log(`obstacle not yet actually hidden (${obs.hideOnStep} < ${displayStep})`)
       }
@@ -77,13 +76,13 @@ export class SimHistory {
 
   // x,y,cumulative distance along graphical tail
   static tail(diskIndex: number): Array<[number, number, number]> {
-    const result: Array<[number, number, number]> = []
     let lastX = 0
     let lastY = 0
     let cumulativeDistance = 0
     let lastDrawnCumDist = 0
     const stepsBack = topConfig.flatConfig.audioLatencySteps
-    for (let i = 0; i < TAIL_STEPS; i += 10) {
+    let j = 0
+    for (let i = 0; i < TAIL_STEPS; i += TAIL_SKIP) {
       const [x, y] = SimHistory.getPos(diskIndex, stepsBack + i)
       // const x = this._history[realIndex]
       // const y = this._history[realIndex + 1]
@@ -101,12 +100,19 @@ export class SimHistory {
       ) {
         // skip drawing small segment
 
+        tailDummy[j][0] = -1
       }
       else {
-        result.push([Math.round(x), Math.round(y), Math.round(cumulativeDistance)])
+        tailDummy[j][0] = Math.round(x)
+        tailDummy[j][1] = Math.round(y)
+        tailDummy[j][2] = Math.round(cumulativeDistance)
         lastDrawnCumDist = cumulativeDistance
       }
+      j++
     }
-    return result
+    return tailDummy
   }
 }
+
+const TAIL_SKIP = 10
+const tailDummy: Array<[number, number, number]> = Array.from({ length: TAIL_STEPS / TAIL_SKIP }, () => [0, 0, 0])

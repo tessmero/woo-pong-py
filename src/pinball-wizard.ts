@@ -31,7 +31,6 @@ import { shortVibrate } from 'util/vibrate'
 import type { SimGfx } from 'gfx/regions/imp/sim-gfx'
 import type { GlassGfx } from 'gfx/regions/imp/glass-gfx'
 import { settingsPanel } from 'overlay-panels/settings-panel'
-import { Scrollbar } from 'scrollbar'
 
 // can only be constructed once
 let didConstruct = false

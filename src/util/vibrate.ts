@@ -4,7 +4,7 @@
  * Short vibrate on mobile.
  */
 
-import { playSound } from "audio/collision-sounds"
+import { playSound } from 'audio/collision-sounds'
 
 export function shortVibrate() {
   navigator.vibrate(10)

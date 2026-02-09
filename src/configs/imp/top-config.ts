@@ -72,7 +72,7 @@ const topConfigTree = {
     audioLatencySteps: {
       value: 0,
       min: 0,
-      max: Math.floor( 1000 / STEP_DURATION ),
+      max: Math.floor(1000 / STEP_DURATION),
       step: 1,
       onChange: () => topConfig.refreshConfig(),
     },

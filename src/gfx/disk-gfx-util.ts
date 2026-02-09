@@ -42,7 +42,9 @@ export function drawDiskFollowHalo(
   const baseLength = circumference / dashCycles
   const dashLength = baseLength * dashShrink
   const gapLength = baseLength * (1 - dashShrink)
-  ctx.setLineDash([dashLength, gapLength])
+  _dash[0] = dashLength
+  _dash[1] = gapLength
+  ctx.setLineDash(_dash)
   ctx.lineDashOffset = (baseLength * performance.now() * 1e-3) % circumference
   ctx.lineCap = 'round'
   const thick = VALUE_SCALE * 1
@@ -59,8 +61,12 @@ export function drawDiskFollowHalo(
   ctx.arc(cx, cy, CLICKABLE_RADIUS, 0, twopi)
   ctx.stroke()
 
-  ctx.setLineDash([])
+  ctx.setLineDash(_noDash)
 }
+
+const _dash = [1, 1]
+const _noDash = []
+
 /**
  * Draws a crown shape sitting on top of the disk halo.
  * The bottom edge of the crown follows the halo arc, and the top is a flat line above the halo.
@@ -154,6 +160,8 @@ export function drawDisk(
   ctx.arc(cx, cy, DISK_RADIUS * (1 - i * tailShrinkRatio / TAIL_STEPS), 0, twopi)
   if (isShowingTails) {
     for (const [x, y, distance] of SimHistory.tail(diskIndex)) {
+      if (x === -1) continue
+
       // draw point in tail
       const rad = DISK_RADIUS * (1 - (Math.min(distance, maxTailDistance) / maxTailDistance))
 
@@ -173,5 +181,3 @@ export function drawDisk(
   ctx.imageSmoothingEnabled = false
   ctx.fill()
 }
-
-

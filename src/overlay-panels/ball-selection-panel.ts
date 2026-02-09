@@ -8,16 +8,16 @@ import { GfxRegion } from 'gfx/regions/gfx-region'
 import { Graphics } from 'gfx/graphics'
 import type { PinballWizard } from 'pinball-wizard'
 import { Panel } from './panel'
-import { BspGfx } from 'gfx/regions/imp/bsp-gfx';
+import type { BspGfx } from 'gfx/regions/imp/bsp-gfx'
 
 class BallSelectionPanel extends Panel {
-  protected _show(pw: PinballWizard) {
+  protected _show(_pw: PinballWizard) {
     // ballsBtn.htmlElem?.classList.add('active')
     Graphics.targetBspAnim = 1
     ;(GfxRegion.create('bsp-gfx') as BspGfx).startEntrance()
   }
 
-  protected _hide(pw: PinballWizard) {
+  protected _hide(_pw: PinballWizard) {
     // ballsBtn.htmlElem?.classList.remove('active')
     Graphics.targetBspAnim = 0
     ;(GfxRegion.create('bsp-gfx') as BspGfx).startExit()

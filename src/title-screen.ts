@@ -28,19 +28,21 @@ const MASSES = [1, 1, 1]
 
 // Track last 10 positions for each body
 const TRAIL_LENGTH = 100
-const bodies: Array<Body & { mass: number, trail: Array<Vec2> }> = [0, 1, 2].map((i) => {
+const bodies: Array<Body & { mass: number, trail: Float32Array }> = [0, 1, 2].map((i) => {
   const angle = twopi * i / 3
   const pos: Vec2 = [Math.cos(angle) * INIT_RADIUS, Math.sin(angle) * INIT_RADIUS]
   const speed = (Math.random() + 1) * INIT_SPEED
   const tangent = [Math.sin(angle), -Math.cos(angle)]
   const vel: Vec2 = [tangent[0] * speed, tangent[1] * speed]
-  return { pos, vel, mass: MASSES[i], trail: [pos.slice() as Vec2] }
+  return { pos, vel, mass: MASSES[i], trail: new Float32Array(2 * TRAIL_LENGTH) }
 })
 
+const acc: Vec2 = [0, 0]
 function _updateTitleSim(dt: number) {
   const G = 1e-8
   for (let a = 0; a < bodies.length; a++) {
-    const acc: Vec2 = [0, 0]
+    acc[0] = 0
+    acc[1] = 0
     for (let b = 0; b < bodies.length; b++) {
       if (a === b) continue
       const dx = bodies[b].pos[0] - bodies[a].pos[0]
@@ -55,13 +57,17 @@ function _updateTitleSim(dt: number) {
     bodies[a].vel[1] += acc[1] * dt
   }
   for (let a = 0; a < bodies.length; a++) {
-    bodies[a].pos[0] += bodies[a].vel[0] * dt
-    bodies[a].pos[1] += bodies[a].vel[1] * dt
+    const { pos, trail } = bodies[a]
+    pos[0] += bodies[a].vel[0] * dt
+    pos[1] += bodies[a].vel[1] * dt
     // Update trail
-    bodies[a].trail.push([bodies[a].pos[0], bodies[a].pos[1]])
-    if (bodies[a].trail.length > TRAIL_LENGTH) bodies[a].trail.shift()
+    trail[indexInTrail * 2] = pos[0]
+    trail[indexInTrail * 2 + 1] = pos[1]
   }
+  indexInTrail = (indexInTrail + 1) % TRAIL_LENGTH
 }
+
+let indexInTrail = 0
 
 function _drawTitleSim() {
   const cvs = Graphics._mainCvs
@@ -85,8 +91,11 @@ function _drawTitleSim() {
   for (const body of bodies) {
     if (body.trail.length > 1) {
       // ctx.beginPath();
+      let ti = indexInTrail
       for (let i = 0; i < body.trail.length; i++) {
-        const [tx, ty] = body.trail[i]
+        const tx = body.trail[ti * 2]
+        const ty = body.trail[ti * 2 + 1]
+        ti = (ti + 1) % TRAIL_LENGTH
         const px = w / 2 + tx * scale
         const py = h / 2 + ty * scale
         ctx.fillRect(px - rad, py - rad, 2 * rad, 2 * rad)
@@ -101,7 +110,8 @@ function _drawTitleSim() {
 
   // Draw bodies (black)
   for (const body of bodies) {
-    const [x, y] = [w / 2 + body.pos[0] * scale, h / 2 + body.pos[1] * scale]
+    const x = w / 2 + body.pos[0] * scale
+    const y = h / 2 + body.pos[1] * scale
     ctx.beginPath()
     ctx.arc(x, y, BODY_RADIUS * window.devicePixelRatio, 0, 2 * Math.PI)
     ctx.fillStyle = '#aaa'

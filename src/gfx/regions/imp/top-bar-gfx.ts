@@ -18,7 +18,6 @@ import { settingsPanel } from 'overlay-panels/settings-panel'
 import { GfxRegion } from '../gfx-region'
 import { drawText } from 'gfx/canvas-text-util'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
-import { Scrollbar } from 'scrollbar'
 
 const _LAYOUT_KEYS = ['settings', 'status'] as const
 type LayoutKey = (typeof _LAYOUT_KEYS)[number]
@@ -31,7 +30,7 @@ const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
 
 const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
   settings: (pw) => {
-    console.log('top-bar-gfx clickActions.settings')
+    // console.log('top-bar-gfx clickActions.settings')
     if (!settingsPanel.isShowing) {
       shortVibrate()
     }
@@ -169,9 +168,12 @@ export class TopBarGfx extends GfxRegion {
     ctx.fillStyle = '#ccc'
     ctx.fillRect(x + 1, y + 1, w - 2, h - 2)
 
-    const pad = 8
+    _padded[0] = x + pad
+    _padded[1] = y + pad
+    _padded[2] = w - 2 * pad
+    _padded[3] = h - 2 * pad
     fillFrameBetweenRectAndRounded(ctx,
-      [x + pad, y + pad, w - 2 * pad, h - 2 * pad],
+      _padded,
       pad,
     )
 
@@ -182,7 +184,7 @@ export class TopBarGfx extends GfxRegion {
     const seconds = stepsToSeconds(steps)
 
     const label = getStatusText(pw, seconds)
-    //debug
+    // debug
     // const label = `${Scrollbar.isDragging}`
     drawText(ctx, rect, label)
   }
@@ -194,3 +196,6 @@ export class TopBarGfx extends GfxRegion {
     return label
   }
 }
+
+const pad = 8
+const _padded: Rectangle = [0, 0, 1, 1]

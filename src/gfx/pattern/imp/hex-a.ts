@@ -11,7 +11,7 @@ export class HexA extends Pattern {
   static {
     Pattern.register('hex-a', () => new HexA())
   }
-  
+
   public getScale(): number {
     return 1 / 100
   }

@@ -6,12 +6,13 @@
 
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import trackLiteralsPlugin from './vite-plugin-pw/track-literal-ctors'
 import json5Plugin from 'vite-plugin-json5'
 import glsl from 'vite-plugin-glsl'
 
 export default defineConfig({
   plugins: [
-    // trackLiteralsPlugin(),
+    trackLiteralsPlugin(),
     tsconfigPaths(),
     json5Plugin(),
     glsl(),
