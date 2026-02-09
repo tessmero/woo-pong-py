@@ -214,6 +214,6 @@ export class Disk {
 
 function hBounce(state: DiskState) {
   state.dx *= -1
-  playImpact(state, false, 2 *  Math.abs(state.dx))
+  playImpact(state, false, 2 * Math.abs(state.dx))
   applyFrictionX(state)
 }

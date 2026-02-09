@@ -9,11 +9,13 @@ import { getSound } from './sound-asset-loader'
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { rectContainsPoint } from 'util/math-util'
 import type { DiskState } from 'simulation/disk'
+import { VALUE_SCALE } from 'simulation/constants'
+import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 
-const limitPan = 0.5
+const limitPan = 0.8
 
-const ballBallImpact: SoundAssetUrl = 'click_002.ogg'
-const ballObstacleImpact: SoundAssetUrl = 'click_002.ogg'
+const ballBallImpact: SoundAssetUrl = 'glass_002.ogg'
+const ballObstacleImpact: SoundAssetUrl = 'glass_002.ogg'
 
 // const ballBallImpact: SoundAssetUrl = 'impactGlass_light_000.ogg'
 // const ballObstacleImpact: SoundAssetUrl = 'impactGlass_light_000.ogg'
@@ -28,16 +30,21 @@ export function setSimAudibleRect(rect: Rectangle) {
   simAudibleRect[3] = rect[3]
 }
 
-export function playSound(url: SoundAssetUrl, volume = 0.1) {
+const midX = VALUE_SCALE * 50
+export function playSound(url: SoundAssetUrl, volume = 0.1, x = midX) {
   const sound: Howl = getSound(url)
-  const vol = 0.1
   // const x = 0
-  // const pan = Math.max(-limitPan, Math.min(limitPan, (x - 100) / 200))
+  const pan = Math.max(-limitPan, Math.min(limitPan, (x - midX) / midX))
 
-  sound.volume(vol)
-  const _id = sound.play()
-  // sound.volume(vol, id)
-  // sound.stereo(pan, id)
+
+  if( ballSelectionPanel.isShowing ){
+    volume *= .2
+  }
+
+  sound.volume(0)
+  const id = sound.play()
+  sound.volume(volume, id)
+  sound.stereo(pan, id)
 }
 
 export type AudibleImpact = {
@@ -55,10 +62,11 @@ export function getRecentImpacts(): Array<AudibleImpact> {
   return recentImpacts
 }
 
+const minMagnitude = 5e2
 export function playImpact(simPos: DiskState, isBallBall: boolean, magnitude: number) {
   // don't play any impacts
 
-  if (magnitude < 1e3) {
+  if (magnitude < minMagnitude) {
     return
   }
 
@@ -70,7 +78,7 @@ export function playImpact(simPos: DiskState, isBallBall: boolean, magnitude: nu
   // console.log('play impact')
 
   const url = isBallBall ? ballBallImpact : ballObstacleImpact
-  const volume = 1e-4 * magnitude
+  let volume = 5e-5 * (magnitude - minMagnitude)
 
   if (recentImpacts.length < 1000) {
     recentImpacts.push({
@@ -81,5 +89,5 @@ export function playImpact(simPos: DiskState, isBallBall: boolean, magnitude: nu
     })
   }
 
-  playSound(url, volume)
+  playSound(url, volume, x)
 }

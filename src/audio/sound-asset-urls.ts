@@ -13,5 +13,7 @@ export const SOUND_ASSET_URLS = [
   'maximize_007.ogg',
   'impactGlass_light_000.ogg',
   'impactWood_light_000.ogg',
+  'pluck_001.ogg',
+  'glass_002.ogg',
 ] as const
 export type SoundAssetUrl = (typeof SOUND_ASSET_URLS)[number]
