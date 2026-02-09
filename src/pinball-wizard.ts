@@ -70,7 +70,6 @@ export class PinballWizard {
   public set speed(s: Speed) {
     if (this._isHalted && s !== 'paused') {
       shortVibrate()
-      playSound('click_002.ogg')
 
       // user tried to advance, but must select a ball first
       const gfx = GfxRegion.create('sim-gfx') as SimGfx

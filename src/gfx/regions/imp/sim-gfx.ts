@@ -7,13 +7,14 @@
 import type { InputId, PinballWizard } from 'pinball-wizard'
 import { twopi, type Rectangle, type Vec2 } from 'util/math-util'
 import { Graphics } from 'gfx/graphics'
-import { CLICKABLE_RADSQ, VALUE_SCALE } from 'simulation/constants'
+import { CLICKABLE_RADSQ, DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import { drawDisk, drawDiskCrown, drawDiskFollowHalo, drawDiskHoverHalo } from 'gfx/disk-gfx-util'
 import { drawObstacles } from 'gfx/obstacle-gfx-util'
 import type { Barrier } from 'simulation/barrier'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { GfxRegion } from '../gfx-region'
 import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from 'gfx/canvas-rounded-rect-util'
+import { getRecentImpacts } from 'audio/collision-sounds'
 
 const ballFlashDuration = 2000 // ms
 const ballFlashCycles = 5 // cycles per duration
@@ -273,6 +274,16 @@ export class SimGfx extends GfxRegion {
       if (isFlashOn) {
         drawDiskHoverHalo(ctx, disk)
       }
+    }
+
+    // debug impacts
+    const rad = DISK_RADIUS / 2 
+    ctx.fillStyle = 'yellow'
+    for (const impact of getRecentImpacts()) {
+      ctx.fillRect(
+        impact.pos[0] - rad, impact.pos[1] - rad,
+        2 * rad, 2 * rad,
+      )
     }
 
     // this.drawHalos(ctx,pw)

@@ -11,11 +11,10 @@ import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import { type ObstacleCollision } from './luts/imp/obstacle-lut'
 import { Lut } from './luts/lut'
 import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/disk-normal-lut'
-import { DISK_RADIUS, TAIL_STEPS } from './constants'
+import { DISK_RADIUS } from './constants'
 import { applyFrictionX } from './luts/imp/disk-friction-lut'
 import { playImpact } from 'audio/collision-sounds'
-import { SimHistory } from './sim-history'
-import { PatternName } from 'imp-names'
+import type { PatternName } from 'imp-names'
 
 // export const DISK_STYLES = ['red', 'green', 'blue', 'yellow'] as const
 // export type DiskStyle = (typeof DISK_STYLES)[number]
@@ -92,7 +91,6 @@ export class Disk {
       d.currentState.copy(d.nextState)
     }
   }
-
 
   static fromJson(obj: object) {
     const d = new Disk()
@@ -172,7 +170,7 @@ export class Disk {
           hasNoHits = false
 
           // play sound
-          playImpact(this.nextState, false)
+          playImpact(this.nextState, false, Math.hypot(vxAdj, vyAdj))
 
           return // disk can't bounce more than once per step
         }
@@ -201,34 +199,21 @@ export class Disk {
     if ((this.nextState.x - DISK_RADIUS) < bounds[0]) {
       this.nextState.x = bounds[0] + DISK_RADIUS
       if (this.nextState.dx < 0) {
-        this.nextState.dx *= -1
-        applyFrictionX(this.nextState)
+        hBounce(this.nextState)
       }
     }
-
-    // // top
-    // if ((this.nextState.y - DISK_RADIUS) < bounds[1]) {
-    //   this.nextState.y = bounds[1] + DISK_RADIUS
-    //   if (this.nextState.dy < 0) {
-    //     this.nextState.dy *= -1
-    //     applyFrictionY(this.nextState)
-    //   }
-    // }
 
     if ((this.nextState.x + DISK_RADIUS) > (bounds[0] + bounds[2])) {
       this.nextState.x = bounds[0] + bounds[2] - DISK_RADIUS
       if (this.nextState.dx > 0) {
-        this.nextState.dx *= -1
-        applyFrictionX(this.nextState)
+        hBounce(this.nextState)
       }
     }
-    // // bottom
-    // if ((this.nextState.y + DISK_RADIUS) > (bounds[1] + bounds[3])) {
-    //   this.nextState.y = bounds[1] + bounds[3] - DISK_RADIUS
-    //   if (this.nextState.dy > 0) {
-    //     this.nextState.dy *= -1
-    //     applyFrictionY(this.nextState)
-    //   }
-    // }
   }
+}
+
+function hBounce(state: DiskState) {
+  state.dx *= -1
+  playImpact(state, false, 2 *  Math.abs(state.dx))
+  applyFrictionX(state)
 }

@@ -8,6 +8,7 @@ import { LUT_BLOBS } from 'set-by-build'
 import { Lut } from '../lut'
 import type { Disk } from 'simulation/disk'
 import { DISK_RADIUS } from 'simulation/constants'
+import { playImpact } from 'audio/collision-sounds'
 
 export type DiskDiskBounce = null | [number, number, number, number] // x,y,dx,dy
 
@@ -139,5 +140,8 @@ export function collideDisks(a: Disk, b: Disk): boolean {
   a.nextState.dy -= cdy
   b.nextState.dx += cdx
   b.nextState.dy += cdy
+
+  playImpact(a.nextState, true, 2*Math.hypot(cdx, cdy))
+
   return true
 }
