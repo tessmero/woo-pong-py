@@ -5,16 +5,15 @@
  */
 
 import type { InputId, PinballWizard } from 'pinball-wizard'
-import { GfxRegion } from '../gfx-region'
 import { twopi, type Rectangle, type Vec2 } from 'util/math-util'
 import { Graphics } from 'gfx/graphics'
 import { CLICKABLE_RADSQ, VALUE_SCALE } from 'simulation/constants'
 import { drawDisk, drawDiskCrown, drawDiskFollowHalo, drawDiskHoverHalo } from 'gfx/disk-gfx-util'
 import { drawObstacles } from 'gfx/obstacle-gfx-util'
 import type { Barrier } from 'simulation/barrier'
-import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from '../canvas-rounded-rect-util'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
-import { topConfig } from 'configs/imp/top-config'
+import { GfxRegion } from '../gfx-region'
+import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from 'gfx/canvas-rounded-rect-util'
 
 const ballFlashDuration = 2000 // ms
 const ballFlashCycles = 5 // cycles per duration

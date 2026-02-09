@@ -13,7 +13,7 @@ import { Graphics, gutterPx } from 'gfx/graphics'
 
 import { stepsToSeconds } from 'simulation/constants'
 import { formatTime } from 'guis/imp/playing-gui'
-import { setupRubikText } from '../canvas-text-util'
+import { setupRubikText } from '../../canvas-text-util'
 import { drawRoundedRect, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
 import { shortVibrate } from 'util/vibrate'
 import { playSound } from 'audio/collision-sounds'

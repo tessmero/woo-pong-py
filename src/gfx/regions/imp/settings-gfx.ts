@@ -4,7 +4,7 @@
  * Setttings panel.
  */
 
-import { GfxRegion } from 'gfx/gfx-region'
+import { GfxRegion } from 'gfx/regions/gfx-region'
 import type { PinballWizard, InputId } from 'pinball-wizard'
 import type { Vec2, Rectangle } from 'util/math-util'
 

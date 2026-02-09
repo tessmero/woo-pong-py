@@ -7,9 +7,9 @@
 import { type PinballWizard } from 'pinball-wizard'
 import { topConfig } from 'configs/imp/top-config'
 import { Gui } from 'guis/gui'
-import { GfxRegion } from 'gfx/gfx-region'
-import type { SimGfx } from 'gfx/imp/sim-gfx'
-import type { BottomBarGfx } from 'gfx/imp/bottom-bar-gfx'
+import { GfxRegion } from 'gfx/regions/gfx-region'
+import type { SimGfx } from 'gfx/regions/imp/sim-gfx'
+import type { BottomBarGfx } from 'gfx/regions/imp/bottom-bar-gfx'
 import { Graphics } from 'gfx/graphics'
 
 export function getTestSupport(pinballWizard: PinballWizard) {

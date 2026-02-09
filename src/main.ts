@@ -19,7 +19,6 @@ import { SHAPE_PATHS } from 'simulation/shapes'
 import { Gui } from 'guis/gui'
 import { Graphics } from 'gfx/graphics'
 import { TitleScreen } from 'title-screen'
-import { BottomBarGfx } from 'gfx/imp/bottom-bar-gfx'
 import { BASE_FONT_SIZE } from 'gfx/canvas-text-util'
 import { shortVibrate } from 'util/vibrate'
 import { loadAllSounds } from 'audio/sound-asset-loader'
@@ -251,13 +250,11 @@ function _initListeners(pinballWizard: PinballWizard) {
   })
 }
 
-
 async function _initAssets(loadingLabel: HTMLElement) {
   const isComputing = false
 
   const totalTasks = Object.keys(SHAPE_PATHS).length + (LUT.NAMES.length - 1)
   let tasksFinished = 0
-
 
   async function finishTask() {
     // // simulate lag

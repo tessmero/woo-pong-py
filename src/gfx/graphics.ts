@@ -9,11 +9,11 @@ import { twopi } from 'util/math-util'
 import { DISK_RADIUS } from 'simulation/constants'
 import type { PinballWizard } from 'pinball-wizard'
 import { type GfxRegionName } from 'imp-names'
-import { GfxRegion } from './gfx-region'
-import type { ScrollbarGfx } from './imp/scrollbar-gfx'
-import type { SimGfx } from './imp/sim-gfx'
+import { GfxRegion } from './regions/gfx-region'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { settingsPanel } from 'overlay-panels/settings-panel'
+import { SimGfx } from './regions/imp/sim-gfx'
+import { ScrollbarGfx } from './regions/imp/scrollbar-gfx'
 
 // const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
 // const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D

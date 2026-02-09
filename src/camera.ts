@@ -6,8 +6,8 @@
  */
 
 import { topConfig } from 'configs/imp/top-config'
-import { GfxRegion } from 'gfx/gfx-region'
-import { SimGfx } from 'gfx/imp/sim-gfx'
+import { GfxRegion } from 'gfx/regions/gfx-region'
+import { SimGfx } from 'gfx/regions/imp/sim-gfx'
 import type { PinballWizard } from 'pinball-wizard'
 import { Scrollbar } from 'scrollbar'
 import { VALUE_SCALE } from 'simulation/constants'

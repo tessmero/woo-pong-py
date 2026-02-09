@@ -83,6 +83,14 @@ export const GFX_REGION = {
     'bsp-gfx', // toggleable ball selection panel
     'settings-gfx', // toggleable settings panel
   ],
-  SOURCES: ['src/gfx/imp/'],
+  SOURCES: ['src/gfx/regions/imp/'],
 } as const satisfies ImpManifest
 export type GfxRegionName = (typeof GFX_REGION.NAMES)[number]
+
+export const PATTERN = {
+  NAMES: [
+    'white', 'black', 'stripe-v', 'stripe-h', 'checkered', 'hex-a', 'hex-b', 'fence',
+  ],
+  SOURCES: ['src/gfx/patterns/imp'],
+} as const satisfies ImpManifest
+export type PatternName = (typeof PATTERN.NAMES)[number]

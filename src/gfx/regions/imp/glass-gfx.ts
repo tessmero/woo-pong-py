@@ -5,12 +5,12 @@
  */
 
 import type { PinballWizard } from 'pinball-wizard'
-import { GfxRegion } from '../gfx-region'
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { Graphics } from 'gfx/graphics'
 import type { SimGfx } from './sim-gfx'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { shortVibrate } from 'util/vibrate'
+import { GfxRegion } from '../gfx-region'
 
 export class GlassGfx extends GfxRegion {
   private _xOffset: number = 0

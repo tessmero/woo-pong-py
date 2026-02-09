@@ -5,19 +5,20 @@
  */
 
 import { twopi, type Rectangle, type Vec2 } from 'util/math-util'
-import { GfxRegion } from '../gfx-region'
 import { traceObstacle } from 'gfx/obstacle-gfx-util'
 import type { InputId, PinballWizard } from 'pinball-wizard'
 import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import { CROWN_FILL, OBSTACLE_FILL } from 'gfx/graphics'
 import { Scrollbar } from 'scrollbar'
 import type { Disk } from 'simulation/disk'
-import type { DiskPattern } from 'gfx/disk-gfx-util'
-import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx-util'
 import type { Obstacle } from 'simulation/obstacle'
 import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from 'gfx/canvas-rounded-rect-util'
 import type { Barrier } from 'simulation/barrier'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
+import type { PatternName } from 'imp-names'
+import { buildFillStyle } from 'gfx/pattern/pattern-util'
+import { GfxRegion } from '../gfx-region'
+import { Pattern } from 'gfx/pattern/pattern'
 
 const buffer = (typeof document === 'undefined')
   ? null
@@ -294,18 +295,14 @@ function drawFinish(ctx: CanvasRenderingContext2D, finish: Barrier) {
 }
 
 // scaled versions of disk-gfx patterns
-const scaledFillers: Partial<Record<DiskPattern, CanvasPattern | string>> = {}
-function getScaledPattern(pattern: DiskPattern): CanvasPattern | string {
+const scaledFillers: Partial<Record<PatternName, CanvasPattern | string>> = {}
+function getScaledPattern(pattern: PatternName): CanvasPattern | string {
   if (!Object.hasOwn(scaledFillers, pattern)) {
     scaledFillers[pattern] = _buildScaledPattern(pattern)
   }
   return scaledFillers[pattern] as CanvasPattern
 }
 
-function _buildScaledPattern(pattern: DiskPattern): CanvasPattern | string {
-  const original = PATTERN_FILLERS[pattern]
-  if (original instanceof CanvasPattern) {
-    return buildPattern(pattern, 6) // scaled canvas pattern
-  }
-  return original // string
+function _buildScaledPattern(pattern: PatternName): CanvasPattern | string {
+  return buildFillStyle(pattern, Pattern.getCanvas(pattern), 6)
 }

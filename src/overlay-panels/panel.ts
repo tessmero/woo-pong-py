@@ -13,7 +13,9 @@ export abstract class Panel {
   constructor(
     canvasId: string,
   ) {
-    this._cvs = document.getElementById(canvasId) as HTMLCanvasElement
+    this._cvs = ((typeof document === 'undefined')
+      ? null
+      : document.getElementById(canvasId)) as HTMLCanvasElement
   }
 
   protected abstract _hide(pw: PinballWizard)

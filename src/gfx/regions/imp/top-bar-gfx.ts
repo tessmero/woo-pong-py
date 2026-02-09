@@ -5,18 +5,18 @@
  */
 
 import type { PinballWizard } from 'pinball-wizard'
-import { GfxRegion } from '../gfx-region'
 import { rectContainsPoint, type Rectangle, type Vec2 } from 'util/math-util'
 import { STEPS_BEFORE_BRANCH, stepsToSeconds } from 'simulation/constants'
 
 import { formatTime, getStatusText } from 'guis/imp/playing-gui'
-import { setupRubikText } from '../canvas-text-util'
 import { Graphics, gutterPx, OBSTACLE_FILL } from 'gfx/graphics'
 import { drawRoundedRect, fillFrameBetweenRectAndRounded, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
 import { BUTTON_ICONS } from 'gfx/button-icons'
 import { drawButton } from 'gfx/btn-gfx-util'
 import { shortVibrate } from 'util/vibrate'
 import { settingsPanel } from 'overlay-panels/settings-panel'
+import { GfxRegion } from '../gfx-region'
+import { setupRubikText } from 'gfx/canvas-text-util'
 
 const _LAYOUT_KEYS = ['settings', 'status'] as const
 type LayoutKey = (typeof _LAYOUT_KEYS)[number]

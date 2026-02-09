@@ -11,11 +11,11 @@ import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import { type ObstacleCollision } from './luts/imp/obstacle-lut'
 import { Lut } from './luts/lut'
 import { speedDetail, speedToIndex, type DiskNormalBounce } from './luts/imp/disk-normal-lut'
-import type { DiskPattern } from 'gfx/disk-gfx-util'
 import { DISK_RADIUS, TAIL_STEPS } from './constants'
 import { applyFrictionX } from './luts/imp/disk-friction-lut'
 import { playImpact } from 'audio/collision-sounds'
 import { SimHistory } from './sim-history'
+import { PatternName } from 'imp-names'
 
 // export const DISK_STYLES = ['red', 'green', 'blue', 'yellow'] as const
 // export type DiskStyle = (typeof DISK_STYLES)[number]
@@ -78,7 +78,7 @@ export class DiskState {
 }
 
 export class Disk {
-  pattern: DiskPattern = 'white'
+  pattern: PatternName = 'white'
 
   readonly currentState: DiskState = new DiskState(0, 0, 0, 0)
   readonly nextState: DiskState = new DiskState(0, 0, 0, 0)

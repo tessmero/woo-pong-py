@@ -9,16 +9,13 @@ import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { Camera } from 'camera'
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
 import { topConfig } from 'configs/imp/top-config'
-import { DISK_PATTERNS } from 'gfx/disk-gfx-util'
-import { GfxRegion } from 'gfx/gfx-region'
+import { GfxRegion } from 'gfx/regions/gfx-region'
 import { Graphics } from 'gfx/graphics'
-import type { GlassGfx } from 'gfx/imp/glass-gfx'
-import type { SimGfx } from 'gfx/imp/sim-gfx'
 import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
 import type { GfxRegionName } from 'imp-names'
-import { GUI } from 'imp-names'
+import { GUI, PATTERN } from 'imp-names'
 import type { Speed } from 'simulation/constants'
 import {
   HALT_LOOK_AHEAD_STEPS,
@@ -31,6 +28,8 @@ import { showControls } from 'util/debug-controls'
 import type { Rectangle } from 'util/math-util'
 import { lerp, rectContainsPoint, shuffle, type Vec2 } from 'util/math-util'
 import { shortVibrate } from 'util/vibrate'
+import { SimGfx } from 'gfx/regions/imp/sim-gfx'
+import { GlassGfx } from 'gfx/regions/imp/glass-gfx'
 
 // can only be constructed once
 let didConstruct = false
@@ -129,7 +128,7 @@ export class PinballWizard {
     this._race = possibleRaces[Math.floor(Math.random() * possibleRaces.length)]
     const commonStartSeed = this.isSeedConfiged ? cfgSeed : this._race[0]
 
-    shuffle(DISK_PATTERNS) // shuffle appearance of bouncing balls
+    shuffle(PATTERN.NAMES) // shuffle appearance of bouncing balls
 
     this.activeSim = new Simulation(commonStartSeed)
     if (!this.isSeedConfiged) {

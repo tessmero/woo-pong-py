@@ -11,9 +11,9 @@ import { collideDisks } from './luts/imp/disk-disk-lut'
 import type { Obstacle } from './obstacle'
 import { type Rectangle } from 'util/math-util'
 import { Perturbations } from './perturbations'
-import { DISK_PATTERNS } from 'gfx/disk-gfx-util'
 import { Level } from 'level'
 import { SimHistory } from './sim-history'
+import { PATTERN } from 'imp-names'
 
 const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 5; i++) {
@@ -67,8 +67,7 @@ export class Simulation {
       scaledPars[0] *= VALUE_SCALE
       scaledPars[1] *= VALUE_SCALE
       const disk = Disk.fromJson(scaledPars)
-      // disk.style = DISK_STYLES[diskIndex % DISK_STYLES.length]
-      disk.pattern = DISK_PATTERNS[diskIndex % DISK_PATTERNS.length]
+      disk.pattern = PATTERN.NAMES[diskIndex % PATTERN.NAMES.length]
       diskIndex++
       return disk
     })

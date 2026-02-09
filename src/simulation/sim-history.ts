@@ -9,9 +9,9 @@ import { topConfig } from 'configs/imp/top-config'
 import { DISK_COUNT, LATENCY_LOOK_AHEAD_STEPS, TAIL_STEPS } from './constants'
 import type { Simulation } from './simulation'
 import type { Vec2 } from 'util/math-util'
-import { GfxRegion } from 'gfx/gfx-region'
-import type { ScrollbarGfx } from 'gfx/imp/scrollbar-gfx'
+import { GfxRegion } from 'gfx/regions/gfx-region'
 import { playImpact, playSound } from 'audio/collision-sounds'
+import { ScrollbarGfx } from 'gfx/regions/imp/scrollbar-gfx'
 
 const entryLength = DISK_COUNT * 2 // xy per disk
 const nEntries = LATENCY_LOOK_AHEAD_STEPS + TAIL_STEPS // number of steps to store

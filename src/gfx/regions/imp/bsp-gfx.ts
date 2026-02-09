@@ -5,14 +5,15 @@
  */
 
 import type { InputId, PinballWizard } from 'pinball-wizard'
-import { GfxRegion } from '../gfx-region'
 import { lerp2, shuffle, twopi, type Rectangle, type Vec2 } from 'util/math-util'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { DISK_COUNT, VALUE_SCALE } from 'simulation/constants'
-import type { DiskPattern } from 'gfx/disk-gfx-util'
-import { buildPattern, PATTERN_FILLERS } from 'gfx/disk-gfx-util'
 import { CROWN_FILL, Graphics } from 'gfx/graphics'
 import type { Disk } from 'simulation/disk'
+import { GfxRegion } from '../gfx-region'
+import { PatternName } from 'imp-names'
+import { Pattern } from 'gfx/pattern/pattern'
+import { buildFillStyle } from 'gfx/pattern/pattern-util'
 
 const _lastWidth = -1
 const _lastHeight = -1
@@ -246,18 +247,18 @@ function drawDisk(
 }
 
 // scaled versions of disk-gfx patterns
-const scaledFillers: Partial<Record<DiskPattern, CanvasPattern | string>> = {}
-function getScaledPattern(pattern: DiskPattern): CanvasPattern | string {
+const scaledFillers: Partial<Record<PatternName, CanvasPattern | string>> = {}
+function getScaledPattern(pattern: PatternName): CanvasPattern | string {
   if (!Object.hasOwn(scaledFillers, pattern)) {
     scaledFillers[pattern] = _buildScaledPattern(pattern)
   }
   return scaledFillers[pattern] as CanvasPattern
 }
 
-function _buildScaledPattern(pattern: DiskPattern): CanvasPattern | string {
-  const original = PATTERN_FILLERS[pattern]
+function _buildScaledPattern(pattern: PatternName): CanvasPattern | string {
+  const original = Pattern.getFillStyle(pattern)
   if (original instanceof CanvasPattern) {
-    return buildPattern(pattern, 20 / VALUE_SCALE) // scaled canvas pattern
+    return buildFillStyle(pattern, Pattern.getCanvas(pattern), 20 / VALUE_SCALE) // scaled canvas pattern
   }
   return original // string
 }
