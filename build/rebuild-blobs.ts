@@ -38,11 +38,11 @@ const _rooms = [
 ]
 
 // GFX_REGION imports and placeholder variable
-import { SimGfx } from '../src/gfx/imp/sim-gfx'
-import { ScrollbarGfx } from '../src/gfx/imp/scrollbar-gfx'
-import { BottomBarGfx } from '../src/gfx/imp/bottom-bar-gfx'
-import { TopBarGfx } from '../src/gfx/imp/top-bar-gfx'
-import { GlassGfx } from '../src/gfx/imp/glass-gfx'
+import { SimGfx } from '../src/gfx/regions/imp/sim-gfx'
+import { ScrollbarGfx } from '../src/gfx/regions/imp/scrollbar-gfx'
+import { BottomBarGfx } from '../src/gfx/regions/imp/bottom-bar-gfx'
+import { TopBarGfx } from '../src/gfx/regions/imp/top-bar-gfx'
+import { GlassGfx } from '../src/gfx/regions/imp/glass-gfx'
 
 const _gfxRegions = [
   SimGfx, ScrollbarGfx, BottomBarGfx, TopBarGfx, GlassGfx,
