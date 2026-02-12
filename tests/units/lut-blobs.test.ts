@@ -15,9 +15,9 @@ for (const { lutName, shapeName, blobUrl, indexer } of lutSpecs) {
     it('loads as valid tree', function () {
       const blobPath = join(__dirname, `../../public/${blobUrl}`)
       const readBuffer = readFileSync(blobPath)
-      const blobData = new Int16Array(
+      const blobData = new Int32Array(
         readBuffer.buffer, readBuffer.byteOffset,
-        readBuffer.byteLength / Int16Array.BYTES_PER_ELEMENT)
+        readBuffer.byteLength / Int32Array.BYTES_PER_ELEMENT)
 
       ok(typeof blobData[0] === 'number'
         && (blobData[0] === Math.floor(blobData[0])),

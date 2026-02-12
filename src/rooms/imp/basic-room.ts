@@ -70,18 +70,20 @@ function randomLayout(): RoomLayoutName {
 
 const possibleShapes: Array<ShapeName> = [
 
-  'diamond',
-  // 'flipper',
-  'star',
-  'pawn',
-  'shield',
-  'meeple',
-  'club',
-  'bishop',
-  'bolt',
-  'airplane',
-  'head',
-  'note',
+  'circle',
+
+  // 'diamond',
+  // // 'flipper',
+  // 'star',
+  // 'pawn',
+  // 'shield',
+  // 'meeple',
+  // 'club',
+  // 'bishop',
+  // 'bolt',
+  // 'airplane',
+  // 'head',
+  // 'note',
 
 ]
 

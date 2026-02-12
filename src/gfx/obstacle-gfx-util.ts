@@ -7,7 +7,7 @@
 import type { PinballWizard } from 'pinball-wizard'
 import type { Obstacle } from 'simulation/obstacle'
 import { OBSTACLE_FILL, OBSTACLE_STROKE } from 'gfx/graphics'
-import { VALUE_SCALE } from 'simulation/constants'
+import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
 import { getDetailedPoints, type ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import type { Vec2 } from 'util/math-util'
@@ -49,7 +49,17 @@ export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard) 
     // // debug
     // ctx.strokeStyle = 'red'
     // ctx.lineWidth = 1 * VALUE_SCALE
-    // ctx.strokeRect(...boundingRect)
+    // ctx.strokeRect(...obstacle.collisionRect)
+
+    // // debug
+    // ctx.strokeStyle = 'blue'
+    // ctx.lineWidth = 1 * VALUE_SCALE
+    // const rad = DISK_RADIUS / 2
+    // ctx.strokeRect(
+    //   obstacle.pos[0] - rad,
+    //   obstacle.pos[1] - rad,
+    //   2 * rad, 2 * rad,
+    // )
   }
 }
 

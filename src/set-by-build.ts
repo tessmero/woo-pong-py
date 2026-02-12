@@ -5,110 +5,132 @@
  */
 
 export const LUT_BLOBS = {
-  ROUNDRECT: {
-    url: 'luts/roundrect-15535cc4c88315aa.bin',
-    hash: '15535cc4c88315aabf600a3418798d1874332dba75b1b3689bf89cf8d363a40d',
-    xRad: 155,
-    yRad: 71,
+  "ROUNDRECT": {
+    "url": "luts/roundrect-5c527b68200a9a95.bin",
+    "hash": "5c527b68200a9a9584955da58f2a4b04ad56e8f3c86d62f6ff234a8b583a9e9e",
+    "xRad": 155,
+    "yRad": 71
   },
-  BREAKOUTBRICK: {
-    url: 'luts/breakoutbrick-8e90f89ed120d3d7.bin',
-    hash: '8e90f89ed120d3d7f52b56899f230548b18a45642eecdfc1de7b1c83c3490431',
-    xRad: 120,
-    yRad: 80,
+  "BREAKOUTBRICK": {
+    "url": "luts/breakoutbrick-d10481d197248da1.bin",
+    "hash": "d10481d197248da1e97ff5c24ae9249af78c8a7b325e9c29fbd5fdfe603c4daa",
+    "xRad": 120,
+    "yRad": 80
   },
-  DIAMOND: {
-    url: 'luts/diamond-6fb793a0f3a1d625.bin',
-    hash: '6fb793a0f3a1d6252a7d9d56ada186e441e0d7403d5b01db45531870b31d31ed',
-    xRad: 93,
-    yRad: 93,
+  "DIAMOND": {
+    "url": "luts/diamond-7d2fb83ea98f83d4.bin",
+    "hash": "7d2fb83ea98f83d4870bf6b594bfdce7d24eabfd8b0f5c685cbd1baf73276e0b",
+    "xRad": 93,
+    "yRad": 93
   },
-  WEDGE: {
-    url: 'luts/wedge-3dc56b850f0ad072.bin',
-    hash: '3dc56b850f0ad072b67c118937c91decf8dedc82ca1593e03c27633d5ac74cf0',
-    xRad: 242,
-    yRad: 90,
+  "WEDGE": {
+    "url": "luts/wedge-9afb3ea9b0fc95e8.bin",
+    "hash": "9afb3ea9b0fc95e8219e4e8af5b8b7288d0a4dc31702f0bd2634537a1fb9c057",
+    "xRad": 242,
+    "yRad": 90
   },
-  FLIPPER: {
-    url: 'luts/flipper-c77c8c8bada4edc4.bin',
-    hash: 'c77c8c8bada4edc4717d0aea2889b4b2ac9e336e4e4744e97f5e54712d1b3aad',
-    xRad: 296,
-    yRad: 107,
+  "FLIPPER": {
+    "url": "luts/flipper-825a42ce38244f02.bin",
+    "hash": "825a42ce38244f020ef4d3a929740a54564280202a63e2674aded864ea8dc185",
+    "xRad": 296,
+    "yRad": 107
   },
-  STAR: {
-    url: 'luts/star-0423b7f8bdf0640f.bin',
-    hash: '0423b7f8bdf0640fa09826e93102f008708b700f0308a94158cb8b94416a6279',
-    xRad: 97,
-    yRad: 94,
+  "STAR": {
+    "url": "luts/star-50694ba96f18182c.bin",
+    "hash": "50694ba96f18182c7efa27b2c5c102c2852521a3e6911de7063613008a977544",
+    "xRad": 97,
+    "yRad": 94
   },
-  PAWN: {
-    url: 'luts/pawn-e0e565456f5578b6.bin',
-    hash: 'e0e565456f5578b641b389f0d92b2c32e9f8dc0002ebc98f2ccd2230076daca1',
-    xRad: 88,
-    yRad: 104,
+  "PAWN": {
+    "url": "luts/pawn-a8229ec2d1d3cd9e.bin",
+    "hash": "a8229ec2d1d3cd9e9c8cd03814a8b8649679a5c64e4c92a2033087e19fc91391",
+    "xRad": 88,
+    "yRad": 104
   },
-  SHIELD: {
-    url: 'luts/shield-bd3825dc1c995603.bin',
-    hash: 'bd3825dc1c99560305b11ca65d638b9c3e65b82f2645e1af23459e7b5e35a26c',
-    xRad: 96,
-    yRad: 104,
+  "SHIELD": {
+    "url": "luts/shield-e3924bb37d7e3ea6.bin",
+    "hash": "e3924bb37d7e3ea664ff94a9eb584bf19155c77f6dad692f99a77e91fe58a193",
+    "xRad": 96,
+    "yRad": 104
   },
-  MEEPLE: {
-    url: 'luts/meeple-15884b87ffe6deb5.bin',
-    hash: '15884b87ffe6deb56ed207ec69ec343e52ceee25e38ea02c8872482b970aaf44',
-    xRad: 104,
-    yRad: 104,
+  "MEEPLE": {
+    "url": "luts/meeple-ab85ed30514e1fee.bin",
+    "hash": "ab85ed30514e1feef2bd9ac587bafd033895502157fca69ad551b875d28a5760",
+    "xRad": 104,
+    "yRad": 104
   },
-  CLUB: {
-    url: 'luts/club-f61de436edfa709f.bin',
-    hash: 'f61de436edfa709f3dde9b74cf5d9dd4ee6eedad7d430d13aa81a662e383fb14',
-    xRad: 104,
-    yRad: 104,
+  "CLUB": {
+    "url": "luts/club-1cbef4e2b945547f.bin",
+    "hash": "1cbef4e2b945547fedffe35789909fd03f852afdec358848c60a98bb647ddcd8",
+    "xRad": 104,
+    "yRad": 104
   },
-  BISHOP: {
-    url: 'luts/bishop-407d79d5f5fc74ba.bin',
-    hash: '407d79d5f5fc74badeb82e5c90db4773dbe5f9de5fa0e7d4606729d5658d570b',
-    xRad: 73,
-    yRad: 114,
+  "BISHOP": {
+    "url": "luts/bishop-d02dc521521d6837.bin",
+    "hash": "d02dc521521d68374f962aed58c5bfb6114afb2497d5cdd2de7db7e2d0b88523",
+    "xRad": 73,
+    "yRad": 114
   },
-  BOLT: {
-    url: 'luts/bolt-8fc71a9353a815b7.bin',
-    hash: '8fc71a9353a815b7a83473c3a66a5234bc3e8280f1d228fee60e8de19b4d8ede',
-    xRad: 72,
-    yRad: 112,
+  "BOLT": {
+    "url": "luts/bolt-14803595fbcef741.bin",
+    "hash": "14803595fbcef74150ab29cfb827e5b162f2e1ea6da55374e71ed3330a2ae595",
+    "xRad": 72,
+    "yRad": 112
   },
-  AIRPLANE: {
-    url: 'luts/airplane-510b54dc47084d91.bin',
-    hash: '510b54dc47084d917cba2806010f55cbd307b1aefd7a00a177787c88685cc04b',
-    xRad: 86,
-    yRad: 121,
+  "AIRPLANE": {
+    "url": "luts/airplane-2f1a415b02969b11.bin",
+    "hash": "2f1a415b02969b11e7ce20212c133a5a941c4a21f55663a9da4dd63ff134c12b",
+    "xRad": 86,
+    "yRad": 121
   },
-  HEAD: {
-    url: 'luts/head-ce721b5f65f3ce9a.bin',
-    hash: 'ce721b5f65f3ce9ab5a851a9dde11be1f4fe7b362cd67d6f4e11abe1ccd46ec0',
-    xRad: 94,
-    yRad: 100,
+  "HEAD": {
+    "url": "luts/head-390b8a6c9ef3c213.bin",
+    "hash": "390b8a6c9ef3c213895965178b021977360b36eadc53be5296dec33662ae10cb",
+    "xRad": 94,
+    "yRad": 100
   },
-  NOTE: {
-    url: 'luts/note-72545dbdef31e39c.bin',
-    hash: '72545dbdef31e39c829dc192e79bdb16bfd55cad1f191d6fe0422045b879445f',
-    xRad: 95,
-    yRad: 105,
+  "NOTE": {
+    "url": "luts/note-9a65ac83fc39316e.bin",
+    "hash": "9a65ac83fc39316ebce69ef386ee0a6638a83a92f3112c9dc24654cf532448af",
+    "xRad": 95,
+    "yRad": 105
   },
-  DISK_FRICTION_LUT: {
-    url: 'luts/disk-friction-lut-9f8e66a2dc70f064.bin',
-    hash: '9f8e66a2dc70f06456c6baf67dd2d922e9b7a846fc266a8de88559b493dffa51',
+  "BIG_CIRCLE": {
+    "url": "luts/big-circle-a924fecd6f1b08ff.bin",
+    "hash": "a924fecd6f1b08ffc2a65897f138c275f7d049f6f1a409e6986700db0963d7cb",
+    "xRad": 240,
+    "yRad": 240
   },
-  DISK_DISK_LUT: {
-    url: 'luts/disk-disk-lut-9a9cbb0e91bd58e1.bin',
-    hash: '9a9cbb0e91bd58e18a281426702bfd1bd6f5a3f929f36ff2e327a4d2c830ca10',
+  "CIRCLE": {
+    "url": "luts/circle-3df004f1ec87095f.bin",
+    "hash": "3df004f1ec87095f4a6fa1f67be8319f96f3a1fa921afbfda00206eef7fa69f3",
+    "xRad": 90,
+    "yRad": 90
   },
-  DISK_NORMAL_LUT: {
-    url: 'luts/disk-normal-lut-705377676ab3d42c.bin',
-    hash: '705377676ab3d42cd2e6ffcb1f5c3298f1df3018910f934c553c0ee2096e27de',
+  "HOLDER": {
+    "url": "luts/holder-1989c1d9597dc11a.bin",
+    "hash": "1989c1d9597dc11a817242fdba566cc16a1c86f4ad63cbb831c79636c8517b28",
+    "xRad": 168,
+    "yRad": 268
   },
-  RACE_LUT: {
-    url: 'luts/race-lut-eccf359f524cee7d.bin',
-    hash: 'eccf359f524cee7d2ebcc904ff8c7592625c2967d28870f6d51da3354795d549',
+  "DISK_FRICTION_LUT": {
+    "url": "luts/disk-friction-lut-650f82b9fd3355d3.bin",
+    "hash": "650f82b9fd3355d380c57ecbea269dcac3632fc5e854bc30a4f087848e669e95"
   },
-}
+  "DISK_DISK_LUT": {
+    "url": "luts/disk-disk-lut-b7e23b639f93b42e.bin",
+    "hash": "b7e23b639f93b42e6fe41cadc3ca3799b7a2960ecc9f13e9326407363be27e3a"
+  },
+  "DISK_NORMAL_LUT": {
+    "url": "luts/disk-normal-lut-90f6e33741c52b16.bin",
+    "hash": "90f6e33741c52b16428f6e8f43ccf7e1ce9c806c96f96e6877a1d94816c1bfa3"
+  },
+  "RACE_LUT": {
+    "url": "luts/race-lut-f1c3ccf4617adc3b.bin",
+    "hash": "f1c3ccf4617adc3b7ffb10192b4c0c5c75e092e7abf1f2c2f934a0f665ebf498"
+  },
+  "GEAR_LUT": {
+    "url": "luts/gear-lut-63127e4d88338f03.bin",
+    "hash": "63127e4d88338f032c346436889d7cb7e0089bc3273ae8a4f9317a3b6ced2cc4"
+  }
+};

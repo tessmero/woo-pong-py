@@ -18,23 +18,23 @@ export class TitleScreen {
 type Body = {
   pos: Vec2
   vel: Vec2
+  trail: Float32Array
 }
 
 // Parameters for a visually appealing, centered 3-body animation
 const BODY_RADIUS = 15
 const INIT_RADIUS = 0.22 // relative to canvas min(width, height)
 const INIT_SPEED = 1e-4 // relative to canvas min(width, height) per second
-const MASSES = [1, 1, 1]
 
-// Track last 10 positions for each body
+// Track last n positions for each body
 const TRAIL_LENGTH = 100
-const bodies: Array<Body & { mass: number, trail: Float32Array }> = [0, 1, 2].map((i) => {
+const bodies: Array<Body> = Array.from({ length: 3 }, (_, i) => {
   const angle = twopi * i / 3
   const pos: Vec2 = [Math.cos(angle) * INIT_RADIUS, Math.sin(angle) * INIT_RADIUS]
   const speed = (Math.random() + 1) * INIT_SPEED
   const tangent = [Math.sin(angle), -Math.cos(angle)]
   const vel: Vec2 = [tangent[0] * speed, tangent[1] * speed]
-  return { pos, vel, mass: MASSES[i], trail: new Float32Array(2 * TRAIL_LENGTH) }
+  return { pos, vel, trail: new Float32Array(2 * TRAIL_LENGTH) }
 })
 
 const acc: Vec2 = [0, 0]
@@ -49,7 +49,7 @@ function _updateTitleSim(dt: number) {
       const dy = bodies[b].pos[1] - bodies[a].pos[1]
       const distSq = dx * dx + dy * dy + 0.001
       const dist = Math.sqrt(distSq)
-      const force = G * bodies[b].mass / distSq
+      const force = G / distSq
       acc[0] += force * dx / dist
       acc[1] += force * dy / dist
     }

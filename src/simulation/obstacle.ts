@@ -64,26 +64,21 @@ export class Obstacle {
     this.boundingRect = this.collisionRect
   }
 
-  step() {
-    if (this.isStatic) return
-
-    Perturbations.reverseObstacle(this)
-
-    const { pos, vel, minX, maxX, lut } = this
-
-    if (vel[0] < 0 && pos[0] < minX) {
-      vel[0] *= -1
-    }
-    else if (vel[0] > 0 && pos[0] > maxX) {
-      vel[0] *= -1
-    }
-
-    pos[0] += vel[0]
-    pos[1] += vel[1]
-
-    this.collisionRect[0] = pos[0] - lut.maxOffsetX
-    this.collisionRect[1] = pos[1] - lut.maxOffsetY
-  }
+  // step() {
+  //   if (this.isStatic) return
+  //   Perturbations.reverseObstacle(this)
+  //   const { pos, vel, minX, maxX, lut } = this
+  //   if (vel[0] < 0 && pos[0] < minX) {
+  //     vel[0] *= -1
+  //   }
+  //   else if (vel[0] > 0 && pos[0] > maxX) {
+  //     vel[0] *= -1
+  //   }
+  //   pos[0] += vel[0]
+  //   pos[1] += vel[1]
+  //   this.collisionRect[0] = pos[0] - lut.maxOffsetX
+  //   this.collisionRect[1] = pos[1] - lut.maxOffsetY
+  // }
 }
 
 function flipPointsX(obs: Obstacle) {

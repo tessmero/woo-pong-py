@@ -38,11 +38,13 @@ export type ConfigurableName = (typeof CONFIGURABLE.NAMES)[number]
 // lookup tables
 export const LUT = {
   NAMES: [
-    'disk-friction-lut', //
+    'disk-friction-lut', // before -> after velocity being reduced due to friction
     'disk-disk-lut', // bounce two colliding disks
     'obstacle-lut', // identify solid edge when disk collides with obstacle
     'disk-normal-lut', // bounce disk off of solid edge
     'race-lut', // precomputed races (start seed + midpoint seeds for each disk to win)
+
+    'gear-lut', // positions of teeth on a spinning gear
   ],
   SOURCES: ['src/simulation/luts/imp/**/*.ts'],
 } as const satisfies ImpManifest
@@ -56,6 +58,8 @@ export const ROOM = {
     'pong-room',
     'breakout-room', // numbered bricks disappear after collision
     // 'sorter-room', // balls pass through or end up in numbered regions
+
+    'gear-room', // spinning gear
   ],
   SOURCES: ['src/rooms/imp/**/*.ts'],
 } as const satisfies ImpManifest

@@ -36,7 +36,7 @@ export abstract class Lut<TLeaf> {
 
   abstract computeLeaf(index: Array<number>): TLeaf
 
-  public loadFromBlob(intArr: Int16Array) {
+  public loadFromBlob(intArr: Int32Array) {
     this.tree.length = 0
     LutEncoder.decode(intArr, this)
   }
@@ -133,7 +133,8 @@ export abstract class Lut<TLeaf> {
 
         // assign shape-specific values (obstacle-lut.ts)
         lut.shape = shapeName
-        const { url, hash, xRad = 100, yRad = 100 } = LUT_BLOBS[shapeName.toUpperCase()]
+        const blobKey = shapeName.toUpperCase().replaceAll('-', '_')
+        const { url, hash, xRad = 100, yRad = 100 } = LUT_BLOBS[blobKey]
         lut.blobUrl = url
         lut.blobHash = hash
         lut.obsOffsetDetailX = xRad // half size of cache along dx and dy
@@ -163,7 +164,7 @@ export abstract class Lut<TLeaf> {
   }
 }
 
-async function fetchBlobWithIntegrityCheck(url: string, expectedHash?: string): Promise<Int16Array> {
+async function fetchBlobWithIntegrityCheck(url: string, expectedHash?: string): Promise<Int32Array> {
   const response = await fetch(url)
   if (!response.ok) {
     throw new Error(`Failed to fetch blob: ${response.statusText}`)
@@ -185,7 +186,7 @@ async function fetchBlobWithIntegrityCheck(url: string, expectedHash?: string): 
     }
   }
 
-  return new Int16Array(arrayBuffer)
+  return new Int32Array(arrayBuffer)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

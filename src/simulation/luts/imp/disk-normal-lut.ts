@@ -30,13 +30,6 @@ export class DiskNormalLut extends Lut<DiskNormalBounce> {
       factory: () => new DiskNormalLut(),
       depth: 3,
       leafLength: 2,
-      // detail: [
-      //   speedDetail * 2 + 1,
-      //   speedDetail * 2 + 1,
-      //   normalDetail,
-      // ],
-      // blobHash: DISK_NORMAL_LUT_BLOB_HASH,
-      // blobUrl: DISK_NORMAL_LUT_BLOB_URL,
     })
   }
 

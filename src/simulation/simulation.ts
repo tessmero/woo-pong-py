@@ -90,11 +90,17 @@ export class Simulation {
   step() {
     this._stepCount++
 
-    // udpate inner obstacles
-    for (const obs of this.obstacles) {
-      obs.step()
-      // Perturbations.blinkObstacle(obs)
+
+    // update rooms
+    for( const room of this.level.rooms ){
+      room.step()
     }
+
+    // // udpate inner obstacles
+    // for (const obs of this.obstacles) {
+    //   obs.step()
+    //   // Perturbations.blinkObstacle(obs)
+    // }
 
     // collide disks with disks
     for (let a = 1; a < this.disks.length; a++) {
