@@ -9,7 +9,7 @@ import type { LutName } from '../../imp-names'
 import { LutEncoder } from '../lut-encoder'
 import { type ObstacleLut } from './imp/obstacle-lut'
 import { LUT_BLOBS } from 'set-by-build'
-import { OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
+import { INT16_MAX, INT16_MIN, OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
 
 export type RegisteredLut<TLeaf> = {
   factory: () => Lut<TLeaf>
@@ -36,7 +36,7 @@ export abstract class Lut<TLeaf> {
 
   abstract computeLeaf(index: Array<number>): TLeaf
 
-  public loadFromBlob(intArr: Int32Array) {
+  public loadFromBlob(intArr: Int16Array) {
     this.tree.length = 0
     LutEncoder.decode(intArr, this)
   }
@@ -69,13 +69,20 @@ export abstract class Lut<TLeaf> {
     for (const index of allIndices(this)) {
       const leaf = this.computeLeaf(index)
       if (leaf !== null) {
-        for (const value of (leaf as Array<number>)) {
-          if (!Number.isInteger(value)) {
-            throw new Error(`computed leaf includes non-integer: ${leaf}`)
-          }
-        }
+        this.assertValidLeaf(leaf)
       }
       assignIndex(this.tree, index, leaf)
+    }
+  }
+
+  private assertValidLeaf(leaf: TLeaf) {
+    for (const value of (leaf as Array<number>)) {
+      try {
+        assertValidLeafValue(value)
+      }
+      catch (e) {
+        throw new Error(`${this.name} computed leaf ${leaf} is invalid: ${e}`)
+      }
     }
   }
 
@@ -164,7 +171,20 @@ export abstract class Lut<TLeaf> {
   }
 }
 
-async function fetchBlobWithIntegrityCheck(url: string, expectedHash?: string): Promise<Int32Array> {
+function assertValidLeafValue(value: number) {
+  if (!Number.isInteger(value)) {
+    throw new Error(`value is non-integer: ${value}`)
+  }
+
+  if (value >= INT16_MIN && value <= INT16_MAX) {
+    // console.log(`${value} is in the int16 range.`)
+  }
+  else {
+    throw new Error(`${value} is outside of int16 range.`)
+  }
+}
+
+async function fetchBlobWithIntegrityCheck(url: string, expectedHash?: string): Promise<Int16Array> {
   const response = await fetch(url)
   if (!response.ok) {
     throw new Error(`Failed to fetch blob: ${response.statusText}`)
@@ -186,7 +206,7 @@ async function fetchBlobWithIntegrityCheck(url: string, expectedHash?: string): 
     }
   }
 
-  return new Int32Array(arrayBuffer)
+  return new Int16Array(arrayBuffer)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

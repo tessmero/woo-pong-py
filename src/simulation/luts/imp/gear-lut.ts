@@ -4,10 +4,11 @@
  * Lookup position of teeth on a spinning gear.
  */
 
-import { twopi, Vec2 } from 'util/math-util'
+import type { Vec2 } from 'util/math-util'
+import { twopi } from 'util/math-util'
 import { Lut } from '../lut'
 import { LUT_BLOBS } from 'set-by-build'
-import { DISK_RADIUS } from 'simulation/constants'
+import { DISK_RADIUS, INT16_MAX, INT16_MIN } from 'simulation/constants'
 
 type TLeaf = [number, number] // x,y
 
@@ -40,6 +41,12 @@ export class GearLut extends Lut<TLeaf> {
     const x = radius * Math.cos(angle)
     const y = radius * Math.sin(angle)
     const offset: Vec2 = [Math.round(x), Math.round(y)]
+
+    // force into int16
+    for (let ax = 0; ax < 2; ax++) {
+      offset[ax] = Math.min(INT16_MAX, Math.max(INT16_MIN, offset[ax]))
+    }
+
     return offset
   }
 }

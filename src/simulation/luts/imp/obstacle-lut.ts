@@ -4,7 +4,7 @@
  * Used to check for collisions with obstacles and get normal angles.
  */
 
-import { DISK_RADIUS, OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
+import { DISK_RADIUS, INT16_MAX, INT16_MIN, OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
 import { Lut } from '../lut'
 import { pio2, twopi, type Vec2 } from 'util/math-util'
 import { pointsOnPath } from 'points-on-path'
@@ -264,10 +264,18 @@ function computeCollision(lut: ObstacleLut, pos: Vec2): ObstacleCollision {
     // compute offset for disk to stop overlapping
     let offsetDist = DISK_RADIUS - distToNearestPoint
     offsetDist += DISK_RADIUS / 50 // test
+
     const offset: Vec2 = [
       Math.round(offsetDist * Math.cos(normAngle)),
       Math.round(offsetDist * Math.sin(normAngle)),
     ]
+
+    for (let ax = 0; ax < 2; ax++) {
+      const value = offset[ax]
+      if (value < INT16_MIN || value > INT16_MAX) {
+        return null // adjustment would be outside of encode-able range
+      }
+    }
 
     // const offsetPoint: Vec2 = [
     //   nearestPoint[0] + (DISK_RADIUS * Math.cos(normAngle)),

@@ -7,7 +7,7 @@
 import { LUT_BLOBS } from 'set-by-build'
 import { Lut } from '../lut'
 import type { Disk } from 'simulation/disk'
-import { DISK_RADIUS } from 'simulation/constants'
+import { DISK_RADIUS, INT16_MAX, INT16_MIN } from 'simulation/constants'
 import { playImpact } from 'audio/collision-sounds'
 
 export type DiskDiskBounce = null | [number, number, number, number] // x,y,dx,dy
@@ -84,13 +84,21 @@ function computeCollision(dx, dy, relativeVelocityX, relativeVelocityY): DiskDis
     // restitution?
     // impulse *= RESTITUTION
 
-    return [
+    const result: DiskDiskBounce = [
       Math.round(nx * separation), // dx
       Math.round(ny * separation), // dy
 
       -Math.round(impulse * nx), // vx
       -Math.round(impulse * ny), // vy
     ]
+
+    for (const value of result) {
+      if (value < INT16_MIN || value > INT16_MAX) {
+        return null // adjustment would be outside of encode-able range
+      }
+    }
+
+    return result
   }
   return null
 }

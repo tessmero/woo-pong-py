@@ -16,6 +16,7 @@ import { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 import { DiskNormalLut } from '../src/simulation/luts/imp/disk-normal-lut'
 import { DiskFrictionLut } from '../src/simulation/luts/imp/disk-friction-lut'
 import { RaceLut } from '../src/simulation/luts/imp/race-lut'
+import { GearLut } from '../src/simulation/luts/imp/gear-lut'
 import { LUT } from '../src/imp-names'
 
 import { FourByFour } from '../src/rooms/room-layouts/imp/four-by-four'
@@ -28,7 +29,7 @@ import { FinishRoom } from '../src/rooms/imp/finish-room'
 
 // excuse to import luts and have them registered
 const _luts = [
-  DiskDiskLut, ObstacleLut, DiskNormalLut, DiskFrictionLut, RaceLut,
+  DiskDiskLut, ObstacleLut, DiskNormalLut, DiskFrictionLut, RaceLut, GearLut
 ]
 const _layouts = [
   FourByFour,

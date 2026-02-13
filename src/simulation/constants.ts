@@ -14,6 +14,10 @@ export const SPEEDS: Record<Speed, number> = {
   faster: 30,
 }
 
+
+export const INT16_MIN = -32768
+export const INT16_MAX = 32767
+
 export const DISK_COUNT = 10
 export const BOBRICK_COUNT = 30
 

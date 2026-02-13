@@ -40,9 +40,9 @@ describe('LUT encoder/decoder', function () {
       const buffer = Buffer.from(encodedBlob.buffer, encodedBlob.byteOffset, encodedBlob.byteLength)
       writeFileSync(filePath, buffer)
       const readBuffer = readFileSync(filePath)
-      const readEncodedBlob = new Int32Array(
+      const readEncodedBlob = new Int16Array(
         readBuffer.buffer, readBuffer.byteOffset,
-        readBuffer.byteLength / Int32Array.BYTES_PER_ELEMENT,
+        readBuffer.byteLength / Int16Array.BYTES_PER_ELEMENT,
       )
       lut.tree.length = 0
       LutEncoder.decode(readEncodedBlob, lut)

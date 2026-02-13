@@ -16,7 +16,7 @@ export type DDCollisionTree = Array<Array<Array<Array<CachedCollision>>>>
 
 export class LutEncoder {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static encode(tree: Tree<any>): Int32Array {
+  static encode(tree: Tree<any>): Int16Array {
     // if (tree.length === 1) {
     //   console.log('ENCODING length-1 tree', JSON.stringify(tree))
     // }
@@ -27,14 +27,14 @@ export class LutEncoder {
 
     // Ensure the chunks array length is even
     if (chunks.length % 2 !== 0) {
-      chunks.push(0) // Add padding to align with Int32Array requirements
+      chunks.push(0) // Add padding to align with Int16Array requirements
     }
 
-    return new Int32Array(chunks)
+    return new Int16Array(chunks)
   }
 
   static decode(
-    blob: Int32Array,
+    blob: Int16Array,
     lut: Lut<any>, // eslint-disable-line @typescript-eslint/no-explicit-any
   ) {
     let indexInBlob = 0

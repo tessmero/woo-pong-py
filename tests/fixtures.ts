@@ -33,5 +33,5 @@ global.document = dom.window.document
 global.Image = Image as any
 
 // const blobPath = join(__dirname, `../public/${DDCOLLISION_BLOB_URL}`);
-// const blobData = new Int32Array(readFileSync(blobPath).buffer);
+// const blobData = new Int16Array(readFileSync(blobPath).buffer);
 // DiskDiskCollisions.loadFromBlob(blobData);
