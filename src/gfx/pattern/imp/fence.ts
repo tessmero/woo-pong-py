@@ -11,11 +11,11 @@ export class Fence extends Pattern {
     Pattern.register('fence', () => new Fence())
   }
 
-  public getScale(): number {
+  public override getScale(): number {
     return 1 / 20
   }
 
-  protected getCanvas(): HTMLCanvasElement | null {
+  protected override getCanvas(): HTMLCanvasElement | null {
     return createFencePattern()
   }
 }

@@ -136,15 +136,17 @@ export class Disk {
         if (Math.abs(i1) > yRad) {
           i1 = yRad * Math.sign(i1)
         }
-        if (obs.lut.tree.length === 0) {
-          throw new Error('obs.lut.tree has length 0')
+        if (obs.lut.data.length === 0) {
+          throw new Error('obs.lut.data has length 0')
         }
-        const col = obs.lut.tree[i0 + xRad]![i1 + yRad] as null | ObstacleCollision
-        if (col) {
+        const obsCell = obs.lut.flatIndex(i0 + xRad, i1 + yRad)
+        if (obs.lut.hasLeafAt(obsCell)) {
           obs.room?.obstacleHit(obs, stepIndex)
 
           // collided with obstacle
-          const [xAdj, yAdj, normIndex] = col
+          const xAdj = obs.lut.getInt16(obsCell, 0)
+          const yAdj = obs.lut.getInt16(obsCell, 1)
+          const normIndex = obs.lut.getInt16(obsCell, 2)
 
           let vxi = speedToIndex(ndx * (obs.isFlippedX ? -1 : 1))
           let vyi = speedToIndex(ndy)
@@ -156,9 +158,9 @@ export class Disk {
           }
 
           const dnl = Lut.create('disk-normal-lut')
-          const bounce = dnl
-            .tree[vxi + speedDetail][vyi + speedDetail][normIndex] as DiskNormalBounce
-          const [vxAdj, vyAdj] = bounce
+          const dnlCell = dnl.flatIndex(vxi + speedDetail, vyi + speedDetail, normIndex)
+          const vxAdj = dnl.getInt16(dnlCell, 0)
+          const vyAdj = dnl.getInt16(dnlCell, 1)
           ndx += vxAdj * (obs.isFlippedX ? -1 : 1)
           ndy += vyAdj
 

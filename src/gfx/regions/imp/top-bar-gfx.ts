@@ -46,7 +46,7 @@ export class TopBarGfx extends GfxRegion {
     GfxRegion.register('top-bar-gfx', () => new TopBarGfx())
   }
 
-  onResize(rect: Rectangle): void {
+  override onResize(rect: Rectangle): void {
     this._computeLayout(rect)
   }
 

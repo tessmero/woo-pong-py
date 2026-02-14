@@ -102,7 +102,7 @@ export class RaceLut extends Lut<RaceLeaf> {
     }
   }
 
-  public async loadAll(): Promise<void> {
+  public override async loadAll(): Promise<void> {
     await super.loadAll()
 
     // console.log('race-lut loadAll:', this.tree)

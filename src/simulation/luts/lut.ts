@@ -30,52 +30,119 @@ export abstract class Lut<TLeaf> {
 
   public readonly tree: Tree<TLeaf> = [] as Tree<TLeaf>
 
+  /** Flat dense buffer: leafLength int16 values per cell, row-major order. Null cells are all zeros. */
+  public data: Int16Array = new Int16Array(0)
+
+  /** 1 bit per cell: 1 = has leaf, 0 = null. Packed as bytes. */
+  public nullMap: Uint8Array = new Uint8Array(0)
+
+  /** Pre-computed strides for flat indexing. strides[i] = product of detail[i+1..] */
+  public strides: Array<number> = []
+
   abstract detail: Array<number>
   abstract blobUrl: string
   abstract blobHash: string
 
   abstract computeLeaf(index: Array<number>): TLeaf
 
+  /** Override to return true if this LUT has antipodal symmetry: f(-x) = -f(x). */
+  get symmetric(): boolean { return false }
+
+  /** Return true if this index is in the canonical half. Only called when symmetric is true. */
+  isCanonical(_index: Array<number>): boolean { return true }
+
+  /** Return the mirror of the given index. */
+  mirrorIndex(_index: Array<number>): Array<number> { return _index }
+
+  /** Return the negated leaf value. */
+  mirrorLeaf(_leaf: TLeaf): TLeaf { return _leaf }
+
+  /** Encode a leaf into int16 values for blob storage. Default: values as-is. */
+  encodeLeaf(leaf: TLeaf): Array<number> {
+    return (leaf as Array<number>).map(Math.round)
+  }
+
+  /** Decode int16 values from blob back into a leaf. Default: values as-is. */
+  decodeLeaf(values: Array<number>): TLeaf {
+    return values as unknown as TLeaf
+  }
+
+  /** Allocate flat data buffer and compute strides from detail array. */
+  initFlat() {
+    const depth = this.detail.length
+    const strides = new Array<number>(depth)
+    let total = 1
+    for (let i = depth - 1; i >= 0; i--) {
+      strides[i] = total
+      total *= this.detail[i]
+    }
+    this.strides = strides
+    const leafLen = this.reg.leafLength
+    this.data = new Int16Array(total * leafLen)
+    this.nullMap = new Uint8Array(Math.ceil(total / 8))
+  }
+
+  /** Compute flat cell index from multi-dimensional indices. */
+  flatIndex(...indices: Array<number>): number {
+    let idx = 0
+    for (let i = 0; i < indices.length; i++) {
+      idx += indices[i] * this.strides[i]
+    }
+    return idx
+  }
+
+  /** Check if a cell has a non-null leaf. */
+  hasLeafAt(cellIndex: number): boolean {
+    return (this.nullMap[cellIndex >> 3] & (1 << (cellIndex & 7))) !== 0
+  }
+
+  /** Set a cell as having a non-null leaf. */
+  setHasLeaf(cellIndex: number) {
+    this.nullMap[cellIndex >> 3] |= (1 << (cellIndex & 7))
+  }
+
+  /**
+   * Look up an int16 leaf value by component index within a cell.
+   * cellIndex is from flatIndex(), k is the component (0..leafLength-1).
+   */
+  getInt16(cellIndex: number, k: number): number {
+    return this.data[cellIndex * this.reg.leafLength + k]
+  }
+
   public loadFromBlob(intArr: Int16Array) {
-    this.tree.length = 0
-    LutEncoder.decode(intArr, this)
+    this.initFlat()
+    LutEncoder.decodeFlatInt16(intArr, this)
   }
 
   public async loadAll() {
-    // try {
-
-    // Fetch the binary blob from the URL
     const intArr = await fetchBlobWithIntegrityCheck(
       this.blobUrl,
       this.blobHash,
     )
 
-    // const intArr = await DiskDiskCollisions.fetchBlob('/luts/working.bin')
-
-    // Decode the binary data into the collision cache structure
-
-    this.tree.length = 0
-    LutEncoder.decode(intArr, this)
-
-    // }
-    // catch (error) {
-    //   console.error('Error loading collision blob:', error)
-    //   throw error
-    // }
+    this.initFlat()
+    LutEncoder.decodeFlatInt16(intArr, this)
   }
 
   public computeAll() {
-    this.tree.length = 0 // clear tree
+    this.tree.length = 0 // clear tree (used by encoder)
+    this.initFlat()
+    let cell = 0
     for (const index of allIndices(this)) {
       const leaf = this.computeLeaf(index)
       if (leaf !== null) {
         this.assertValidLeaf(leaf)
+        const encoded = this.encodeLeaf(leaf)
+        const dataOff = cell * this.reg.leafLength
+        for (let k = 0; k < encoded.length; k++) this.data[dataOff + k] = encoded[k]
+        this.setHasLeaf(cell)
       }
       assignIndex(this.tree, index, leaf)
+      cell++
     }
   }
 
-  private assertValidLeaf(leaf: TLeaf) {
+  protected assertValidLeaf(leaf: TLeaf) {
     for (const value of (leaf as Array<number>)) {
       try {
         assertValidLeafValue(value)
@@ -191,7 +258,10 @@ async function fetchBlobWithIntegrityCheck(url: string, expectedHash?: string): 
   }
   const arrayBuffer = await response.arrayBuffer()
 
-  if (!crypto.subtle) {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
+    // skip integrity check in dev — filename already contains content hash
+  }
+  else if (!crypto.subtle) {
     // eslint-disable-next-line no-console
     console.log('skipping integrity check because crypto.subtle is not available')
   }
@@ -220,6 +290,14 @@ export function* allIndices(lut: Lut<any>): Generator<Array<number>> {
     const didFinish = advance(index, lut, index.length - 1)
     if (didFinish) return
   }
+}
+
+export function getFromTree<TLeaf>(tree: Tree<TLeaf>, index: Array<number>): TLeaf {
+  let node: Tree<TLeaf> | TLeaf = tree
+  for (const i of index) {
+    node = (node as Tree<TLeaf>)[i]
+  }
+  return node as TLeaf
 }
 
 export function assignIndex<TLeaf>(tree: Tree<TLeaf>, index: Array<number>, value: TLeaf) {

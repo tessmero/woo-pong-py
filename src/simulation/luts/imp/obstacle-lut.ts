@@ -53,7 +53,7 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
   indexToYOffset = i => i * OBSTACLE_DETAIL_SCALE
 
   // extend lut.ts
-  public computeAll(): void {
+  public override computeAll(): void {
     // compute shape-specific members
 
     const shapeParams = SHAPE_PATHS[this.shape]
@@ -63,7 +63,8 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
 
     let xRad = 0
     let yRad = 0
-    const checkPoints = centeredPointsOnPath(baseSvg)
+    const centeredPath = centeredPointsOnPath(baseSvg)
+    const checkPoints = centeredPath.points
     transformPoints(checkPoints, shapeParams)
 
     for (const p of checkPoints) {
@@ -91,7 +92,7 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
   }
 
   // extend lut.ts
-  public async loadAll(): Promise<void> {
+  public override async loadAll(): Promise<void> {
     // use shape-specific members already assigned in create (lut.ts)
 
     await super.loadAll() // uses this.detail to iterate over indices
@@ -114,15 +115,20 @@ export function getDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
   return detailedPointsCache[shape] as ReadonlyArray<Vec2>
 }
 
+export type CenteredPath = {
+  points: Array<Vec2>
+  offset: Vec2
+}
+
 // const _cached: Record<string, Array<Vec2>> = {}
-export function centeredPointsOnPath(path: string, _truncate = false): Array<Vec2> {
+export function centeredPointsOnPath(path: string, _truncate = false): CenteredPath {
   // if (!Object.hasOwn(_cached, path)) {
   //   _cached[path] = _centeredPointsOnPath(path, _truncate)
   // }
   // return [..._cached[path]]
   return _centeredPointsOnPath(path, _truncate)
 }
-function _centeredPointsOnPath(path: string, _truncate = false): Array<Vec2> {
+function _centeredPointsOnPath(path: string, _truncate = false): CenteredPath {
   let points = pointsOnPath(path, 0.05)[0]
   let minX = Infinity
   let maxX = -Infinity
@@ -148,7 +154,10 @@ function _centeredPointsOnPath(path: string, _truncate = false): Array<Vec2> {
     points = points.filter(p => p[0] < 100)
   }
 
-  return points
+  return {
+    points,
+    offset: [midX, midY],
+  }
 }
 
 function computeDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
@@ -162,7 +171,7 @@ function computeDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
   } = shapeParams
 
   const isTruncated = (shape === 'flipper')
-  let points = centeredPointsOnPath(baseSvg, isTruncated)
+  let {points} = centeredPointsOnPath(baseSvg, isTruncated)
 
   // Distance threshold to add midpoints
   const threshold = DISK_RADIUS / 10 / scale / Math.max(xScale, yScale)

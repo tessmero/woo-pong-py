@@ -11,11 +11,11 @@ export class Brick extends Pattern {
     Pattern.register('brick', () => new Brick())
   }
 
-  public getScale(): number {
+  public override getScale(): number {
     return 1 / 4
   }
 
-  protected getCanvas(): HTMLCanvasElement | null {
+  protected override getCanvas(): HTMLCanvasElement | null {
     return createBrickPattern()
   }
 }

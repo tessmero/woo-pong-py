@@ -114,7 +114,7 @@ export class BottomBarGfx extends GfxRegion {
     this._held = null
   }
 
-  onResize(rect: Rectangle): void {
+  override onResize(rect: Rectangle): void {
     this._computeLayout(rect)
   }
 

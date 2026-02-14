@@ -127,8 +127,10 @@ export class PinballWizard {
     const cfgSeed = topConfig.flatConfig.rngSeed
     this.isSeedConfiged = cfgSeed !== -1 // is seed set manually (used for puppeteer)
 
-    const possibleRaces = Lut.create('race-lut').tree
-    this._race = possibleRaces[Math.floor(Math.random() * possibleRaces.length)]
+    const raceLut = Lut.create('race-lut')
+    const raceCount = raceLut.detail[0]
+    const raceIndex = Math.floor(Math.random() * raceCount)
+    this._race = Array.from({ length: raceLut.reg.leafLength }, (_, k) => raceLut.getInt16(raceIndex, k))
     const commonStartSeed = this.isSeedConfiged ? cfgSeed : this._race[0]
 
     shuffle(PATTERN.NAMES) // shuffle appearance of bouncing balls

@@ -12,11 +12,11 @@ export class StripeV extends Pattern {
     Pattern.register('stripe-v', () => new StripeV())
   }
 
-  public getScale(): number {
+  public override getScale(): number {
     return 2
   }
 
-  protected getCanvas(): HTMLCanvasElement | null {
+  protected override getCanvas(): HTMLCanvasElement | null {
     return createVerticalStripePattern()
   }
 }

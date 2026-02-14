@@ -49,7 +49,7 @@ export function applyFrictionX(state: DiskState) {
     index = speedDetail * Math.sign(index)
   }
   // For now, just round as before
-  state.dx = lut.tree[index + speedDetail][0]
+  state.dx = lut.getInt16(index + speedDetail, 0)
 }
 export function applyFrictionY(state: DiskState) {
   const lut = Lut.create('disk-friction-lut')
@@ -60,5 +60,5 @@ export function applyFrictionY(state: DiskState) {
     indexY = speedDetail * Math.sign(indexY)
   }
   // For now, just round as before
-  state.dy = lut.tree[indexY + speedDetail][0]
+  state.dy = lut.getInt16(indexY + speedDetail, 0)
 }

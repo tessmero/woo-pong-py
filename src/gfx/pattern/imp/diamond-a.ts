@@ -12,11 +12,11 @@ export class DiamondA extends Pattern {
     Pattern.register('diamond-a', () => new DiamondA())
   }
 
-  public getScale(): number {
+  public override getScale(): number {
     return 1 / 20
   }
 
-  protected getCanvas(): HTMLCanvasElement | null {
+  protected override getCanvas(): HTMLCanvasElement | null {
     return createDiamondPattern()
   }
 }

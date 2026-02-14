@@ -12,11 +12,11 @@ export class HexA extends Pattern {
     Pattern.register('hex-a', () => new HexA())
   }
 
-  public getScale(): number {
+  public override getScale(): number {
     return 1 / 100
   }
 
-  protected getCanvas(): HTMLCanvasElement | null {
+  protected override getCanvas(): HTMLCanvasElement | null {
     return createHexDotsPattern('#000', '#fff')
   }
 }

@@ -13,16 +13,17 @@ import { Lut } from '../../src/simulation/luts/lut'
 import { DiskDiskLut } from '../../src/simulation/luts/imp/disk-disk-lut'
 import { join } from 'path'
 import { tmpdir } from 'os'
+import { GearRoom } from '../../src/rooms/imp/gear-room'
 
 // excuse to import disk-disk-lut and have it registered
-const _thing = DiskDiskLut
+const _thing = [DiskDiskLut, GearRoom]
 
 describe('LUT encoder/decoder', function () {
   it('correctly encodes and decodes trees in memory', function () {
     for (const { lutName, shapeName, indexer } of lutSpecs) {
       const lut = Lut.create(lutName, shapeName)
       lut.computeAll()
-      const encodedBlob = LutEncoder.encode(lut.tree)
+      const encodedBlob = LutEncoder.encode(lut.tree, lut)
       lut.tree.length = 0
       LutEncoder.decode(encodedBlob, lut)
       const decodedCache = lut.tree
@@ -33,7 +34,7 @@ describe('LUT encoder/decoder', function () {
     for (const { lutName, shapeName, indexer } of lutSpecs) {
       const lut = Lut.create(lutName, shapeName)
       lut.computeAll()
-      const encodedBlob = LutEncoder.encode(lut.tree)
+      const encodedBlob = LutEncoder.encode(lut.tree, lut)
 
       // Write the encoded blob to a temporary file in raw binary format
       const filePath = join(tmpdir(), 'encoded-collision-cache.bin')

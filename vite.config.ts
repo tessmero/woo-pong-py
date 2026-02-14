@@ -17,6 +17,17 @@ export default defineConfig({
     json5Plugin(),
     glsl(),
     {
+      name: 'cache-bin-files',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url?.endsWith('.bin')) {
+            res.setHeader('Cache-Control', 'public, max-age=604800, immutable')
+          }
+          next()
+        })
+      },
+    },
+    {
       name: 'reload',
       configureServer(server) {
         const { ws, watcher } = server

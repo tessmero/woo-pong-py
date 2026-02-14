@@ -49,6 +49,10 @@ export abstract class Room {
     // do nothing
   }
 
+  drawDecorations(_ctx: CanvasRenderingContext2D): void {
+    // do nothing
+  }
+
   // static registry pattern
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static _registry: Record<RoomName, () => Room> = {} as any

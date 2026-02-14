@@ -29,14 +29,6 @@ export class DiskDiskLut extends Lut<DiskDiskBounce> {
     Lut.register('disk-disk-lut', {
       depth: 4,
       leafLength: 4,
-      // detail: [
-      //   offsetDetail * 2 + 1,
-      //   offsetDetail * 2 + 1,
-      //   speedDetail * 2 + 1,
-      //   speedDetail * 2 + 1,
-      // ],
-      // blobUrl: DISK_DISK_LUT_BLOB_URL,
-      // blobHash: DISK_DISK_LUT_BLOB_HASH,
       factory: () => new DiskDiskLut(),
     })
   }
@@ -49,6 +41,29 @@ export class DiskDiskLut extends Lut<DiskDiskBounce> {
     speedDetail * 2 + 1,
     speedDetail * 2 + 1,
   ]
+
+  // Antipodal symmetry: collision(-dx,-dy,-vx,-vy) = -collision(dx,dy,vx,vy)
+  private readonly centers = [offsetDetail, offsetDetail, speedDetail, speedDetail]
+
+  override get symmetric(): boolean { return true }
+
+  override isCanonical(index: Array<number>): boolean {
+    for (let i = 0; i < index.length; i++) {
+      const ri = index[i] - this.centers[i]
+      if (ri < 0) return true // lexicographically below center
+      if (ri > 0) return false // lexicographically above center
+    }
+    return true // center point itself
+  }
+
+  override mirrorIndex(index: Array<number>): Array<number> {
+    return index.map((v, i) => 2 * this.centers[i] - v)
+  }
+
+  override mirrorLeaf(leaf: DiskDiskBounce): DiskDiskBounce {
+    if (leaf === null) return null
+    return [-leaf[0], -leaf[1], -leaf[2], -leaf[3]]
+  }
 
   computeLeaf(index: Array<number>) {
     const dx = indexToOffset(index[0] - offsetDetail)
@@ -130,15 +145,15 @@ export function collideDisks(a: Disk, b: Disk): boolean {
     vyi = speedDetail * Math.sign(vyi)
   }
 
-  const col = Lut.create('disk-disk-lut').tree[
-    dxi + offsetDetail][dyi + offsetDetail][vxi + speedDetail][vyi + speedDetail]
+  const ddl = Lut.create('disk-disk-lut')
+  const cellIdx = ddl.flatIndex(
+    dxi + offsetDetail, dyi + offsetDetail, vxi + speedDetail, vyi + speedDetail)
 
-  if (!col) return false // disks are not colliding (near-miss)
-  const [cx, cy, cdx, cdy] = col // change in pos, change in vel
-
-  if (col.some(val => isNaN(val))) {
-    throw new Error('collisions has nan bounce value')
-  }
+  if (!ddl.hasLeafAt(cellIdx)) return false // disks are not colliding (near-miss)
+  const cx = ddl.getInt16(cellIdx, 0)
+  const cy = ddl.getInt16(cellIdx, 1)
+  const cdx = ddl.getInt16(cellIdx, 2)
+  const cdy = ddl.getInt16(cellIdx, 3)
 
   a.nextState.x -= cx
   a.nextState.y -= cy

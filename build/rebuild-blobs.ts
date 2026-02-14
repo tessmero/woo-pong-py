@@ -73,7 +73,7 @@ for (const shapeName of SHAPE_NAMES) {
   const lut = Lut.create('obstacle-lut', shapeName)
   lut.computeAll()
 
-  const encodedBlob = LutEncoder.encode(lut.tree)
+  const encodedBlob = LutEncoder.encode(lut.tree, lut)
   const buffer = Buffer.from(encodedBlob.buffer, encodedBlob.byteOffset, encodedBlob.byteLength)
 
   if (buffer.length % 2 !== 0) {
@@ -104,7 +104,7 @@ for (const lutName of LUT.NAMES) {
   lut.computeAll()
 
   console.log('encoding', lutName) // eslint-disable-line no-console
-  const encodedBlob = LutEncoder.encode(lut.tree)
+  const encodedBlob = LutEncoder.encode(lut.tree, lut)
   const buffer = Buffer.from(encodedBlob.buffer, encodedBlob.byteOffset, encodedBlob.byteLength)
 
   if (buffer.length % 2 !== 0) {

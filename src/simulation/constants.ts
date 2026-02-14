@@ -18,12 +18,15 @@ export const SPEEDS: Record<Speed, number> = {
 export const INT16_MIN = -32768
 export const INT16_MAX = 32767
 
+export const INT32_MIN = -2147483648
+export const INT32_MAX = 2147483647
+
 export const DISK_COUNT = 10
 export const BOBRICK_COUNT = 30
 
 export const ROOM_COUNT = 8
 
-export const RESTITUTION = 1
+export const RESTITUTION = .9
 
 export const STEP_DURATION = 4 // millisecs per step
 export const VALUE_SCALE = 1e4

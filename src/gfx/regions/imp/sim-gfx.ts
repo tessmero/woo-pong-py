@@ -267,7 +267,9 @@ export class SimGfx extends GfxRegion {
 
     // this._drawBoundsInnerEdges(ctx, pw)
 
-    drawObstacles(ctx, pw)
+    for (const room of sim.level.rooms) {
+      drawObstacles(ctx, pw, room)
+    }
 
     // this._drawBounds(ctx, pw)
     // this._drawBoundsOuterEdges(ctx, pw)
@@ -318,53 +320,54 @@ export class SimGfx extends GfxRegion {
     const gfxScale = 1 / 10 // extra scale factor needed to support text
     ctx.scale(1 / gfxScale, 1 / gfxScale)
     ctx.font = `${Math.floor(0.3 * VALUE_SCALE)}px serif`
-    // ctx.lineWidth = 0.2 * VALUE_SCALE * gfxScale
-    // for (const room of sim.level.rooms) {
-    //   const [x, y, w, h] = room.bounds
-    //   // console.log(`room bounds: ${JSON.stringify(room.bounds)}`)
-    //   ctx.strokeRect(x * gfxScale, y * gfxScale, w * gfxScale, h * gfxScale)
-    //   // draw center of room bounds
-    //   const rad = .1 * VALUE_SCALE
-    //   ctx.strokeRect((x+w/2) * gfxScale - rad, (y+h/2) * gfxScale - rad, 2 * rad, 2 * rad)
-    //   // if (room.name === 'breakout-room') {
-    //   //   ctx.fillText(`SCORE: ${(room as BreakoutRoom).score}`, x * gfxScale, y * gfxScale)
-    //   // }
-    //   // else {
-    //   //   ctx.fillText(room.name, x * gfxScale, y * gfxScale)
-    //   // }
-    // }
-
-    // // debugTargetPos
-    //   const [rx,ry,rw,rh] = sim.level.rooms[0].bounds as Rectangle
-    //   const rad = .1 * VALUE_SCALE
-    //   ctx.fillStyle = CROWN_FILL
-    //   ctx.fillRect(
-    //     (rx+rw/2) * gfxScale - rad,
-    //     (-SimGfx.debugTargetPos) * gfxScale - rad,
-    //     2 * rad, 2 * rad)
-
-    // // draw labels on breakout bricks
-    // for (const obstacle of sim.obstacles) {
-    //   if (obstacle.label && !obstacle.isHidden) {
-    //     const [x, y] = obstacle.pos
-    //     ctx.fillText(obstacle.label, x * gfxScale, y * gfxScale)
-    //   }
-    // }
-
-    // // debug hideOnStep for breakout bricks
-    // const displayStep = sim.stepCount - topConfig.flatConfig.audioLatencySteps
-    // for (const obstacle of sim.obstacles) {
-    //   const [x, y] = obstacle.pos
-    //   ctx.fillText(`${obstacle.hideOnStep} (${displayStep})`, x * gfxScale, y * gfxScale)
-    // }
 
     ctx.restore()
-
-    // // debug inner width
-    // ctx.strokeStyle = 'red'
-    // ctx.lineWidth = 1
-    // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
   }
+
+  // ctx.lineWidth = 0.2 * VALUE_SCALE * gfxScale
+  // for (const room of sim.level.rooms) {
+  //   const [x, y, w, h] = room.bounds
+  //   // console.log(`room bounds: ${JSON.stringify(room.bounds)}`)
+  //   ctx.strokeRect(x * gfxScale, y * gfxScale, w * gfxScale, h * gfxScale)
+  //   // draw center of room bounds
+  //   const rad = .1 * VALUE_SCALE
+  //   ctx.strokeRect((x+w/2) * gfxScale - rad, (y+h/2) * gfxScale - rad, 2 * rad, 2 * rad)
+  //   // if (room.name === 'breakout-room') {
+  //   //   ctx.fillText(`SCORE: ${(room as BreakoutRoom).score}`, x * gfxScale, y * gfxScale)
+  //   // }
+  //   // else {
+  //   //   ctx.fillText(room.name, x * gfxScale, y * gfxScale)
+  //   // }
+  // }
+
+  // // debugTargetPos
+  //   const [rx,ry,rw,rh] = sim.level.rooms[0].bounds as Rectangle
+  //   const rad = .1 * VALUE_SCALE
+  //   ctx.fillStyle = CROWN_FILL
+  //   ctx.fillRect(
+  //     (rx+rw/2) * gfxScale - rad,
+  //     (-SimGfx.debugTargetPos) * gfxScale - rad,
+  //     2 * rad, 2 * rad)
+
+  // // draw labels on breakout bricks
+  // for (const obstacle of sim.obstacles) {
+  //   if (obstacle.label && !obstacle.isHidden) {
+  //     const [x, y] = obstacle.pos
+  //     ctx.fillText(obstacle.label, x * gfxScale, y * gfxScale)
+  //   }
+  // }
+
+  // // debug hideOnStep for breakout bricks
+  // const displayStep = sim.stepCount - topConfig.flatConfig.audioLatencySteps
+  // for (const obstacle of sim.obstacles) {
+  //   const [x, y] = obstacle.pos
+  //   ctx.fillText(`${obstacle.hideOnStep} (${displayStep})`, x * gfxScale, y * gfxScale)
+  // }
+
+  // // debug inner width
+  // ctx.strokeStyle = 'red'
+  // ctx.lineWidth = 1
+  // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
 
   public drawHalos(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
     const [x, y] = this._drawRect

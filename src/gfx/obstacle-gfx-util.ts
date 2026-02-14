@@ -11,8 +11,9 @@ import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
 import { getDetailedPoints, type ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import type { Vec2 } from 'util/math-util'
+import { Room } from 'rooms/room'
 
-export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
+export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard, room: Room) {
   const { simViewRect } = pw
   const sim = pw.activeSim
 
@@ -37,10 +38,10 @@ export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard) 
     ctx.strokeStyle = OBSTACLE_STROKE
     ctx.stroke()
 
-    // debug all adjusted positions
+    // // debug all adjusted positions
     // _debugObstacleShell(ctx, obstacle)
 
-    // debug detailed points
+    // // debug detailed points
     // debugDetailedPoints(ctx, obstacle)
 
     // // debug just adjusted position for mouse
@@ -61,6 +62,8 @@ export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard) 
     //   2 * rad, 2 * rad,
     // )
   }
+
+  room.drawDecorations(ctx)
 }
 
 // used in drawObstacle for main view. also used in scrollbar.ts
@@ -101,21 +104,21 @@ function _debugCollisionAtMousePos(
   //   2 * rad, 2 * rad,
   // )
 
-  let leaf
+  let xAdj: number, yAdj: number
   try {
-    leaf = lut.tree[i]![j] as [number, number, number]
+    const cell = lut.flatIndex(i, j)
+    if (!lut.hasLeafAt(cell)) return
+    xAdj = lut.getInt16(cell, 0)
+    yAdj = lut.getInt16(cell, 1)
   }
   catch {
     return
   }
 
-  if (leaf) {
+  {
     // position of colliding disk relative to obstacle
     const x = lut.indexToXOffset(i - radi)
     const y = lut.indexToYOffset(j - radj)
-
-    // offset to adjust disk so it just touches obstacle
-    const [xAdj, yAdj, _normalIndex] = leaf
 
     // check if adjusted position still collides
     const isGood = _checkIfGood(lut, x + xAdj, y + yAdj)
@@ -161,8 +164,8 @@ function _debugObstacleShell(
   const rad = 0.1 * VALUE_SCALE
   for (let i = 0; i < ni; i++) {
     for (let j = 0; j < nj; j++) {
-      const leaf = lut.tree[i]![j] as [number, number, number]
-      if (leaf) {
+      const cell = lut.flatIndex(i, j)
+      if (lut.hasLeafAt(cell)) {
         // position of colliding disk relative to obstacle
         let x
         if (isFlippedX) {
@@ -175,8 +178,8 @@ function _debugObstacleShell(
         const y = lut.indexToYOffset(j - radj)
 
         // offset to adjust disk so it just touches obstacle
-        let xAdj = leaf[0]
-        const yAdj = leaf[1]
+        let xAdj = lut.getInt16(cell, 0)
+        const yAdj = lut.getInt16(cell, 1)
         if (isFlippedX) {
           xAdj *= -1
         }
@@ -203,9 +206,9 @@ function _checkIfGood(lut: ObstacleLut, x: number, y: number) {
   const tj = lut.offsetToYIndex(y)
   let isGood
   try {
-    isGood = !lut.tree[ti + radi]![tj + radj]
+    isGood = !lut.hasLeafAt(lut.flatIndex(ti + radi, tj + radj))
     if (!isGood) {
-      isGood = !lut.tree[ti + radi + 1]![tj + radj + 1]
+      isGood = !lut.hasLeafAt(lut.flatIndex(ti + radi + 1, tj + radj + 1))
     }
   }
   catch {

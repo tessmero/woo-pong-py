@@ -27,7 +27,7 @@ export class BreakoutRoom extends Room {
   public score = 0
   public hitSequence: Array<number> = []
 
-  obstacleHit(obstacle: Obstacle, stepIndex: number): void {
+  override obstacleHit(obstacle: Obstacle, stepIndex: number): void {
     const brickIndex = this.breakoutBricks.indexOf(obstacle)
     if (brickIndex === -1) {
       return // is flipper

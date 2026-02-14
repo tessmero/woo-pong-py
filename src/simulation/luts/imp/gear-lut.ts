@@ -6,27 +6,22 @@
 
 import type { Vec2 } from 'util/math-util'
 import { twopi } from 'util/math-util'
+import { Lut32 } from '../lut-32'
 import { Lut } from '../lut'
 import { LUT_BLOBS } from 'set-by-build'
-import { DISK_RADIUS, INT16_MAX, INT16_MIN } from 'simulation/constants'
+import { INT32_MAX, INT32_MIN } from 'simulation/constants'
+import { N_GEAR_FRAMES, GEAR_ORBIT_RADIUS } from 'simulation/gear-constants'
 
 type TLeaf = [number, number] // x,y
 
-export const N_GEAR_TEETH = 6
-export const N_GEAR_FRAMES = 6000
-
-if (!Number.isInteger(N_GEAR_FRAMES / N_GEAR_TEETH)) {
-  throw new Error('gear frames must be a multiple of gear teeth')
-}
-
 const angleDelta = twopi / N_GEAR_FRAMES
 
-export class GearLut extends Lut<TLeaf> {
+export class GearLut extends Lut32<TLeaf> {
   static {
     Lut.register('gear-lut', {
       factory: () => new GearLut(),
       depth: 1,
-      leafLength: 2,
+      leafLength: 4, // 2 logical values × 2 int16s each
     })
   }
 
@@ -37,14 +32,13 @@ export class GearLut extends Lut<TLeaf> {
   computeLeaf(index: Array<number>): TLeaf {
     const [frameIndex] = index
     const angle = frameIndex * angleDelta
-    const radius = 6 * DISK_RADIUS
-    const x = radius * Math.cos(angle)
-    const y = radius * Math.sin(angle)
+    const x = GEAR_ORBIT_RADIUS * Math.cos(angle)
+    const y = GEAR_ORBIT_RADIUS * Math.sin(angle)
     const offset: Vec2 = [Math.round(x), Math.round(y)]
 
-    // force into int16
+    // force into int32
     for (let ax = 0; ax < 2; ax++) {
-      offset[ax] = Math.min(INT16_MAX, Math.max(INT16_MIN, offset[ax]))
+      offset[ax] = Math.min(INT32_MAX, Math.max(INT32_MIN, offset[ax]))
     }
 
     return offset

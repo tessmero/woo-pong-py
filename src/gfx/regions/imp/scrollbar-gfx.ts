@@ -146,7 +146,7 @@ export class ScrollbarGfx extends GfxRegion {
     }
   }
 
-  onResize(_rect: Rectangle): void {
+  override onResize(_rect: Rectangle): void {
     this.isObstacleRepaintQueued = true
   }
 

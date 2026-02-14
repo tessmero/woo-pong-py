@@ -185,51 +185,47 @@ main()
 
 async function _initAssets(loadingLabel: HTMLElement) {
   const isComputing = false
+  const t0 = performance.now()
 
   const totalTasks = Object.keys(SHAPE_PATHS).length + (LUT.NAMES.length - 1)
   let tasksFinished = 0
 
-  async function finishTask() {
-    // // simulate lag
-    // await new Promise(resolve => setTimeout(resolve, 100))
-
+  function finishTask() {
     tasksFinished++
     const pctFinished = Math.floor(100 * tasksFinished / totalTasks)
     if (loadingLabel) loadingLabel.innerHTML = `LOADING (${pctFinished}%)`
   }
 
   await loadAllSounds()
-  await finishTask()
+  finishTask()
 
+  // Collect all LUT instances
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const luts: Array<Lut<any>> = []
   for (const lutName of LUT.NAMES) {
     if (lutName === 'obstacle-lut') {
       for (const shapeName of Object.keys(SHAPE_PATHS)) {
-        const lut = Lut.create(lutName, shapeName as ShapeName)
-        if (isComputing) {
-          lut.computeAll()
-        }
-        else {
-          await lut.loadAll()
-        }
-
-        // simulate lag
-        // await new Promise(resolve => setTimeout(resolve, 100))
-        await finishTask()
+        luts.push(Lut.create(lutName, shapeName as ShapeName))
       }
     }
     else {
-      // Lut.create(lutName).computeAll()
-      const lut = Lut.create(lutName)
-      if (isComputing) {
-        lut.computeAll()
-      }
-      else {
-        await lut.loadAll()
-      }
-
-      // simulate lag
-      // await new Promise(resolve => setTimeout(resolve, 100))
-      await finishTask()
+      luts.push(Lut.create(lutName))
     }
   }
+
+  if (isComputing) {
+    for (const lut of luts) {
+      lut.computeAll()
+      finishTask()
+    }
+  }
+  else {
+    // Fetch all blobs in parallel; decode happens as each resolves
+    await Promise.all(luts.map(lut =>
+      lut.loadAll().then(() => finishTask()),
+    ))
+  }
+
+  // eslint-disable-next-line no-console
+  console.log(`assets loaded in ${(performance.now() - t0).toFixed(0)}ms`)
 }

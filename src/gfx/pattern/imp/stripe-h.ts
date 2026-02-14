@@ -12,11 +12,11 @@ export class StripeH extends Pattern {
     Pattern.register('stripe-h', () => new StripeH())
   }
 
-  public getScale(): number {
+  public override getScale(): number {
     return 2
   }
 
-  protected getCanvas(): HTMLCanvasElement | null {
+  protected override getCanvas(): HTMLCanvasElement | null {
     return createHorizontalStripePattern()
   }
 }

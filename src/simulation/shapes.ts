@@ -9,6 +9,7 @@
 
 import { BOBRICK_HEIGHT, BOBRICK_WIDTH } from './constants'
 import { VALUE_SCALE } from './constants'
+import { BIG_CIRCLE_RADIUS, TOOTH_RADIUS } from './gear-constants'
 
 export const SHAPE_NAMES = [
   // 'square', 'circle', 'triangle',
@@ -40,6 +41,12 @@ export type ShapeName = (typeof SHAPE_NAMES)[number]
 
 // const mediumRadius = 5 * VALUE_SCALE
 const cornerRadius = 1 * VALUE_SCALE
+
+function circlePath(r: number): string {
+  return `M0 -${r}a${r} ${r} 0 1 0 0 ${r * 2}a${r} ${r} 0 1 0 0-${r * 2}Z`
+}
+
+const CIRCLE_SVG_RADIUS = 10
 // const wedgeWidth = 45 * VALUE_SCALE
 
 export type ShapeParams = {
@@ -82,22 +89,23 @@ C422.792,69.976,423.422,86.449,424.895,104.014z
 
   'holder': {
     // Square: left, top, bottom sides; right side is a semicircular arc from top to bottom
+    // Offset so the arc is centered at (0,0): original arc center is at (256,228)
     baseSvg: `
-      M0 0 L0 456 L256 456
-      A400 400 0 0 1 256 0
+      M-256 -228 L-256 228 L0 228
+      A400 400 0 0 1 0 -228
       Z
     `,
     scale: VALUE_SCALE / 10,
   },
 
   'big-circle': {
-    baseSvg: `M256 56a200 200 0 1 0 0 400a200 200 0 1 0 0-400Z`,
-    scale: VALUE_SCALE / 10,
+    baseSvg: circlePath(CIRCLE_SVG_RADIUS),
+    scale: BIG_CIRCLE_RADIUS / CIRCLE_SVG_RADIUS,
   },
 
   'circle': {
-    baseSvg: `M256 56a200 200 0 1 0 0 400a200 200 0 1 0 0-400Z`,
-    scale: VALUE_SCALE / 40,
+    baseSvg: circlePath(CIRCLE_SVG_RADIUS),
+    scale: TOOTH_RADIUS / CIRCLE_SVG_RADIUS,
   },
 
   'star': {

@@ -20,6 +20,7 @@ export class Obstacle {
   readonly boundingRect: Rectangle
   readonly collisionRect: Rectangle
   readonly points: ReadonlyArray<Vec2>
+  readonly offsetToCenterPoints: Vec2 // used to position holder where svg is centered around 0,0
 
   isStatic = true // disable movement
 
@@ -52,7 +53,9 @@ export class Obstacle {
     const { baseSvg } = shapeParams
 
     const isTruncated = (shape === 'flipper')
-    this.points = centeredPointsOnPath(baseSvg, isTruncated)
+    const centeredPath = centeredPointsOnPath(baseSvg, isTruncated)
+    this.points = centeredPath.points
+    this.offsetToCenterPoints = centeredPath.offset
     transformPoints(this.points, shapeParams)
 
     this.collisionRect = [
