@@ -18,67 +18,117 @@ import type { GfxRegionName } from 'imp-names'
 import type { PinballWizard } from 'pinball-wizard'
 import { type Vec2 } from 'util/math-util'
 import { OBSTACLE_FILL, OBSTACLE_STROKE } from 'gfx/graphics'
+import { ROOM_LAYOUT_POSITIONS } from 'rooms/room-layouts/set-by-build'
+
+type DisplayMode = 'circles' | 'fidget-spinner'
+const displayMode: DisplayMode = 'fidget-spinner'
+// const displayMode: DisplayMode = 'circles'
+
+type Direction = 'clockwise' | 'counter-clockwise'
+
+type Gear = {
+  dir: Direction
+  frameIndex: number
+  center: Obstacle
+  teeth: Array<Obstacle>
+  obstacles: Array<Obstacle> // center and teeth
+}
 
 export class GearRoom extends Room {
-  private center: Vec2 = [0, 0]
-  private teeth: Array<Obstacle> = []
+  static {
+    Room.register('gear-room', () => new GearRoom())
+  }
+
+  private gears: Array<Gear> = []
+  private roomCenter: Vec2 = [0, 0]
 
   private readonly circleLut = Lut.create('obstacle-lut', 'circle') as ObstacleLut
   private readonly gearLut = Lut.create('gear-lut') as GearLut
 
-  private frameIndex = 0
   override step() {
-    this.frameIndex = (this.frameIndex + 1) % N_GEAR_FRAMES
-    const toothDelta = N_GEAR_FRAMES / N_GEAR_TEETH
-    for (let toothIndex = 0; toothIndex < N_GEAR_TEETH; toothIndex++) {
-      const tooth = this.teeth[toothIndex]
+    for (const gear of this.gears) {
+      if (gear.dir === 'clockwise') {
+        gear.frameIndex = (gear.frameIndex + 1) % N_GEAR_FRAMES
+      }
+      else {
+        gear.frameIndex = (gear.frameIndex - 1 + N_GEAR_FRAMES) % N_GEAR_FRAMES
+      }
+      const centerPos = gear.center.pos
+      const toothDelta = N_GEAR_FRAMES / N_GEAR_TEETH
+      for (let toothIndex = 0; toothIndex < N_GEAR_TEETH; toothIndex++) {
+        const i = (gear.frameIndex + toothDelta * toothIndex) % N_GEAR_FRAMES
+        const offset: Vec2 = [this.gearLut.getInt32(i, 0), this.gearLut.getInt32(i, 1)]
 
-      const i = (this.frameIndex + toothDelta * toothIndex) % N_GEAR_FRAMES
-      const offset: Vec2 = [this.gearLut.getInt32(i, 0), this.gearLut.getInt32(i, 1)]
+        const cx = centerPos[0] + offset[0]
+        const rx = cx - this.circleLut.maxOffsetX
 
-      tooth.pos[0] = this.center[0] + offset[0]
-      tooth.collisionRect[0]
-        = tooth.pos[0] - this.circleLut.maxOffsetX
+        const cy = centerPos[1] + offset[1]
+        const ry = cy - this.circleLut.maxOffsetY
+        const tooth = gear.teeth[toothIndex]
+        tooth.pos[0] = cx
+        tooth.collisionRect[0] = rx
 
-      tooth.pos[1] = this.center[1] + offset[1]
-      tooth.collisionRect[1]
-        = tooth.pos[1] - this.circleLut.maxOffsetY
+        tooth.pos[1] = cy
+        tooth.collisionRect[1] = ry
+      }
     }
   }
 
   buildObstacles(): Array<Obstacle> {
-    this.center = [50 * VALUE_SCALE, this.bounds[1] + 50 * VALUE_SCALE]
+    this.roomCenter = [50 * VALUE_SCALE, this.bounds[1] + 50 * VALUE_SCALE]
 
     const holderLut = Lut.create('obstacle-lut', 'holder') as ObstacleLut
 
     const dummy = new Obstacle([0, 0], 'holder', holderLut)
-    const holderOffset = -dummy.offsetToCenterPoints[0] * VALUE_SCALE
+    const holderOffset = DISK_RADIUS * 11
     console.log('holderOffset', holderOffset)
     const leftHolderPos: Vec2 = [
-      this.center[0] - holderOffset,
-      this.center[1],
+      this.roomCenter[0] - holderOffset,
+      this.roomCenter[1],
     ]
     const leftHolder = new Obstacle(leftHolderPos, 'holder', holderLut)
 
     const rightHolderPos: Vec2 = [
-      this.center[0] + holderOffset,
-      this.center[1],
+      this.roomCenter[0] + holderOffset,
+      this.roomCenter[1],
     ]
     const rightHolder = new Obstacle(rightHolderPos, 'holder', holderLut)
     rightHolder.isFlippedX = true
 
+    // build spinning gears
+    const layout = ROOM_LAYOUT_POSITIONS['two-gears'] as Array<[number, Vec2]>
+
+    const [leftFrame, leftPos] = layout[0]
+    const [middleFrame, middlePos] = layout[1]
+
+    const posInRoom = ([x, y]) => [x, this.bounds[1] + y] as Vec2
+
+    this.gears.push(this._buildGear(posInRoom(leftPos), 'counter-clockwise', leftFrame))
+    this.gears.push(this._buildGear(posInRoom(middlePos), 'clockwise', middleFrame))
+    // this.gears.push(this._buildGear(rightPos, 'counter-clockwise', rightFrame))
+
+    return [
+
+      // leftHolder,
+      // rightHolder,
+      ...this.gears.flatMap(g => g.obstacles),
+      ...this.wedges(),
+    ]
+  }
+
+  private _buildGear(pos: Vec2, dir: Direction, frameIndex: number): Gear {
     // center circle
     const bigCircleLut = Lut.create('obstacle-lut', 'big-circle') as ObstacleLut
-    const centerObs = new Obstacle(this.center, 'big-circle', bigCircleLut, this)
+    const centerObs = new Obstacle(pos, 'big-circle', bigCircleLut, this)
 
     // teeth
     let offset: Vec2 = [2 * DISK_RADIUS, DISK_RADIUS]
-    this.teeth = Array.from(
+    const teeth = Array.from(
       { length: N_GEAR_TEETH },
       (_, _toothIndex) => {
         const toothPos: Vec2 = [
-          this.center[0] + offset[0],
-          this.center[1] + offset[1],
+          pos[0] + offset[0],
+          pos[1] + offset[1],
         ]
         const tooth = new Obstacle(toothPos, 'circle', this.circleLut, this)
         offset = rotate90(offset)
@@ -86,22 +136,23 @@ export class GearRoom extends Room {
       },
     )
 
-    const gearObs = [
-      centerObs,
-      ...this.teeth,
-    ]
-
-    for (const obs of gearObs) {
-      obs.isVisible = false
+    // set common properties for center and teeth
+    const obstacles = [centerObs, ...teeth]
+    for (const obs of obstacles) {
+      if (displayMode === 'fidget-spinner') {
+        obs.isVisible = false // skip normal obstacle drawing, will draw in drawDecorations
+      }
     }
 
-    return [
+    const gear: Gear = {
+      dir,
+      frameIndex,
+      center: centerObs,
+      teeth,
+      obstacles,
+    }
 
-      // leftHolder,
-      // rightHolder,
-      ...gearObs,
-      ...this.wedges(),
-    ]
+    return gear
   }
 
   private _gearPath: Path2D | null = null
@@ -111,7 +162,7 @@ export class GearRoom extends Room {
     const N = N_GEAR_TEETH
     const toothDelta = N_GEAR_FRAMES / N
     const path = new Path2D()
-    const rFillet = TOOTH_RADIUS * 0.3
+    const rFillet = TOOTH_RADIUS//* 0.9
 
     // build at frameIndex=0, centered at origin
     const offset0: Vec2 = [this.gearLut.getInt32(0, 0), this.gearLut.getInt32(0, 1)]
@@ -172,21 +223,10 @@ export class GearRoom extends Room {
     return path
   }
 
-  override drawDecorations(ctx: CanvasRenderingContext2D, _pw: PinballWizard, gfxName: GfxRegionName): void {
-    if (!this._gearPath) {
-      this._gearPath = this._buildGearPath()
+  override drawDecorations(ctx: CanvasRenderingContext2D, pw: PinballWizard, gfxName: GfxRegionName): void {
+    if (displayMode === 'circles') {
+      return // obstacles were already drawn as circles
     }
-
-    const [cx, cy] = this.center
-
-    // derive rotation from tooth 0's current position
-    const tooth0 = this.teeth[0]
-    const currentTheta = Math.atan2(tooth0.pos[1] - cy, tooth0.pos[0] - cx)
-    const rotation = currentTheta - this._baseTheta
-
-    ctx.save()
-    ctx.translate(cx, cy)
-    ctx.rotate(rotation)
 
     if (gfxName === 'sim-gfx') {
       ctx.lineWidth = 0.1 * DISK_RADIUS
@@ -195,15 +235,32 @@ export class GearRoom extends Room {
       ctx.lineWidth = 1 * DISK_RADIUS
     }
 
+    for (const gear of this.gears) {
+      this._drawGear(ctx, gear, pw)
+    }
+  }
+
+  private _drawGear(ctx: CanvasRenderingContext2D, gear: Gear, _pw: PinballWizard) {
+    if (!this._gearPath) {
+      this._gearPath = this._buildGearPath()
+    }
+
+    const [cx, cy] = gear.center.pos
+
+    // derive rotation from tooth 0's current position
+    const tooth0 = gear.teeth[0]
+    const currentTheta = Math.atan2(tooth0.pos[1] - cy, tooth0.pos[0] - cx)
+    const rotation = currentTheta - this._baseTheta
+
+    ctx.save()
+    ctx.translate(cx, cy)
+    ctx.rotate(rotation)
+
     ctx.fillStyle = OBSTACLE_FILL
     ctx.fill(this._gearPath)
     ctx.strokeStyle = OBSTACLE_STROKE
     ctx.stroke(this._gearPath)
     ctx.restore()
-  }
-
-  static {
-    Room.register('gear-room', () => new GearRoom())
   }
 }
 

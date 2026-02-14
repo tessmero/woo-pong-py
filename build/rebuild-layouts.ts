@@ -12,10 +12,11 @@ import { ThreeByThree } from '../src/rooms/room-layouts/imp/three-by-three'
 import { FourByFour } from '../src/rooms/room-layouts/imp/four-by-four'
 import { Breakout } from '../src/rooms/room-layouts/imp/breakout'
 import { Honeycomb } from '../src/rooms/room-layouts/imp/honeycomb'
+import { TwoGears } from '../src/rooms/room-layouts/imp/two-gears'
 
 // excuse to import layouts and have them registered
 const _layouts = [
-  FourByFour, Breakout, Honeycomb, ThreeByThree,
+  FourByFour, Breakout, Honeycomb, ThreeByThree, TwoGears
 ]
 
 const sourceFilePath = join(__dirname, '../src/rooms/room-layouts/set-by-build.ts')

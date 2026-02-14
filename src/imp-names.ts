@@ -70,6 +70,9 @@ export const ROOM_LAYOUT = {
   NAMES: [
     'four-by-four',
     'breakout', 'honeycomb', 'three-by-three',
+
+
+    'two-gears',
   ],
   SOURCES: ['src/room-layouts/**/*.ts'],
 } as const satisfies ImpManifest

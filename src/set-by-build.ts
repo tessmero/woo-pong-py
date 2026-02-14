@@ -96,10 +96,10 @@ export const LUT_BLOBS = {
     "yRad": 105
   },
   "BIG_CIRCLE": {
-    "url": "luts/big-circle-62898156a224755c.bin",
-    "hash": "62898156a224755c68a3ae228163c7bbb18bfff59da8fd34e87c4a1c4fc9499b",
-    "xRad": 190,
-    "yRad": 190
+    "url": "luts/big-circle-50b43bca8fcc38fe.bin",
+    "hash": "50b43bca8fcc38fe6b77be9628fd247eeaf711749d08b07b89e1b1f45c1fdee8",
+    "xRad": 160,
+    "yRad": 160
   },
   "CIRCLE": {
     "url": "luts/circle-5b7b6c3b59041cfd.bin",
@@ -126,8 +126,8 @@ export const LUT_BLOBS = {
     "hash": "3e09f6ca518cc5bd24bf59a642dd802718959b4ba1d465a04be26efa5976edd9"
   },
   "RACE_LUT": {
-    "url": "luts/race-lut-19fe77587c0d44f7.bin",
-    "hash": "19fe77587c0d44f7add2d54366e8b85b13a71d84175350ce6b0b0ddfbf77315e"
+    "url": "luts/race-lut-e7d872373bc6b9fb.bin",
+    "hash": "e7d872373bc6b9fbc2a1ed7daea528c2f70637bbb0ce15740955147e84fe28d3"
   },
   "GEAR_LUT": {
     "url": "luts/gear-lut-1d221486d39ce762.bin",

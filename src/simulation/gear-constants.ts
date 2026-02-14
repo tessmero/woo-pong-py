@@ -7,7 +7,7 @@
 import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 
 /** Number of teeth on the gear. */
-export const N_GEAR_TEETH = 6
+export const N_GEAR_TEETH = 5
 
 /** Total animation frames per full gear revolution. */
 export const N_GEAR_FRAMES = 6000
@@ -20,7 +20,7 @@ if (!Number.isInteger(N_GEAR_FRAMES / N_GEAR_TEETH)) {
 export const GEAR_ORBIT_RADIUS = 4 * DISK_RADIUS
 
 /** Effective radius of the big-circle obstacle (SVG radius 200 × scale VALUE_SCALE/10). */
-export const BIG_CIRCLE_RADIUS = 150 * VALUE_SCALE / 10
+export const BIG_CIRCLE_RADIUS = 120 * VALUE_SCALE / 10
 
 /** Effective radius of each tooth circle obstacle (SVG radius 200 × scale VALUE_SCALE/40). */
 export const TOOTH_RADIUS = 200 * VALUE_SCALE / 40
