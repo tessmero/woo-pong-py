@@ -7,13 +7,12 @@
 import type { PinballWizard } from 'pinball-wizard'
 import type { Obstacle } from 'simulation/obstacle'
 import { OBSTACLE_FILL, OBSTACLE_STROKE } from 'gfx/graphics'
-import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
+import { VALUE_SCALE } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
 import { getDetailedPoints, type ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import type { Vec2 } from 'util/math-util'
-import { Room } from 'rooms/room'
 
-export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard, room: Room) {
+export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
   const { simViewRect } = pw
   const sim = pw.activeSim
 
@@ -30,13 +29,23 @@ export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard, 
       // console.log('skip obstacle above view')
       continue // obstacle is above view
     }
-    traceObstacle(ctx, obstacle)
+    const {
+      isDestroyed, isVisible, pos, points,
+      // boundingRect, collisionRect
+    } = obstacle
 
-    ctx.fillStyle = OBSTACLE_FILL
-    ctx.fill()
+    if (isDestroyed || !isVisible) {
+      // skip
+    }
+    else {
+      traceObstacle(ctx, pos, points)
 
-    ctx.strokeStyle = OBSTACLE_STROKE
-    ctx.stroke()
+      ctx.fillStyle = OBSTACLE_FILL
+      ctx.fill()
+
+      ctx.strokeStyle = OBSTACLE_STROKE
+      ctx.stroke()
+    }
 
     // // debug all adjusted positions
     // _debugObstacleShell(ctx, obstacle)
@@ -62,19 +71,10 @@ export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard, 
     //   2 * rad, 2 * rad,
     // )
   }
-
-  room.drawDecorations(ctx)
 }
 
 // used in drawObstacle for main view. also used in scrollbar.ts
-export function traceObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
-  const {
-    isHidden, pos, points,
-    // boundingRect, collisionRect
-  } = obstacle
-
-  if (isHidden) return
-
+export function traceObstacle(ctx: CanvasRenderingContext2D, pos, points) {
   ctx.beginPath()
   for (const [x, y] of points) {
     ctx.lineTo(pos[0] + x, pos[1] + y)

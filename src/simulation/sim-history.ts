@@ -39,10 +39,10 @@ export class SimHistory {
     const displayStep = sim.stepCount - stepsBack
     // console.log('update obstacles display step:', displayStep)
     for (const obs of sim.obstacles) {
-      if (obs.isHidden) continue
+      if (obs.isDestroyed) continue
       if (obs.hideOnStep === -1) continue
       if (displayStep >= obs.hideOnStep) {
-        obs.isHidden = true
+        obs.isDestroyed = true
 
         // clear rectangle in scrollbar obstacle graphics buffer
         ;(GfxRegion.create('scrollbar-gfx') as ScrollbarGfx).hideObstacle(obs)

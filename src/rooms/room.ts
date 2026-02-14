@@ -4,7 +4,8 @@
  * Base class and registry for level segments.
  */
 
-import type { RoomName } from 'imp-names'
+import type { GfxRegionName, RoomName } from 'imp-names'
+import type { PinballWizard } from 'pinball-wizard'
 import { VALUE_SCALE } from 'simulation/constants'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
@@ -49,7 +50,7 @@ export abstract class Room {
     // do nothing
   }
 
-  drawDecorations(_ctx: CanvasRenderingContext2D): void {
+  drawDecorations(_ctx: CanvasRenderingContext2D, _pw: PinballWizard, _gfxName: GfxRegionName): void {
     // do nothing
   }
 

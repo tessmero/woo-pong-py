@@ -96,14 +96,14 @@ export const LUT_BLOBS = {
     "yRad": 105
   },
   "BIG_CIRCLE": {
-    "url": "luts/big-circle-f4efac5f03ca55d3.bin",
-    "hash": "f4efac5f03ca55d3fbacf074d76a00d53ebb9c306259b913e0bea2b121e93524",
-    "xRad": 240,
-    "yRad": 240
+    "url": "luts/big-circle-62898156a224755c.bin",
+    "hash": "62898156a224755c68a3ae228163c7bbb18bfff59da8fd34e87c4a1c4fc9499b",
+    "xRad": 190,
+    "yRad": 190
   },
   "CIRCLE": {
-    "url": "luts/circle-f185bc8124207a14.bin",
-    "hash": "f185bc8124207a14862dd7256af3956702549c3505553509a745fb90697b0241",
+    "url": "luts/circle-5b7b6c3b59041cfd.bin",
+    "hash": "5b7b6c3b59041cfdc2b5d8028953f660285886abf1daf252ff085d9a20b8a3f7",
     "xRad": 90,
     "yRad": 90
   },
@@ -126,11 +126,11 @@ export const LUT_BLOBS = {
     "hash": "3e09f6ca518cc5bd24bf59a642dd802718959b4ba1d465a04be26efa5976edd9"
   },
   "RACE_LUT": {
-    "url": "luts/race-lut-850fad9584b921c5.bin",
-    "hash": "850fad9584b921c5a764974b9c2dd54a49b70ace7d418b304e45d0094ff4bc57"
+    "url": "luts/race-lut-19fe77587c0d44f7.bin",
+    "hash": "19fe77587c0d44f7add2d54366e8b85b13a71d84175350ce6b0b0ddfbf77315e"
   },
   "GEAR_LUT": {
-    "url": "luts/gear-lut-c6848a15fca0af07.bin",
-    "hash": "c6848a15fca0af07bc10788037a46c0b434ed7aeab74ad62fe659d7429bad0d9"
+    "url": "luts/gear-lut-1d221486d39ce762.bin",
+    "hash": "1d221486d39ce762ff26ac3437e836526332dd2ce4405aaffb4e83edeaad6e29"
   }
 };

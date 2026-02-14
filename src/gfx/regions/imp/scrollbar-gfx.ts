@@ -130,9 +130,18 @@ export class ScrollbarGfx extends GfxRegion {
         bctx.fillStyle = OBSTACLE_FILL
         bctx.strokeStyle = 'black'
         for (const obstacle of sim.obstacles) {
-          traceObstacle(bctx, obstacle)
+            const {
+              isDestroyed, isVisible, pos, points,
+              // boundingRect, collisionRect
+            } = obstacle
+
+            if (isDestroyed || !isVisible) continue
+          traceObstacle(bctx, pos, points)
           bctx.fill()
           bctx.stroke()
+        }
+        for (const room of sim.level.rooms) {
+          room.drawDecorations(bctx, pw, 'scrollbar-gfx')
         }
         drawFinish(bctx, sim.finish)
 

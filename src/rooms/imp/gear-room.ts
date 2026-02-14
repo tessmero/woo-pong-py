@@ -14,6 +14,8 @@ import {
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
+import type { GfxRegionName } from 'imp-names'
+import type { PinballWizard } from 'pinball-wizard'
 import { type Vec2 } from 'util/math-util'
 import { OBSTACLE_FILL, OBSTACLE_STROKE } from 'gfx/graphics'
 
@@ -84,53 +86,83 @@ export class GearRoom extends Room {
       },
     )
 
-    return [
-      leftHolder,
-      rightHolder,
+    const gearObs = [
       centerObs,
       ...this.teeth,
-      //...this.wedges(),
+    ]
+
+    for (const obs of gearObs) {
+      obs.isVisible = false
+    }
+
+    return [
+
+      // leftHolder,
+      // rightHolder,
+      ...gearObs,
+      ...this.wedges(),
     ]
   }
 
-  override drawDecorations(ctx: CanvasRenderingContext2D): void {
-    return
+  private _gearPath: Path2D | null = null
+  private _baseTheta = 0
 
-    const [cx, cy] = this.center
+  private _buildGearPath(): Path2D {
     const N = N_GEAR_TEETH
     const toothDelta = N_GEAR_FRAMES / N
+    const path = new Path2D()
 
-    ctx.beginPath()
+    // build at frameIndex=0, centered at origin
+    const offset0: Vec2 = [this.gearLut.getInt32(0, 0), this.gearLut.getInt32(0, 1)]
+    this._baseTheta = Math.atan2(offset0[1], offset0[0])
+
     for (let i = 0; i < N; i++) {
-      // tooth angle for this frame
-      const lutIndex = (this.frameIndex + toothDelta * i) % N_GEAR_FRAMES
+      const lutIndex = (toothDelta * i) % N_GEAR_FRAMES
       const offset: Vec2 = [this.gearLut.getInt32(lutIndex, 0), this.gearLut.getInt32(lutIndex, 1)]
       const theta = Math.atan2(offset[1], offset[0])
 
-      const nextLutIndex = (this.frameIndex + toothDelta * ((i + 1) % N)) % N_GEAR_FRAMES
+      const nextLutIndex = (toothDelta * ((i + 1) % N)) % N_GEAR_FRAMES
       const nextOffset: Vec2 = [this.gearLut.getInt32(nextLutIndex, 0), this.gearLut.getInt32(nextLutIndex, 1)]
       const thetaNext = Math.atan2(nextOffset[1], nextOffset[0])
 
-      const tx = cx + GEAR_ORBIT_RADIUS * Math.cos(theta)
-      const ty = cy + GEAR_ORBIT_RADIUS * Math.sin(theta)
+      const tx = GEAR_ORBIT_RADIUS * Math.cos(theta)
+      const ty = GEAR_ORBIT_RADIUS * Math.sin(theta)
 
-      // outer arc on tooth (the large sweep around the outside)
-      ctx.arc(tx, ty + this.bounds[1], TOOTH_RADIUS, theta + Math.PI + GEAR_BETA, theta + Math.PI - GEAR_BETA, true)
-
-      // concave bridge arc on center circle between this tooth and the next
-      ctx.arc(cx, cy + this.bounds[1], BIG_CIRCLE_RADIUS, theta + GEAR_ALPHA, thetaNext - GEAR_ALPHA, false)
+      path.arc(tx, ty, TOOTH_RADIUS, theta + Math.PI + GEAR_BETA, theta + Math.PI - GEAR_BETA, false)
+      path.arc(0, 0, BIG_CIRCLE_RADIUS, theta + GEAR_ALPHA, thetaNext - GEAR_ALPHA, false)
     }
-    ctx.closePath()
+    path.closePath()
+    return path
+  }
 
-    ctx.strokeStyle = 'red'
-    ctx.stroke()
+  override drawDecorations(ctx: CanvasRenderingContext2D, _pw: PinballWizard, gfxName: GfxRegionName): void {
+    if (!this._gearPath) {
+      this._gearPath = this._buildGearPath()
+    }
 
-   ctx.fillStyle = 'red'
-   ctx.fillRect( 
-    50 * VALUE_SCALE, 
-    50 * VALUE_SCALE + this.bounds[1], 
-    DISK_RADIUS, DISK_RADIUS 
-  )
+    const [cx, cy] = this.center
+
+    // derive rotation from tooth 0's current position
+    const tooth0 = this.teeth[0]
+    const currentTheta = Math.atan2(tooth0.pos[1] - cy, tooth0.pos[0] - cx)
+    const rotation = currentTheta - this._baseTheta
+
+    ctx.save()
+    ctx.translate(cx, cy)
+    ctx.rotate(rotation)
+
+    if (gfxName === 'sim-gfx') {
+      ctx.lineWidth = 0.1 * DISK_RADIUS
+    }
+    else {
+      ctx.lineWidth = 1 * DISK_RADIUS
+    }
+
+    ctx.fillStyle = OBSTACLE_FILL
+    ctx.fill(this._gearPath)
+    ctx.strokeStyle = OBSTACLE_STROKE
+    ctx.stroke(this._gearPath)
+    ctx.restore()
   }
 
   static {

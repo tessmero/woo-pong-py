@@ -267,8 +267,10 @@ export class SimGfx extends GfxRegion {
 
     // this._drawBoundsInnerEdges(ctx, pw)
 
+    drawObstacles(ctx, pw)
+
     for (const room of sim.level.rooms) {
-      drawObstacles(ctx, pw, room)
+      room.drawDecorations(ctx, pw, 'sim-gfx')
     }
 
     // this._drawBounds(ctx, pw)

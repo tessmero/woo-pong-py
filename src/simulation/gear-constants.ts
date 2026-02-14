@@ -17,7 +17,7 @@ if (!Number.isInteger(N_GEAR_FRAMES / N_GEAR_TEETH)) {
 }
 
 /** Distance from gear center to each tooth center. */
-export const GEAR_ORBIT_RADIUS = 6 * DISK_RADIUS
+export const GEAR_ORBIT_RADIUS = 4 * DISK_RADIUS
 
 /** Effective radius of the big-circle obstacle (SVG radius 200 × scale VALUE_SCALE/10). */
 export const BIG_CIRCLE_RADIUS = 150 * VALUE_SCALE / 10
