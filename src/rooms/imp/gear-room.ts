@@ -9,7 +9,7 @@ import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import type { GearLut } from 'simulation/luts/imp/gear-lut'
 import {
   N_GEAR_FRAMES, N_GEAR_TEETH, GEAR_ORBIT_RADIUS,
-  BIG_CIRCLE_RADIUS, TOOTH_RADIUS, GEAR_ALPHA, GEAR_BETA,
+  BIG_CIRCLE_RADIUS, TOOTH_RADIUS,
 } from 'simulation/gear-constants'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
@@ -111,10 +111,21 @@ export class GearRoom extends Room {
     const N = N_GEAR_TEETH
     const toothDelta = N_GEAR_FRAMES / N
     const path = new Path2D()
+    const rFillet = TOOTH_RADIUS * 0.3
 
     // build at frameIndex=0, centered at origin
     const offset0: Vec2 = [this.gearLut.getInt32(0, 0), this.gearLut.getInt32(0, 1)]
     this._baseTheta = Math.atan2(offset0[1], offset0[0])
+
+    // Fillet centers lie at the intersection of two circles:
+    //   - radius (BIG_CIRCLE_RADIUS + rFillet) from the origin
+    //   - radius (TOOTH_RADIUS + rFillet) from the tooth center
+    // Precompute the along-tooth-axis (fDist) and perpendicular (fPerp) offsets.
+    const d = GEAR_ORBIT_RADIUS
+    const R1 = BIG_CIRCLE_RADIUS + rFillet
+    const R2 = TOOTH_RADIUS + rFillet
+    const fDist = (R1 * R1 - R2 * R2 + d * d) / (2 * d)
+    const fPerp = Math.sqrt(R1 * R1 - fDist * fDist)
 
     for (let i = 0; i < N; i++) {
       const lutIndex = (toothDelta * i) % N_GEAR_FRAMES
@@ -125,11 +136,37 @@ export class GearRoom extends Room {
       const nextOffset: Vec2 = [this.gearLut.getInt32(nextLutIndex, 0), this.gearLut.getInt32(nextLutIndex, 1)]
       const thetaNext = Math.atan2(nextOffset[1], nextOffset[0])
 
-      const tx = GEAR_ORBIT_RADIUS * Math.cos(theta)
-      const ty = GEAR_ORBIT_RADIUS * Math.sin(theta)
+      const cosT = Math.cos(theta)
+      const sinT = Math.sin(theta)
+      const tx = GEAR_ORBIT_RADIUS * cosT
+      const ty = GEAR_ORBIT_RADIUS * sinT
 
-      path.arc(tx, ty, TOOTH_RADIUS, theta + Math.PI + GEAR_BETA, theta + Math.PI - GEAR_BETA, false)
-      path.arc(0, 0, BIG_CIRCLE_RADIUS, theta + GEAR_ALPHA, thetaNext - GEAR_ALPHA, false)
+      // Fillet center A (bridge→tooth junction, before tooth arc)
+      const fAx = fDist * cosT + fPerp * sinT
+      const fAy = fDist * sinT - fPerp * cosT
+      const fA_bridge = Math.atan2(fAy, fAx)
+      const fA_tooth = Math.atan2(fAy - ty, fAx - tx)
+
+      // Fillet center B (tooth→bridge junction, after tooth arc)
+      const fBx = fDist * cosT - fPerp * sinT
+      const fBy = fDist * sinT + fPerp * cosT
+      const fB_tooth = Math.atan2(fBy - ty, fBx - tx)
+      const fB_bridge = Math.atan2(fBy, fBx)
+
+      // Fillet A arc: bridge tangent → tooth tangent
+      path.arc(fAx, fAy, rFillet, fA_bridge + Math.PI, fA_tooth + Math.PI, true)
+
+      // Trimmed outer tooth arc
+      path.arc(tx, ty, TOOTH_RADIUS, fA_tooth, fB_tooth, false)
+
+      // Fillet B arc: tooth tangent → bridge tangent
+      path.arc(fBx, fBy, rFillet, fB_tooth + Math.PI, fB_bridge + Math.PI, true)
+
+      // Trimmed bridge arc on big circle (to next tooth's fillet A)
+      const cosN = Math.cos(thetaNext)
+      const sinN = Math.sin(thetaNext)
+      const fANextBridge = Math.atan2(fDist * sinN - fPerp * cosN, fDist * cosN + fPerp * sinN)
+      path.arc(0, 0, BIG_CIRCLE_RADIUS, fB_bridge, fANextBridge, false)
     }
     path.closePath()
     return path
