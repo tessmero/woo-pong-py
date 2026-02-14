@@ -5,7 +5,7 @@
  */
 
 import { Barrier } from './barrier'
-import { DISK_COUNT, STEP_DURATION, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './constants'
+import { DISK_COUNT, INT32_MAX, STEP_DURATION, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './constants'
 import { Disk } from './disk'
 import type { GasBox } from './gas-box'
 import { collideDisks } from './luts/imp/disk-disk-lut'
@@ -15,6 +15,9 @@ import { Perturbations } from './perturbations'
 import { Level } from 'level'
 import { SimHistory } from './sim-history'
 import { PATTERN } from 'imp-names'
+import { GAS_BOX_SOLVE_STEPS } from './gas-box-constants'
+import { GasBoxSim } from './gas-box-sim'
+import { checkSimHash } from './sim-hash'
 
 const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 5; i++) {
@@ -51,8 +54,13 @@ export class Simulation {
   // readonly barriers: Array<Barrier>
   readonly finish: Barrier
 
+  finalStepCount = INT32_MAX
+
   branchSeed = -1
   winningDiskIndex = -1 // index of first disk to hit finish
+
+  /** Expected hashes at interval steps, set from build-time data for determinism checking. */
+  expectedHashes: Record<number, number> | null = null
 
   maxBallY = -Infinity // record lowest y position for any ball so far
 
@@ -93,7 +101,16 @@ export class Simulation {
   step() {
     this._stepCount++
 
-    // update rooms
+    if (this._stepCount >= this.finalStepCount) {
+      return // prevent simulating past the moment a disk wins
+    }
+
+    if (this._stepCount + GAS_BOX_SOLVE_STEPS === this.finalStepCount) {
+      console.log('start final simulation for gas box')
+      this.gasBoxes[0].setFinalSimulation(new GasBoxSim())
+    }
+
+    // // update rooms
     for (const room of this.level.rooms) {
       room.step()
     }
@@ -140,6 +157,9 @@ export class Simulation {
     }
 
     Disk.flushStates(this.disks) // commit updates after collisions
+
+    // check determinism hash at interval steps
+    checkSimHash(this)
 
     // Disk.updateHistory(this.disks) // add to graphical tail
 

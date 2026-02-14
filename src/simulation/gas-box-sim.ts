@@ -3,72 +3,111 @@
  *
  * One set of gas particles that step independently. GasBox holds one or two
  * of these and manages the visual transition between them.
+ *
+ * Uses Structure-of-Arrays (SoA) layout with typed arrays for cache-friendly
+ * iteration and fast numeric loops.
  */
 
-import { N_GAS_BOX_PARTICLES } from './gas-box-constants'
+import { GAS_BOX_HEIGHT, GAS_BOX_SOLVE_STEPS, GAS_BOX_WIDTH, N_GAS_BOX_PARTICLES } from './gas-box-constants'
 import type { GasBoxLut } from './luts/imp/gas-box-lut'
 import { Lut } from './luts/lut'
-import { mod, type Rectangle } from 'util/math-util'
-
-/** State of one gas particle. */
-export interface GasParticle {
-  x: number
-  y: number
-  dx: number
-  dy: number
-}
 
 export class GasBoxSim {
-  readonly particles: Array<GasParticle>
+  readonly count: number = N_GAS_BOX_PARTICLES
+
+  /** Particle positions (x). */
+  readonly px: Int32Array
+  /** Particle positions (y). */
+  readonly py: Int32Array
+  /** Particle velocities (x). */
+  readonly dx: Int32Array
+  /** Particle velocities (y). */
+  readonly dy: Int32Array
 
   /**
-   * After each `step()` call, `wrapped[i]` is `true` if particle `i`
-   * crossed a bounding-rect edge on that step.
+   * After each `step()` call, `wrapped[i]` is 1 if particle `i`
+   * crossed a bounding-rect edge on that step, 0 otherwise.
    */
-  readonly wrapped: Array<boolean>
+  readonly wrapped: Uint8Array
 
-  constructor(boundingRect: Rectangle) {
-    const [bx, by, bw, bh] = boundingRect
-    this.particles = []
-    this.wrapped = []
+  constructor() {
+    const n = N_GAS_BOX_PARTICLES
+    this.px = new Int32Array(n)
+    this.py = new Int32Array(n)
+    this.dx = new Int32Array(n)
+    this.dy = new Int32Array(n)
+    this.wrapped = new Uint8Array(n)
 
     const lut = Lut.create('gas-box-lut') as GasBoxLut
 
     let indexInLeaf = 0
-    for (let i = 0; i < N_GAS_BOX_PARTICLES; i++) {
-    //   const fx = ((Perturbations.nextInt() >>> 0) % 1000) / 1000
-    //   const fy = ((Perturbations.nextInt() >>> 0) % 1000) / 1000
-    //   const sx = ((Perturbations.nextInt() >>> 0) % (2 * GAS_BOX_MAX_SPEED + 1)) - GAS_BOX_MAX_SPEED
-    //   const sy = ((Perturbations.nextInt() >>> 0) % (2 * GAS_BOX_MAX_SPEED + 1)) - GAS_BOX_MAX_SPEED
-
+    for (let i = 0; i < n; i++) {
       const xHi = lut.getInt16(0, indexInLeaf++) & 0xFFFF
       const xLo = lut.getInt16(0, indexInLeaf++) & 0xFFFF
       const yHi = lut.getInt16(0, indexInLeaf++) & 0xFFFF
       const yLo = lut.getInt16(0, indexInLeaf++) & 0xFFFF
-      const x = (xHi << 16) | xLo
-      const y = (yHi << 16) | yLo
-      const dx = lut.getInt16(0, indexInLeaf++)
-      const dy = lut.getInt16(0, indexInLeaf++)
-
-      this.particles.push({
-        x, y, dx, dy,
-      })
-      this.wrapped.push(false)
+      this.px[i] = (xHi << 16) | xLo
+      this.py[i] = (yHi << 16) | yLo
+      this.dx[i] = lut.getInt16(0, indexInLeaf++)
+      this.dy[i] = lut.getInt16(0, indexInLeaf++)
+      if (i === 0) {
+        console.log('decode gas box particle', this.px[i], this.py[i], this.dx[i], this.dy[i])
+      }
     }
   }
 
+  /** Create a GasBoxSim from raw particle arrays (used at build time before the LUT exists). */
+  static fromArrays(
+    px: Int32Array, py: Int32Array,
+    dx: Int32Array, dy: Int32Array,
+  ): GasBoxSim {
+    const sim = Object.create(GasBoxSim.prototype) as GasBoxSim
+    // @ts-expect-error assigning readonly fields in factory
+    sim.count = px.length
+    // @ts-expect-error assigning readonly fields in factory
+    sim.px = px
+    // @ts-expect-error assigning readonly fields in factory
+    sim.py = py
+    // @ts-expect-error assigning readonly fields in factory
+    sim.dx = dx
+    // @ts-expect-error assigning readonly fields in factory
+    sim.dy = dy
+    // @ts-expect-error assigning readonly fields in factory
+    sim.wrapped = new Uint8Array(px.length)
+    sim._debugStepCount = 0
+    return sim
+  }
+
+  private _debugStepCount = 0
+
   /** Advance every particle one step, wrapping toroidally. */
-  step(boundingRect: Rectangle) {
-    const [_bx, _by, bw, bh] = boundingRect
-    for (let i = 0; i < this.particles.length; i++) {
-      const p = this.particles[i]
-      const nx = p.x + p.dx
-      const ny = p.y + p.dy
+  step(isFinal = false) {
+    const dsc = this._debugStepCount++
+    if (isFinal && (dsc % (GAS_BOX_SOLVE_STEPS / 10) === 0)) {
+      console.log('final gas box sim step count', dsc)
+    }
 
-      this.wrapped[i] = (nx < 0 || nx >= bw || ny < 0 || ny >= bh)
+    // prevent advancing past solved state
+    if (isFinal && this._debugStepCount > GAS_BOX_SOLVE_STEPS) {
+      return
+    }
 
-      p.x = mod(nx, bw)
-      p.y = mod(ny, bh)
+    const bw = GAS_BOX_WIDTH
+    const bh = GAS_BOX_HEIGHT
+    const { px, py, dx, dy, wrapped, count } = this
+    for (let i = 0; i < count; i++) {
+      let nx = px[i] + dx[i]
+      let ny = py[i] + dy[i]
+
+      const w = (nx < 0 || nx >= bw || ny < 0 || ny >= bh) ? 1 : 0
+      wrapped[i] = w
+
+      if (nx < 0) nx += bw
+      else if (nx >= bw) nx -= bw
+      if (ny < 0) ny += bh
+      else if (ny >= bh) ny -= bh
+      px[i] = nx
+      py[i] = ny
     }
   }
 }

@@ -102,8 +102,8 @@ export const LUT_BLOBS = {
     "yRad": 160
   },
   "CIRCLE": {
-    "url": "luts/circle-9b41034b5593e2ae.bin",
-    "hash": "9b41034b5593e2aeb1104cdc10bda9cdfdc27f1c5c9cac37ad50653ccdd6d072",
+    "url": "luts/circle-1dd9adb659a2c53f.bin",
+    "hash": "1dd9adb659a2c53fabd5d956cc5cf66dd6121bea57451e2aa463cc17a853a3b3",
     "xRad": 80,
     "yRad": 80
   },
@@ -125,16 +125,18 @@ export const LUT_BLOBS = {
     "url": "luts/disk-normal-lut-fb51664cb1fdff59.bin",
     "hash": "fb51664cb1fdff59c73cd5feeab1888ed9daeb8510f23780413df41490e781b3"
   },
-  "RACE_LUT": {
-    "url": "luts/race-lut-8af1e092db56303a.bin",
-    "hash": "8af1e092db56303a4a60ea7955eae8ff940a80f8b9fb8998850eda826265b931"
-  },
   "GEAR_LUT": {
-    "url": "luts/gear-lut-0ac5da19eeccbea9.bin",
-    "hash": "0ac5da19eeccbea9819433bfd660656f21586782c1aadea2af34fb747ffed853"
+    "url": "luts/gear-lut-969b4795754acfc8.bin",
+    "hash": "969b4795754acfc89fbc45a1e9ae8059bf417ac1e47b7950e91e3b266684ac59"
   },
   "GAS_BOX_LUT": {
-    "url": "luts/gas-box-lut-77f0678e92774343.bin",
-    "hash": "77f0678e92774343cc1d03ba8e6d56af69beab8f3e13dfde88938889b487c461"
+    "url": "luts/gas-box-lut-e44f244aaca64ba9.bin",
+    "hash": "e44f244aaca64ba95573a03834a7846ad5ad6486cfb55e55b886961b35375c63"
+  },
+  "RACE_LUT": {
+    "url": "luts/race-lut-4ef65c674b74747f.bin",
+    "hash": "4ef65c674b74747f05b0796091469f12f0c00e671dfcea993039fa8e6a7cb6f4"
   }
 };
+
+

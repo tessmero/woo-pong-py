@@ -84,7 +84,7 @@ export class GlassGfx extends GfxRegion {
     }
 
     if (didSomething) {
-      shortVibrate()
+      shortVibrate(pw)
       return true // consume event
     }
     return false

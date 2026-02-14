@@ -32,7 +32,7 @@ const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
   settings: (pw) => {
     // console.log('top-bar-gfx clickActions.settings')
     if (!settingsPanel.isShowing) {
-      shortVibrate()
+      shortVibrate(pw)
     }
     settingsPanel.toggle(pw)
   },

@@ -119,7 +119,7 @@ async function main() {
   pinballWizard.loadingState = 'I'
 
   startBtn.onclick = async () => {
-    shortVibrate()
+    shortVibrate(pinballWizard)
 
     // document.documentElement.requestFullscreen()
     await pinballWizard.init()

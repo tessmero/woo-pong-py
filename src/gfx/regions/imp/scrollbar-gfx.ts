@@ -43,6 +43,7 @@ export class ScrollbarGfx extends GfxRegion {
     pw.camera.pos = this._computeCamPos(pw, mousePos)
     if (Scrollbar.draggingId === null) {
       Scrollbar.draggingId = inputId
+      Scrollbar.isLocked = !Scrollbar.isLocked
     }
     return false
   }

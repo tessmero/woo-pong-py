@@ -6,31 +6,34 @@
 
 import { LUT_BLOBS } from 'set-by-build'
 import { Lut } from '../lut'
-import { DISK_COUNT, STEPS_BEFORE_BRANCH } from 'simulation/constants'
+import { DISK_COUNT, INT32_MAX, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
+import { Lut32 } from '../lut-32'
+import { GAS_BOX_SOLVE_STEPS } from 'simulation/gas-box-constants'
 
 export type RaceLeaf = Array<number>
 
-const nRaces = 100
+const nRaces = 1
 const maxStepsTotal = 1e7
 
 export type BranchDatum = {
   midSeed: number
+  finalStepCount: number
   // roomSeqs: Array<Array<number> | null>
 }
 
 const leafLength
   = 1 // start seed
-    + DISK_COUNT // mid seed for each disk
+    + 2 * DISK_COUNT // mid seed and final step count for each disk
     // + BOBRICK_COUNT // value for each breakout brick
 
-export class RaceLut extends Lut<RaceLeaf> {
+export class RaceLut extends Lut32<RaceLeaf> {
   static {
     Lut.register('race-lut', {
       factory: () => new RaceLut(),
       depth: 1,
-      leafLength,
+      leafLength: leafLength * 2,
     })
   }
 
@@ -97,6 +100,9 @@ export class RaceLut extends Lut<RaceLeaf> {
             + etaStr,
           )
         }
+
+        console.log('solved race', result)
+
         return result
       }
     }
@@ -117,15 +123,15 @@ function _tryComputeLeaf(): Array<number> | null {
   const commonStartSeed = nextSeed++
   const branches: Array<BranchDatum> = Array.from(
     { length: DISK_COUNT },
-    () => ({ midSeed: -1, roomSeqs: [] }),
+    () => ({ midSeed: -1, finalStepCount: INT32_MAX }),
   )
 
-  // return dummy race-lut to skip simulations
-  return [
-    commonStartSeed,
-    ...branches.map(({ midSeed }) => 12345),
-    // ...breakoutSolution,
-  ]
+  // // return dummy race-lut to skip simulations
+  // return [
+  //   commonStartSeed,
+  //   ...branches.flatMap(() => [12345,INT32_MAX]),
+  //   // ...breakoutSolution,
+  // ]
 
   console.log(`attempting to solve race with start seed ${commonStartSeed}...`)// eslint-disable-line no-console
 
@@ -172,14 +178,26 @@ function _tryComputeLeaf(): Array<number> | null {
     //   }
     // }
 
+    // make sure level solution leaves enough time for gas box to resolve
+    const minSteps = STEPS_BEFORE_BRANCH + GAS_BOX_SOLVE_STEPS
+    if (sim.stepCount < (minSteps)) {
+      throw new Error(`level finished ${minSteps - sim.stepCount} steps too early`)
+    }
+
     branches[sim.winningDiskIndex] = {
       midSeed: branchSeed,
+      finalStepCount: sim.stepCount,
       // roomSeqs: roomSeqs,
+    }
+
+    // apply placeholder data for all disks to end early
+    for (let i = 0; i < DISK_COUNT; i++) {
+      branches[i] = branches[sim.winningDiskIndex]
     }
 
     if (_stepCount > maxStepsTotal) {
       // console.log('')
-      break
+      break // give up on this starting seed, taking too long to find all branches
     }
   }
 
@@ -217,7 +235,7 @@ function _tryComputeLeaf(): Array<number> | null {
 
   const result = [
     commonStartSeed,
-    ...branches.map(({ midSeed }) => midSeed),
+    ...branches.flatMap(({ midSeed, finalStepCount }) => [midSeed, finalStepCount]),
     // ...breakoutSolution,
   ]
 
@@ -229,26 +247,60 @@ function _tryComputeLeaf(): Array<number> | null {
   // eslint-disable-next-line no-console
   console.log(`solved race with start seed ${commonStartSeed}`)
 
-  // verify solution
+  // _verifyRace(commonStartSeed, branches)
+
+  return result
+}
+
+function _verifyRace(
+  commonStartSeed: number,
+  branches: Array<BranchDatum>,
+): void {
   for (const [winningDiskIndex, { midSeed }] of branches.entries()) {
     const sim = new Simulation(commonStartSeed)
+    // const hashes: Record<number, number> = {}
     for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
       sim.step()
-      _stepCount++
+      // if (sim.stepCount % HASH_STEP_INTERVAL === 0) {
+      //   hashes[sim.stepCount] = computeSimHash(sim)
+      // }
     }
     if (sim.winningDiskIndex !== -1) {
       throw new Error('failed verification (win before branching)')
     }
     const branchSeed = midSeed
     Perturbations.setSeed(branchSeed)
-    while (sim.winningDiskIndex === -1 && _stepCount < maxStepsTotal) {
+    while (sim.winningDiskIndex === -1 && sim.stepCount < maxStepsTotal) {
       sim.step()
-      _stepCount++
+      // if (sim.stepCount % HASH_STEP_INTERVAL === 0) {
+      //   hashes[sim.stepCount] = computeSimHash(sim)
+      // }
     }
+    // // also hash at the winning step
+    // hashes[sim.stepCount] = computeSimHash(sim)
+
     if (sim.winningDiskIndex !== winningDiskIndex) {
       throw new Error('failed verification (wrong winning disk)')
     }
-  }
 
-  return result
+    // // store hashes for disk 0 (the default runtime branch)
+    // if (winningDiskIndex === 0 as number) {
+    //   _collectedHashes = {
+    //     startSeed: commonStartSeed,
+    //     branchSeed: midSeed,
+    //     hashes,
+    //   }
+    // }
+  }
 }
+
+// let _collectedHashes: {
+//   startSeed: number
+//   branchSeed: number
+//   hashes: Record<number, number>
+// } | null = null
+
+// /** Called by rebuild-blobs.ts to retrieve hashes computed during verification. */
+// export function getCollectedSimHashes() {
+//   return _collectedHashes
+// }

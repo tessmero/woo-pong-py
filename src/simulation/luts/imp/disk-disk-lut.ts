@@ -10,6 +10,11 @@ import type { Disk } from 'simulation/disk'
 import { DISK_RADIUS, INT16_MAX, INT16_MIN } from 'simulation/constants'
 import { playImpact } from 'audio/collision-sounds'
 
+let _ddlCache: DiskDiskLut | null = null
+function _getDdl() {
+  return _ddlCache ??= Lut.create('disk-disk-lut') as DiskDiskLut
+}
+
 export type DiskDiskBounce = null | [number, number, number, number] // x,y,dx,dy
 
 const cacheScale = 1e2
@@ -145,7 +150,7 @@ export function collideDisks(a: Disk, b: Disk): boolean {
     vyi = speedDetail * Math.sign(vyi)
   }
 
-  const ddl = Lut.create('disk-disk-lut')
+  const ddl = _getDdl()
   const cellIdx = ddl.flatIndex(
     dxi + offsetDetail, dyi + offsetDetail, vxi + speedDetail, vyi + speedDetail)
 

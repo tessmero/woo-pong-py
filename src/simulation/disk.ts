@@ -11,48 +11,28 @@ import type { ObstacleLut } from './luts/imp/obstacle-lut'
 import { Lut } from './luts/lut'
 import { speedDetail, speedToIndex } from './luts/imp/disk-normal-lut'
 import { DISK_RADIUS } from './constants'
-import { applyFrictionX } from './luts/imp/disk-friction-lut'
 import { playImpact } from 'audio/collision-sounds'
 import type { PatternName } from 'imp-names'
+
+let _dnlCache: Lut<unknown> | null = null
+function _getDnl() {
+  return _dnlCache ??= Lut.create('disk-normal-lut')
+}
 
 // export const DISK_STYLES = ['red', 'green', 'blue', 'yellow'] as const
 // export type DiskStyle = (typeof DISK_STYLES)[number]
 
 export class DiskState {
-  private _x!: number
-  private _y!: number
-  private _dx!: number
-  private _dy!: number
+  x: number
+  y: number
+  dx: number
+  dy: number
 
   constructor(x: number, y: number, dx: number, dy: number) {
     this.x = x
     this.y = y
     this.dx = dx
     this.dy = dy
-  }
-
-  get x() { return this._x }
-  set x(value: number) {
-    if (!Number.isInteger(value)) throw new Error('x must be an integer')
-    this._x = value
-  }
-
-  get y() { return this._y }
-  set y(value: number) {
-    if (!Number.isInteger(value)) throw new Error('y must be an integer')
-    this._y = value
-  }
-
-  get dx() { return this._dx }
-  set dx(value: number) {
-    if (!Number.isInteger(value)) throw new Error('dx must be an integer')
-    this._dx = value
-  }
-
-  get dy() { return this._dy }
-  set dy(value: number) {
-    if (!Number.isInteger(value)) throw new Error('dy must be an integer')
-    this._dy = value
   }
 
   setAll(x: number, y: number, dx: number, dy: number) {
@@ -63,15 +43,26 @@ export class DiskState {
   }
 
   copy(other: DiskState) {
-    this.setAll(other.x, other.y, other.dx, other.dy)
+    this.x = other.x
+    this.y = other.y
+    this.dx = other.dx
+    this.dy = other.dy
   }
 
   toArray(): [number, number, number, number] {
-    return [this._x, this._y, this._dx, this._dy]
+    return [this.x, this.y, this.dx, this.dy]
   }
 
   static fromArray(arr: [number, number, number, number]): DiskState {
     return new DiskState(arr[0], arr[1], arr[2], arr[3])
+  }
+
+  /** Debug-only validation. Call sparingly (e.g. once per step). */
+  assertValid() {
+    if (!Number.isInteger(this.x)) throw new Error(`x is non-integer: ${this.x}`)
+    if (!Number.isInteger(this.y)) throw new Error(`y is non-integer: ${this.y}`)
+    if (!Number.isInteger(this.dx)) throw new Error(`dx is non-integer: ${this.dx}`)
+    if (!Number.isInteger(this.dy)) throw new Error(`dy is non-integer: ${this.dy}`)
   }
 }
 
@@ -87,6 +78,7 @@ export class Disk {
   // called once at end of step
   static flushStates(disks: Array<Disk>) {
     for (const d of disks) {
+      d.nextState.assertValid()
       d.currentState.copy(d.nextState)
     }
   }
@@ -156,7 +148,7 @@ export class Disk {
             vyi = speedDetail * Math.sign(vyi)
           }
 
-          const dnl = Lut.create('disk-normal-lut')
+          const dnl = _getDnl()
           const dnlCell = dnl.flatIndex(vxi + speedDetail, vyi + speedDetail, normIndex)
           const vxAdj = dnl.getInt16(dnlCell, 0)
           const vyAdj = dnl.getInt16(dnlCell, 1)
@@ -216,5 +208,5 @@ export class Disk {
 function hBounce(state: DiskState) {
   state.dx *= -1
   playImpact(state, false, 2 * Math.abs(state.dx))
-  applyFrictionX(state)
+  // applyFrictionX(state)
 }

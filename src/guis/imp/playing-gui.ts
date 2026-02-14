@@ -131,7 +131,7 @@ const resetBtn: PlayingElem = {
   },
   click: ({ pinballWizard }) => {
     ballSelectionPanel.hide(pinballWizard, true)
-    shortVibrate()
+    shortVibrate(pinballWizard)
     pinballWizard.reset()
     Graphics.targetBspAnim = 0
   },

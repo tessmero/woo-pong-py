@@ -39,7 +39,7 @@ export class Camera {
     if (Scrollbar.isDragging || this.isDragging) {
       this._idleCountdown = this._idleDelay
     }
-    if (this.isDragging || Scrollbar.isDragging || pinballWizard.isHalted || pinballWizard.speed === 'paused') {
+    if (this.isDragging || Scrollbar.isDragging || Scrollbar.isLocked || pinballWizard.isHalted || pinballWizard.speed === 'paused') {
       // do nothing
       return
     }

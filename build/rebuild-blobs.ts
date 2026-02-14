@@ -19,6 +19,7 @@ import { RaceLut } from '../src/simulation/luts/imp/race-lut'
 import { GearLut } from '../src/simulation/luts/imp/gear-lut'
 import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
 import { LUT } from '../src/imp-names'
+// import { getCollectedSimHashes } from '../src/simulation/luts/imp/race-lut'
 
 import { FourByFour } from '../src/rooms/room-layouts/imp/four-by-four'
 
@@ -127,7 +128,41 @@ for (const lutName of LUT.NAMES) {
   }
 }
 
-// Write the updated source code back to the file
-const newSourceCode = `${jsdocComment}\n\nexport const LUT_BLOBS = ${JSON.stringify(lutBlobs, null, 2)};`
+// // Write the updated source code back to the file
+// const simHashes = getCollectedSimHashes()
+// let simHashesExport: string
+// if (simHashes) {
+//   const hashJson = JSON.stringify(simHashes)
+//   simHashesExport = 'export const SIM_HASHES: {\n'
+//     + '  startSeed: number\n'
+//     + '  branchSeed: number\n'
+//     + '  hashes: Record<number, number>\n'
+//     + `} = ${hashJson};`
+// }
+// else {
+//   simHashesExport = 'export const SIM_HASHES: {\n'
+//     + '  startSeed: number\n'
+//     + '  branchSeed: number\n'
+//     + '  hashes: Record<number, number>\n'
+//     + '} | null = null;'
+// }
+const simHashesExport = ''
+
+const lutBlobsJson = JSON.stringify(lutBlobs, null, 2)
+const lutBlobsStr = `export const LUT_BLOBS = ${lutBlobsJson};`
+const newSourceCode = [
+  jsdocComment, '', lutBlobsStr, '', simHashesExport, '',
+].join('\n')
 writeFileSync(sourceFilePath, newSourceCode, 'utf-8')
-console.log(`Updated constants in: ${sourceFilePath}`) // eslint-disable-line no-console
+// eslint-disable-next-line no-console
+console.log(`Updated constants in: ${sourceFilePath}`)
+
+// if (simHashes) {
+//   const nHashes = Object.keys(simHashes.hashes).length
+//   // eslint-disable-next-line no-console
+//   console.log(
+//     `Wrote ${nHashes} sim hashes`
+//     + ` (startSeed=${simHashes.startSeed},`
+//     + ` branchSeed=${simHashes.branchSeed})`,
+//   )
+// }

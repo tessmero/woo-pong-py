@@ -68,6 +68,10 @@ export class GearRoom extends Room {
         const cy = centerPos[1] + offset[1]
         const ry = cy - this.circleLut.maxOffsetY
         const tooth = gear.teeth[toothIndex]
+        if (!Number.isInteger(cx)) throw new Error('cx must be an integer')
+        if (!Number.isInteger(cy)) throw new Error('cy must be an integer')
+        if (!Number.isInteger(rx)) throw new Error('rx must be an integer')
+        if (!Number.isInteger(ry)) throw new Error('ry must be an integer')
         tooth.pos[0] = cx
         tooth.collisionRect[0] = rx
 
@@ -126,7 +130,7 @@ export class GearRoom extends Room {
     const centerObs = new Obstacle(pos, 'big-circle', bigCircleLut, this)
 
     // teeth
-    let offset: Vec2 = [2 * DISK_RADIUS, DISK_RADIUS]
+    const offset: Vec2 = [2 * DISK_RADIUS, DISK_RADIUS]
     const teeth = Array.from(
       { length: N_GEAR_TEETH },
       (_, _toothIndex) => {
@@ -135,7 +139,7 @@ export class GearRoom extends Room {
           pos[1] + offset[1],
         ]
         const tooth = new Obstacle(toothPos, 'circle', this.circleLut, this)
-        offset = rotate90(offset)
+        // offset = rotate90(offset)
         return tooth
       },
     )

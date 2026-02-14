@@ -7,12 +7,10 @@
  */
 
 import { VALUE_SCALE } from './constants'
-import { GAS_BOX_HEIGHT, GAS_BOX_WIDTH, N_GAS_BOX_PARTICLES } from './gas-box-constants'
+import { GAS_BOX_HEIGHT, GAS_BOX_SOLVE_STEPS, GAS_BOX_WIDTH, N_GAS_BOX_PARTICLES } from './gas-box-constants'
 import { GasBoxSim } from './gas-box-sim'
 import type { Rectangle, Vec2 } from 'util/math-util'
 
-/** Number of steps over which the transition from initial to final sim occurs. */
-const TRANSITION_STEPS = 10000
 
 export class GasBox {
   /** Bounding rectangle in sim-units [x, y, w, h]. */
@@ -50,11 +48,11 @@ export class GasBox {
       pos[1] - GAS_BOX_HEIGHT/2,
       GAS_BOX_WIDTH, GAS_BOX_HEIGHT,
     ]
-    this.initialSim = new GasBoxSim(this.boundingRect)
+    this.initialSim = new GasBoxSim()
     this.initialRetired = new Array(N_GAS_BOX_PARTICLES).fill(false)
 
-    // test final sim
-    this.setFinalSimulation(new GasBoxSim(this.boundingRect))
+    // // test final sim
+    // this.setFinalSimulation(new GasBoxSim())
   }
 
   /**
@@ -64,18 +62,21 @@ export class GasBox {
    * swap is hard to notice.
    */
   setFinalSimulation(finalSim: GasBoxSim) {
+    if( this._finalSim ) return
+
     this._finalSim = finalSim
     this._transitionStep = 0
-    this.finalActive = new Array(finalSim.particles.length).fill(false)
+    this.finalActive = new Array(finalSim.count).fill(false)
   }
 
   /** Advance all active simulations by one step. */
   step() {
+
     // always step the initial sim
-    this.initialSim.step(this.boundingRect)
+    this.initialSim.step()
 
     if (this._finalSim) {
-      this._finalSim.step(this.boundingRect)
+      this._finalSim.step(true)
     }
 
     // during the transition, swap eligible particles at edges
@@ -84,12 +85,20 @@ export class GasBox {
 
       // the eligible index threshold ramps from 0 to particleCount over
       // TRANSITION_STEPS, so more particles become swap-eligible over time.
-      const initCount = this.initialSim.particles.length
-      const finalCount = this._finalSim.particles.length
-      const progress = Math.min(this._transitionStep / TRANSITION_STEPS, 1)
+      const initCount = this.initialSim.count
+      const finalCount = this._finalSim.count
+      const progress = Math.min(this._transitionStep / GAS_BOX_SOLVE_STEPS, 1)
+
+      
+
       const eligibleInitial = Math.floor(progress * initCount)
       const eligibleFinal = Math.floor(progress * finalCount)
 
+      // if( eligibleFinal % 100 === 0 ){
+      //   console.log('gas box eligible final', eligibleFinal)
+      // }
+      
+      
       // retire initial particles that just wrapped and are eligible
       for (let i = 0; i < eligibleInitial; i++) {
         if (this.initialSim.wrapped[i] && !this.initialRetired[i]) {

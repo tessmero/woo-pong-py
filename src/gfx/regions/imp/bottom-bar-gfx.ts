@@ -35,7 +35,7 @@ const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
 const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
   bsp: (pw) => {
     if (!ballSelectionPanel.isShowing) {
-      shortVibrate()
+      shortVibrate(pw)
     }
     ballSelectionPanel.toggle(pw)
   },

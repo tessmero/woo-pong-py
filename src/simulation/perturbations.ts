@@ -17,6 +17,7 @@ export class Perturbations {
   static randomSeed = _randomSeed
 
   static setSeed(seed: number) {
+    // console.log('set seed', seed)
     Perturbations.nextInt = _makePRNG(seed)
   }
 

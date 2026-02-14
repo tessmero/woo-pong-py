@@ -7,8 +7,8 @@
 import type { PinballWizard } from 'pinball-wizard'
 import { OBSTACLE_STROKE } from 'gfx/graphics'
 import { VALUE_SCALE } from 'simulation/constants'
+import { GAS_BOX_PARTICLE_RADIUS } from 'simulation/gas-box-constants'
 
-const PARTICLE_RADIUS = 0.8 * VALUE_SCALE
 const BOX_LINE_WIDTH = 0.4 * VALUE_SCALE
 
 // Debug colors: red for initial sim, blue for final sim.
@@ -34,40 +34,30 @@ export function drawGasBoxes(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
     // draw bounding rectangle
     ctx.lineWidth = BOX_LINE_WIDTH
     ctx.strokeStyle = OBSTACLE_STROKE
-    ctx.fillStyle = 'rgba(40, 40, 40, 0.15)'
-    ctx.fillRect(bx, by, bw, bh)
     ctx.strokeRect(bx, by, bw, bh)
 
     // draw initial-sim particles (red)
     ctx.fillStyle = INITIAL_PARTICLE_COLOR
-    const initParticles = box.initialSim.particles
-    for (let i = 0; i < initParticles.length; i++) {
+    const initSim = box.initialSim
+    for (let i = 0; i < initSim.count; i++) {
       if (box.initialRetired[i]) continue
-      const p = initParticles[i]
-      // ctx.beginPath()
-      // ctx.arc(bx + p.x, by + p.y, PARTICLE_RADIUS, 0, Math.PI * 2)
-      // ctx.fill()
-      ctx.fillRect(bx + p.x - PARTICLE_RADIUS,
-        by + p.y - PARTICLE_RADIUS,
-        2 * PARTICLE_RADIUS,
-        2 * PARTICLE_RADIUS,
+      ctx.fillRect(bx + initSim.px[i] - GAS_BOX_PARTICLE_RADIUS,
+        by + initSim.py[i] - GAS_BOX_PARTICLE_RADIUS,
+        2 * GAS_BOX_PARTICLE_RADIUS,
+        2 * GAS_BOX_PARTICLE_RADIUS,
       )
     }
 
     // draw final-sim particles (blue) — only those activated during transition
     if (box.finalSim) {
       ctx.fillStyle = FINAL_PARTICLE_COLOR
-      const finalParticles = box.finalSim.particles
-      for (let i = 0; i < finalParticles.length; i++) {
+      const finalSim = box.finalSim
+      for (let i = 0; i < finalSim.count; i++) {
         if (!box.finalActive[i]) continue
-        const p = finalParticles[i]
-        // ctx.beginPath()
-        // ctx.arc(bx + p.x, by + p.y, PARTICLE_RADIUS, 0, Math.PI * 2)
-        // ctx.fill()
-        ctx.fillRect(bx + p.x - PARTICLE_RADIUS,
-          by + p.y - PARTICLE_RADIUS,
-          2 * PARTICLE_RADIUS,
-          2 * PARTICLE_RADIUS,
+        ctx.fillRect(bx + finalSim.px[i] - GAS_BOX_PARTICLE_RADIUS,
+          by + finalSim.py[i] - GAS_BOX_PARTICLE_RADIUS,
+          2 * GAS_BOX_PARTICLE_RADIUS,
+          2 * GAS_BOX_PARTICLE_RADIUS,
         )
       }
     }

@@ -4,13 +4,12 @@
  * Initial states for gas box particles.
  */
 
-import { GAS_BOX_HEIGHT, GAS_BOX_MAX_SPEED, GAS_BOX_WIDTH, N_GAS_BOX_PARTICLES, GAS_BOX_SOLVE_STEPS } from 'simulation/gas-box-constants'
+import { GAS_BOX_HEIGHT, GAS_BOX_MAX_SPEED, GAS_BOX_WIDTH, N_GAS_BOX_PARTICLES, GAS_BOX_SOLVE_STEPS, GAS_BOX_MIN_SPEED } from 'simulation/gas-box-constants'
 import { INT32_MAX, INT32_MIN, INT16_MAX, INT16_MIN } from 'simulation/constants'
 import { Lut } from '../lut'
 import { PATTERN } from 'imp-names'
 import { LUT_BLOBS } from 'set-by-build'
-import { Perturbations } from 'simulation/perturbations'
-import { mod } from 'util/math-util'
+import { GasBoxSim } from 'simulation/gas-box-sim'
 
 const leafLength = N_GAS_BOX_PARTICLES * 6 // xHi,xLo,yHi,yLo,vx,vy for each particle
 
@@ -83,33 +82,36 @@ export class GasBoxLut extends Lut<TLeaf> {
     return decoded
   }
 
-  override computeLeaf(index: Array<number>): TLeaf {
+  override computeLeaf(_index: Array<number>): TLeaf {
     const bw = GAS_BOX_WIDTH
     const bh = GAS_BOX_HEIGHT
 
-    // set solved state
-    const particles: Array<[number, number, number, number]> = []
+    // build typed arrays from random initial state
+    const px = new Int32Array(N_GAS_BOX_PARTICLES)
+    const py = new Int32Array(N_GAS_BOX_PARTICLES)
+    const dx = new Int32Array(N_GAS_BOX_PARTICLES)
+    const dy = new Int32Array(N_GAS_BOX_PARTICLES)
     for (let i = 0; i < N_GAS_BOX_PARTICLES; i++) {
-      const fx = Math.round(i * bw / N_GAS_BOX_PARTICLES)// ((Perturbations.nextInt() >>> 0) % bw)
-      const fy = Math.round(i * bh / N_GAS_BOX_PARTICLES)// ((Perturbations.nextInt() >>> 0) % bh)
-      const sx = ((Perturbations.nextInt() >>> 0) % (2 * GAS_BOX_MAX_SPEED + 1)) - GAS_BOX_MAX_SPEED
-      const sy = ((Perturbations.nextInt() >>> 0) % (2 * GAS_BOX_MAX_SPEED + 1)) - GAS_BOX_MAX_SPEED
-      particles.push([fx, fy, sx, sy])
+      px[i] = Math.floor(bw * i / N_GAS_BOX_PARTICLES)
+      py[i] = Math.floor(bh * i / N_GAS_BOX_PARTICLES)
+      const angle = Math.random() * 2 * Math.PI
+      const radius = GAS_BOX_MIN_SPEED
+        + (GAS_BOX_MAX_SPEED - GAS_BOX_MIN_SPEED) * Math.sqrt(Math.random())
+      dx[i] = Math.round(radius * Math.cos(angle))
+      dy[i] = Math.round(radius * Math.sin(angle))
     }
 
-    // advance simulation
+    // advance simulation using GasBoxSim
+    const sim = GasBoxSim.fromArrays(px, py, dx, dy)
     for (let step = 0; step < GAS_BOX_SOLVE_STEPS; step++) {
-      for (const p of particles) {
-        p[0] = mod(p[0] + p[2], bw)
-        p[1] = mod(p[1] + p[3], bh)
-      }
+      sim.step()
     }
 
     // save unsolved state with reversed velocities
     const result: Array<number> = []
-    for (const [fx, fy, sx, sy] of particles) {
-      result.push (
-        fx, fy, -sx, -sy,
+    for (let i = 0; i < N_GAS_BOX_PARTICLES; i++) {
+      result.push(
+        sim.px[i], sim.py[i], -sim.dx[i], -sim.dy[i],
       )
     }
 
