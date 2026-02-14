@@ -57,7 +57,8 @@ export class LutEncoder {
     if (lut.symmetric) {
       const index = new Array<number>(depth).fill(0)
 
-      function buildSymmetric(arr: Tree<any>, level: number): void { // eslint-disable-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      function buildSymmetric(arr: Tree<any>, level: number): void {
         const size = detail[level]
         arr.length = size
         if (level === depth - 1) {
@@ -93,7 +94,8 @@ export class LutEncoder {
       buildSymmetric(tree, 0)
     }
     else {
-      function buildFlat(arr: Tree<any>, level: number): void { // eslint-disable-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      function buildFlat(arr: Tree<any>, level: number): void {
         const size = detail[level]
         arr.length = size
         if (level === depth - 1) {

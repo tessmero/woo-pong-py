@@ -17,6 +17,7 @@ import { DiskNormalLut } from '../src/simulation/luts/imp/disk-normal-lut'
 import { DiskFrictionLut } from '../src/simulation/luts/imp/disk-friction-lut'
 import { RaceLut } from '../src/simulation/luts/imp/race-lut'
 import { GearLut } from '../src/simulation/luts/imp/gear-lut'
+import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
 import { LUT } from '../src/imp-names'
 
 import { FourByFour } from '../src/rooms/room-layouts/imp/four-by-four'
@@ -26,16 +27,17 @@ import { PongRoom } from '../src/rooms/imp/pong-room'
 import { BreakoutRoom } from '../src/rooms/imp/breakout-room'
 import { StartRoom } from '../src/rooms/imp/start-room'
 import { FinishRoom } from '../src/rooms/imp/finish-room'
+import { GearRoom } from '../src/rooms/imp/gear-room'
 
 // excuse to import luts and have them registered
 const _luts = [
-  DiskDiskLut, ObstacleLut, DiskNormalLut, DiskFrictionLut, RaceLut, GearLut
+  DiskDiskLut, ObstacleLut, DiskNormalLut, DiskFrictionLut, RaceLut, GearLut, GasBoxLut,
 ]
 const _layouts = [
   FourByFour,
 ]
 const _rooms = [
-  BasicRoom, PongRoom, BreakoutRoom, StartRoom, FinishRoom,
+  BasicRoom, PongRoom, BreakoutRoom, StartRoom, FinishRoom, GearRoom,
 ]
 
 // GFX_REGION imports and placeholder variable

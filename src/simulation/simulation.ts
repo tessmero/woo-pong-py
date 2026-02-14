@@ -7,6 +7,7 @@
 import { Barrier } from './barrier'
 import { DISK_COUNT, STEP_DURATION, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './constants'
 import { Disk } from './disk'
+import type { GasBox } from './gas-box'
 import { collideDisks } from './luts/imp/disk-disk-lut'
 import type { Obstacle } from './obstacle'
 import { type Rectangle } from 'util/math-util'
@@ -46,6 +47,7 @@ export class Simulation {
   readonly level: Level
   readonly disks: Array<Disk>
   readonly obstacles: Array<Obstacle>
+  readonly gasBoxes: Array<GasBox>
   // readonly barriers: Array<Barrier>
   readonly finish: Barrier
 
@@ -79,6 +81,7 @@ export class Simulation {
     // ))
 
     this.obstacles = this.level.buildObstacles()
+    this.gasBoxes = this.level.buildGasBoxes()
 
     // this.barriers = _barriers.map(rect =>
     //   new Barrier(...rect.map(val => val * VALUE_SCALE) as Rectangle))
@@ -90,10 +93,14 @@ export class Simulation {
   step() {
     this._stepCount++
 
-
     // update rooms
-    for( const room of this.level.rooms ){
+    for (const room of this.level.rooms) {
       room.step()
+    }
+
+    // update gas boxes
+    for (const box of this.gasBoxes) {
+      box.step()
     }
 
     // // udpate inner obstacles
@@ -102,6 +109,14 @@ export class Simulation {
     //   // Perturbations.blinkObstacle(obs)
     // }
 
+    // collide disks with barriers
+    for (const [_diskIndex, disk] of this.disks.entries()) {
+      disk.advance(this.obstacles, this._stepCount)
+      disk.pushInBounds(this.level.bounds)
+      Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
+      disk.nextState.dy += 1 // gravity
+    }
+
     // collide disks with disks
     for (let a = 1; a < this.disks.length; a++) {
       for (let b = 0; b < a; b++) {
@@ -109,16 +124,8 @@ export class Simulation {
       }
     }
 
-    // collide disks with barriers
+    // update stats
     for (const [diskIndex, disk] of this.disks.entries()) {
-      disk.advance(this.obstacles, this._stepCount)
-
-      disk.pushInBounds(this.level.bounds)
-
-      Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
-
-      disk.nextState.dy += 1 // gravity
-
       if ((this.winningDiskIndex === -1)
         && this.finish.isTouchingDisk(disk.nextState.x, disk.nextState.y)
       ) {

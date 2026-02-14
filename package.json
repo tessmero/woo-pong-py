@@ -8,6 +8,7 @@
     "build:prod": "vite build --config vite.config.prod.ts && npx mocha && npm run zip",
     "build:quickprod": "vite build --config vite.config.prod.ts && npm run zip",
     "zip": "cp -r reports dist && cd dist && zip -r woo-pong.zip .",
+    "build": "npm run rebuild-layouts && npm run rebuild-blobs",
     "rebuild-blobs": "ts-node -r tsconfig-paths/register build/rebuild-blobs.ts",
     "rebuild-layouts": "ts-node -r tsconfig-paths/register build/rebuild-layouts.ts"
   },

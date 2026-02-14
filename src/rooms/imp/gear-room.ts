@@ -10,6 +10,7 @@ import type { GearLut } from 'simulation/luts/imp/gear-lut'
 import {
   N_GEAR_FRAMES, N_GEAR_TEETH, GEAR_ORBIT_RADIUS,
   BIG_CIRCLE_RADIUS, TOOTH_RADIUS,
+  GEAR_FILLET_RADIUS, GEAR_HOLE_RADIUS,
 } from 'simulation/gear-constants'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
@@ -19,6 +20,8 @@ import type { PinballWizard } from 'pinball-wizard'
 import { type Vec2 } from 'util/math-util'
 import { OBSTACLE_FILL, OBSTACLE_STROKE } from 'gfx/graphics'
 import { ROOM_LAYOUT_POSITIONS } from 'rooms/room-layouts/set-by-build'
+import { Perturbations } from 'simulation/perturbations'
+import { N_TWO_GEAR_LAYOUTS } from 'rooms/room-layouts/imp/two-gears'
 
 type DisplayMode = 'circles' | 'fidget-spinner'
 const displayMode: DisplayMode = 'fidget-spinner'
@@ -77,29 +80,30 @@ export class GearRoom extends Room {
   buildObstacles(): Array<Obstacle> {
     this.roomCenter = [50 * VALUE_SCALE, this.bounds[1] + 50 * VALUE_SCALE]
 
-    const holderLut = Lut.create('obstacle-lut', 'holder') as ObstacleLut
+    // const holderLut = Lut.create('obstacle-lut', 'holder') as ObstacleLut
 
-    const dummy = new Obstacle([0, 0], 'holder', holderLut)
-    const holderOffset = DISK_RADIUS * 11
-    console.log('holderOffset', holderOffset)
-    const leftHolderPos: Vec2 = [
-      this.roomCenter[0] - holderOffset,
-      this.roomCenter[1],
-    ]
-    const leftHolder = new Obstacle(leftHolderPos, 'holder', holderLut)
+    // // const dummy = new Obstacle([0, 0], 'holder', holderLut)
+    // const holderOffset = DISK_RADIUS * 11
+    // console.log('holderOffset', holderOffset)
+    // const leftHolderPos: Vec2 = [
+    //   this.roomCenter[0] - holderOffset,
+    //   this.roomCenter[1],
+    // ]
+    // const leftHolder = new Obstacle(leftHolderPos, 'holder', holderLut)
 
-    const rightHolderPos: Vec2 = [
-      this.roomCenter[0] + holderOffset,
-      this.roomCenter[1],
-    ]
-    const rightHolder = new Obstacle(rightHolderPos, 'holder', holderLut)
-    rightHolder.isFlippedX = true
+    // const rightHolderPos: Vec2 = [
+    //   this.roomCenter[0] + holderOffset,
+    //   this.roomCenter[1],
+    // ]
+    // const rightHolder = new Obstacle(rightHolderPos, 'holder', holderLut)
+    // rightHolder.isFlippedX = true
 
     // build spinning gears
     const layout = ROOM_LAYOUT_POSITIONS['two-gears'] as Array<[number, Vec2]>
 
-    const [leftFrame, leftPos] = layout[0]
-    const [middleFrame, middlePos] = layout[1]
+    const i = (Perturbations.nextInt() >>> 0) % N_TWO_GEAR_LAYOUTS
+    const [leftFrame, leftPos] = layout[2 * i + 0]
+    const [middleFrame, middlePos] = layout[2 * i + 1]
 
     const posInRoom = ([x, y]) => [x, this.bounds[1] + y] as Vec2
 
@@ -162,7 +166,7 @@ export class GearRoom extends Room {
     const N = N_GEAR_TEETH
     const toothDelta = N_GEAR_FRAMES / N
     const path = new Path2D()
-    const rFillet = TOOTH_RADIUS//* 0.9
+    const rFillet = GEAR_FILLET_RADIUS
 
     // build at frameIndex=0, centered at origin
     const offset0: Vec2 = [this.gearLut.getInt32(0, 0), this.gearLut.getInt32(0, 1)]
@@ -220,6 +224,14 @@ export class GearRoom extends Room {
       path.arc(0, 0, BIG_CIRCLE_RADIUS, fB_bridge, fANextBridge, false)
     }
     path.closePath()
+
+    // Cut out a center hole (drawn counter-clockwise to create a hole via even-odd / winding rule)
+    if (GEAR_HOLE_RADIUS > 0) {
+      path.moveTo(GEAR_HOLE_RADIUS, 0)
+      path.arc(0, 0, GEAR_HOLE_RADIUS, 0, 2 * Math.PI, true)
+      path.closePath()
+    }
+
     return path
   }
 

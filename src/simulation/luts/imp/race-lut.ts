@@ -120,7 +120,7 @@ function _tryComputeLeaf(): Array<number> | null {
     () => ({ midSeed: -1, roomSeqs: [] }),
   )
 
-  // skip simulations and return dummy race-lut
+  // return dummy race-lut to skip simulations
   return [
     commonStartSeed,
     ...branches.map(({ midSeed }) => 12345),

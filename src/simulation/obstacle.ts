@@ -7,7 +7,6 @@
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { centeredPointsOnPath, transformPoints, type ObstacleLut } from './luts/imp/obstacle-lut'
 import { VALUE_SCALE } from './constants'
-import { Perturbations } from './perturbations'
 import type { Room } from 'rooms/room'
 import type { ShapeName } from './shapes'
 import { SHAPE_PATHS } from './shapes'

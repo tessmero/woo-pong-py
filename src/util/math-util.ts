@@ -68,6 +68,13 @@ export function gaussianRandom(mean = 0, stdev = 1) {
   return z * stdev + mean
 }
 
+
+/** Always-positive modulo (JS % can return negative values). */
+export function mod(a: number, m: number): number {
+  return ((a % m) + m) % m
+}
+
+
 // https://stackoverflow.com/a/2450976
 export function shuffle(array) {
   let currentIndex = array.length

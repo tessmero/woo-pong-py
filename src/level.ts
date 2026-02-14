@@ -7,6 +7,7 @@
 import type { RoomName } from 'imp-names'
 import { Room } from 'rooms/room'
 import { ROOM_COUNT, VALUE_SCALE } from 'simulation/constants'
+import { GasBox } from 'simulation/gas-box'
 import type { Obstacle } from 'simulation/obstacle'
 import { Perturbations } from 'simulation/perturbations'
 import type { Rectangle } from 'util/math-util'
@@ -68,6 +69,16 @@ export class Level {
 
     return result
   }
+
+  buildGasBoxes(): Array<GasBox> {
+    const result: Array<GasBox> = []
+
+    // place gas box in last room
+    const [rx, ry, rw, rh] = this.rooms.at(-1)!.bounds
+    result.push(new GasBox([rx + rw / 2, ry + rh / 2]))
+
+    return result
+  }
 }
 
 function randomRoom(roomIndex: number, bounds: Rectangle) {
@@ -96,7 +107,7 @@ function randomRoom(roomIndex: number, bounds: Rectangle) {
 const randomRoomNames: Array<RoomName> = [
   'gear-room',
 
-  // 'basic-room',
-  // 'breakout-room',
+  'basic-room',
+  'breakout-room',
   // //  'pong-room',
 ]

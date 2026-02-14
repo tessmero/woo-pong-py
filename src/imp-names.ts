@@ -45,6 +45,7 @@ export const LUT = {
     'race-lut', // precomputed races (start seed + midpoint seeds for each disk to win)
 
     'gear-lut', // positions of teeth on a spinning gear
+    'gas-box-lut',
   ],
   SOURCES: ['src/simulation/luts/imp/**/*.ts'],
 } as const satisfies ImpManifest
@@ -70,7 +71,6 @@ export const ROOM_LAYOUT = {
   NAMES: [
     'four-by-four',
     'breakout', 'honeycomb', 'three-by-three',
-
 
     'two-gears',
   ],

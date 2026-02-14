@@ -23,7 +23,6 @@ const traverse = (typeof _traverse === 'function'
 const TRACK_OBJECT_FN = '__trackObject'
 const TRACK_ARRAY_FN = '__trackArray'
 
-/* eslint-disable max-lines-per-function */
 export default function trackLiteralsPlugin(): Plugin {
   return {
     name: 'track-literals',

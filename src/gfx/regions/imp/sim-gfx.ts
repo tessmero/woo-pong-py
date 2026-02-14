@@ -10,6 +10,7 @@ import { Graphics } from 'gfx/graphics'
 import { CLICKABLE_RADSQ, VALUE_SCALE } from 'simulation/constants'
 import { drawDisk, drawDiskCrown, drawDiskFollowHalo, drawDiskHoverHalo } from 'gfx/disk-gfx-util'
 import { drawObstacles } from 'gfx/obstacle-gfx-util'
+import { drawGasBoxes } from 'gfx/gas-box-gfx-util'
 import type { Barrier } from 'simulation/barrier'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { GfxRegion } from '../gfx-region'
@@ -268,6 +269,7 @@ export class SimGfx extends GfxRegion {
     // this._drawBoundsInnerEdges(ctx, pw)
 
     drawObstacles(ctx, pw)
+    drawGasBoxes(ctx, pw)
 
     for (const room of sim.level.rooms) {
       room.drawDecorations(ctx, pw, 'sim-gfx')

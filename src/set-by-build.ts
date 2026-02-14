@@ -102,10 +102,10 @@ export const LUT_BLOBS = {
     "yRad": 160
   },
   "CIRCLE": {
-    "url": "luts/circle-5b7b6c3b59041cfd.bin",
-    "hash": "5b7b6c3b59041cfdc2b5d8028953f660285886abf1daf252ff085d9a20b8a3f7",
-    "xRad": 90,
-    "yRad": 90
+    "url": "luts/circle-9b41034b5593e2ae.bin",
+    "hash": "9b41034b5593e2aeb1104cdc10bda9cdfdc27f1c5c9cac37ad50653ccdd6d072",
+    "xRad": 80,
+    "yRad": 80
   },
   "HOLDER": {
     "url": "luts/holder-8719292fd2a83359.bin",
@@ -114,23 +114,27 @@ export const LUT_BLOBS = {
     "yRad": 268
   },
   "DISK_FRICTION_LUT": {
-    "url": "luts/disk-friction-lut-aea0a0c6df6bd93f.bin",
-    "hash": "aea0a0c6df6bd93fab5ff1e6a94629554cedcf9bd27e34358318a92b22e8a5c5"
+    "url": "luts/disk-friction-lut-b12e4c94dc44cab9.bin",
+    "hash": "b12e4c94dc44cab9d91d743190c511adfaf43e9f0f8baad57fa7650224408d62"
   },
   "DISK_DISK_LUT": {
     "url": "luts/disk-disk-lut-2516602f6d8956c3.bin",
     "hash": "2516602f6d8956c3df28766991ad0031d06cb05ca7a447ae64be9871cf070dee"
   },
   "DISK_NORMAL_LUT": {
-    "url": "luts/disk-normal-lut-3e09f6ca518cc5bd.bin",
-    "hash": "3e09f6ca518cc5bd24bf59a642dd802718959b4ba1d465a04be26efa5976edd9"
+    "url": "luts/disk-normal-lut-fb51664cb1fdff59.bin",
+    "hash": "fb51664cb1fdff59c73cd5feeab1888ed9daeb8510f23780413df41490e781b3"
   },
   "RACE_LUT": {
-    "url": "luts/race-lut-e7d872373bc6b9fb.bin",
-    "hash": "e7d872373bc6b9fbc2a1ed7daea528c2f70637bbb0ce15740955147e84fe28d3"
+    "url": "luts/race-lut-8af1e092db56303a.bin",
+    "hash": "8af1e092db56303a4a60ea7955eae8ff940a80f8b9fb8998850eda826265b931"
   },
   "GEAR_LUT": {
-    "url": "luts/gear-lut-1d221486d39ce762.bin",
-    "hash": "1d221486d39ce762ff26ac3437e836526332dd2ce4405aaffb4e83edeaad6e29"
+    "url": "luts/gear-lut-0ac5da19eeccbea9.bin",
+    "hash": "0ac5da19eeccbea9819433bfd660656f21586782c1aadea2af34fb747ffed853"
+  },
+  "GAS_BOX_LUT": {
+    "url": "luts/gas-box-lut-77f0678e92774343.bin",
+    "hash": "77f0678e92774343cc1d03ba8e6d56af69beab8f3e13dfde88938889b487c461"
   }
 };

@@ -16,7 +16,7 @@ import { TwoGears } from '../src/rooms/room-layouts/imp/two-gears'
 
 // excuse to import layouts and have them registered
 const _layouts = [
-  FourByFour, Breakout, Honeycomb, ThreeByThree, TwoGears
+  FourByFour, Breakout, Honeycomb, ThreeByThree, TwoGears,
 ]
 
 const sourceFilePath = join(__dirname, '../src/rooms/room-layouts/set-by-build.ts')

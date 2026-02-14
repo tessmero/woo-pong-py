@@ -150,7 +150,10 @@ export function drawRoundedRect(
     ctx.beginPath()
     ctx.moveTo(x + sliverPad + sliverR, y + height - sliverPad)
     ctx.lineTo(x + width - sliverPad - sliverR, y + height - sliverPad)
-    ctx.quadraticCurveTo(x + width - sliverPad, y + height - sliverPad, x + width - sliverPad, y + height - sliverPad - sliverR)
+    ctx.quadraticCurveTo(
+      x + width - sliverPad, y + height - sliverPad,
+      x + width - sliverPad, y + height - sliverPad - sliverR,
+    )
     ctx.lineTo(x + width - sliverPad, y + height - sliverPad - sliverH)
 
     // ctx.lineTo(x + sliverPad, y + height - sliverPad - sliverH)

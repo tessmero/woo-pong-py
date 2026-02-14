@@ -171,7 +171,7 @@ function computeDetailedPoints(shape: ShapeName): ReadonlyArray<Vec2> {
   } = shapeParams
 
   const isTruncated = (shape === 'flipper')
-  let {points} = centeredPointsOnPath(baseSvg, isTruncated)
+  let { points } = centeredPointsOnPath(baseSvg, isTruncated)
 
   // Distance threshold to add midpoints
   const threshold = DISK_RADIUS / 10 / scale / Math.max(xScale, yScale)
