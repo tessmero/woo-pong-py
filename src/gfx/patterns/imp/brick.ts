@@ -5,6 +5,7 @@
  */
 
 import { Pattern } from '../pattern'
+import { makeCanvas } from '../pattern-util'
 
 export class Brick extends Pattern {
   static {
@@ -25,11 +26,7 @@ function createBrickPattern(
   color2 = '#fff',
   resolution = 100,
 ) {
-  if (typeof document === 'undefined') return null
-  // Create a larger canvas for higher resolution
-  const patternCanvas = document.createElement('canvas')
-  patternCanvas.width = resolution
-  patternCanvas.height = resolution
+  const patternCanvas = makeCanvas(resolution, resolution)
   const ctx = patternCanvas.getContext('2d') as CanvasRenderingContext2D
 
   const squareSize = resolution / 10

@@ -18,6 +18,7 @@ import { DiskFrictionLut } from '../src/simulation/luts/imp/disk-friction-lut'
 import { RaceLut } from '../src/simulation/luts/imp/race-lut'
 import { GearLut } from '../src/simulation/luts/imp/gear-lut'
 import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
+import { solvePatternPositions } from './gas-box-pattern-solver'
 import { LUT } from '../src/imp-names'
 // import { getCollectedSimHashes } from '../src/simulation/luts/imp/race-lut'
 
@@ -34,6 +35,9 @@ import { GearRoom } from '../src/rooms/imp/gear-room'
 const _luts = [
   DiskDiskLut, ObstacleLut, DiskNormalLut, DiskFrictionLut, RaceLut, GearLut, GasBoxLut,
 ]
+
+// Inject the build-time pattern solver so GasBoxLut.computeLeaf() can use it
+GasBoxLut.patternSolver = solvePatternPositions
 const _layouts = [
   FourByFour,
 ]

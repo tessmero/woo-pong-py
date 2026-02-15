@@ -5,11 +5,10 @@
  */
 
 import { twopi } from 'util/math-util'
-import { Lut } from '../lut'
+import { Lut, i16 } from '../lut'
+import type { LeafSchema, LeafValues } from '../lut'
 import { LUT_BLOBS } from 'set-by-build'
 import { RESTITUTION } from 'simulation/constants'
-
-export type DiskNormalBounce = [number, number] // dx,dy
 
 const cacheScale = 1e2
 
@@ -24,15 +23,18 @@ const maxAxisSpeed = cacheScale * speedDetail
 export const speedToIndex = speed => Math.floor(speed * speedDetail / maxAxisSpeed)
 export const indexToSpeed = i => i * maxAxisSpeed / speedDetail
 
-export class DiskNormalLut extends Lut<DiskNormalBounce> {
+const dnlSchema: LeafSchema = [i16('dvx'), i16('dvy')]
+
+export class DiskNormalLut extends Lut {
   static {
     Lut.register('disk-normal-lut', {
       factory: () => new DiskNormalLut(),
       depth: 3,
-      leafLength: 2,
+      schema: dnlSchema,
     })
   }
 
+  schema = dnlSchema
   blobHash = LUT_BLOBS.DISK_NORMAL_LUT.hash
   blobUrl = LUT_BLOBS.DISK_NORMAL_LUT.url
   detail = [
@@ -41,7 +43,7 @@ export class DiskNormalLut extends Lut<DiskNormalBounce> {
     normalDetail,
   ]
 
-  computeLeaf(index: Array<number>) {
+  computeLeaf(index: Array<number>): LeafValues {
     const vx = indexToSpeed(index[0] - speedDetail)
     const vy = indexToSpeed(index[1] - speedDetail)
     const normal = indexToAngle(index[2])
@@ -49,7 +51,7 @@ export class DiskNormalLut extends Lut<DiskNormalBounce> {
   }
 }
 
-function computeCollision(vx: number, vy: number, normal: number): DiskNormalBounce {
+function computeCollision(vx: number, vy: number, normal: number): LeafValues {
   const cos = Math.cos(normal)
   const sin = Math.sin(normal)
 
@@ -57,8 +59,8 @@ function computeCollision(vx: number, vy: number, normal: number): DiskNormalBou
   const newVx = (vx - 2 * dotProduct * cos)
   const newVy = (vy - 2 * dotProduct * sin)
 
-  return [
-    Math.round((newVx - vx) * RESTITUTION),
-    Math.round((newVy - vy) * RESTITUTION),
-  ]
+  return {
+    dvx: Math.round((newVx - vx) * RESTITUTION),
+    dvy: Math.round((newVy - vy) * RESTITUTION),
+  }
 }

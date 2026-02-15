@@ -108,8 +108,8 @@ function _debugCollisionAtMousePos(
   try {
     const cell = lut.flatIndex(i, j)
     if (!lut.hasLeafAt(cell)) return
-    xAdj = lut.getInt16(cell, 0)
-    yAdj = lut.getInt16(cell, 1)
+    xAdj = lut.get(cell, 'xAdj')
+    yAdj = lut.get(cell, 'yAdj')
   }
   catch {
     return
@@ -178,8 +178,8 @@ function _debugObstacleShell(
         const y = lut.indexToYOffset(j - radj)
 
         // offset to adjust disk so it just touches obstacle
-        let xAdj = lut.getInt16(cell, 0)
-        const yAdj = lut.getInt16(cell, 1)
+        let xAdj = lut.get(cell, 'xAdj')
+        const yAdj = lut.get(cell, 'yAdj')
         if (isFlippedX) {
           xAdj *= -1
         }

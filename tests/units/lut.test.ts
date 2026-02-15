@@ -5,17 +5,20 @@
  */
 
 import { equal } from 'assert'
-import { allIndices, Lut, RegisteredLut } from '../../src/simulation/luts/lut'
+import { allIndices, Lut, type RegisteredLut, i16 } from '../../src/simulation/luts/lut'
 
-const reg: RegisteredLut<any> = { // eslint-disable-line @typescript-eslint/no-explicit-any
+const schema = [i16('a'), i16('b'), i16('c'), i16('d')]
+const reg: RegisteredLut = {
   depth: 4,
+  schema,
   leafLength: 4,
-  factory: () => ({}) as Lut<any>, // eslint-disable-line @typescript-eslint/no-explicit-any
+  fieldInfo: { a: { encodedOffset: 0, type: 'i16' }, b: { encodedOffset: 1, type: 'i16' }, c: { encodedOffset: 2, type: 'i16' }, d: { encodedOffset: 3, type: 'i16' } },
+  factory: () => ({}) as Lut,
 }
 
 const lut = {
   reg, detail: [10, 10, 10, 10],
-} as Lut<any> // eslint-disable-line @typescript-eslint/no-explicit-any
+} as Lut
 
 describe(`Lut allIndices`, function () {
   it(`returns unique indices`, function () {

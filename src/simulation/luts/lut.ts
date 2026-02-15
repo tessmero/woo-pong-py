@@ -2,6 +2,12 @@
  * @file lut.ts
  *
  * Base class for lookup tables.
+ *
+ * Each LUT declares a `schema` — an array of named fields with types ('i16' or 'i32').
+ * The schema drives:
+ *   - Encoded (blob) leaf length: i16 → 1 int16, i32 → 2 int16s (high + low word)
+ *   - Named field access via `get(cellIndex, fieldName)`
+ *   - Centralized encode/decode/validation — subclasses never override these
  */
 
 import type { ShapeName } from 'simulation/shapes'
@@ -9,26 +15,66 @@ import type { LutName } from '../../imp-names'
 import { LutEncoder } from '../lut-encoder'
 import { type ObstacleLut } from './imp/obstacle-lut'
 import { LUT_BLOBS } from 'set-by-build'
-import { INT16_MAX, INT16_MIN, OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
+import { INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
 
-export type RegisteredLut<TLeaf> = {
-  factory: () => Lut<TLeaf>
-  depth: number
-  leafLength: number
-  // detail: Array<number>
-  // blobUrl: string
-  // blobHash: string
+// ── Leaf schema types ──────────────────────────────────────────────────
+
+export type FieldType = 'i16' | 'i32'
+export type FieldDef = { readonly name: string; readonly type: FieldType }
+export type LeafSchema = ReadonlyArray<FieldDef>
+
+/** Shorthand to declare an int16 field. */
+export function i16(name: string): FieldDef { return { name, type: 'i16' } }
+
+/** Shorthand to declare an int32 field (encoded as two int16s). */
+export function i32(name: string): FieldDef { return { name, type: 'i32' } }
+
+type FieldInfo = { readonly encodedOffset: number; readonly type: FieldType }
+
+function computeEncodedLeafLength(schema: LeafSchema): number {
+  let len = 0
+  for (const f of schema) len += f.type === 'i32' ? 2 : 1
+  return len
 }
-export type Tree<TLeaf> = Array<TLeaf | Tree<TLeaf>>
 
-export abstract class Lut<TLeaf> {
+function buildFieldInfo(schema: LeafSchema): Record<string, FieldInfo> {
+  const info: Record<string, FieldInfo> = Object.create(null)
+  let offset = 0
+  for (const f of schema) {
+    info[f.name] = { encodedOffset: offset, type: f.type }
+    offset += f.type === 'i32' ? 2 : 1
+  }
+  return info
+}
+
+// ── Leaf value type ────────────────────────────────────────────────────
+
+/** All leaf values are keyed by the field names from the schema. */
+export type LeafValues = Record<string, number>
+
+// ── Registration type ──────────────────────────────────────────────────
+
+export type RegisteredLut = {
+  factory: () => Lut
+  depth: number
+  schema: LeafSchema
+  /** Encoded leaf length in int16 words (auto-computed from schema). */
+  leafLength: number
+  /** Pre-computed field info for fast named access (auto-computed from schema). */
+  fieldInfo: Record<string, FieldInfo>
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Tree = Array<any>
+
+export abstract class Lut {
   // @ts-expect-error forcefully assigned on register
   private readonly name: LutName = null
 
   // @ts-expect-error forcefully assigned on register
-  public readonly reg: RegisteredLut<TLeaf> = null
+  public readonly reg: RegisteredLut = null
 
-  public readonly tree: Tree<TLeaf> = [] as Tree<TLeaf>
+  public readonly tree: Tree = []
 
   /** Flat dense buffer: leafLength int16 values per cell, row-major order. Null cells are all zeros. */
   public data: Int16Array = new Int16Array(0)
@@ -43,7 +89,11 @@ export abstract class Lut<TLeaf> {
   abstract blobUrl: string
   abstract blobHash: string
 
-  abstract computeLeaf(index: Array<number>): TLeaf
+  /** The schema defining named fields and their types. */
+  abstract schema: LeafSchema
+
+  /** Compute the leaf values for a given multi-dimensional index. Return null for empty cells. */
+  abstract computeLeaf(index: Array<number>): LeafValues | null
 
   /** Override to return true if this LUT has antipodal symmetry: f(-x) = -f(x). */
   get symmetric(): boolean { return false }
@@ -54,17 +104,61 @@ export abstract class Lut<TLeaf> {
   /** Return the mirror of the given index. */
   mirrorIndex(_index: Array<number>): Array<number> { return _index }
 
-  /** Return the negated leaf value. */
-  mirrorLeaf(_leaf: TLeaf): TLeaf { return _leaf }
-
-  /** Encode a leaf into int16 values for blob storage. Default: values as-is. */
-  encodeLeaf(leaf: TLeaf): Array<number> {
-    return (leaf as Array<number>).map(Math.round)
+  /** Return the negated leaf value. Default: negate all fields. */
+  mirrorLeaf(leaf: LeafValues | null): LeafValues | null {
+    if (leaf === null) return null
+    const result: LeafValues = {}
+    for (const field of this.schema) {
+      result[field.name] = -leaf[field.name]
+    }
+    return result
   }
 
-  /** Decode int16 values from blob back into a leaf. Default: values as-is. */
-  decodeLeaf(values: Array<number>): TLeaf {
-    return values as unknown as TLeaf
+  /**
+   * Look up a leaf field value by name. Handles i16 and i32 transparently.
+   */
+  get(cellIndex: number, fieldName: string): number {
+    const info = this.reg.fieldInfo[fieldName]
+    const base = cellIndex * this.reg.leafLength + info.encodedOffset
+    if (info.type === 'i32') {
+      return (this.data[base] << 16) | (this.data[base + 1] & 0xFFFF)
+    }
+    return this.data[base]
+  }
+
+  /** Encode a leaf into int16 values for blob storage. Driven by schema. */
+  encodeLeaf(leaf: LeafValues): Array<number> {
+    const result: Array<number> = []
+    for (const field of this.schema) {
+      const val = Math.round(leaf[field.name])
+      if (field.type === 'i32') {
+        result.push((val >> 16) & 0xFFFF, val & 0xFFFF)
+      }
+      else {
+        result.push(val)
+      }
+    }
+    // Convert unsigned to signed int16 for Int16Array storage
+    return result.map(v => (v > INT16_MAX) ? v - 0x10000 : v)
+  }
+
+  /** Decode int16 values from blob back into a named leaf. Driven by schema. */
+  decodeLeaf(values: Array<number>): LeafValues {
+    const result: LeafValues = {}
+    let i = 0
+    for (const field of this.schema) {
+      if (field.type === 'i32') {
+        const hi = values[i] & 0xFFFF
+        const lo = values[i + 1] & 0xFFFF
+        result[field.name] = (hi << 16) | lo
+        i += 2
+      }
+      else {
+        result[field.name] = values[i]
+        i += 1
+      }
+    }
+    return result
   }
 
   /** Allocate flat data buffer and compute strides from detail array. */
@@ -101,14 +195,6 @@ export abstract class Lut<TLeaf> {
     this.nullMap[cellIndex >> 3] |= (1 << (cellIndex & 7))
   }
 
-  /**
-   * Look up an int16 leaf value by component index within a cell.
-   * cellIndex is from flatIndex(), k is the component (0..leafLength-1).
-   */
-  getInt16(cellIndex: number, k: number): number {
-    return this.data[cellIndex * this.reg.leafLength + k]
-  }
-
   public loadFromBlob(intArr: Int16Array) {
     this.initFlat()
     LutEncoder.decodeFlatInt16(intArr, this)
@@ -142,30 +228,43 @@ export abstract class Lut<TLeaf> {
     }
   }
 
-  protected assertValidLeaf(leaf: TLeaf) {
-    for (const value of (leaf as Array<number>)) {
-      try {
-        assertValidLeafValue(value)
+  private assertValidLeaf(leaf: LeafValues) {
+    for (const field of this.schema) {
+      const value = leaf[field.name]
+      if (value === undefined) {
+        throw new Error(`${this.name}: missing field '${field.name}' in leaf`)
       }
-      catch (e) {
-        throw new Error(`${this.name} computed leaf ${leaf} is invalid: ${e}`)
+      if (!Number.isInteger(value)) {
+        throw new Error(`${this.name}: field '${field.name}' is non-integer: ${value}`)
+      }
+      if (field.type === 'i32') {
+        if (value < INT32_MIN || value > INT32_MAX) {
+          throw new Error(`${this.name}: field '${field.name}' value ${value} is outside of int32 range`)
+        }
+      }
+      else {
+        if (value < INT16_MIN || value > INT16_MAX) {
+          throw new Error(`${this.name}: field '${field.name}' value ${value} is outside of int16 range`)
+        }
       }
     }
   }
 
   // static registry pattern
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static _registry: Partial<Record<LutName, RegisteredLut<any>>> = {}
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static _singletonLuts: Partial<Record<LutName, Lut<any>>> = {}
+  static _registry: Partial<Record<LutName, RegisteredLut>> = {}
+  static _singletonLuts: Partial<Record<LutName, Lut>> = {}
   static _obstacleLuts: Record<string, ObstacleLut> = {}
 
   protected constructor() {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static register(name: LutName, reg: RegisteredLut<any>): void {
+  static register(name: LutName, input: { factory: () => Lut; depth: number; schema: LeafSchema }): void {
     if (name in this._registry) {
       throw new Error(`lut already registered: '${name}'`)
+    }
+    const reg: RegisteredLut = {
+      ...input,
+      leafLength: computeEncodedLeafLength(input.schema),
+      fieldInfo: buildFieldInfo(input.schema),
     }
     this._registry[name] = reg
     if (name === 'obstacle-lut') {
@@ -182,8 +281,7 @@ export abstract class Lut<TLeaf> {
     this._singletonLuts[name] = lut
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static create(name: LutName, shapeName?: ShapeName): Lut<any> {
+  static create(name: LutName, shapeName?: ShapeName): Lut {
     if (name === 'obstacle-lut') {
       // lut is specific to obstacle shape
       if (!shapeName) {
@@ -233,21 +331,8 @@ export abstract class Lut<TLeaf> {
       if (!Object.hasOwn(this._singletonLuts, name)) {
         throw new Error(`singleton lut not registered: ${name}`)
       }
-      return this._singletonLuts[name] as Lut<any> // eslint-disable-line @typescript-eslint/no-explicit-any
+      return this._singletonLuts[name] as Lut
     }
-  }
-}
-
-function assertValidLeafValue(value: number) {
-  if (!Number.isInteger(value)) {
-    throw new Error(`value is non-integer: ${value}`)
-  }
-
-  if (value >= INT16_MIN && value <= INT16_MAX) {
-    // console.log(`${value} is in the int16 range.`)
-  }
-  else {
-    throw new Error(`${value} is outside of int16 range.`)
   }
 }
 
@@ -279,8 +364,7 @@ async function fetchBlobWithIntegrityCheck(url: string, expectedHash?: string): 
   return new Int16Array(arrayBuffer)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function* allIndices(lut: Lut<any>): Generator<Array<number>> {
+export function* allIndices(lut: Lut): Generator<Array<number>> {
   const nLevels = lut.reg.depth
   const index: Array<number> = Array.from({ length: nLevels }, () => 0)
 
@@ -292,15 +376,15 @@ export function* allIndices(lut: Lut<any>): Generator<Array<number>> {
   }
 }
 
-export function getFromTree<TLeaf>(tree: Tree<TLeaf>, index: Array<number>): TLeaf {
-  let node: Tree<TLeaf> | TLeaf = tree
+export function getFromTree(tree: Tree, index: Array<number>): LeafValues | null {
+  let node: unknown = tree
   for (const i of index) {
-    node = (node as Tree<TLeaf>)[i]
+    node = (node as Array<unknown>)[i]
   }
-  return node as TLeaf
+  return node as LeafValues | null
 }
 
-export function assignIndex<TLeaf>(tree: Tree<TLeaf>, index: Array<number>, value: TLeaf) {
+export function assignIndex(tree: Tree, index: Array<number>, value: LeafValues | null) {
   if (index.length === 0) throw new Error('poop')
 
   if (index.length === 1) {
@@ -313,14 +397,11 @@ export function assignIndex<TLeaf>(tree: Tree<TLeaf>, index: Array<number>, valu
     while (tree.length <= index[0]) {
       tree.push([])
     }
-    assignIndex(tree[index[0]] as Tree<TLeaf>, index.slice(1), value)
+    assignIndex(tree[index[0]] as Tree, index.slice(1), value)
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function advance(index: Array<number>, lut: Lut<any>, i: number): boolean {
-  // let i = index.length - 1
-
+function advance(index: Array<number>, lut: Lut, i: number): boolean {
   const newVal = index[i] + 1
   if (newVal >= lut.detail[i]) {
     if (i === 0) {

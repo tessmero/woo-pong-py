@@ -1,15 +1,16 @@
 /**
- * @file diamond-a.ts
+ * @file diamond-b.ts
  *
  * Diamond pattern.
  */
 
 import { pio4 } from 'util/math-util'
 import { Pattern } from '../pattern'
+import { makeCanvas } from '../pattern-util'
 
-export class DiamondA extends Pattern {
+export class DiamondB extends Pattern {
   static {
-    Pattern.register('diamond-a', () => new DiamondA())
+    Pattern.register('diamond-b', () => new DiamondB())
   }
 
   public override getScale(): number {
@@ -26,14 +27,10 @@ function createDiamondPattern(
   color2 = '#fff',
   resolution = 512,
 ) {
-  if (typeof document === 'undefined') return null
-  // Create a larger canvas for higher resolution
-  const patternCanvas = document.createElement('canvas')
-  patternCanvas.width = resolution
-  patternCanvas.height = resolution
+  const patternCanvas = makeCanvas(resolution, resolution)
   const ctx = patternCanvas.getContext('2d') as CanvasRenderingContext2D
 
-  const squareSize = resolution / 6 * Math.SQRT2
+  const squareSize = resolution / 8 * Math.SQRT2
   const thickness = squareSize / 8
 
   ctx.fillStyle = color2
@@ -62,12 +59,10 @@ function createDiamondPattern(
     j = 0
     for (y = x0; y < x1; y += squareSize) {
       if ((i + j) % 2) {
-        sr(1)
-        sr(5)
+        sr(2)
       }
       else {
-        sr(3)
-        sr(7)
+        sr(4)
       }
       j++
     }

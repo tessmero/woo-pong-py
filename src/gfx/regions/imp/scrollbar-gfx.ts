@@ -16,9 +16,9 @@ import { fillFrameBetweenRectAndRounded, strokeInnerRoundedRect } from 'gfx/canv
 import type { Barrier } from 'simulation/barrier'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import type { PatternName } from 'imp-names'
-import { buildFillStyle } from 'gfx/pattern/pattern-util'
+import { buildFillStyle } from 'gfx/patterns/pattern-util'
 import { GfxRegion } from '../gfx-region'
-import { Pattern } from 'gfx/pattern/pattern'
+import { Pattern } from 'gfx/patterns/pattern'
 
 const buffer = (typeof document === 'undefined')
   ? null
@@ -232,7 +232,7 @@ export class ScrollbarGfx extends GfxRegion {
     const gapLength = baseLength * (1 - dashShrink)
     _dash[0] = dashLength
     _dash[1] = gapLength
-    ctx.setLineDash(_dash)
+    if (!Scrollbar.isLocked) ctx.setLineDash(_dash)
     ctx.lineCap = 'round'
 
     ctx.lineDashOffset = dashLength / 2

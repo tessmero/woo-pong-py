@@ -1,25 +1,17 @@
 /**
  * @file lut-encoder.ts
  *
- * Utility to encode and decode the collision cache structure to and from a binary blob file.
+ * Utility to encode and decode lookup table structures to and from binary blob files.
  */
 
 import type { Lut } from './luts/lut'
 import { allIndices, getFromTree, type Tree } from './luts/lut'
 
-export type CachedCollision = null | [number, number, number, number] // x,y,dx,dy
-export const speedDetail = 20 // half size of cache along relative vx and vy
-
-export const offsetDetail = 10 // hald size of cache along dx and dy
-
-export type DDCollisionTree = Array<Array<Array<Array<CachedCollision>>>>
-
 export class LutEncoder {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static encode(tree: Tree<any>, lut?: Lut<any>): Int16Array {
+  static encode(tree: Tree, lut: Lut): Int16Array {
     const chunks: Array<number> = []
 
-    if (lut?.symmetric) {
+    if (lut.symmetric) {
       // Only encode canonical half; mirror is reconstructed at decode time
       for (const index of allIndices(lut)) {
         if (!lut.isCanonical(index)) continue
@@ -47,7 +39,7 @@ export class LutEncoder {
 
   static decode(
     blob: Int16Array,
-    lut: Lut<any>, // eslint-disable-line @typescript-eslint/no-explicit-any
+    lut: Lut,
   ) {
     let pos = 0
     const { detail, tree, reg } = lut
@@ -57,8 +49,7 @@ export class LutEncoder {
     if (lut.symmetric) {
       const index = new Array<number>(depth).fill(0)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      function buildSymmetric(arr: Tree<any>, level: number): void {
+      function buildSymmetric(arr: Tree, level: number): void {
         const size = detail[level]
         arr.length = size
         if (level === depth - 1) {
@@ -84,7 +75,7 @@ export class LutEncoder {
         else {
           for (let i = 0; i < size; i++) {
             index[level] = i
-            const child: Tree<any> = [] // eslint-disable-line @typescript-eslint/no-explicit-any
+            const child: Tree = []
             arr[i] = child
             buildSymmetric(child, level + 1)
           }
@@ -94,8 +85,7 @@ export class LutEncoder {
       buildSymmetric(tree, 0)
     }
     else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      function buildFlat(arr: Tree<any>, level: number): void {
+      function buildFlat(arr: Tree, level: number): void {
         const size = detail[level]
         arr.length = size
         if (level === depth - 1) {
@@ -113,7 +103,7 @@ export class LutEncoder {
         }
         else {
           for (let i = 0; i < size; i++) {
-            const child: Tree<any> = [] // eslint-disable-line @typescript-eslint/no-explicit-any
+            const child: Tree = []
             arr[i] = child
             buildFlat(child, level + 1)
           }
@@ -128,8 +118,7 @@ export class LutEncoder {
    * Decode blob directly into a flat Int16Array on the lut.
    * Much faster than building a nested tree — no per-cell allocations.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static decodeFlatInt16(blob: Int16Array, lut: Lut<any>) {
+  static decodeFlatInt16(blob: Int16Array, lut: Lut) {
     const { data, detail, reg, strides } = lut
     const leafLen = reg.leafLength
     const depth = detail.length
@@ -185,22 +174,18 @@ export class LutEncoder {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function encodeChunks(tree: Tree<any>, chunks: Array<number>, lut?: Lut<any>) {
+function encodeChunks(tree: Tree, chunks: Array<number>, lut: Lut) {
   for (const value of tree) {
     if (value === null) {
       chunks.push(0) // Null marker
     }
-    else if (typeof value[0] === 'number') {
+    else if (!Array.isArray(value)) {
+      // It's a leaf object (Record<string, number>)
       chunks.push(1) // Non-null marker
-      if (lut) {
-        chunks.push(...lut.encodeLeaf(value))
-      }
-      else {
-        chunks.push(...value.map(Math.round))
-      }
+      chunks.push(...lut.encodeLeaf(value))
     }
     else {
+      // It's a subtree
       encodeChunks(value, chunks, lut)
     }
   }

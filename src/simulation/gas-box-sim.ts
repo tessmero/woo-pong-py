@@ -9,7 +9,6 @@
  */
 
 import { GAS_BOX_HEIGHT, GAS_BOX_SOLVE_STEPS, GAS_BOX_WIDTH, N_GAS_BOX_PARTICLES } from './gas-box-constants'
-import type { GasBoxLut } from './luts/imp/gas-box-lut'
 import { Lut } from './luts/lut'
 
 export class GasBoxSim {
@@ -30,7 +29,7 @@ export class GasBoxSim {
    */
   readonly wrapped: Uint8Array
 
-  constructor() {
+  constructor(solutionIndex = 0) {
     const n = N_GAS_BOX_PARTICLES
     this.px = new Int32Array(n)
     this.py = new Int32Array(n)
@@ -38,21 +37,18 @@ export class GasBoxSim {
     this.dy = new Int32Array(n)
     this.wrapped = new Uint8Array(n)
 
-    const lut = Lut.create('gas-box-lut') as GasBoxLut
+    const lut = Lut.create('gas-box-lut')
 
-    let indexInLeaf = 0
     for (let i = 0; i < n; i++) {
-      const xHi = lut.getInt16(0, indexInLeaf++) & 0xFFFF
-      const xLo = lut.getInt16(0, indexInLeaf++) & 0xFFFF
-      const yHi = lut.getInt16(0, indexInLeaf++) & 0xFFFF
-      const yLo = lut.getInt16(0, indexInLeaf++) & 0xFFFF
-      this.px[i] = (xHi << 16) | xLo
-      this.py[i] = (yHi << 16) | yLo
-      this.dx[i] = lut.getInt16(0, indexInLeaf++)
-      this.dy[i] = lut.getInt16(0, indexInLeaf++)
-      if (i === 0) {
-        console.log('decode gas box particle', this.px[i], this.py[i], this.dx[i], this.dy[i])
-      }
+      this.px[i] = lut.get(solutionIndex, `p${i}_x`)
+      this.py[i] = lut.get(solutionIndex, `p${i}_y`)
+      this.dx[i] = lut.get(solutionIndex, `p${i}_vx`)
+      this.dy[i] = lut.get(solutionIndex, `p${i}_vy`)
+
+      // // debug
+      // if (i === 0) {
+      //   console.log('decode gas box particle', this.px[i], this.py[i], this.dx[i], this.dy[i])
+      // }
     }
   }
 

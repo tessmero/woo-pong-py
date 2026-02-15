@@ -104,3 +104,4 @@ export const PATTERN = {
   SOURCES: ['src/gfx/patterns/imp'],
 } as const satisfies ImpManifest
 export type PatternName = (typeof PATTERN.NAMES)[number]
+export const SHUFFLED_PATTERN_NAMES = [...PATTERN.NAMES]

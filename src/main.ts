@@ -200,8 +200,7 @@ async function _initAssets(loadingLabel: HTMLElement) {
   finishTask()
 
   // Collect all LUT instances
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const luts: Array<Lut<any>> = []
+  const luts: Array<Lut> = []
   for (const lutName of LUT.NAMES) {
     if (lutName === 'obstacle-lut') {
       for (const shapeName of Object.keys(SHAPE_PATHS)) {

@@ -87,7 +87,7 @@ export class Level {
 
     // place gas box in last room
     const [rx, ry, rw, rh] = this.rooms.at(-1)!.bounds
-    result.push(new GasBox([rx + rw / 2, ry + rh / 2]))
+    result.push(new GasBox([rx + rw / 2, ry + rh / 4]))
 
     return result
   }

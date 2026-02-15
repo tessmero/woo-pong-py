@@ -6,7 +6,6 @@
 
 import { Room } from 'rooms/room'
 import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
-import type { GearLut } from 'simulation/luts/imp/gear-lut'
 import {
   N_GEAR_FRAMES, N_GEAR_TEETH, GEAR_ORBIT_RADIUS,
   BIG_CIRCLE_RADIUS, TOOTH_RADIUS,
@@ -46,7 +45,7 @@ export class GearRoom extends Room {
   private roomCenter: Vec2 = [0, 0]
 
   private readonly circleLut = Lut.create('obstacle-lut', 'circle') as ObstacleLut
-  private readonly gearLut = Lut.create('gear-lut') as GearLut
+  private readonly gearLut = Lut.create('gear-lut')
 
   override step() {
     for (const gear of this.gears) {
@@ -60,7 +59,7 @@ export class GearRoom extends Room {
       const toothDelta = N_GEAR_FRAMES / N_GEAR_TEETH
       for (let toothIndex = 0; toothIndex < N_GEAR_TEETH; toothIndex++) {
         const i = (gear.frameIndex + toothDelta * toothIndex) % N_GEAR_FRAMES
-        const offset: Vec2 = [this.gearLut.getInt32(i, 0), this.gearLut.getInt32(i, 1)]
+        const offset: Vec2 = [this.gearLut.get(i, 'x'), this.gearLut.get(i, 'y')]
 
         const cx = centerPos[0] + offset[0]
         const rx = cx - this.circleLut.maxOffsetX
@@ -173,7 +172,7 @@ export class GearRoom extends Room {
     const rFillet = GEAR_FILLET_RADIUS
 
     // build at frameIndex=0, centered at origin
-    const offset0: Vec2 = [this.gearLut.getInt32(0, 0), this.gearLut.getInt32(0, 1)]
+    const offset0: Vec2 = [this.gearLut.get(0, 'x'), this.gearLut.get(0, 'y')]
     this._baseTheta = Math.atan2(offset0[1], offset0[0])
 
     // Fillet centers lie at the intersection of two circles:
@@ -188,11 +187,11 @@ export class GearRoom extends Room {
 
     for (let i = 0; i < N; i++) {
       const lutIndex = (toothDelta * i) % N_GEAR_FRAMES
-      const offset: Vec2 = [this.gearLut.getInt32(lutIndex, 0), this.gearLut.getInt32(lutIndex, 1)]
+      const offset: Vec2 = [this.gearLut.get(lutIndex, 'x'), this.gearLut.get(lutIndex, 'y')]
       const theta = Math.atan2(offset[1], offset[0])
 
       const nextLutIndex = (toothDelta * ((i + 1) % N)) % N_GEAR_FRAMES
-      const nextOffset: Vec2 = [this.gearLut.getInt32(nextLutIndex, 0), this.gearLut.getInt32(nextLutIndex, 1)]
+      const nextOffset: Vec2 = [this.gearLut.get(nextLutIndex, 'x'), this.gearLut.get(nextLutIndex, 'y')]
       const thetaNext = Math.atan2(nextOffset[1], nextOffset[0])
 
       const cosT = Math.cos(theta)

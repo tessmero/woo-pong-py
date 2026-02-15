@@ -12,8 +12,8 @@ import { CROWN_FILL, Graphics } from 'gfx/graphics'
 import type { Disk } from 'simulation/disk'
 import { GfxRegion } from '../gfx-region'
 import type { PatternName } from 'imp-names'
-import { Pattern } from 'gfx/pattern/pattern'
-import { buildFillStyle } from 'gfx/pattern/pattern-util'
+import { Pattern } from 'gfx/patterns/pattern'
+import { buildFillStyle } from 'gfx/patterns/pattern-util'
 
 const _lastWidth = -1
 const _lastHeight = -1

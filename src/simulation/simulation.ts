@@ -14,7 +14,7 @@ import { type Rectangle } from 'util/math-util'
 import { Perturbations } from './perturbations'
 import { Level } from 'level'
 import { SimHistory } from './sim-history'
-import { PATTERN } from 'imp-names'
+import { PATTERN, SHUFFLED_PATTERN_NAMES } from 'imp-names'
 import { GAS_BOX_SOLVE_STEPS } from './gas-box-constants'
 import { GasBoxSim } from './gas-box-sim'
 import { checkSimHash } from './sim-hash'
@@ -57,6 +57,7 @@ export class Simulation {
   finalStepCount = INT32_MAX
 
   branchSeed = -1
+  selectedDiskIndex = -1 // index of first disk to hit finish
   winningDiskIndex = -1 // index of first disk to hit finish
 
   /** Expected hashes at interval steps, set from build-time data for determinism checking. */
@@ -77,7 +78,7 @@ export class Simulation {
       scaledPars[0] *= VALUE_SCALE
       scaledPars[1] *= VALUE_SCALE
       const disk = Disk.fromJson(scaledPars)
-      disk.pattern = PATTERN.NAMES[diskIndex % PATTERN.NAMES.length]
+      disk.pattern = SHUFFLED_PATTERN_NAMES[diskIndex % SHUFFLED_PATTERN_NAMES.length]
       diskIndex++
       return disk
     })
@@ -106,8 +107,11 @@ export class Simulation {
     }
 
     if (this._stepCount + GAS_BOX_SOLVE_STEPS === this.finalStepCount) {
-      console.log('start final simulation for gas box')
-      this.gasBoxes[0].setFinalSimulation(new GasBoxSim())
+      const diskIndex = this.selectedDiskIndex
+      const disk = this.disks[diskIndex]
+      const solutionIndex = disk ? PATTERN.NAMES.indexOf(disk.pattern) : 0
+      console.log('start final simulation for gas box', solutionIndex)
+      this.gasBoxes[0].setFinalSimulation(new GasBoxSim(solutionIndex))
     }
 
     // // update rooms

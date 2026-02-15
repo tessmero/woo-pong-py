@@ -5,7 +5,8 @@
  */
 
 import { DISK_RADIUS, INT16_MAX, INT16_MIN, OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
-import { Lut } from '../lut'
+import { Lut, i16 } from '../lut'
+import type { LeafSchema, LeafValues } from '../lut'
 import { pio2, twopi, type Vec2 } from 'util/math-util'
 import { pointsOnPath } from 'points-on-path'
 import type { ShapeName, ShapeParams } from 'simulation/shapes'
@@ -15,33 +16,27 @@ export const normalDetail = 100 // number of angle steps
 export const angleToIndex = (angle) => {
   return (Math.floor(angle * normalDetail / twopi) % normalDetail + normalDetail) % normalDetail
 }
-// const indexToAngle = i => i * twopi / normalDetail
 
-export type ObstacleCollision = null | [number, number, number] // x adjust, y adjust, normal index
+const obsSchema: LeafSchema = [i16('xAdj'), i16('yAdj'), i16('normIndex')]
 
-export class ObstacleLut extends Lut<ObstacleCollision> {
+export class ObstacleLut extends Lut {
   static {
     Lut.register('obstacle-lut', {
       factory: () => new ObstacleLut(),
-      // blobHash: OBSTACLE_LUT_BLOB_HASH,
-      // blobUrl: OBSTACLE_LUT_BLOB_URL,
       depth: 2,
-      leafLength: 3,
-      // detail: [
-      //   obsOffsetDetail * 2 + 1,
-      //   obsOffsetDetail * 2 + 1,
-      // ],
+      schema: obsSchema,
     })
   }
 
+  schema = obsSchema
   // assigned with shape-specific values in create and computeAll
   shape: ShapeName = 'roundrect'
   blobHash = ''
   blobUrl = ''
-  obsOffsetDetailX = 1// 00 // half size of cache along dx and dy
-  obsOffsetDetailY = 1// 00 // half size of cache along dx and dy
-  maxOffsetX = 1// circleObsRadius + DISK_RADIUS // in-simulation distance at edge of bounds
-  maxOffsetY = 1// circleObsRadius + DISK_RADIUS // in-simulation distance at edge of bounds
+  obsOffsetDetailX = 1
+  obsOffsetDetailY = 1
+  maxOffsetX = 1
+  maxOffsetY = 1
   detail = [
     this.obsOffsetDetailX * 2 + 1,
     this.obsOffsetDetailY * 2 + 1,
@@ -98,7 +93,7 @@ export class ObstacleLut extends Lut<ObstacleCollision> {
     await super.loadAll() // uses this.detail to iterate over indices
   }
 
-  computeLeaf(index: Array<number>): ObstacleCollision {
+  computeLeaf(index: Array<number>): LeafValues | null {
     const dx = this.indexToXOffset(index[0] - this.obsOffsetDetailX)
     const dy = this.indexToYOffset(index[1] - this.obsOffsetDetailY)
     return computeCollision(this, [dx, dy])
@@ -247,7 +242,7 @@ function findNearestPoint(points: ReadonlyArray<Vec2>, pos: Vec2): number {
   return nearestPointIndex
 }
 
-function computeCollision(lut: ObstacleLut, pos: Vec2): ObstacleCollision {
+function computeCollision(lut: ObstacleLut, pos: Vec2): LeafValues | null {
   const { shape } = lut
   // check if inside of obstacle
   // const isInside = this.path.contains(...pos)
@@ -295,10 +290,11 @@ function computeCollision(lut: ObstacleLut, pos: Vec2): ObstacleCollision {
     //   Math.round(offsetPoint[1] - pos[1]),
     // ]
 
-    return [
-      offset[0], offset[1],
-      angleToIndex(normAngle),
-    ]
+    return {
+      xAdj: offset[0],
+      yAdj: offset[1],
+      normIndex: angleToIndex(normAngle),
+    }
   }
   else {
     // not colliding

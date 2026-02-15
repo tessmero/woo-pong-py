@@ -6,11 +6,9 @@
  * visual transition between them.
  */
 
-import { VALUE_SCALE } from './constants'
 import { GAS_BOX_HEIGHT, GAS_BOX_SOLVE_STEPS, GAS_BOX_WIDTH, N_GAS_BOX_PARTICLES } from './gas-box-constants'
 import { GasBoxSim } from './gas-box-sim'
 import type { Rectangle, Vec2 } from 'util/math-util'
-
 
 export class GasBox {
   /** Bounding rectangle in sim-units [x, y, w, h]. */
@@ -44,8 +42,8 @@ export class GasBox {
     public readonly pos: Vec2,
   ) {
     this.boundingRect = [
-      pos[0] - GAS_BOX_WIDTH/2,
-      pos[1] - GAS_BOX_HEIGHT/2,
+      pos[0] - GAS_BOX_WIDTH / 2,
+      pos[1] - GAS_BOX_HEIGHT / 2,
       GAS_BOX_WIDTH, GAS_BOX_HEIGHT,
     ]
     this.initialSim = new GasBoxSim()
@@ -62,7 +60,7 @@ export class GasBox {
    * swap is hard to notice.
    */
   setFinalSimulation(finalSim: GasBoxSim) {
-    if( this._finalSim ) return
+    if (this._finalSim) return
 
     this._finalSim = finalSim
     this._transitionStep = 0
@@ -71,7 +69,6 @@ export class GasBox {
 
   /** Advance all active simulations by one step. */
   step() {
-
     // always step the initial sim
     this.initialSim.step()
 
@@ -87,9 +84,10 @@ export class GasBox {
       // TRANSITION_STEPS, so more particles become swap-eligible over time.
       const initCount = this.initialSim.count
       const finalCount = this._finalSim.count
-      const progress = Math.min(this._transitionStep / GAS_BOX_SOLVE_STEPS, 1)
-
-      
+      let progress = Math.min(this._transitionStep / GAS_BOX_SOLVE_STEPS, 1)
+      if (progress > 0.5) {
+        progress = Math.min(1, 0.5 + 2 * (progress - 0.5))
+      }
 
       const eligibleInitial = Math.floor(progress * initCount)
       const eligibleFinal = Math.floor(progress * finalCount)
@@ -97,8 +95,7 @@ export class GasBox {
       // if( eligibleFinal % 100 === 0 ){
       //   console.log('gas box eligible final', eligibleFinal)
       // }
-      
-      
+
       // retire initial particles that just wrapped and are eligible
       for (let i = 0; i < eligibleInitial; i++) {
         if (this.initialSim.wrapped[i] && !this.initialRetired[i]) {

@@ -5,14 +5,14 @@
  */
 
 import { LUT_BLOBS } from 'set-by-build'
-import { Lut } from '../lut'
+import { Lut, i32 } from '../lut'
+import type { LeafSchema, LeafValues } from '../lut'
 import { DISK_COUNT, INT32_MAX, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
-import { Lut32 } from '../lut-32'
 import { GAS_BOX_SOLVE_STEPS } from 'simulation/gas-box-constants'
 
-export type RaceLeaf = Array<number>
+export type RaceLeaf = LeafValues
 
 const nRaces = 1
 const maxStepsTotal = 1e7
@@ -20,23 +20,26 @@ const maxStepsTotal = 1e7
 export type BranchDatum = {
   midSeed: number
   finalStepCount: number
-  // roomSeqs: Array<Array<number> | null>
 }
 
-const leafLength
-  = 1 // start seed
-    + 2 * DISK_COUNT // mid seed and final step count for each disk
-    // + BOBRICK_COUNT // value for each breakout brick
+/** Schema: startSeed (i32) + per-disk midSeed (i32) and finalStepCount (i32). */
+const raceSchema: LeafSchema = [
+  i32('startSeed'),
+  ...Array.from({ length: DISK_COUNT }, (_, d) => [
+    i32(`d${d}_midSeed`), i32(`d${d}_finalStepCount`),
+  ]).flat(),
+]
 
-export class RaceLut extends Lut32<RaceLeaf> {
+export class RaceLut extends Lut {
   static {
     Lut.register('race-lut', {
       factory: () => new RaceLut(),
       depth: 1,
-      leafLength: leafLength * 2,
+      schema: raceSchema,
     })
   }
 
+  schema = raceSchema
   detail = [nRaces]
 
   // ts-expect-error race lut
@@ -52,7 +55,7 @@ export class RaceLut extends Lut32<RaceLeaf> {
     lastReport: performance.now(),
   }
 
-  computeLeaf(index: Array<number>): Array<number> {
+  computeLeaf(index: Array<number>): LeafValues {
     const raceIndex = index[0]
     const stats = RaceLut._raceStats
     if (raceIndex === 0 && stats.solved !== 0) {
@@ -117,7 +120,7 @@ export class RaceLut extends Lut32<RaceLeaf> {
 
 let nextSeed = Perturbations.randomSeed()
 
-function _tryComputeLeaf(): Array<number> | null {
+function _tryComputeLeaf(): LeafValues | null {
   // console.log('race-lut comput eleaf')
 
   const commonStartSeed = nextSeed++
@@ -181,7 +184,9 @@ function _tryComputeLeaf(): Array<number> | null {
     // make sure level solution leaves enough time for gas box to resolve
     const minSteps = STEPS_BEFORE_BRANCH + GAS_BOX_SOLVE_STEPS
     if (sim.stepCount < (minSteps)) {
-      throw new Error(`level finished ${minSteps - sim.stepCount} steps too early`)
+      // throw new Error(`level finished ${minSteps - sim.stepCount} steps too early`)
+      console.log(`level finished ${minSteps - sim.stepCount} steps too early`)
+      break // give up on this starting seed
     }
 
     branches[sim.winningDiskIndex] = {
@@ -190,10 +195,10 @@ function _tryComputeLeaf(): Array<number> | null {
       // roomSeqs: roomSeqs,
     }
 
-    // apply placeholder data for all disks to end early
-    for (let i = 0; i < DISK_COUNT; i++) {
-      branches[i] = branches[sim.winningDiskIndex]
-    }
+    // // use as dummy data for all disks to trigger early finish
+    // for (let i = 0; i < DISK_COUNT; i++) {
+    //   branches[i] = branches[sim.winningDiskIndex]
+    // }
 
     if (_stepCount > maxStepsTotal) {
       // console.log('')
@@ -233,14 +238,10 @@ function _tryComputeLeaf(): Array<number> | null {
   // console.log(`found seeds for race with ${DISK_COUNT} disks`
   //   + ` after ${simCount} simulations and ${stepCount} total steps`)
 
-  const result = [
-    commonStartSeed,
-    ...branches.flatMap(({ midSeed, finalStepCount }) => [midSeed, finalStepCount]),
-    // ...breakoutSolution,
-  ]
-
-  if (result.length !== leafLength) {
-    throw new Error(`result length (${result.length}) doesn't match leaf length ${leafLength}`)
+  const result: LeafValues = { startSeed: commonStartSeed }
+  for (let d = 0; d < DISK_COUNT; d++) {
+    result[`d${d}_midSeed`] = branches[d].midSeed
+    result[`d${d}_finalStepCount`] = branches[d].finalStepCount
   }
 
   // console.log(result)

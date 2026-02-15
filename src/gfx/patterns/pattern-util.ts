@@ -2,11 +2,29 @@
  * @file pattern-util.ts
  *
  * Pattern util.
+ * Works in both browser (document.createElement) and Node.js (canvas package).
  */
 
 import type { PatternName } from 'imp-names'
 import { Pattern } from './pattern'
 import { VALUE_SCALE } from 'simulation/constants'
+
+/**
+ * Create an HTMLCanvasElement (browser) or node-canvas Canvas (Node.js).
+ * Returns a canvas-like object that supports getContext('2d').
+ */
+export function makeCanvas(width: number, height: number): HTMLCanvasElement {
+  if (typeof document !== 'undefined') {
+    const c = document.createElement('canvas')
+    c.width = width
+    c.height = height
+    return c
+  }
+  // Node.js — use the 'canvas' package
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { createCanvas } = require('canvas')
+  return createCanvas(width, height) as HTMLCanvasElement
+}
 
 export function buildFillStyle(
   name: PatternName,
@@ -19,7 +37,8 @@ export function buildFillStyle(
   const scale = scaleMult * VALUE_SCALE * pattern.getScale()
 
   const pctx = cvs.getContext('2d') as CanvasRenderingContext2D
-  const result = pctx.createPattern(cvs, 'repeat') as CanvasPattern
+  const result = pctx.createPattern(cvs, 'repeat')
+  if (!result || typeof DOMMatrix === 'undefined') return name // Node.js fallback
   result.setTransform(new DOMMatrix().scale(scale, scale))
   return result
 }
@@ -28,12 +47,9 @@ export function createHexDotsPattern(
   dotColor = '#000', bgColor = '#fff',
   dotRadius = 240, spacing = 640,
 ) {
-  if (typeof document === 'undefined') return null
-  const c = document.createElement('canvas')
-  const ctx = c.getContext('2d') as CanvasRenderingContext2D
   const h = spacing * Math.sqrt(3) / 2
-  c.width = spacing * 2
-  c.height = h * 2
+  const c = makeCanvas(spacing * 2, Math.round(h * 2))
+  const ctx = c.getContext('2d') as CanvasRenderingContext2D
   ctx.fillStyle = bgColor
   ctx.fillRect(0, 0, c.width, c.height)
   for (let r = 0; r < 2; r++) {
@@ -60,12 +76,8 @@ export function createHorizontalStripePattern(
   stripeColor = '#000', bgColor = '#fff',
   stripeHeight = 1, gapHeight = 1,
 ) {
-  if (typeof document === 'undefined') return null
-  const patternCanvas = document.createElement('canvas')
   const totalHeight = stripeHeight + gapHeight
-
-  patternCanvas.width = 1 // Only need 1px width for horizontal stripes
-  patternCanvas.height = totalHeight
+  const patternCanvas = makeCanvas(1, totalHeight)
 
   const pctx = patternCanvas.getContext('2d') as CanvasRenderingContext2D
 
@@ -90,13 +102,8 @@ export function createVerticalStripePattern(
   stripeWidth = 1,
   gapWidth = 1,
 ) {
-  if (typeof document === 'undefined') return null
-  const patternCanvas = document.createElement('canvas')
   const totalWidth = stripeWidth + gapWidth
-
-  // Only need full pattern width; 1px height is enough
-  patternCanvas.width = totalWidth
-  patternCanvas.height = 1
+  const patternCanvas = makeCanvas(totalWidth, 1)
 
   const pctx = patternCanvas.getContext('2d') as CanvasRenderingContext2D
 
@@ -120,11 +127,7 @@ export function createCheckeredPattern(
   squareSize = 512 / 8,
   resolution = 512,
 ) {
-  if (typeof document === 'undefined') return null
-  // Create a larger canvas for higher resolution
-  const patternCanvas = document.createElement('canvas')
-  patternCanvas.width = resolution
-  patternCanvas.height = resolution
+  const patternCanvas = makeCanvas(resolution, resolution)
   const pctx = patternCanvas.getContext('2d') as CanvasRenderingContext2D
 
   pctx.fillStyle = 'white'

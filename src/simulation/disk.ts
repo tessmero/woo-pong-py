@@ -14,7 +14,7 @@ import { DISK_RADIUS } from './constants'
 import { playImpact } from 'audio/collision-sounds'
 import type { PatternName } from 'imp-names'
 
-let _dnlCache: Lut<unknown> | null = null
+let _dnlCache: Lut | null = null
 function _getDnl() {
   return _dnlCache ??= Lut.create('disk-normal-lut')
 }
@@ -135,9 +135,9 @@ export class Disk {
           obs.room?.obstacleHit(obs, stepIndex)
 
           // collided with obstacle
-          const xAdj = obs.lut.getInt16(obsCell, 0)
-          const yAdj = obs.lut.getInt16(obsCell, 1)
-          const normIndex = obs.lut.getInt16(obsCell, 2)
+          const xAdj = obs.lut.get(obsCell, 'xAdj')
+          const yAdj = obs.lut.get(obsCell, 'yAdj')
+          const normIndex = obs.lut.get(obsCell, 'normIndex')
 
           let vxi = speedToIndex(ndx * (obs.isFlippedX ? -1 : 1))
           let vyi = speedToIndex(ndy)
@@ -150,8 +150,8 @@ export class Disk {
 
           const dnl = _getDnl()
           const dnlCell = dnl.flatIndex(vxi + speedDetail, vyi + speedDetail, normIndex)
-          const vxAdj = dnl.getInt16(dnlCell, 0)
-          const vyAdj = dnl.getInt16(dnlCell, 1)
+          const vxAdj = dnl.get(dnlCell, 'dvx')
+          const vyAdj = dnl.get(dnlCell, 'dvy')
           ndx += vxAdj * (obs.isFlippedX ? -1 : 1)
           ndy += vyAdj
 

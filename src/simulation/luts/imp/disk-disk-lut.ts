@@ -5,7 +5,8 @@
  */
 
 import { LUT_BLOBS } from 'set-by-build'
-import { Lut } from '../lut'
+import { Lut, i16 } from '../lut'
+import type { LeafSchema, LeafValues } from '../lut'
 import type { Disk } from 'simulation/disk'
 import { DISK_RADIUS, INT16_MAX, INT16_MIN } from 'simulation/constants'
 import { playImpact } from 'audio/collision-sounds'
@@ -14,8 +15,6 @@ let _ddlCache: DiskDiskLut | null = null
 function _getDdl() {
   return _ddlCache ??= Lut.create('disk-disk-lut') as DiskDiskLut
 }
-
-export type DiskDiskBounce = null | [number, number, number, number] // x,y,dx,dy
 
 const cacheScale = 1e2
 
@@ -29,15 +28,18 @@ const maxOffset = 2 * DISK_RADIUS
 export const offsetToIndex = offset => Math.floor(offset * offsetDetail / maxOffset)
 export const indexToOffset = i => i * maxOffset / offsetDetail
 
-export class DiskDiskLut extends Lut<DiskDiskBounce> {
+const ddlSchema: LeafSchema = [i16('cx'), i16('cy'), i16('cdx'), i16('cdy')]
+
+export class DiskDiskLut extends Lut {
   static {
     Lut.register('disk-disk-lut', {
       depth: 4,
-      leafLength: 4,
+      schema: ddlSchema,
       factory: () => new DiskDiskLut(),
     })
   }
 
+  schema = ddlSchema
   blobUrl = LUT_BLOBS.DISK_DISK_LUT.url
   blobHash = LUT_BLOBS.DISK_DISK_LUT.hash
   detail = [
@@ -65,12 +67,7 @@ export class DiskDiskLut extends Lut<DiskDiskBounce> {
     return index.map((v, i) => 2 * this.centers[i] - v)
   }
 
-  override mirrorLeaf(leaf: DiskDiskBounce): DiskDiskBounce {
-    if (leaf === null) return null
-    return [-leaf[0], -leaf[1], -leaf[2], -leaf[3]]
-  }
-
-  computeLeaf(index: Array<number>) {
+  computeLeaf(index: Array<number>): LeafValues | null {
     const dx = indexToOffset(index[0] - offsetDetail)
     const dy = indexToOffset(index[1] - offsetDetail)
     const vx = indexToSpeed(index[2] - speedDetail)
@@ -79,7 +76,7 @@ export class DiskDiskLut extends Lut<DiskDiskBounce> {
   }
 }
 
-function computeCollision(dx, dy, relativeVelocityX, relativeVelocityY): DiskDiskBounce {
+function computeCollision(dx, dy, relativeVelocityX, relativeVelocityY): LeafValues | null {
   const distanceSquared = dx * dx + dy * dy
   const radiusSum = DISK_RADIUS * 2
 
@@ -99,20 +96,15 @@ function computeCollision(dx, dy, relativeVelocityX, relativeVelocityY): DiskDis
     if (dotProduct > 0) return null // Prevent further collision resolution if already separating
 
     const impulse = 2 * dotProduct / 2 // Equal mass assumption
-    // impulse = Math.max(impulse,-100)
 
-    // restitution?
-    // impulse *= RESTITUTION
+    const result = {
+      cx: Math.round(nx * separation),
+      cy: Math.round(ny * separation),
+      cdx: -Math.round(impulse * nx),
+      cdy: -Math.round(impulse * ny),
+    }
 
-    const result: DiskDiskBounce = [
-      Math.round(nx * separation), // dx
-      Math.round(ny * separation), // dy
-
-      -Math.round(impulse * nx), // vx
-      -Math.round(impulse * ny), // vy
-    ]
-
-    for (const value of result) {
+    for (const value of Object.values(result)) {
       if (value < INT16_MIN || value > INT16_MAX) {
         return null // adjustment would be outside of encode-able range
       }
@@ -130,11 +122,9 @@ export function collideDisks(a: Disk, b: Disk): boolean {
 
   if (Math.abs(dxi) > offsetDetail) {
     return false // disks are not colliding
-    // dxi = offsetDetail * Math.sign(dxi)
   }
   if (Math.abs(dyi) > offsetDetail) {
     return false // disks are not colliding
-    // dyi = offsetDetail * Math.sign(dyi)
   }
 
   // index based on relative velcoity
@@ -142,11 +132,9 @@ export function collideDisks(a: Disk, b: Disk): boolean {
   let vyi = speedToIndex(b.currentState.dy - a.currentState.dy)
 
   if (Math.abs(vxi) > speedDetail) {
-    // throw new Error(`dx ${dx} or of range (${maxAxisSpeed}) in collisions`)
     vxi = speedDetail * Math.sign(vxi)
   }
   if (Math.abs(vyi) > speedDetail) {
-    // throw new Error(`dy ${dy} or of range (${maxAxisSpeed}) in collisions`)
     vyi = speedDetail * Math.sign(vyi)
   }
 
@@ -155,10 +143,10 @@ export function collideDisks(a: Disk, b: Disk): boolean {
     dxi + offsetDetail, dyi + offsetDetail, vxi + speedDetail, vyi + speedDetail)
 
   if (!ddl.hasLeafAt(cellIdx)) return false // disks are not colliding (near-miss)
-  const cx = ddl.getInt16(cellIdx, 0)
-  const cy = ddl.getInt16(cellIdx, 1)
-  const cdx = ddl.getInt16(cellIdx, 2)
-  const cdy = ddl.getInt16(cellIdx, 3)
+  const cx = ddl.get(cellIdx, 'cx')
+  const cy = ddl.get(cellIdx, 'cy')
+  const cdx = ddl.get(cellIdx, 'cdx')
+  const cdy = ddl.get(cellIdx, 'cdy')
 
   a.nextState.x -= cx
   a.nextState.y -= cy

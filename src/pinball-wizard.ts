@@ -15,9 +15,10 @@ import type { ElementId } from 'guis/gui'
 import { Gui } from 'guis/gui'
 import { toggleElement } from 'guis/gui-html-elements'
 import type { GfxRegionName } from 'imp-names'
-import { GUI, PATTERN } from 'imp-names'
+import { GUI, SHUFFLED_PATTERN_NAMES } from 'imp-names'
 import type { Speed } from 'simulation/constants'
 import {
+  DISK_COUNT,
   HALT_LOOK_AHEAD_STEPS,
   INT32_MAX,
   ROOM_COUNT,
@@ -32,7 +33,6 @@ import { shortVibrate } from 'util/vibrate'
 import type { SimGfx } from 'gfx/regions/imp/sim-gfx'
 import type { GlassGfx } from 'gfx/regions/imp/glass-gfx'
 import { settingsPanel } from 'overlay-panels/settings-panel'
-import type { RaceLut } from 'simulation/luts/imp/race-lut'
 // import { SIM_HASHES } from 'set-by-build'
 
 // can only be constructed once
@@ -55,7 +55,16 @@ export class PinballWizard {
 
   public loadingState: string | null = 'A'
   public isTitleScreen = true
-  public selectedDiskIndex = -1
+
+  public get selectedDiskIndex() {
+    return this.activeSim?.selectedDiskIndex ?? -1
+  }
+
+  public set selectedDiskIndex(i: number) {
+    if( !this.activeSim ) return
+    this.activeSim.selectedDiskIndex = i
+  }
+
   public followDiskIndex = -1
   public currentRoomIndex = 0 // greatest room index that has had balls
 
@@ -130,17 +139,19 @@ export class PinballWizard {
     const cfgSeed = topConfig.flatConfig.rngSeed
     this.isSeedConfiged = cfgSeed !== -1 // is seed set manually (used for puppeteer)
 
-    const raceLut = Lut.create('race-lut') as RaceLut
+    const raceLut = Lut.create('race-lut')
     const raceCount = raceLut.detail[0]
     const raceIndex = Math.floor(Math.random() * raceCount)
-    this._race = Array.from(
-      { length: raceLut.reg.leafLength / 2 },
-      (_, k) => raceLut.getInt32(raceIndex, k),
-    )
+    const startSeed = raceLut.get(raceIndex, 'startSeed')
+    this._race = [startSeed]
+    for (let d = 0; d < DISK_COUNT; d++) {
+      this._race.push(raceLut.get(raceIndex, `d${d}_midSeed`))
+      this._race.push(raceLut.get(raceIndex, `d${d}_finalStepCount`))
+    }
     // console.log('decoded race', this._race)
     const commonStartSeed = this.isSeedConfiged ? cfgSeed : this._race[0]
 
-    shuffle(PATTERN.NAMES) // shuffle appearance of bouncing balls
+    shuffle(SHUFFLED_PATTERN_NAMES) // shuffle appearance of bouncing balls
 
     this.activeSim = new Simulation(commonStartSeed)
     if (!this.isSeedConfiged) {
@@ -258,12 +269,12 @@ export class PinballWizard {
     // advance physics, append to sim-history, set display positions, play sounds
     this.activeSim.update(dt * this._speedMult, isBranchingAllowed)
 
-    if (this.activeSim.winningDiskIndex !== -1) {
-      // race finished
-      this._speed = 'paused'
-      this._isHalted = true
-      this._speedMult = 0
-    }
+    // if (this.activeSim.winningDiskIndex !== -1) {
+    //   // race finished
+    //   this._speed = 'paused'
+    //   this._isHalted = true
+    //   this._speedMult = 0
+    // }
 
     if (this.hasBranched && !wasBranched) {
       // just branched
