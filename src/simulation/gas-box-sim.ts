@@ -63,21 +63,21 @@ export class GasBoxSim {
     sim.dy = dy
     // @ts-expect-error assigning readonly fields in factory
     sim.wrapped = new Uint8Array(px.length)
-    sim._debugStepCount = 0
+    sim._stepCount = 0
     return sim
   }
 
-  private _debugStepCount = 0
+  private _stepCount = 0
 
   /** Advance every particle one step, wrapping toroidally. */
   step(isFinal = false) {
-    const dsc = this._debugStepCount++
-    if (isFinal && (dsc % (GAS_BOX_SOLVE_STEPS / 10) === 0)) {
-      console.log('final gas box sim step count', dsc)
-    }
+    const _dsc = this._stepCount++
+    // if (isFinal && (dsc % (GAS_BOX_SOLVE_STEPS / 10) === 0)) {
+    //   console.log('final gas box sim step count', dsc)
+    // }
 
     // prevent advancing past solved state
-    if (isFinal && this._debugStepCount > GAS_BOX_SOLVE_STEPS) {
+    if (isFinal && this._stepCount > GAS_BOX_SOLVE_STEPS) {
       return
     }
 

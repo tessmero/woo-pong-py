@@ -50,8 +50,12 @@ export abstract class Room {
     // do nothing
   }
 
+  drawDecorationsBelow(_ctx: CanvasRenderingContext2D, _pw: PinballWizard, _gfxName: GfxRegionName): void {
+    // do nothing – override to draw behind obstacles
+  }
+
   drawDecorations(_ctx: CanvasRenderingContext2D, _pw: PinballWizard, _gfxName: GfxRegionName): void {
-    // do nothing
+    // do nothing – override to draw above obstacles
   }
 
   // static registry pattern

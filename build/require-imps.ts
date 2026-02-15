@@ -16,12 +16,13 @@ const projectRoot = join(__dirname, '..')
  * given ImpManifest(s). This triggers the `static { }` registration
  * blocks in each implementation file.
  */
-export function requireImps(...manifests: readonly ImpManifest[]): void {
+export function requireImps(...manifests: ReadonlyArray<ImpManifest>): void {
   for (const manifest of manifests) {
     for (const source of manifest.SOURCES) {
       const pattern = source.includes('*') ? source : join(source, '**/*.ts')
       const files = globSync(pattern, { cwd: projectRoot })
       for (const file of files) {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         require(join(projectRoot, file))
       }
     }

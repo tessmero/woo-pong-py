@@ -9,8 +9,8 @@
  * particles converge to when replayed forward at runtime.
  */
 
-import { 
-  GAS_BOX_MAX_SPEED, N_GAS_BOX_PARTICLES, GAS_BOX_SOLVE_STEPS, GAS_BOX_MIN_SPEED 
+import {
+  GAS_BOX_MAX_SPEED, N_GAS_BOX_PARTICLES, GAS_BOX_SOLVE_STEPS, GAS_BOX_MIN_SPEED,
 } from 'simulation/gas-box-constants'
 import { Lut, i16Array, i32Array } from '../lut'
 import type { LeafSchema, LeafValues } from '../lut'
@@ -27,7 +27,7 @@ const gasBoxSchema: LeafSchema = [
 ]
 
 /** Injected at build time by rebuild-blobs.ts — not available in the browser. */
-type PatternSolver = (patternIndex: number) => { px: Int32Array; py: Int32Array }
+type PatternSolver = (patternIndex: number) => { px: Int32Array, py: Int32Array }
 
 export class GasBoxLut extends Lut {
   schema = gasBoxSchema

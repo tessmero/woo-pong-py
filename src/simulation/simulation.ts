@@ -110,7 +110,7 @@ export class Simulation {
       const diskIndex = this.selectedDiskIndex
       const disk = this.disks[diskIndex]
       const solutionIndex = disk ? PATTERN.NAMES.indexOf(disk.pattern) : 0
-      console.log('start final simulation for gas box', solutionIndex)
+      // console.log('start final simulation for gas box', solutionIndex)
       this.gasBoxes[0].setFinalSimulation(new GasBoxSim(solutionIndex))
     }
 

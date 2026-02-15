@@ -36,6 +36,8 @@ type Gear = {
   obstacles: Array<Obstacle> // center and teeth
 }
 
+const offset: Vec2 = [0, 0]
+
 export class GearRoom extends Room {
   static {
     Room.register('gear-room', () => new GearRoom())
@@ -59,8 +61,9 @@ export class GearRoom extends Room {
       const toothDelta = N_GEAR_FRAMES / N_GEAR_TEETH
       for (let toothIndex = 0; toothIndex < N_GEAR_TEETH; toothIndex++) {
         const i = (gear.frameIndex + toothDelta * toothIndex) % N_GEAR_FRAMES
-        const offset: Vec2 = [this.gearLut.get(i, 'x'), this.gearLut.get(i, 'y')]
 
+        offset[0] = this.gearLut.get(i, 'x')
+        offset[1] = this.gearLut.get(i, 'y')
         const cx = centerPos[0] + offset[0]
         const rx = cx - this.circleLut.maxOffsetX
 
@@ -187,7 +190,8 @@ export class GearRoom extends Room {
 
     for (let i = 0; i < N; i++) {
       const lutIndex = (toothDelta * i) % N_GEAR_FRAMES
-      const offset: Vec2 = [this.gearLut.get(lutIndex, 'x'), this.gearLut.get(lutIndex, 'y')]
+      offset[0] = this.gearLut.get(lutIndex, 'x')
+      offset[1] = this.gearLut.get(lutIndex, 'y')
       const theta = Math.atan2(offset[1], offset[0])
 
       const nextLutIndex = (toothDelta * ((i + 1) % N)) % N_GEAR_FRAMES
@@ -277,11 +281,4 @@ export class GearRoom extends Room {
     ctx.stroke(this._gearPath)
     ctx.restore()
   }
-}
-
-function rotate90(pos: Vec2): Vec2 {
-  return [
-    -pos[1],
-    pos[0],
-  ]
 }

@@ -5,6 +5,7 @@
  */
 
 import { VALUE_SCALE } from 'simulation/constants'
+import { GEAR_ORBIT_RADIUS } from './gear-constants'
 
 /** Number of cars on the ferris wheel. */
 export const N_FERRIS_CARS = 6
@@ -23,7 +24,7 @@ export const FERRIS_HUB_RADIUS = 4.05 * VALUE_SCALE
 export const FERRIS_CAR_RADIUS = 4.05 * VALUE_SCALE
 
 /** Distance from ferris wheel center to each car center. */
-export const FERRIS_ORBIT_RADIUS = 2 * FERRIS_HUB_RADIUS
+export const FERRIS_ORBIT_RADIUS = 2 * GEAR_ORBIT_RADIUS
 
 /** Radius of the decorative hole in the hub. Set to 0 to disable. */
 export const FERRIS_HOLE_RADIUS = FERRIS_HUB_RADIUS * 0.4

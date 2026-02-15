@@ -70,6 +70,8 @@ function renderDarkMap(name: PatternName): { darkMap: Uint8Array, darkRatio: num
   // Save rendered pattern as PNG for inspection
   const outDir = path.resolve(__dirname, 'pattern-images')
   fs.mkdirSync(outDir, { recursive: true })
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const buf = (cvs as any).toBuffer('image/png') as Buffer
   fs.writeFileSync(path.join(outDir, `${name}.png`), buf)
 
@@ -200,7 +202,10 @@ export function solvePatternPositions(patternIndex: number): {
   for (let iter = 0; iter < 100; iter++) {
     const pts = hexGridFiltered(spacing, darkMap)
     const count = pts.length
-    if (count === 0) { spacing *= 0.8; continue }
+    if (count === 0) {
+      spacing *= 0.8
+      continue
+    }
     if (Math.abs(count - N) <= 10) break
     // Scale spacing proportionally: fewer particles → smaller spacing
     spacing *= Math.sqrt(count / N)

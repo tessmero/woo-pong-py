@@ -268,19 +268,22 @@ export class SimGfx extends GfxRegion {
 
     // this._drawBoundsInnerEdges(ctx, pw)
 
-    drawObstacles(ctx, pw)
-    drawGasBoxes(ctx, pw)
-
     const { simViewRect } = pw
     const y0 = simViewRect[1]
     const y1 = y0 + simViewRect[3]
+
     for (const room of sim.level.rooms) {
-      if (room.bounds[0] > y1) {
-        continue// room is below view
-      }
-      else if (room.bounds[1] + room.bounds[3] < y0) {
-        continue // room is above view
-      }
+      if (room.bounds[0] > y1) continue
+      if (room.bounds[1] + room.bounds[3] < y0) continue
+      room.drawDecorationsBelow(ctx, pw, 'sim-gfx')
+    }
+
+    drawObstacles(ctx, pw)
+    drawGasBoxes(ctx, pw)
+
+    for (const room of sim.level.rooms) {
+      if (room.bounds[0] > y1) continue
+      if (room.bounds[1] + room.bounds[3] < y0) continue
       room.drawDecorations(ctx, pw, 'sim-gfx')
     }
 

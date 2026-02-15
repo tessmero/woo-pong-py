@@ -12,7 +12,12 @@ const reg: RegisteredLut = {
   depth: 4,
   schema,
   leafLength: 4,
-  fieldInfo: { a: { encodedOffset: 0, type: 'i16' }, b: { encodedOffset: 1, type: 'i16' }, c: { encodedOffset: 2, type: 'i16' }, d: { encodedOffset: 3, type: 'i16' } },
+  fieldInfo: {
+    a: { encodedOffset: 0, type: 'i16' },
+    b: { encodedOffset: 1, type: 'i16' },
+    c: { encodedOffset: 2, type: 'i16' },
+    d: { encodedOffset: 3, type: 'i16' },
+  },
   factory: () => ({}) as Lut,
 }
 

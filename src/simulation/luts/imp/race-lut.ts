@@ -104,7 +104,7 @@ export class RaceLut extends Lut {
           )
         }
 
-        console.log('solved race', result)
+        // console.log('solved race', result)
 
         return result
       }
@@ -185,7 +185,10 @@ function _tryComputeLeaf(): LeafValues | null {
     const minSteps = STEPS_BEFORE_BRANCH + GAS_BOX_SOLVE_STEPS
     if (sim.stepCount < (minSteps)) {
       // throw new Error(`level finished ${minSteps - sim.stepCount} steps too early`)
+
+      // eslint-disable-next-line no-console
       console.log(`level finished ${minSteps - sim.stepCount} steps too early`)
+
       break // give up on this starting seed
     }
 

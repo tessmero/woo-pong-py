@@ -7,7 +7,7 @@
  * The schema drives:
  *   - Encoded (blob) leaf length: i16 → 1 int16, i32 → 2 int16s (high + low word)
  *   - Named field access via `get(cellIndex, fieldName)`
- *   - Centralized encode/decode/validation — subclasses never override these
+ *   - Centralized encode/decode/validation — subclasses never override these.
  */
 
 import type { ShapeName } from 'simulation/shapes'
@@ -20,20 +20,28 @@ import { INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, OBSTACLE_DETAIL_SCALE } fro
 // ── Leaf schema types ──────────────────────────────────────────────────
 
 export type FieldType = 'i16' | 'i32' | 'i16_array' | 'i32_array'
-export type FieldDef = { readonly name: string; readonly type: FieldType; readonly length?: number }
+export type FieldDef = { readonly name: string, readonly type: FieldType, readonly length?: number }
 export type LeafSchema = ReadonlyArray<FieldDef>
 
 /** Shorthand to declare an int16 field. */
-export function i16(name: string): FieldDef { return { name, type: 'i16' } }
+export function i16(name: string): FieldDef {
+  return { name, type: 'i16' }
+}
 
 /** Shorthand to declare an int32 field (encoded as two int16s). */
-export function i32(name: string): FieldDef { return { name, type: 'i32' } }
+export function i32(name: string): FieldDef {
+  return { name, type: 'i32' }
+}
 
 /** Shorthand to declare an array of int16 values. */
-export function i16Array(name: string, length: number): FieldDef { return { name, type: 'i16_array', length } }
+export function i16Array(name: string, length: number): FieldDef {
+  return { name, type: 'i16_array', length }
+}
 
 /** Shorthand to declare an array of int32 values (each encoded as two int16s). */
-export function i32Array(name: string, length: number): FieldDef { return { name, type: 'i32_array', length } }
+export function i32Array(name: string, length: number): FieldDef {
+  return { name, type: 'i32_array', length }
+}
 
 function encodedFieldLength(f: FieldDef): number {
   switch (f.type) {
@@ -44,7 +52,7 @@ function encodedFieldLength(f: FieldDef): number {
   }
 }
 
-type FieldInfo = { readonly encodedOffset: number; readonly type: FieldType; readonly length?: number }
+type FieldInfo = { readonly encodedOffset: number, readonly type: FieldType, readonly length?: number }
 
 function computeEncodedLeafLength(schema: LeafSchema): number {
   let len = 0
@@ -353,7 +361,7 @@ export abstract class Lut {
 
   protected constructor() {}
 
-  static register(name: LutName, input: { factory: () => Lut; depth: number; schema: LeafSchema }): void {
+  static register(name: LutName, input: { factory: () => Lut, depth: number, schema: LeafSchema }): void {
     if (name in this._registry) {
       throw new Error(`lut already registered: '${name}'`)
     }

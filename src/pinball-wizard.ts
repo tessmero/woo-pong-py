@@ -61,7 +61,7 @@ export class PinballWizard {
   }
 
   public set selectedDiskIndex(i: number) {
-    if( !this.activeSim ) return
+    if (!this.activeSim) return
     this.activeSim.selectedDiskIndex = i
   }
 

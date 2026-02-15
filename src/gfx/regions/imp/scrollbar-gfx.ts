@@ -128,6 +128,9 @@ export class ScrollbarGfx extends GfxRegion {
         bctx.translate(0, 0)
         bctx.scale(scale, scale)
         bctx.lineWidth = 1 * window.devicePixelRatio / scale
+        for (const room of sim.level.rooms) {
+          room.drawDecorationsBelow(bctx, pw, 'scrollbar-gfx')
+        }
         bctx.fillStyle = OBSTACLE_FILL
         bctx.strokeStyle = 'black'
         for (const obstacle of sim.obstacles) {
