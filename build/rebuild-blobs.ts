@@ -11,50 +11,16 @@ import { createHash } from 'crypto'
 import { Lut } from '../src/simulation/luts/lut'
 import { SHAPE_NAMES } from '../src/simulation/shapes'
 
-import { DiskDiskLut } from '../src/simulation/luts/imp/disk-disk-lut'
-import { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
-import { DiskNormalLut } from '../src/simulation/luts/imp/disk-normal-lut'
-import { DiskFrictionLut } from '../src/simulation/luts/imp/disk-friction-lut'
-import { RaceLut } from '../src/simulation/luts/imp/race-lut'
-import { GearLut } from '../src/simulation/luts/imp/gear-lut'
+import type { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
 import { solvePatternPositions } from './gas-box-pattern-solver'
-import { LUT } from '../src/imp-names'
-// import { getCollectedSimHashes } from '../src/simulation/luts/imp/race-lut'
+import { LUT, ROOM, ROOM_LAYOUT, GFX_REGION } from '../src/imp-names'
+import { requireImps } from './require-imps'
 
-import { FourByFour } from '../src/rooms/room-layouts/imp/four-by-four'
-
-import { BasicRoom } from '../src/rooms/imp/basic-room'
-import { PongRoom } from '../src/rooms/imp/pong-room'
-import { BreakoutRoom } from '../src/rooms/imp/breakout-room'
-import { StartRoom } from '../src/rooms/imp/start-room'
-import { FinishRoom } from '../src/rooms/imp/finish-room'
-import { GearRoom } from '../src/rooms/imp/gear-room'
-
-// excuse to import luts and have them registered
-const _luts = [
-  DiskDiskLut, ObstacleLut, DiskNormalLut, DiskFrictionLut, RaceLut, GearLut, GasBoxLut,
-]
+requireImps(LUT, ROOM, ROOM_LAYOUT, GFX_REGION)
 
 // Inject the build-time pattern solver so GasBoxLut.computeLeaf() can use it
 GasBoxLut.patternSolver = solvePatternPositions
-const _layouts = [
-  FourByFour,
-]
-const _rooms = [
-  BasicRoom, PongRoom, BreakoutRoom, StartRoom, FinishRoom, GearRoom,
-]
-
-// GFX_REGION imports and placeholder variable
-import { SimGfx } from '../src/gfx/regions/imp/sim-gfx'
-import { ScrollbarGfx } from '../src/gfx/regions/imp/scrollbar-gfx'
-import { BottomBarGfx } from '../src/gfx/regions/imp/bottom-bar-gfx'
-import { TopBarGfx } from '../src/gfx/regions/imp/top-bar-gfx'
-import { GlassGfx } from '../src/gfx/regions/imp/glass-gfx'
-
-const _gfxRegions = [
-  SimGfx, ScrollbarGfx, BottomBarGfx, TopBarGfx, GlassGfx,
-]
 
 // Remove existing files in public/luts
 const collisionsDir = join(__dirname, '../public/luts')

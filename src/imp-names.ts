@@ -76,7 +76,7 @@ export const ROOM_LAYOUT = {
 
     'two-gears',
   ],
-  SOURCES: ['src/room-layouts/**/*.ts'],
+  SOURCES: ['src/rooms/room-layouts/imp/**/*.ts'],
 } as const satisfies ImpManifest
 export type RoomLayoutName = (typeof ROOM_LAYOUT.NAMES)[number]
 

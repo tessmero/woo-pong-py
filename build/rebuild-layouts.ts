@@ -8,16 +8,9 @@ import { writeFileSync } from 'fs'
 import { join } from 'path'
 import { ROOM_LAYOUT } from '../src/imp-names'
 import { RoomLayout } from '../src/rooms/room-layouts/room-layout'
-import { ThreeByThree } from '../src/rooms/room-layouts/imp/three-by-three'
-import { FourByFour } from '../src/rooms/room-layouts/imp/four-by-four'
-import { Breakout } from '../src/rooms/room-layouts/imp/breakout'
-import { Honeycomb } from '../src/rooms/room-layouts/imp/honeycomb'
-import { TwoGears } from '../src/rooms/room-layouts/imp/two-gears'
+import { requireImps } from './require-imps'
 
-// excuse to import layouts and have them registered
-const _layouts = [
-  FourByFour, Breakout, Honeycomb, ThreeByThree, TwoGears,
-]
+requireImps(ROOM_LAYOUT)
 
 const sourceFilePath = join(__dirname, '../src/rooms/room-layouts/set-by-build.ts')
 const jsdocComment = `/**

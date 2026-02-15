@@ -7,10 +7,9 @@
 import { Room } from 'rooms/room'
 import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import {
-  N_GEAR_FRAMES, N_GEAR_TEETH, GEAR_ORBIT_RADIUS,
-  BIG_CIRCLE_RADIUS, TOOTH_RADIUS,
-  GEAR_FILLET_RADIUS, GEAR_HOLE_RADIUS,
-} from 'simulation/gear-constants'
+  N_FERRIS_FRAMES, N_FERRIS_CARS, FERRIS_ORBIT_RADIUS,
+  FERRIS_HUB_RADIUS,
+} from 'simulation/ferris-wheel-constants'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
@@ -19,10 +18,8 @@ import type { PinballWizard } from 'pinball-wizard'
 import { type Vec2 } from 'util/math-util'
 import { OBSTACLE_FILL, OBSTACLE_STROKE } from 'gfx/graphics'
 import type { ShapeName } from 'simulation/shapes'
+import { Perturbations } from 'simulation/perturbations'
 
-type DisplayMode = 'circles' | 'fidget-spinner'
-// const displayMode: DisplayMode = 'fidget-spinner'
-const displayMode: DisplayMode = 'circles'
 
 type Direction = 'clockwise' | 'counter-clockwise'
 
@@ -34,7 +31,28 @@ type Gear = {
   obstacles: Array<Obstacle> // center and teeth
 }
 
-const toothShape: ShapeName = 'shield'
+const possibleShapes: Array<ShapeName> = [
+
+  'diamond',
+  // 'flipper',
+  'star',
+  'pawn',
+  'shield',
+  'meeple',
+  'club',
+  'bishop',
+  'bolt',
+  'airplane',
+  'head',
+  'note',
+
+]
+
+function randomToothShape(): ShapeName {
+  const n = possibleShapes.length
+  const i = (Perturbations.nextInt() >>> 0) % n
+  return possibleShapes[i]
+}
 
 export class FerrisWheelRoom extends Room {
   static {
@@ -44,21 +62,23 @@ export class FerrisWheelRoom extends Room {
   private gears: Array<Gear> = []
   private roomCenter: Vec2 = [0, 0]
 
-  private readonly circleLut = Lut.create('obstacle-lut', toothShape) as ObstacleLut
+  private toothShape = randomToothShape()
+  private centerShape: ShapeName = 'circle'
+  private readonly circleLut = Lut.create('obstacle-lut', this.toothShape) as ObstacleLut
   private readonly gearLut = Lut.create('gear-lut')
 
   override step() {
     for (const gear of this.gears) {
       if (gear.dir === 'clockwise') {
-        gear.frameIndex = (gear.frameIndex + 1) % N_GEAR_FRAMES
+        gear.frameIndex = (gear.frameIndex + 1) % N_FERRIS_FRAMES
       }
       else {
-        gear.frameIndex = (gear.frameIndex - 1 + N_GEAR_FRAMES) % N_GEAR_FRAMES
+        gear.frameIndex = (gear.frameIndex - 1 + N_FERRIS_FRAMES) % N_FERRIS_FRAMES
       }
       const centerPos = gear.center.pos
-      const toothDelta = N_GEAR_FRAMES / N_GEAR_TEETH
-      for (let toothIndex = 0; toothIndex < N_GEAR_TEETH; toothIndex++) {
-        const i = (gear.frameIndex + toothDelta * toothIndex) % N_GEAR_FRAMES
+      const toothDelta = N_FERRIS_FRAMES / N_FERRIS_CARS
+      for (let toothIndex = 0; toothIndex < N_FERRIS_CARS; toothIndex++) {
+        const i = (gear.frameIndex + toothDelta * toothIndex) % N_FERRIS_FRAMES
         const offset: Vec2 = [this.gearLut.get(i, 'x'), this.gearLut.get(i, 'y')]
 
         const cx = centerPos[0] + offset[0]
@@ -98,31 +118,31 @@ export class FerrisWheelRoom extends Room {
 
   private _buildGear(pos: Vec2, dir: Direction, frameIndex: number): Gear {
     // center circle
-    const bigCircleLut = Lut.create('obstacle-lut', 'big-circle') as ObstacleLut
-    const centerObs = new Obstacle(pos, 'big-circle', bigCircleLut, this)
+    const bigCircleLut = Lut.create('obstacle-lut', this.centerShape) as ObstacleLut
+    const centerObs = new Obstacle(pos, this.centerShape, bigCircleLut, this)
 
     // teeth
     const offset: Vec2 = [2 * DISK_RADIUS, DISK_RADIUS]
     const teeth = Array.from(
-      { length: N_GEAR_TEETH },
+      { length: N_FERRIS_CARS },
       (_, _toothIndex) => {
         const toothPos: Vec2 = [
           pos[0] + offset[0],
           pos[1] + offset[1],
         ]
-        const tooth = new Obstacle(toothPos, toothShape, this.circleLut, this)
+        const tooth = new Obstacle(toothPos, this.toothShape, this.circleLut, this)
         // offset = rotate90(offset)
         return tooth
       },
     )
 
-    // set common properties for center and teeth
+    // // set common properties for center and teeth
     const obstacles = [centerObs, ...teeth]
-    for (const obs of obstacles) {
-      if (displayMode === 'fidget-spinner') {
-        obs.isVisible = false // skip normal obstacle drawing, will draw in drawDecorations
-      }
-    }
+    // for (const obs of obstacles) {
+    //   if (displayMode === 'fidget-spinner') {
+    //     obs.isVisible = false // skip normal obstacle drawing, will draw in drawDecorations
+    //   }
+    // }
 
     const gear: Gear = {
       dir,
@@ -135,86 +155,108 @@ export class FerrisWheelRoom extends Room {
     return gear
   }
 
-  private _gearPath: Path2D | null = null
+  private _spokesPath: Path2D | null = null
   private _baseTheta = 0
 
-  private _buildGearPath(): Path2D {
-    const N = N_GEAR_TEETH
-    const toothDelta = N_GEAR_FRAMES / N
+  private _buildSpokesPath(): Path2D {
+    const N = N_FERRIS_CARS
+    const toothDelta = N_FERRIS_FRAMES / N
     const path = new Path2D()
-    const rFillet = GEAR_FILLET_RADIUS
 
     // build at frameIndex=0, centered at origin
     const offset0: Vec2 = [this.gearLut.get(0, 'x'), this.gearLut.get(0, 'y')]
     this._baseTheta = Math.atan2(offset0[1], offset0[0])
 
-    // Fillet centers lie at the intersection of two circles:
-    //   - radius (BIG_CIRCLE_RADIUS + rFillet) from the origin
-    //   - radius (TOOTH_RADIUS + rFillet) from the tooth center
-    // Precompute the along-tooth-axis (fDist) and perpendicular (fPerp) offsets.
-    const d = GEAR_ORBIT_RADIUS
-    const R1 = BIG_CIRCLE_RADIUS + rFillet
-    const R2 = TOOTH_RADIUS + rFillet
-    const fDist = (R1 * R1 - R2 * R2 + d * d) / (2 * d)
-    const fPerp = Math.sqrt(R1 * R1 - fDist * fDist)
+    // Each spoke is a triangle tapering from a wide base on the big circle
+    // to a sharp point at the tooth center. Fraction of the inter-tooth angle
+    // spanned by the spoke base.
+    const spokeWidthFraction = 0.4
+    const angleBetweenTeeth = (2 * Math.PI) / N
+    const spokeHalfAngle = (angleBetweenTeeth * spokeWidthFraction) / 2
 
+    // Collect tooth angles from the LUT
+    const thetas: Array<number> = []
     for (let i = 0; i < N; i++) {
-      const lutIndex = (toothDelta * i) % N_GEAR_FRAMES
+      const lutIndex = (toothDelta * i) % N_FERRIS_FRAMES
       const offset: Vec2 = [this.gearLut.get(lutIndex, 'x'), this.gearLut.get(lutIndex, 'y')]
-      const theta = Math.atan2(offset[1], offset[0])
+      thetas.push(Math.atan2(offset[1], offset[0]))
+    }
 
-      const nextLutIndex = (toothDelta * ((i + 1) % N)) % N_GEAR_FRAMES
-      const nextOffset: Vec2 = [this.gearLut.get(nextLutIndex, 'x'), this.gearLut.get(nextLutIndex, 'y')]
-      const thetaNext = Math.atan2(nextOffset[1], nextOffset[0])
+    // --- Outer contour: pointed spokes connected by big-circle arcs ---
+    for (let i = 0; i < N; i++) {
+      const theta = thetas[i]
+      const thetaNext = thetas[(i + 1) % N]
 
-      const cosT = Math.cos(theta)
-      const sinT = Math.sin(theta)
-      const tx = GEAR_ORBIT_RADIUS * cosT
-      const ty = GEAR_ORBIT_RADIUS * sinT
+      const tipX = FERRIS_ORBIT_RADIUS * Math.cos(theta)
+      const tipY = FERRIS_ORBIT_RADIUS * Math.sin(theta)
 
-      // Fillet center A (bridge→tooth junction, before tooth arc)
-      const fAx = fDist * cosT + fPerp * sinT
-      const fAy = fDist * sinT - fPerp * cosT
-      const fA_bridge = Math.atan2(fAy, fAx)
-      const fA_tooth = Math.atan2(fAy - ty, fAx - tx)
+      const leftAngle = theta - spokeHalfAngle
+      const rightAngle = theta + spokeHalfAngle
+      const nextLeftAngle = thetaNext - spokeHalfAngle
 
-      // Fillet center B (tooth→bridge junction, after tooth arc)
-      const fBx = fDist * cosT - fPerp * sinT
-      const fBy = fDist * sinT + fPerp * cosT
-      const fB_tooth = Math.atan2(fBy - ty, fBx - tx)
-      const fB_bridge = Math.atan2(fBy, fBx)
+      if (i === 0) {
+        path.moveTo(
+          FERRIS_HUB_RADIUS * Math.cos(leftAngle),
+          FERRIS_HUB_RADIUS * Math.sin(leftAngle),
+        )
+      }
 
-      // Fillet A arc: bridge tangent → tooth tangent
-      path.arc(fAx, fAy, rFillet, fA_bridge + Math.PI, fA_tooth + Math.PI, true)
+      // Left edge up to the sharp tip
+      path.lineTo(tipX, tipY)
 
-      // Trimmed outer tooth arc
-      path.arc(tx, ty, TOOTH_RADIUS, fA_tooth, fB_tooth, false)
+      // Right edge back down to the big circle
+      path.lineTo(
+        FERRIS_HUB_RADIUS * Math.cos(rightAngle),
+        FERRIS_HUB_RADIUS * Math.sin(rightAngle),
+      )
 
-      // Fillet B arc: tooth tangent → bridge tangent
-      path.arc(fBx, fBy, rFillet, fB_tooth + Math.PI, fB_bridge + Math.PI, true)
-
-      // Trimmed bridge arc on big circle (to next tooth's fillet A)
-      const cosN = Math.cos(thetaNext)
-      const sinN = Math.sin(thetaNext)
-      const fANextBridge = Math.atan2(fDist * sinN - fPerp * cosN, fDist * cosN + fPerp * sinN)
-      path.arc(0, 0, BIG_CIRCLE_RADIUS, fB_bridge, fANextBridge, false)
+      // Arc along hub circle to the next spoke's left base
+      path.arc(0, 0, FERRIS_HUB_RADIUS, rightAngle, nextLeftAngle, false)
     }
     path.closePath()
 
-    // Cut out a center hole (drawn counter-clockwise to create a hole via even-odd / winding rule)
-    if (GEAR_HOLE_RADIUS > 0) {
-      path.moveTo(GEAR_HOLE_RADIUS, 0)
-      path.arc(0, 0, GEAR_HOLE_RADIUS, 0, 2 * Math.PI, true)
-      path.closePath()
+    // --- Cross-braces inside each spoke for a bridge-truss look ---
+    const nBraces = 2
+    for (let i = 0; i < N; i++) {
+      const theta = thetas[i]
+      const leftAngle = theta - spokeHalfAngle
+      const rightAngle = theta + spokeHalfAngle
+
+      const tipX = FERRIS_ORBIT_RADIUS * Math.cos(theta)
+      const tipY = FERRIS_ORBIT_RADIUS * Math.sin(theta)
+
+      const leftBaseX = FERRIS_HUB_RADIUS * Math.cos(leftAngle)
+      const leftBaseY = FERRIS_HUB_RADIUS * Math.sin(leftAngle)
+      const rightBaseX = FERRIS_HUB_RADIUS * Math.cos(rightAngle)
+      const rightBaseY = FERRIS_HUB_RADIUS * Math.sin(rightAngle)
+
+      for (let b = 1; b <= nBraces; b++) {
+        const t = b / (nBraces + 1)
+        // Interpolate along left and right spoke edges
+        const lx = leftBaseX + t * (tipX - leftBaseX)
+        const ly = leftBaseY + t * (tipY - leftBaseY)
+        const rx = rightBaseX + t * (tipX - rightBaseX)
+        const ry = rightBaseY + t * (tipY - rightBaseY)
+
+        path.moveTo(lx, ly)
+        path.lineTo(rx, ry)
+      }
     }
+
+    // // Center hole circle
+    // if (FERRIS_HOLE_RADIUS > 0) {
+    //   path.moveTo(FERRIS_HOLE_RADIUS, 0)
+    //   path.arc(0, 0, FERRIS_HOLE_RADIUS, 0, 2 * Math.PI, true)
+    //   path.closePath()
+    // }
 
     return path
   }
 
   override drawDecorations(ctx: CanvasRenderingContext2D, pw: PinballWizard, gfxName: GfxRegionName): void {
-    if (displayMode === 'circles') {
-      return // obstacles were already drawn as circles
-    }
+    // if (displayMode === 'circles') {
+    //   return // obstacles were already drawn as circles
+    // }
 
     if (gfxName === 'sim-gfx') {
       ctx.lineWidth = 0.1 * DISK_RADIUS
@@ -224,13 +266,13 @@ export class FerrisWheelRoom extends Room {
     }
 
     for (const gear of this.gears) {
-      this._drawGear(ctx, gear, pw)
+      this._drawSpokes(ctx, gear, pw)
     }
   }
 
-  private _drawGear(ctx: CanvasRenderingContext2D, gear: Gear, _pw: PinballWizard) {
-    if (!this._gearPath) {
-      this._gearPath = this._buildGearPath()
+  private _drawSpokes(ctx: CanvasRenderingContext2D, gear: Gear, _pw: PinballWizard) {
+    if (!this._spokesPath) {
+      this._spokesPath = this._buildSpokesPath()
     }
 
     const [cx, cy] = gear.center.pos
@@ -244,10 +286,10 @@ export class FerrisWheelRoom extends Room {
     ctx.translate(cx, cy)
     ctx.rotate(rotation)
 
-    ctx.fillStyle = OBSTACLE_FILL
-    ctx.fill(this._gearPath)
-    ctx.strokeStyle = OBSTACLE_STROKE
-    ctx.stroke(this._gearPath)
+    // ctx.fillStyle = OBSTACLE_FILL
+    // ctx.fill(this._spokesPath)
+    ctx.strokeStyle = 'red'
+    ctx.stroke(this._spokesPath)
     ctx.restore()
   }
 }

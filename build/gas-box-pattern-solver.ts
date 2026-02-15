@@ -23,17 +23,10 @@ import { makeCanvas } from '../src/gfx/patterns/pattern-util'
 import { VALUE_SCALE } from '../src/simulation/constants'
 import { N_GAS_BOX_PARTICLES, GAS_BOX_WIDTH, GAS_BOX_HEIGHT } from '../src/simulation/gas-box-constants'
 
+import { requireImps } from './require-imps'
+
 // Trigger pattern registrations
-import '../src/gfx/patterns/imp/white'
-import '../src/gfx/patterns/imp/black'
-import '../src/gfx/patterns/imp/stripe-v'
-import '../src/gfx/patterns/imp/stripe-h'
-import '../src/gfx/patterns/imp/hex-a'
-import '../src/gfx/patterns/imp/hex-b'
-import '../src/gfx/patterns/imp/fence'
-import '../src/gfx/patterns/imp/diamond-a'
-import '../src/gfx/patterns/imp/diamond-b'
-import '../src/gfx/patterns/imp/brick'
+requireImps(PATTERN)
 
 const N = N_GAS_BOX_PARTICLES
 const GBW = GAS_BOX_WIDTH
