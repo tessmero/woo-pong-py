@@ -12,16 +12,19 @@
 import { 
   GAS_BOX_MAX_SPEED, N_GAS_BOX_PARTICLES, GAS_BOX_SOLVE_STEPS, GAS_BOX_MIN_SPEED 
 } from 'simulation/gas-box-constants'
-import { Lut, i16, i32 } from '../lut'
+import { Lut, i16Array, i32Array } from '../lut'
 import type { LeafSchema, LeafValues } from '../lut'
 import { PATTERN } from 'imp-names'
 import { LUT_BLOBS } from 'set-by-build'
 import { GasBoxSim } from 'simulation/gas-box-sim'
 
-/** Schema: for each particle, x (i32), y (i32), vx (i16), vy (i16). */
-const gasBoxSchema: LeafSchema = Array.from({ length: N_GAS_BOX_PARTICLES }, (_, i) => [
-  i32(`p${i}_x`), i32(`p${i}_y`), i16(`p${i}_vx`), i16(`p${i}_vy`),
-]).flat()
+/** Schema: four arrays — positions (i32) and velocities (i16), each length N_GAS_BOX_PARTICLES. */
+const gasBoxSchema: LeafSchema = [
+  i32Array('px', N_GAS_BOX_PARTICLES),
+  i32Array('py', N_GAS_BOX_PARTICLES),
+  i16Array('vx', N_GAS_BOX_PARTICLES),
+  i16Array('vy', N_GAS_BOX_PARTICLES),
+]
 
 /** Injected at build time by rebuild-blobs.ts — not available in the browser. */
 type PatternSolver = (patternIndex: number) => { px: Int32Array; py: Int32Array }
@@ -64,12 +67,11 @@ export class GasBoxLut extends Lut {
     }
 
     // Save unsolved state with reversed velocities
-    const result: LeafValues = {}
-    for (let i = 0; i < N_GAS_BOX_PARTICLES; i++) {
-      result[`p${i}_x`] = sim.px[i]
-      result[`p${i}_y`] = sim.py[i]
-      result[`p${i}_vx`] = -sim.dx[i]
-      result[`p${i}_vy`] = -sim.dy[i]
+    const result: LeafValues = {
+      px: Array.from(sim.px),
+      py: Array.from(sim.py),
+      vx: Array.from(sim.dx, v => -v),
+      vy: Array.from(sim.dy, v => -v),
     }
 
     return result

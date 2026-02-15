@@ -61,7 +61,8 @@ export const ROOM = {
     'breakout-room', // numbered bricks disappear after collision
     // 'sorter-room', // balls pass through or end up in numbered regions
 
-    'gear-room', // spinning gear
+    'gear-room', // spinning interlocked gears
+    'ferris-wheel-room', // spinning wheel
   ],
   SOURCES: ['src/rooms/imp/**/*.ts'],
 } as const satisfies ImpManifest

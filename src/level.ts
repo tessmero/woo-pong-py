@@ -50,17 +50,17 @@ export class Level {
       return randomRoom(roomIndex, roomBounds)
     })
 
-    // make sure at least one is an animated gear room
-    const requiredRoom = 'gear-room'
-    if (this.rooms.some(room => room.name === requiredRoom)) {
-      // has gear room
-    }
-    else {
-      // overwrite a room in the middle of the level
-      const i = Math.floor(ROOM_COUNT / 2)
-      this.rooms[i]
-        = Room.create(requiredRoom, this.rooms[i].bounds)
-    }
+    // // make sure at least one is an animated gear room
+    // const requiredRoom = 'gear-room'
+    // if (this.rooms.some(room => room.name === requiredRoom)) {
+    //   // has gear room
+    // }
+    // else {
+    //   // overwrite a room in the middle of the level
+    //   const i = Math.floor(ROOM_COUNT / 2)
+    //   this.rooms[i]
+    //     = Room.create(requiredRoom, this.rooms[i].bounds)
+    // }
   }
 
   get finish(): Rectangle { return _finish }
@@ -117,10 +117,11 @@ function randomRoom(roomIndex: number, bounds: Rectangle) {
 }
 
 const randomRoomNames: Array<RoomName> = [
-  'gear-room',
+  // 'gear-room',
+  'ferris-wheel-room',
 
-  'basic-room',
-  'basic-room',
-  'breakout-room',
+  // 'basic-room',
+  // 'basic-room',
+  // 'breakout-room',
   // //  'pong-room',
 ]

@@ -19,8 +19,8 @@ import { INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, OBSTACLE_DETAIL_SCALE } fro
 
 // ── Leaf schema types ──────────────────────────────────────────────────
 
-export type FieldType = 'i16' | 'i32'
-export type FieldDef = { readonly name: string; readonly type: FieldType }
+export type FieldType = 'i16' | 'i32' | 'i16_array' | 'i32_array'
+export type FieldDef = { readonly name: string; readonly type: FieldType; readonly length?: number }
 export type LeafSchema = ReadonlyArray<FieldDef>
 
 /** Shorthand to declare an int16 field. */
@@ -29,11 +29,26 @@ export function i16(name: string): FieldDef { return { name, type: 'i16' } }
 /** Shorthand to declare an int32 field (encoded as two int16s). */
 export function i32(name: string): FieldDef { return { name, type: 'i32' } }
 
-type FieldInfo = { readonly encodedOffset: number; readonly type: FieldType }
+/** Shorthand to declare an array of int16 values. */
+export function i16Array(name: string, length: number): FieldDef { return { name, type: 'i16_array', length } }
+
+/** Shorthand to declare an array of int32 values (each encoded as two int16s). */
+export function i32Array(name: string, length: number): FieldDef { return { name, type: 'i32_array', length } }
+
+function encodedFieldLength(f: FieldDef): number {
+  switch (f.type) {
+    case 'i16': return 1
+    case 'i32': return 2
+    case 'i16_array': return f.length!
+    case 'i32_array': return f.length! * 2
+  }
+}
+
+type FieldInfo = { readonly encodedOffset: number; readonly type: FieldType; readonly length?: number }
 
 function computeEncodedLeafLength(schema: LeafSchema): number {
   let len = 0
-  for (const f of schema) len += f.type === 'i32' ? 2 : 1
+  for (const f of schema) len += encodedFieldLength(f)
   return len
 }
 
@@ -41,16 +56,16 @@ function buildFieldInfo(schema: LeafSchema): Record<string, FieldInfo> {
   const info: Record<string, FieldInfo> = Object.create(null)
   let offset = 0
   for (const f of schema) {
-    info[f.name] = { encodedOffset: offset, type: f.type }
-    offset += f.type === 'i32' ? 2 : 1
+    info[f.name] = { encodedOffset: offset, type: f.type, length: f.length }
+    offset += encodedFieldLength(f)
   }
   return info
 }
 
 // ── Leaf value type ────────────────────────────────────────────────────
 
-/** All leaf values are keyed by the field names from the schema. */
-export type LeafValues = Record<string, number>
+/** Scalar fields map to numbers; array fields map to number arrays. */
+export type LeafValues = Record<string, number | ReadonlyArray<number>>
 
 // ── Registration type ──────────────────────────────────────────────────
 
@@ -109,13 +124,19 @@ export abstract class Lut {
     if (leaf === null) return null
     const result: LeafValues = {}
     for (const field of this.schema) {
-      result[field.name] = -leaf[field.name]
+      const val = leaf[field.name]
+      if (field.type === 'i16_array' || field.type === 'i32_array') {
+        result[field.name] = (val as ReadonlyArray<number>).map(v => -v)
+      }
+      else {
+        result[field.name] = -(val as number)
+      }
     }
     return result
   }
 
   /**
-   * Look up a leaf field value by name. Handles i16 and i32 transparently.
+   * Look up a scalar leaf field value by name. Handles i16 and i32 transparently.
    */
   get(cellIndex: number, fieldName: string): number {
     const info = this.reg.fieldInfo[fieldName]
@@ -126,16 +147,51 @@ export abstract class Lut {
     return this.data[base]
   }
 
+  /**
+   * Copy an i16_array field into `out`. Zero-allocation hot path.
+   */
+  getI16Array(cellIndex: number, fieldName: string, out: Int32Array): void {
+    const info = this.reg.fieldInfo[fieldName]
+    const base = cellIndex * this.reg.leafLength + info.encodedOffset
+    const n = info.length!
+    for (let i = 0; i < n; i++) out[i] = this.data[base + i]
+  }
+
+  /**
+   * Copy an i32_array field into `out`. Zero-allocation hot path.
+   */
+  getI32Array(cellIndex: number, fieldName: string, out: Int32Array): void {
+    const info = this.reg.fieldInfo[fieldName]
+    const base = cellIndex * this.reg.leafLength + info.encodedOffset
+    const n = info.length!
+    for (let i = 0; i < n; i++) {
+      out[i] = (this.data[base + i * 2] << 16) | (this.data[base + i * 2 + 1] & 0xFFFF)
+    }
+  }
+
   /** Encode a leaf into int16 values for blob storage. Driven by schema. */
   encodeLeaf(leaf: LeafValues): Array<number> {
     const result: Array<number> = []
     for (const field of this.schema) {
-      const val = Math.round(leaf[field.name])
-      if (field.type === 'i32') {
+      if (field.type === 'i32_array') {
+        const arr = leaf[field.name] as ReadonlyArray<number>
+        for (let i = 0; i < field.length!; i++) {
+          const val = Math.round(arr[i])
+          result.push((val >> 16) & 0xFFFF, val & 0xFFFF)
+        }
+      }
+      else if (field.type === 'i16_array') {
+        const arr = leaf[field.name] as ReadonlyArray<number>
+        for (let i = 0; i < field.length!; i++) {
+          result.push(Math.round(arr[i]))
+        }
+      }
+      else if (field.type === 'i32') {
+        const val = Math.round(leaf[field.name] as number)
         result.push((val >> 16) & 0xFFFF, val & 0xFFFF)
       }
       else {
-        result.push(val)
+        result.push(Math.round(leaf[field.name] as number))
       }
     }
     // Convert unsigned to signed int16 for Int16Array storage
@@ -147,7 +203,25 @@ export abstract class Lut {
     const result: LeafValues = {}
     let i = 0
     for (const field of this.schema) {
-      if (field.type === 'i32') {
+      if (field.type === 'i32_array') {
+        const arr: Array<number> = []
+        for (let j = 0; j < field.length!; j++) {
+          const hi = values[i] & 0xFFFF
+          const lo = values[i + 1] & 0xFFFF
+          arr.push((hi << 16) | lo)
+          i += 2
+        }
+        result[field.name] = arr
+      }
+      else if (field.type === 'i16_array') {
+        const arr: Array<number> = []
+        for (let j = 0; j < field.length!; j++) {
+          arr.push(values[i])
+          i += 1
+        }
+        result[field.name] = arr
+      }
+      else if (field.type === 'i32') {
         const hi = values[i] & 0xFFFF
         const lo = values[i + 1] & 0xFFFF
         result[field.name] = (hi << 16) | lo
@@ -234,17 +308,39 @@ export abstract class Lut {
       if (value === undefined) {
         throw new Error(`${this.name}: missing field '${field.name}' in leaf`)
       }
-      if (!Number.isInteger(value)) {
-        throw new Error(`${this.name}: field '${field.name}' is non-integer: ${value}`)
-      }
-      if (field.type === 'i32') {
-        if (value < INT32_MIN || value > INT32_MAX) {
-          throw new Error(`${this.name}: field '${field.name}' value ${value} is outside of int32 range`)
+      if (field.type === 'i16_array' || field.type === 'i32_array') {
+        const arr = value as ReadonlyArray<number>
+        if (!Array.isArray(arr)) {
+          throw new Error(`${this.name}: field '${field.name}' should be an array`)
+        }
+        if (arr.length !== field.length!) {
+          throw new Error(`${this.name}: field '${field.name}' has ${arr.length} elements, expected ${field.length}`)
+        }
+        const [min, max] = field.type === 'i32_array'
+          ? [INT32_MIN, INT32_MAX]
+          : [INT16_MIN, INT16_MAX]
+        for (let i = 0; i < arr.length; i++) {
+          if (!Number.isInteger(arr[i])) {
+            throw new Error(`${this.name}: field '${field.name}[${i}]' is non-integer: ${arr[i]}`)
+          }
+          if (arr[i] < min || arr[i] > max) {
+            throw new Error(`${this.name}: field '${field.name}[${i}]' value ${arr[i]} is out of range`)
+          }
         }
       }
       else {
-        if (value < INT16_MIN || value > INT16_MAX) {
-          throw new Error(`${this.name}: field '${field.name}' value ${value} is outside of int16 range`)
+        if (!Number.isInteger(value as number)) {
+          throw new Error(`${this.name}: field '${field.name}' is non-integer: ${value}`)
+        }
+        if (field.type === 'i32') {
+          if ((value as number) < INT32_MIN || (value as number) > INT32_MAX) {
+            throw new Error(`${this.name}: field '${field.name}' value ${value} is outside of int32 range`)
+          }
+        }
+        else {
+          if ((value as number) < INT16_MIN || (value as number) > INT16_MAX) {
+            throw new Error(`${this.name}: field '${field.name}' value ${value} is outside of int16 range`)
+          }
         }
       }
     }

@@ -39,17 +39,10 @@ export class GasBoxSim {
 
     const lut = Lut.create('gas-box-lut')
 
-    for (let i = 0; i < n; i++) {
-      this.px[i] = lut.get(solutionIndex, `p${i}_x`)
-      this.py[i] = lut.get(solutionIndex, `p${i}_y`)
-      this.dx[i] = lut.get(solutionIndex, `p${i}_vx`)
-      this.dy[i] = lut.get(solutionIndex, `p${i}_vy`)
-
-      // // debug
-      // if (i === 0) {
-      //   console.log('decode gas box particle', this.px[i], this.py[i], this.dx[i], this.dy[i])
-      // }
-    }
+    lut.getI32Array(solutionIndex, 'px', this.px)
+    lut.getI32Array(solutionIndex, 'py', this.py)
+    lut.getI16Array(solutionIndex, 'vx', this.dx)
+    lut.getI16Array(solutionIndex, 'vy', this.dy)
   }
 
   /** Create a GasBoxSim from raw particle arrays (used at build time before the LUT exists). */
