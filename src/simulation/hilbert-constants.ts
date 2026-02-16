@@ -4,7 +4,7 @@
  * Constants for the Hilbert-curve LUT.
  *
  * The curve is encoded as a sequence of (x, y) waypoints at pixel
- * precision inside a 1000 × 500 logical canvas.  An adaptive Hilbert
+ * precision inside a 1000 × 200 logical canvas.  An adaptive Hilbert
  * subdivision recurses deeper in dark image regions and stops early in
  * light ones, leaving a gap of a few pixels in the smallest cells.
  */
@@ -13,14 +13,14 @@
 export const HILBERT_WIDTH = 1000
 
 /** Logical height of the Hilbert image canvas (pixels). */
-export const HILBERT_HEIGHT = 500
+export const HILBERT_HEIGHT = 200
 
 /**
  * Maximum number of waypoints stored per pattern.
  * Chosen large enough to faithfully trace every dark region at pixel
  * precision, while keeping the blob size reasonable.
  */
-export const N_HILBERT_POINTS = 30000
+export const N_HILBERT_POINTS = 50000
 
 /**
  * Minimum cell size (pixels) at the deepest recursion level.

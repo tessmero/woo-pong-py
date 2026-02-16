@@ -131,10 +131,32 @@ function hilbertAdaptive(
   }
 
   // If region is lightly dark and cells are already fairly small, stop
-  if (darkness < 0.15 && cellW <= HILBERT_MIN_CELL * 4) {
+  if (darkness < 0.15 && cellW <= HILBERT_MIN_CELL * 4 && cellH <= HILBERT_MIN_CELL * 4) {
     return [[Math.round(x + cellW / 2), Math.round(y + cellH / 2)]]
   }
 
+  // ── Aspect-ratio correction ──────────────────────────────────────
+  // When the cell is significantly non-square, split only along the
+  // longer axis (binary split) to produce sub-cells closer to square
+  // before applying the standard 4-quadrant Hilbert recursion.
+  // The second half is reversed for spatial locality (serpentine).
+  const aspect = cellW / cellH
+  if (aspect > 1.5) {
+    const halfW = cellW / 2
+    const a = hilbertAdaptive(sat, w, x, y, halfW, cellH, rotation)
+    const b = hilbertAdaptive(sat, w, x + halfW, y, halfW, cellH, rotation)
+    b.reverse()
+    return [...a, ...b]
+  }
+  if (aspect < 1 / 1.5) {
+    const halfH = cellH / 2
+    const a = hilbertAdaptive(sat, w, x, y, cellW, halfH, rotation)
+    const b = hilbertAdaptive(sat, w, x, y + halfH, cellW, halfH, rotation)
+    b.reverse()
+    return [...a, ...b]
+  }
+
+  // ── Standard 4-quadrant Hilbert recursion ─────────────────────────
   const halfW = cellW / 2
   const halfH = cellH / 2
 
@@ -164,23 +186,17 @@ function trimToN(points: Array<Point>): { px: Int32Array, py: Int32Array } {
     points.pop()
   }
 
-  // If too few, duplicate last points with tiny offsets
-  let idx = 0
-  while (points.length < N_HILBERT_POINTS) {
-    const [x, y] = points[idx % points.length]
-    points.push([
-      Math.min(x + 1, HILBERT_WIDTH - 1),
-      Math.min(y + 1, HILBERT_HEIGHT - 1),
-    ])
-    idx++
-  }
-
   const px = new Int32Array(N_HILBERT_POINTS)
   const py = new Int32Array(N_HILBERT_POINTS)
-  for (let i = 0; i < N_HILBERT_POINTS; i++) {
+  for (let i = 0; i < points.length; i++) {
     px[i] = points[i][0]
     py[i] = points[i][1]
   }
+
+  if (points.length < N_HILBERT_POINTS) {
+    px[points.length] = -1
+  }
+
   return { px, py }
 }
 
@@ -203,31 +219,52 @@ export function solveHilbertCurve(imagePath: string): {
   // Build summed-area table for fast region queries
   const sat = buildSAT(darkMap, HILBERT_WIDTH, HILBERT_HEIGHT)
 
-  // If the image is entirely white or entirely black, use a uniform
-  // Hilbert curve over the full canvas.
-  // Otherwise use the adaptive variant.
-  let points: Array<Point>
-
-  if (darkRatio < 0.001 || darkRatio > 0.999) {
-    // Full uniform curve
-    points = hilbertAdaptive(sat, HILBERT_WIDTH, 0, 0,
-      HILBERT_WIDTH, HILBERT_HEIGHT, 0)
+  // The canvas must be an exact multiple of the height so we can tile it
+  // with square cells left-to-right (avoids scrambled Hilbert ordering).
+  const nCols = HILBERT_WIDTH / HILBERT_HEIGHT
+  if (!Number.isInteger(nCols) || nCols < 1) {
+    throw new Error(
+      `HILBERT_WIDTH (${HILBERT_WIDTH}) must be a positive integer multiple `
+      + `of HILBERT_HEIGHT (${HILBERT_HEIGHT})`,
+    )
   }
-  else {
-    points = hilbertAdaptive(sat, HILBERT_WIDTH, 0, 0,
-      HILBERT_WIDTH, HILBERT_HEIGHT, 0)
+
+  // Fill the canvas with nCols square cells, each HILBERT_HEIGHT wide.
+  // Alternate direction (serpentine) so adjacent cells share an edge.
+  const cellSize = HILBERT_HEIGHT
+  const points: Array<Point> = []
+
+  for (let col = 0; col < nCols; col++) {
+    const sub = hilbertAdaptive(
+      sat, HILBERT_WIDTH,
+      col * cellSize, 0,
+      cellSize, cellSize,
+      0,
+    )
+    // Reverse odd columns for serpentine continuity
+    if (col % 2 === 1) sub.reverse()
+    points.push(...sub)
   }
 
   // eslint-disable-next-line no-console
   console.log(`    raw waypoints: ${points.length}, darkRatio: ${darkRatio.toFixed(3)}`)
 
-  return trimToN(points)
+  const { px, py } = trimToN(points)
+
+  // Pin endpoints so the curve always enters from the left edge
+  // and exits at the right edge, both at mid-height.
+  px[0] = 0
+  py[0] = Math.round(HILBERT_HEIGHT / 2)
+  px[N_HILBERT_POINTS - 1] = HILBERT_WIDTH
+  py[N_HILBERT_POINTS - 1] = Math.round(HILBERT_HEIGHT / 2)
+
+  return { px, py }
 }
 
 // ── Dummy test-image generator ─────────────────────────────────────────
 
 /**
- * Create a 1000 × 500 black-and-white PNG test image with some simple
+ * Create a 1000 × 200 black-and-white PNG test image with some simple
  * shapes (circle + rectangle) and save it to `outPath`.
  */
 export function createDummyImage(outPath: string): void {

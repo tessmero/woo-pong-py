@@ -21,7 +21,7 @@ export class LutEncoder {
         }
         else {
           chunks.push(1)
-          chunks.push(...lut.encodeLeaf(leaf))
+          for (const v of lut.encodeLeaf(leaf)) chunks.push(v)
         }
       }
     }
@@ -182,7 +182,7 @@ function encodeChunks(tree: Tree, chunks: Array<number>, lut: Lut) {
     else if (!Array.isArray(value)) {
       // It's a leaf object (Record<string, number>)
       chunks.push(1) // Non-null marker
-      chunks.push(...lut.encodeLeaf(value))
+      for (const v of lut.encodeLeaf(value)) chunks.push(v)
     }
     else {
       // It's a subtree

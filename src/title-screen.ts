@@ -5,11 +5,11 @@
  */
 
 import { Graphics } from 'gfx/graphics'
-import { N_HILBERT_POINTS } from 'simulation/hilbert-constants'
+import { HILBERT_HEIGHT, HILBERT_WIDTH, N_HILBERT_POINTS } from 'simulation/hilbert-constants'
 import type { HilbertLut } from 'simulation/luts/imp/hilbert-lut'
 import { Lut } from 'simulation/luts/lut'
 import type { Vec2 } from 'util/math-util'
-import { twopi } from 'util/math-util'
+import { lerp, twopi } from 'util/math-util'
 
 let _isHilbertEnabled = false
 
@@ -81,29 +81,50 @@ function _updateTitleSim(dt: number) {
 }
 
 let didInitHilbert = false
-const n = N_HILBERT_POINTS
-const px = new Int32Array(n)
-const py = new Int32Array(n)
+let n = N_HILBERT_POINTS
+const hilbertX = new Int32Array(n)
+const hilbertY = new Int32Array(n)
 
 function _drawHilbert() {
   const cvs = Graphics._mainCvs
   const ctx = Graphics._mainCtx
   if (!ctx) return
   const w = cvs.width, h = cvs.height
+  const x0 = (w - HILBERT_WIDTH) / 2
 
   if (!didInitHilbert) {
     didInitHilbert = true
     const lut = Lut.create('hilbert-lut') as HilbertLut
-    lut.getI16Array(0, 'px', px)
-    lut.getI16Array(0, 'py', py)
+    lut.getI16Array(0, 'px', hilbertX)
+    lut.getI16Array(0, 'py', hilbertY)
+
+    // check for early stop flag in hilbert data
+    for (let i = 0; i < n; i++) {
+      if (hilbertX[i] === -1) {
+        n = i // decrease n
+        break
+      }
+    }
   }
 
-  ctx.lineWidth = 2
+  ctx.lineWidth = 1
   ctx.strokeStyle = 'red'
   ctx.beginPath()
+  const anim = 0.5 + 0.5 * Math.sin(performance.now() / 1e3)
+  const time = performance.now() / 1e3
+  const amplitude = HILBERT_HEIGHT * 0.35
   for (let i = 0; i < n; i++) {
-    ctx.lineTo(px[i],py[i])
+    const t = i / (n - 1) // 0..1
+    const lineX = t * HILBERT_WIDTH
+    // Sine wave anchored at both endpoints, traveling left-to-right
+    const envelope = Math.sin(Math.PI * t)
+    const lineY = HILBERT_HEIGHT / 2
+      + amplitude * envelope * Math.sin(twopi * 3 * t - time * 5)
+    const x = x0 + lerp(lineX, hilbertX[i], anim)
+    const y = lerp(lineY, hilbertY[i], anim)
+    ctx.lineTo(x, y)
   }
+  ctx.imageSmoothingEnabled = false
   ctx.stroke()
 }
 
