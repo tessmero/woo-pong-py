@@ -198,10 +198,10 @@ function _tryComputeLeaf(): LeafValues | null {
       // roomSeqs: roomSeqs,
     }
 
-    // // use as dummy data for all disks to trigger early finish
-    // for (let i = 0; i < DISK_COUNT; i++) {
-    //   branches[i] = branches[sim.winningDiskIndex]
-    // }
+    // use as dummy data for all disks to trigger early finish
+    for (let i = 0; i < DISK_COUNT; i++) {
+      branches[i] = branches[sim.winningDiskIndex]
+    }
 
     if (_stepCount > maxStepsTotal) {
       // console.log('')

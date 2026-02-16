@@ -16,7 +16,7 @@ import { Obstacle } from 'simulation/obstacle'
 import type { GfxRegionName } from 'imp-names'
 import type { PinballWizard } from 'pinball-wizard'
 import { type Vec2 } from 'util/math-util'
-import { OBSTACLE_STROKE } from 'gfx/graphics'
+import { OBSTACLE_FILL } from 'gfx/graphics'
 import type { ShapeName } from 'simulation/shapes'
 import { Perturbations } from 'simulation/perturbations'
 
@@ -103,7 +103,7 @@ export class FerrisWheelRoom extends Room {
   buildObstacles(): Array<Obstacle> {
     this.roomCenter = [50 * VALUE_SCALE, this.bounds[1] + 50 * VALUE_SCALE]
 
-    const dir = Math.random() < 0.5 ? 'clockwise' : 'counter-clockwise'
+    const dir = ((Perturbations.nextInt() >>> 0) % 2) ? 'clockwise' : 'counter-clockwise'
     const frameIndex = 0
     this.wheels.push(this._buildGear(this.roomCenter, dir, frameIndex))
 
@@ -235,7 +235,7 @@ export class FerrisWheelRoom extends Room {
 
     // ctx.fillStyle = OBSTACLE_FILL
     // ctx.fill(this._spokesPath)
-    ctx.strokeStyle = OBSTACLE_STROKE
+    ctx.strokeStyle = OBSTACLE_FILL
     ctx.stroke(this._spokesPath)
     ctx.restore()
   }

@@ -1,5 +1,5 @@
 /**
- * @file branching.test.ts
+ * @file branching.testSKIP.ts
  *
  * Run simulation with different PRNG seeds
  * injected halfway through.

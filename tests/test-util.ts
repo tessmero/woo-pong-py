@@ -65,8 +65,7 @@ export const lutSpecs: Array<LutSpec> = [
   // },
 ]
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function lookupIndex(tree: Tree<any>, index: Array<number>): Array<number> {
+export function lookupIndex(tree: Tree, index: Array<number>): Array<number> {
   if (index.length === 1) {
     return tree[index[0]]
   }

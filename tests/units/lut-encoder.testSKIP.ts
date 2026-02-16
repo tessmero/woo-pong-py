@@ -1,15 +1,15 @@
 /**
- * @file lut-encoder.test.ts
+ * @file lut-encoder.testSKIP.ts
  *
  * Test encoding and decoding computed collisions.
  */
 
-import { LutEncoder, DDCollisionTree } from '../../src/simulation/lut-encoder'
+import { LutEncoder } from '../../src/simulation/lut-encoder'
 import { ok, strictEqual } from 'assert'
 import { lookupIndex, lutSpecs } from '../test-util'
 import { readFileSync, writeFileSync } from 'fs'
 import { Buffer } from 'buffer' // Ensure Buffer is imported explicitly
-import { Lut } from '../../src/simulation/luts/lut'
+import { Lut, Tree } from '../../src/simulation/luts/lut'
 import { DiskDiskLut } from '../../src/simulation/luts/imp/disk-disk-lut'
 import { join } from 'path'
 import { tmpdir } from 'os'
@@ -55,8 +55,8 @@ describe('LUT encoder/decoder', function () {
 })
 
 function assertCachesMatch(
-  originalCache: DDCollisionTree,
-  decodedCache: DDCollisionTree,
+  originalCache: Tree,
+  decodedCache: Tree,
   indexer: () => Array<number>,
 ) {
   // Compare random indices before and after

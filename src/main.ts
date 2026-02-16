@@ -107,6 +107,7 @@ async function main() {
   // ballSelectionPanel.initListeners(pinballWizard)
   pinballWizard.loadingState = 'E'
   await _initAssets(startBtn)
+  TitleScreen.startHilbert()
   pinballWizard.loadingState = 'F'
   startBtn.innerHTML = 'START'
   pinballWizard.loadingState = 'G'
@@ -227,4 +228,6 @@ async function _initAssets(loadingLabel: HTMLElement) {
 
   // eslint-disable-next-line no-console
   console.log(`assets loaded in ${(performance.now() - t0).toFixed(0)}ms`)
+
+
 }

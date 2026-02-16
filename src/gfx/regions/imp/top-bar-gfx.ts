@@ -115,11 +115,7 @@ export class TopBarGfx extends GfxRegion {
   }
 
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
-    ctx.strokeStyle = '#888'
-    // const pad = 6
-    // ctx.lineWidth = pad
-    // const [x, y, w, h] = rect
-    // ctx.strokeRect(x + pad / 2, y + pad / 2, w - pad, h - pad)
+    ctx.fillStyle = '#888'
     ctx.fillRect(...rect)
 
     if (!this._layout) return
@@ -166,12 +162,14 @@ export class TopBarGfx extends GfxRegion {
     const progress = Math.min(1, pw.activeSim.stepCount / STEPS_BEFORE_BRANCH)
 
     ctx.fillStyle = '#ccc'
+    // ctx.fillStyle = OBSTACLE_FILL
     ctx.fillRect(x + 1, y + 1, w - 2, h - 2)
 
     _padded[0] = x + pad
     _padded[1] = y + pad
     _padded[2] = w - 2 * pad
     _padded[3] = h - 2 * pad
+    ctx.fillStyle = OBSTACLE_FILL
     fillFrameBetweenRectAndRounded(ctx,
       _padded,
       pad,

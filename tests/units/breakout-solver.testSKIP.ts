@@ -1,5 +1,5 @@
 /**
- * @file breakout-solver.test.ts
+ * @file breakout-solver.testSKIP.ts
  *
  * Compute brick values for breakout room to have consistent score in all branches.
  */

@@ -44,6 +44,7 @@ export const LUT = {
     'disk-normal-lut', // bounce disk off of solid edge
     'gear-lut', // positions of teeth on a spinning gear
     'gas-box-lut',
+    'hilbert-lut', // density-adaptive Hilbert curve through dark image regions
 
     'race-lut', // precomputed races (start seed + midpoint seeds for each disk to win)
 

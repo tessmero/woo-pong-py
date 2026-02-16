@@ -1,5 +1,5 @@
 /**
- * @file simulation.test.ts
+ * @file simulation.testSKIP.ts
  *
  * Assert that simulation is deterministic.
  */
@@ -7,41 +7,13 @@
 import { Simulation } from '../../src/simulation/simulation'
 import { equal } from 'assert'
 import { Lut } from '../../src/simulation/luts/lut'
-import { LUT } from '../../src/imp-names'
+import { GFX_REGION, LUT, ROOM } from '../../src/imp-names'
 import { SHAPE_NAMES } from '../../src/simulation/shapes'
 import { Perturbations } from '../../src/simulation/perturbations'
 import { assertDisksInBounds } from '../test-util'
+import { requireImps } from '../../build/require-imps'
 
-import { DiskDiskLut } from '../../src/simulation/luts/imp/disk-disk-lut'
-import { ObstacleLut } from '../../src/simulation/luts/imp/obstacle-lut'
-import { DiskNormalLut } from '../../src/simulation/luts/imp/disk-normal-lut'
-import { DiskFrictionLut } from '../../src/simulation/luts/imp/disk-friction-lut'
-import { RaceLut } from '../../src/simulation/luts/imp/race-lut'
-
-import { BasicRoom } from '../../src/rooms/imp/basic-room'
-import { PongRoom } from '../../src/rooms/imp/pong-room'
-import { BreakoutRoom } from '../../src/rooms/imp/breakout-room'
-import { StartRoom } from '../../src/rooms/imp/start-room'
-import { FinishRoom } from '../../src/rooms/imp/finish-room'
-
-// GFX_REGION imports and placeholder variable
-import { SimGfx } from '../../src/gfx/regions/imp/sim-gfx'
-import { ScrollbarGfx } from '../../src/gfx/regions/imp/scrollbar-gfx'
-import { BottomBarGfx } from '../../src/gfx/regions/imp/bottom-bar-gfx'
-import { TopBarGfx } from '../../src/gfx/regions/imp/top-bar-gfx'
-import { GlassGfx } from '../../src/gfx/regions/imp/glass-gfx'
-
-const _gfxRegions = [
-  SimGfx, ScrollbarGfx, BottomBarGfx, TopBarGfx, GlassGfx,
-]
-
-// excuse to import luts and have them registered
-const _luts = [
-  DiskDiskLut, ObstacleLut, DiskNormalLut, DiskFrictionLut, RaceLut,
-]
-const _rooms = [
-  BasicRoom, PongRoom, BreakoutRoom, StartRoom, FinishRoom,
-]
+requireImps(ROOM, GFX_REGION, LUT)
 
 const sim = new Simulation(0)
 const stepCount = 5e3

@@ -102,7 +102,7 @@ export class Simulation {
   step() {
     this._stepCount++
 
-    if (this._stepCount >= this.finalStepCount) {
+    if (this._stepCount > this.finalStepCount) {
       return // prevent simulating past the moment a disk wins
     }
 

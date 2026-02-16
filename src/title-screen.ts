@@ -5,13 +5,26 @@
  */
 
 import { Graphics } from 'gfx/graphics'
+import { N_HILBERT_POINTS } from 'simulation/hilbert-constants'
+import type { HilbertLut } from 'simulation/luts/imp/hilbert-lut'
+import { Lut } from 'simulation/luts/lut'
 import type { Vec2 } from 'util/math-util'
 import { twopi } from 'util/math-util'
+
+let _isHilbertEnabled = false
 
 export class TitleScreen {
   static update(dt: number) {
     _updateTitleSim(dt)
     _drawTitleSim()
+
+    if (_isHilbertEnabled) {
+      _drawHilbert()
+    }
+  }
+
+  static startHilbert() {
+    _isHilbertEnabled = true
   }
 }
 
@@ -65,6 +78,33 @@ function _updateTitleSim(dt: number) {
     trail[indexInTrail * 2 + 1] = pos[1]
   }
   indexInTrail = (indexInTrail + 1) % TRAIL_LENGTH
+}
+
+let didInitHilbert = false
+const n = N_HILBERT_POINTS
+const px = new Int32Array(n)
+const py = new Int32Array(n)
+
+function _drawHilbert() {
+  const cvs = Graphics._mainCvs
+  const ctx = Graphics._mainCtx
+  if (!ctx) return
+  const w = cvs.width, h = cvs.height
+
+  if (!didInitHilbert) {
+    didInitHilbert = true
+    const lut = Lut.create('hilbert-lut') as HilbertLut
+    lut.getI16Array(0, 'px', px)
+    lut.getI16Array(0, 'py', py)
+  }
+
+  ctx.lineWidth = 2
+  ctx.strokeStyle = 'red'
+  ctx.beginPath()
+  for (let i = 0; i < n; i++) {
+    ctx.lineTo(px[i],py[i])
+  }
+  ctx.stroke()
 }
 
 let indexInTrail = 0

@@ -128,7 +128,7 @@ export class Graphics {
     //   Graphics.cvs.style.setProperty('border-left', 'none')
     //   Graphics.cvs.style.setProperty('border-right', 'none')
     // }
-    const rootWidth = Math.min(maxWidth, screenWidth)
+    const rootWidth = pw ? Math.min(maxWidth, screenWidth) : screenWidth
     const rootWidthPx = Math.floor(rootWidth / dpr)
     const cssHeight = Math.floor(screenHeight / dpr)
     const simCssLeft = Math.floor((screenWidth - rootWidth) / 2 / dpr)

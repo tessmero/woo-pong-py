@@ -5,15 +5,15 @@
  */
 
 import type { PinballWizard } from 'pinball-wizard'
-import { OBSTACLE_STROKE } from 'gfx/graphics'
+import { OBSTACLE_FILL } from 'gfx/graphics'
 import { VALUE_SCALE } from 'simulation/constants'
 import { GAS_BOX_PARTICLE_RADIUS } from 'simulation/gas-box-constants'
 
 const BOX_LINE_WIDTH = 0.4 * VALUE_SCALE
 
-// Debug colors: red for initial sim, blue for final sim.
-const INITIAL_PARTICLE_COLOR = 'rgb(200, 60, 60)'
-const FINAL_PARTICLE_COLOR = 'rgb(60, 60, 200)'
+// // Debug colors: red for initial sim, blue for final sim.
+// const INITIAL_PARTICLE_COLOR = 'rgb(200, 60, 60)'
+// const FINAL_PARTICLE_COLOR = 'rgb(60, 60, 200)'
 
 export function drawGasBoxes(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
   const { simViewRect } = pw
@@ -33,11 +33,13 @@ export function drawGasBoxes(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
 
     // draw bounding rectangle
     ctx.lineWidth = BOX_LINE_WIDTH
-    ctx.strokeStyle = OBSTACLE_STROKE
+    ctx.strokeStyle = OBSTACLE_FILL
     ctx.strokeRect(bx, by, bw, bh)
 
+    ctx.fillStyle = OBSTACLE_FILL
+
     // draw initial-sim particles (red)
-    ctx.fillStyle = INITIAL_PARTICLE_COLOR
+    // ctx.fillStyle = INITIAL_PARTICLE_COLOR
     const initSim = box.initialSim
     for (let i = 0; i < initSim.count; i++) {
       if (box.initialRetired[i]) continue
@@ -50,7 +52,7 @@ export function drawGasBoxes(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
 
     // draw final-sim particles (blue) — only those activated during transition
     if (box.finalSim) {
-      ctx.fillStyle = FINAL_PARTICLE_COLOR
+      // ctx.fillStyle = FINAL_PARTICLE_COLOR
       const finalSim = box.finalSim
       for (let i = 0; i < finalSim.count; i++) {
         if (!box.finalActive[i]) continue

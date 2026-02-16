@@ -43,7 +43,7 @@ export class ScrollbarGfx extends GfxRegion {
     pw.camera.pos = this._computeCamPos(pw, mousePos)
     if (Scrollbar.draggingId === null) {
       Scrollbar.draggingId = inputId
-      Scrollbar.isLocked = !Scrollbar.isLocked
+      // Scrollbar.isLocked = !Scrollbar.isLocked
     }
     return false
   }
@@ -147,6 +147,7 @@ export class ScrollbarGfx extends GfxRegion {
         for (const room of sim.level.rooms) {
           room.drawDecorations(bctx, pw, 'scrollbar-gfx')
         }
+
         drawFinish(bctx, sim.finish)
 
         // bctx.restore()
@@ -235,9 +236,11 @@ export class ScrollbarGfx extends GfxRegion {
     const gapLength = baseLength * (1 - dashShrink)
     _dash[0] = dashLength
     _dash[1] = gapLength
-    if (!Scrollbar.isLocked) ctx.setLineDash(_dash)
+
     ctx.lineCap = 'round'
 
+    // if (!Scrollbar.isLocked)
+    ctx.setLineDash(_dash)
     ctx.lineDashOffset = dashLength / 2
 
     ctx.strokeStyle = 'black'

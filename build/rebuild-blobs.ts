@@ -4,7 +4,7 @@
  * Rebuild lookup collision lookup table blobs.
  */
 
-import { readdirSync, unlinkSync, writeFileSync } from 'fs'
+import { existsSync, readdirSync, unlinkSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { LutEncoder } from '../src/simulation/lut-encoder'
 import { createHash } from 'crypto'
@@ -13,7 +13,9 @@ import { SHAPE_NAMES } from '../src/simulation/shapes'
 
 import type { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
+import { HilbertLut } from '../src/simulation/luts/imp/hilbert-lut'
 import { solvePatternPositions } from './gas-box-pattern-solver'
+import { solveHilbertCurve, createDummyImage } from './hilbert-solver'
 import { LUT, ROOM, ROOM_LAYOUT, GFX_REGION } from '../src/imp-names'
 import { requireImps } from './require-imps'
 
@@ -21,6 +23,14 @@ requireImps(LUT, ROOM, ROOM_LAYOUT, GFX_REGION)
 
 // Inject the build-time pattern solver so GasBoxLut.computeLeaf() can use it
 GasBoxLut.patternSolver = solvePatternPositions
+
+// Generate the dummy Hilbert test image and inject the solver
+const hilbertImgDir = join(__dirname, 'hilbert-images')
+const hilbertImgPath = join(hilbertImgDir, 'dummy.png')
+if (!existsSync(hilbertImgPath)) {
+  createDummyImage(hilbertImgPath)
+}
+HilbertLut.hilbertSolver = (_index: number) => solveHilbertCurve(hilbertImgPath)
 
 // Remove existing files in public/luts
 const collisionsDir = join(__dirname, '../public/luts')
