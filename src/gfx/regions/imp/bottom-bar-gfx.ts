@@ -15,7 +15,7 @@ import { formatTime } from 'guis/imp/playing-gui'
 import { setupRubikText } from '../../canvas-text-util'
 import { drawRoundedRect, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
 import { shortVibrate } from 'util/vibrate'
-import { drawButton } from 'gfx/btn-gfx-util'
+import { drawButton as drawIconOnButton } from 'gfx/icons-gfx-util'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { settingsPanel } from 'overlay-panels/settings-panel'
 
@@ -25,7 +25,7 @@ type Layout = Record<LayoutKey, Rectangle>
 
 const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
   bsp: () => ballSelectionPanel.isShowing,
-  clock: () => false,
+  clock: pw => true,
   pause: pw => pw.speed === 'paused',
   play: pw => pw.speed === 'normal',
   fast: pw => pw.speed === 'fast',
@@ -39,8 +39,9 @@ const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
     }
     ballSelectionPanel.toggle(pw)
   },
-  clock: () => {
-    // do nothing
+  clock: (pw) => {
+    pw.rewindToCheckpoint(1)
+    return true
   },
   pause: (pw) => { pw.speed = 'paused' },
   play: (pw) => { pw.speed = 'normal' },
@@ -169,7 +170,7 @@ export class BottomBarGfx extends GfxRegion {
       }
       else if (BUTTON_ICONS[key]) {
         // Draw icon
-        drawButton(ctx, innerRect, key, isActive)
+        drawIconOnButton(ctx, innerRect, key, isActive)
       }
     }
   }

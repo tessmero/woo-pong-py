@@ -9,7 +9,7 @@ import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import {
   N_FERRIS_FRAMES, N_FERRIS_CARS, FERRIS_ORBIT_RADIUS,
   FERRIS_HUB_RADIUS,
-} from 'simulation/ferris-wheel-constants'
+} from 'simulation/rotating/ferris-wheel-constants'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
@@ -19,6 +19,7 @@ import { type Vec2 } from 'util/math-util'
 import { OBSTACLE_FILL } from 'gfx/graphics'
 import type { ShapeName } from 'simulation/shapes'
 import { Perturbations } from 'simulation/perturbations'
+import { N_GEAR_FRAMES } from 'simulation/rotating/gear-constants'
 
 type Direction = 'clockwise' | 'counter-clockwise'
 
@@ -67,18 +68,19 @@ export class FerrisWheelRoom extends Room {
   private readonly circleLut = Lut.create('obstacle-lut', this.toothShape) as ObstacleLut
   private readonly gearLut = Lut.create('gear-lut')
 
-  override step() {
+  override update(stepIndex: number) {
     for (const wheel of this.wheels) {
+      let frameIndex: number
       if (wheel.dir === 'clockwise') {
-        wheel.frameIndex = (wheel.frameIndex + 1) % N_FERRIS_FRAMES
+        frameIndex = (wheel.frameIndex + stepIndex) % N_GEAR_FRAMES
       }
       else {
-        wheel.frameIndex = (wheel.frameIndex - 1 + N_FERRIS_FRAMES) % N_FERRIS_FRAMES
+        frameIndex = (((wheel.frameIndex - stepIndex) % N_GEAR_FRAMES) + N_GEAR_FRAMES) % N_GEAR_FRAMES
       }
       const centerPos = wheel.center.pos
       const toothDelta = N_FERRIS_FRAMES / N_FERRIS_CARS
       for (let toothIndex = 0; toothIndex < N_FERRIS_CARS; toothIndex++) {
-        const i = (wheel.frameIndex + toothDelta * toothIndex) % N_FERRIS_FRAMES
+        const i = (frameIndex + toothDelta * toothIndex) % N_FERRIS_FRAMES
         const offset: Vec2 = [this.gearLut.get(i, 'x'), this.gearLut.get(i, 'y')]
 
         const cx = centerPos[0] + offset[0] * 2

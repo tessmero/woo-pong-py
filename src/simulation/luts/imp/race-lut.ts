@@ -7,10 +7,11 @@
 import { LUT_BLOBS } from 'set-by-build'
 import { Lut, i32 } from '../lut'
 import type { LeafSchema, LeafValues } from '../lut'
-import { DISK_COUNT, INT32_MAX, STEPS_BEFORE_BRANCH } from 'simulation/constants'
+import { DISK_COUNT, HISTORY_MAX_STEPS, INT32_MAX, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
-import { GAS_BOX_SOLVE_STEPS } from 'simulation/gas-box-constants'
+import { GAS_BOX_SOLVE_STEPS } from 'simulation/gas-box/gas-box-constants'
+import { step } from 'simulation/sim-step'
 
 export type RaceLeaf = LeafValues
 
@@ -148,7 +149,7 @@ function _tryComputeLeaf(): LeafValues | null {
     // console.log('race-lut reset sim')
     const sim = new Simulation(commonStartSeed)
     for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
-      sim.step()
+      step(sim)
       _stepCount++
     }
     // console.log('race-lut finish common start')
@@ -162,7 +163,7 @@ function _tryComputeLeaf(): LeafValues | null {
     // console.log('race-lut set branch seed')
     // console.log(`set branch seed ${branchSeed} for sim with step count ${sim.stepCount}`)
     while (sim.winningDiskIndex === -1 && _stepCount < maxStepsTotal) {
-      sim.step()
+      step(sim)
       _stepCount++
     }
 
@@ -192,6 +193,12 @@ function _tryComputeLeaf(): LeafValues | null {
       break // give up on this starting seed
     }
 
+    if (sim.stepCount > HISTORY_MAX_STEPS) {
+      console.log(`level ran ${sim.stepCount - HISTORY_MAX_STEPS} steps too long`)
+      continue // don't use this branch as a solution
+    }
+
+    // record this solution as a branch
     branches[sim.winningDiskIndex] = {
       midSeed: branchSeed,
       finalStepCount: sim.stepCount,
@@ -264,7 +271,7 @@ function _verifyRace(
     const sim = new Simulation(commonStartSeed)
     // const hashes: Record<number, number> = {}
     for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
-      sim.step()
+      step(sim)
       // if (sim.stepCount % HASH_STEP_INTERVAL === 0) {
       //   hashes[sim.stepCount] = computeSimHash(sim)
       // }
@@ -275,7 +282,7 @@ function _verifyRace(
     const branchSeed = midSeed
     Perturbations.setSeed(branchSeed)
     while (sim.winningDiskIndex === -1 && sim.stepCount < maxStepsTotal) {
-      sim.step()
+      step(sim)
       // if (sim.stepCount % HASH_STEP_INTERVAL === 0) {
       //   hashes[sim.stepCount] = computeSimHash(sim)
       // }

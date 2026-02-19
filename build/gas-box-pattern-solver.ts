@@ -21,7 +21,7 @@ import { PATTERN, type PatternName } from '../src/imp-names'
 import { Pattern } from '../src/gfx/patterns/pattern'
 import { makeCanvas } from '../src/gfx/patterns/pattern-util'
 import { VALUE_SCALE } from '../src/simulation/constants'
-import { N_GAS_BOX_PARTICLES, GAS_BOX_WIDTH, GAS_BOX_HEIGHT } from '../src/simulation/gas-box-constants'
+import { N_GAS_BOX_PARTICLES, GAS_BOX_WIDTH, GAS_BOX_HEIGHT } from '../src/simulation/gas-box/gas-box-constants'
 
 import { requireImps } from './require-imps'
 

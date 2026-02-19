@@ -9,7 +9,7 @@
 
 import { BOBRICK_HEIGHT, BOBRICK_WIDTH } from './constants'
 import { VALUE_SCALE } from './constants'
-import { BIG_CIRCLE_RADIUS, TOOTH_RADIUS } from './gear-constants'
+import { BIG_CIRCLE_RADIUS, TOOTH_RADIUS } from './rotating/gear-constants'
 
 export const SHAPE_NAMES = [
   // 'square', 'circle', 'triangle',

@@ -30,11 +30,11 @@ export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard) 
       continue // obstacle is above view
     }
     const {
-      isDestroyed, isVisible, pos, points,
+      isVisible, pos, points,
       // boundingRect, collisionRect
     } = obstacle
 
-    if (isDestroyed || !isVisible) {
+    if (obstacle.isDestroyed(sim.stepCount) || !isVisible) {
       // skip
     }
     else {

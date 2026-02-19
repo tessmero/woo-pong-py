@@ -1,5 +1,5 @@
 /**
- * @file rebuild-blobs.ts
+ * @file build-blobs.ts
  *
  * Rebuild lookup collision lookup table blobs.
  */

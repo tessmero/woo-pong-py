@@ -130,16 +130,16 @@ export const LUT_BLOBS = {
     "hash": "969b4795754acfc89fbc45a1e9ae8059bf417ac1e47b7950e91e3b266684ac59"
   },
   "GAS_BOX_LUT": {
-    "url": "luts/gas-box-lut-4182943e1cc97218.bin",
-    "hash": "4182943e1cc972189fd967d237e5a5dff3c1b849015125423756d31dc0c8723f"
+    "url": "luts/gas-box-lut-a9c19de5bcaeb825.bin",
+    "hash": "a9c19de5bcaeb825658e3c040b4d3738ab6e227ba8fff2a7d71ad8bd1a8a9fa8"
   },
   "HILBERT_LUT": {
-    "url": "luts/hilbert-lut-06791b961c554bdb.bin",
-    "hash": "06791b961c554bdb96af9fa6f9c6a39d52a3105801eb434f05ec7388c64d4c45"
+    "url": "luts/hilbert-lut-25878a974ebd73f0.bin",
+    "hash": "25878a974ebd73f05de3982389aad06ede303b787ee4330c3df030d85f5ef1dd"
   },
   "RACE_LUT": {
-    "url": "luts/race-lut-b9712570da3e851d.bin",
-    "hash": "b9712570da3e851d59bd486c267e2d91ac6cbe2fdfa3c90b44dc888010d725ab"
+    "url": "luts/race-lut-a271b5757df243d5.bin",
+    "hash": "a271b5757df243d553b224e59caba8fd3a0a65961a0a68b8654eafd39f87d413"
   }
 };
 

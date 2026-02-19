@@ -7,7 +7,7 @@
 import type { PinballWizard } from 'pinball-wizard'
 import { OBSTACLE_FILL } from 'gfx/graphics'
 import { VALUE_SCALE } from 'simulation/constants'
-import { GAS_BOX_PARTICLE_RADIUS } from 'simulation/gas-box-constants'
+import { GAS_BOX_PARTICLE_RADIUS } from 'simulation/gas-box/gas-box-constants'
 
 const BOX_LINE_WIDTH = 0.4 * VALUE_SCALE
 

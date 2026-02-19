@@ -69,7 +69,7 @@ export const ROOM = {
 } as const satisfies ImpManifest
 export type RoomName = (typeof ROOM.NAMES)[number]
 
-// basic room layouts
+// room layouts
 export const ROOM_LAYOUT = {
   NAMES: [
     'four-by-four',
@@ -80,6 +80,15 @@ export const ROOM_LAYOUT = {
   SOURCES: ['src/rooms/room-layouts/imp/**/*.ts'],
 } as const satisfies ImpManifest
 export type RoomLayoutName = (typeof ROOM_LAYOUT.NAMES)[number]
+
+// starting pos/vel for balls
+export const START_LAYOUT = {
+  NAMES: [
+    'spin', 'pool',
+  ],
+  SOURCES: ['src/rooms/start-layouts/imp/**/*.ts'],
+} as const satisfies ImpManifest
+export type StartLayoutName = (typeof START_LAYOUT.NAMES)[number]
 
 // main playing screen segments
 export const GFX_REGION = {

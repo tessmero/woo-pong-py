@@ -33,6 +33,7 @@ import { shortVibrate } from 'util/vibrate'
 import type { SimGfx } from 'gfx/regions/imp/sim-gfx'
 import type { GlassGfx } from 'gfx/regions/imp/glass-gfx'
 import { settingsPanel } from 'overlay-panels/settings-panel'
+import { Serializer } from 'simulation/serializer'
 // import { SIM_HASHES } from 'set-by-build'
 
 // can only be constructed once
@@ -75,6 +76,10 @@ export class PinballWizard {
       throw new Error('PinballWizard constructed multiple times')
     }
     didConstruct = true
+  }
+
+  public rewindToCheckpoint(i: number) {
+    Serializer.restore(this.activeSim, i)
   }
 
   // rough target speed setting

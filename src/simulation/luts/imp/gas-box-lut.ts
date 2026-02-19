@@ -11,12 +11,12 @@
 
 import {
   GAS_BOX_MAX_SPEED, N_GAS_BOX_PARTICLES, GAS_BOX_SOLVE_STEPS, GAS_BOX_MIN_SPEED,
-} from 'simulation/gas-box-constants'
+} from 'simulation/gas-box/gas-box-constants'
 import { Lut, i16Array, i32Array } from '../lut'
 import type { LeafSchema, LeafValues } from '../lut'
 import { PATTERN } from 'imp-names'
 import { LUT_BLOBS } from 'set-by-build'
-import { GasBoxSim } from 'simulation/gas-box-sim'
+import { GasBoxSim } from 'simulation/gas-box/gas-box-sim'
 
 /** Schema: four arrays — positions (i32) and velocities (i16), each length N_GAS_BOX_PARTICLES. */
 const gasBoxSchema: LeafSchema = [

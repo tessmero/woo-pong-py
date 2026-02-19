@@ -7,17 +7,20 @@
 import { Barrier } from './barrier'
 import { DISK_COUNT, INT32_MAX, STEP_DURATION, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './constants'
 import { Disk } from './disk'
-import type { GasBox } from './gas-box'
+import type { GasBox } from './gas-box/gas-box'
 import { collideDisks } from './luts/imp/disk-disk-lut'
 import type { Obstacle } from './obstacle'
 import { type Rectangle } from 'util/math-util'
 import { Perturbations } from './perturbations'
 import { Level } from 'level'
-import { SimHistory } from './sim-history'
+import { SimHistory } from './sim-short-history'
+import type { StartLayoutName } from 'imp-names'
 import { PATTERN, SHUFFLED_PATTERN_NAMES } from 'imp-names'
-import { GAS_BOX_SOLVE_STEPS } from './gas-box-constants'
-import { GasBoxSim } from './gas-box-sim'
-import { checkSimHash } from './sim-hash'
+import { GAS_BOX_SOLVE_STEPS } from './gas-box/gas-box-constants'
+import { GasBoxSim } from './gas-box/gas-box-sim'
+import { START_LAYOUT_POSVELS } from 'rooms/start-layouts/set-by-build'
+import { step } from './sim-step'
+import { Serializer } from './serializer'
 
 const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 5; i++) {
@@ -72,14 +75,20 @@ export class Simulation {
 
     this.level = new Level()
 
-    let diskIndex = 0
-    this.disks = _disks.map((pars) => {
-      const scaledPars = [...pars]
-      scaledPars[0] *= VALUE_SCALE
-      scaledPars[1] *= VALUE_SCALE
-      const disk = Disk.fromJson(scaledPars)
+    const startLayout: StartLayoutName = 'pool'
+    const posVels = START_LAYOUT_POSVELS[startLayout]
+
+    // let diskIndex = 0
+    // this.disks = _disks.map((pars) => {
+    this.disks = Array.from({ length: DISK_COUNT }, (_, diskIndex) => {
+      // const scaledPars = [...pars]
+      // scaledPars[0] *= VALUE_SCALE
+      // scaledPars[1] *= VALUE_SCALE
+      // const disk = Disk.fromJson(scaledPars)
+      const [[x, y], [vx, vy]] = posVels[diskIndex]
+      const disk = Disk.fromJson([x, y, vx, vy])
       disk.pattern = SHUFFLED_PATTERN_NAMES[diskIndex % SHUFFLED_PATTERN_NAMES.length]
-      diskIndex++
+      // diskIndex++
       return disk
     })
 
@@ -95,86 +104,15 @@ export class Simulation {
     // this.barriers = _barriers.map(rect =>
     //   new Barrier(...rect.map(val => val * VALUE_SCALE) as Rectangle))
     this.finish = new Barrier(...this.level.finish.map(val => val * VALUE_SCALE) as Rectangle)
+
+    Serializer.reset()
   }
 
-  private _stepCount = 0
+  public _stepCount = 0
   get stepCount() { return this._stepCount }
-  step() {
-    this._stepCount++
+  
 
-    if (this._stepCount > this.finalStepCount) {
-      return // prevent simulating past the moment a disk wins
-    }
-
-    if (this._stepCount + GAS_BOX_SOLVE_STEPS === this.finalStepCount) {
-      const diskIndex = this.selectedDiskIndex
-      const disk = this.disks[diskIndex]
-      const solutionIndex = disk ? PATTERN.NAMES.indexOf(disk.pattern) : 0
-      // console.log('start final simulation for gas box', solutionIndex)
-      this.gasBoxes[0].setFinalSimulation(new GasBoxSim(solutionIndex))
-    }
-
-    // // update rooms
-    for (const room of this.level.rooms) {
-      room.step()
-    }
-
-    // update gas boxes
-    for (const box of this.gasBoxes) {
-      box.step()
-    }
-
-    // // udpate inner obstacles
-    // for (const obs of this.obstacles) {
-    //   obs.step()
-    //   // Perturbations.blinkObstacle(obs)
-    // }
-
-    // collide disks with barriers
-    for (const [_diskIndex, disk] of this.disks.entries()) {
-      disk.advance(this.obstacles, this._stepCount)
-      disk.pushInBounds(this.level.bounds)
-      Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
-      disk.nextState.dy += 1 // gravity
-    }
-
-    // collide disks with disks
-    for (let a = 1; a < this.disks.length; a++) {
-      for (let b = 0; b < a; b++) {
-        collideDisks(this.disks[a], this.disks[b])
-      }
-    }
-
-    // update stats
-    for (const [diskIndex, disk] of this.disks.entries()) {
-      if ((this.winningDiskIndex === -1)
-        && this.finish.isTouchingDisk(disk.nextState.x, disk.nextState.y)
-      ) {
-        // console.log(`disk index ${diskIndex} won after ${this._stepCount} steps`)
-        this.winningDiskIndex = diskIndex
-      }
-
-      // update lowest Y
-      if (disk.nextState.y > this.maxBallY) {
-        this.maxBallY = disk.nextState.y
-      }
-    }
-
-    Disk.flushStates(this.disks) // commit updates after collisions
-
-    // check determinism hash at interval steps
-    checkSimHash(this)
-
-    // Disk.updateHistory(this.disks) // add to graphical tail
-
-    if (this._stepCount === (STEPS_BEFORE_BRANCH) && this.branchSeed !== -1) {
-      // console.log('set mid seed')
-      Perturbations.setSeed(this.branchSeed)
-      // console.log(`set branch seed ${this.branchSeed} for sim with step count ${this.stepCount}`)
-    }
-  }
-
-  private t = 0
+  public t = 0
   update(dt: number, isBranchingAllowed = true) {
     this.t += dt
     const stepIndex = Math.ceil(this.t / STEP_DURATION)
@@ -189,7 +127,7 @@ export class Simulation {
         break
       }
 
-      this.step()
+      step(this)
 
       SimHistory.takeSnapshot(this)
 

@@ -1,14 +1,14 @@
 /**
- * @file btn-gfx-util.ts
+ * @file icons-gfx-util.ts
  *
- * Button raphics util.
+ * Icons for buttons.
  */
 
 import type { Rectangle } from 'util/math-util'
 import type { IconName } from './button-icons'
 import { BUTTON_ICONS } from './button-icons'
 
-// Efficient SVG icon rendering: cache per icon as ImageBitmap
+// SVG icons: cache per icon as ImageBitmap
 const _iconCache: Partial<Record<IconName, ImageBitmap | null>> = {}
 const _iconCachePending: Partial<Record<IconName, Promise<ImageBitmap> | null>> = {}
 

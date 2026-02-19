@@ -21,11 +21,11 @@
 
 import fs from 'fs'
 import path from 'path'
-import { createCanvas } from 'canvas'
+import { createCanvas, registerFont } from 'canvas'
 import {
   HILBERT_WIDTH, HILBERT_HEIGHT,
   N_HILBERT_POINTS, HILBERT_MIN_CELL,
-} from '../src/simulation/hilbert-constants'
+} from '../src/hilbert-constants'
 
 // ── Dark-map from image file ───────────────────────────────────────────
 
@@ -36,7 +36,7 @@ import {
 function loadDarkMap(imagePath: string): { darkMap: Uint8Array, darkRatio: number } {
   const imgBuf = fs.readFileSync(imagePath)
   const { Image } = require('canvas') // eslint-disable-line @typescript-eslint/no-require-imports
-  const img = new Image() // eslint-disable-line new-cap
+  const img = new Image()
   img.src = imgBuf
 
   const cvs = createCanvas(HILBERT_WIDTH, HILBERT_HEIGHT)
@@ -178,6 +178,64 @@ function hilbertAdaptive(
   return points
 }
 
+// ── Smooth and redistribute evenly along arc length ────────────────────
+
+/**
+ * Smooth a polyline with a moving-average kernel of radius `r`, then
+ * resample it at `outN` points spaced evenly along the arc length.
+ */
+function smoothAndRedistribute(
+  raw: Array<Point>, smoothRadius: number, outN: number,
+): Array<Point> {
+  if (raw.length < 2) return raw
+
+  // ── 1. Moving-average smooth ──────────────────────────────────────
+  const sm: Array<Point> = new Array(raw.length)
+  for (let i = 0; i < raw.length; i++) {
+    let sx = 0, sy = 0, cnt = 0
+    const lo = Math.max(0, i - smoothRadius)
+    const hi = Math.min(raw.length - 1, i + smoothRadius)
+    for (let j = lo; j <= hi; j++) {
+      sx += raw[j][0]
+      sy += raw[j][1]
+      cnt++
+    }
+    sm[i] = [sx / cnt, sy / cnt]
+  }
+
+  // ── 2. Compute cumulative arc-length ──────────────────────────────
+  const arcLen = new Float64Array(sm.length)
+  arcLen[0] = 0
+  for (let i = 1; i < sm.length; i++) {
+    const dx = sm[i][0] - sm[i - 1][0]
+    const dy = sm[i][1] - sm[i - 1][1]
+    arcLen[i] = arcLen[i - 1] + Math.sqrt(dx * dx + dy * dy)
+  }
+  const totalLen = arcLen[sm.length - 1]
+  if (totalLen === 0) return raw.slice(0, outN)
+
+  // ── 3. Resample at uniform arc-length intervals ───────────────────
+  const out: Array<Point> = new Array(outN)
+  out[0] = sm[0]
+  out[outN - 1] = sm[sm.length - 1]
+
+  let seg = 1 // current segment index in the smoothed polyline
+  for (let i = 1; i < outN - 1; i++) {
+    const target = totalLen * i / (outN - 1)
+    // Advance segment pointer until we bracket the target distance
+    while (seg < sm.length - 1 && arcLen[seg] < target) seg++
+    const segStart = arcLen[seg - 1]
+    const segEnd = arcLen[seg]
+    const t = segEnd > segStart ? (target - segStart) / (segEnd - segStart) : 0
+    out[i] = [
+      Math.round(sm[seg - 1][0] + t * (sm[seg][0] - sm[seg - 1][0])),
+      Math.round(sm[seg - 1][1] + t * (sm[seg][1] - sm[seg - 1][1])),
+    ]
+  }
+
+  return out
+}
+
 // ── Trim / pad to exactly N points ─────────────────────────────────────
 
 function trimToN(points: Array<Point>): { px: Int32Array, py: Int32Array } {
@@ -230,7 +288,8 @@ export function solveHilbertCurve(imagePath: string): {
   }
 
   // Fill the canvas with nCols square cells, each HILBERT_HEIGHT wide.
-  // Alternate direction (serpentine) so adjacent cells share an edge.
+  // Each cell enters at top-left and exits at top-right (rotation 0),
+  // so adjacent cells connect naturally left-to-right.
   const cellSize = HILBERT_HEIGHT
   const points: Array<Point> = []
 
@@ -241,15 +300,17 @@ export function solveHilbertCurve(imagePath: string): {
       cellSize, cellSize,
       0,
     )
-    // Reverse odd columns for serpentine continuity
-    if (col % 2 === 1) sub.reverse()
     points.push(...sub)
   }
 
   // eslint-disable-next-line no-console
   console.log(`    raw waypoints: ${points.length}, darkRatio: ${darkRatio.toFixed(3)}`)
 
-  const { px, py } = trimToN(points)
+  // Smooth the raw curve and redistribute points evenly along arc length.
+  const nOut = N_HILBERT_POINTS // Math.min(points.length, N_HILBERT_POINTS)
+  const even = smoothAndRedistribute(points, 3, nOut)
+
+  const { px, py } = trimToN(even)
 
   // Pin endpoints so the curve always enters from the left edge
   // and exits at the right edge, both at mid-height.
@@ -275,21 +336,44 @@ export function createDummyImage(outPath: string): void {
   ctx.fillStyle = '#ffffff'
   ctx.fillRect(0, 0, HILBERT_WIDTH, HILBERT_HEIGHT)
 
-  // Black filled circle in the left third
   ctx.fillStyle = '#000000'
-  ctx.beginPath()
-  ctx.arc(250, 250, 150, 0, Math.PI * 2)
-  ctx.fill()
 
-  // Black filled rectangle in the right third
-  ctx.fillRect(600, 100, 300, 300)
+  // Register the Rubik font
+  registerFont(
+    path.join(
+      __dirname,
+      '../public/fonts/Rubik-VariableFont_wght.ttf',
+    ),
+    { family: 'Rubik' },
+  )
 
-  // Black diagonal stripe across the middle
-  ctx.save()
-  ctx.translate(500, 250)
-  ctx.rotate(Math.PI / 6)
-  ctx.fillRect(-400, -30, 800, 60)
-  ctx.restore()
+  ctx.font = `${Math.floor(HILBERT_HEIGHT * 0.8)}px Rubik, sans-serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('QUANTUM', HILBERT_WIDTH / 2, HILBERT_HEIGHT / 2)
+  ctx.lineWidth = 5
+  ctx.strokeText('QUANTUM', HILBERT_WIDTH / 2, HILBERT_HEIGHT / 2)
+
+  ctx.fillStyle = 'black'
+  const w = HILBERT_WIDTH/5
+  const h = HILBERT_HEIGHT/100
+  ctx.fillRect(0,HILBERT_HEIGHT/2 - h/2, w, h)
+  ctx.fillRect(HILBERT_WIDTH - w,HILBERT_HEIGHT/2 - h/2, w, h)
+
+  // // Black filled circle in the left third
+  // ctx.beginPath()
+  // ctx.arc(250, 250, 150, 0, Math.PI * 2)
+  // ctx.fill()
+
+  // // Black filled rectangle in the right third
+  // ctx.fillRect(600, 100, 300, 300)
+
+  // // Black diagonal stripe across the middle
+  // ctx.save()
+  // ctx.translate(500, 250)
+  // ctx.rotate(Math.PI / 6)
+  // ctx.fillRect(-400, -30, 800, 60)
+  // ctx.restore()
 
   const buf = cvs.toBuffer('image/png')
   fs.mkdirSync(path.dirname(outPath), { recursive: true })

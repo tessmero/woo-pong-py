@@ -27,4 +27,4 @@ export const N_HILBERT_POINTS = 50000
  * Cells this size or smaller are not subdivided further, producing a
  * visible gap of a few pixels between adjacent curve legs.
  */
-export const HILBERT_MIN_CELL = 2
+export const HILBERT_MIN_CELL = 3

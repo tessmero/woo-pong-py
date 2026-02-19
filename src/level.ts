@@ -7,7 +7,7 @@
 import type { RoomName } from 'imp-names'
 import { Room } from 'rooms/room'
 import { ROOM_COUNT, VALUE_SCALE } from 'simulation/constants'
-import { GasBox } from 'simulation/gas-box'
+import { GasBox } from 'simulation/gas-box/gas-box'
 import type { Obstacle } from 'simulation/obstacle'
 import { Perturbations } from 'simulation/perturbations'
 import type { Rectangle } from 'util/math-util'

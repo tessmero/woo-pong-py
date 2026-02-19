@@ -1,5 +1,5 @@
 /**
- * @file sim-history.ts
+ * @file sim-short-history.ts
  *
  * Keep track of disk states in recent history of simulation.
  * Used to simulate in advance and suport audio latency correction.
@@ -39,18 +39,12 @@ export class SimHistory {
     const displayStep = sim.stepCount - stepsBack
     // console.log('update obstacles display step:', displayStep)
     for (const obs of sim.obstacles) {
-      if (obs.isDestroyed) continue
-      if (obs.hideOnStep === -1) continue
-      if (displayStep >= obs.hideOnStep) {
-        obs.isDestroyed = true
-
+      if (obs.hideOnStep === displayStep) {
         // clear rectangle in scrollbar obstacle graphics buffer
         ;(GfxRegion.create('scrollbar-gfx') as ScrollbarGfx).hideObstacle(obs)
       }
-      else {
-        // // obstacle will be hidden soon
-        // console.log(`obstacle not yet actually hidden (${obs.hideOnStep} < ${displayStep})`)
-      }
+      if (obs.isDestroyed(displayStep)) continue
+      if (obs.hideOnStep === -1) continue
     }
   }
 

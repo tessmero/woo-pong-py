@@ -9,7 +9,7 @@
  */
 
 import { GAS_BOX_HEIGHT, GAS_BOX_SOLVE_STEPS, GAS_BOX_WIDTH, N_GAS_BOX_PARTICLES } from './gas-box-constants'
-import { Lut } from './luts/lut'
+import { Lut } from '../luts/lut'
 
 export class GasBoxSim {
   readonly count: number = N_GAS_BOX_PARTICLES

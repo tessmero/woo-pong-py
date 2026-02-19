@@ -9,7 +9,7 @@ import { type Disk } from 'simulation/disk'
 import type { Vec2 } from 'util/math-util'
 import { twopi } from 'util/math-util'
 import { CROWN_FILL } from './graphics'
-import { SimHistory } from 'simulation/sim-history'
+import { SimHistory } from 'simulation/sim-short-history'
 import { Pattern } from './patterns/pattern'
 
 const maxTailDistance = 3 * DISK_RADIUS

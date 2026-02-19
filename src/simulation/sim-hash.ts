@@ -6,6 +6,7 @@
  * obstacle positions that change each step.
  */
 
+import { step } from './sim-step'
 import type { Simulation } from './simulation'
 
 const HASH_STEP_INTERVAL = 100
@@ -57,7 +58,7 @@ export function collectSimHashes(sim: Simulation, maxSteps: number): Record<numb
   const hashes: Record<number, number> = {}
 
   for (let i = 0; i < maxSteps; i++) {
-    sim.step()
+    step(sim)
     if (sim.stepCount % HASH_STEP_INTERVAL === 0) {
       hashes[sim.stepCount] = computeSimHash(sim)
     }

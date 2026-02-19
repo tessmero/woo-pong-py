@@ -135,11 +135,11 @@ export class ScrollbarGfx extends GfxRegion {
         bctx.strokeStyle = 'black'
         for (const obstacle of sim.obstacles) {
           const {
-            isDestroyed, isVisible, pos, points,
+            isVisible, pos, points,
             // boundingRect, collisionRect
           } = obstacle
 
-          if (isDestroyed || !isVisible) continue
+          if (obstacle.isDestroyed(sim.stepCount) || !isVisible) continue
           traceObstacle(bctx, pos, points)
           bctx.fill()
           bctx.stroke()

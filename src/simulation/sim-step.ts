@@ -1,0 +1,98 @@
+/**
+ * @file sim-step.ts
+ *
+ * Sim step function.
+ */
+
+import { PATTERN } from 'imp-names'
+import { GAS_BOX_SOLVE_STEPS } from './gas-box/gas-box-constants'
+import { GasBoxSim } from './gas-box/gas-box-sim'
+import type { Simulation } from './simulation'
+import { Perturbations } from './perturbations'
+import { collideDisks } from './luts/imp/disk-disk-lut'
+import { Disk } from './disk'
+import { HISTORY_CHECKPOINT_STEPS, STEPS_BEFORE_BRANCH } from './constants'
+import { Serializer } from 'simulation/serializer'
+
+export function step(sim: Simulation) {
+  if (sim._stepCount % HISTORY_CHECKPOINT_STEPS === 0) {
+    Serializer.passCheckpoint(sim) // save keyframe for rewinding
+  }
+
+  sim._stepCount++
+
+  if (sim._stepCount > sim.finalStepCount) {
+    return // prevent simulating past the moment a disk wins
+  }
+
+  // if (sim._stepCount + GAS_BOX_SOLVE_STEPS === sim.finalStepCount) {
+  //   const diskIndex = sim.selectedDiskIndex
+  //   const disk = sim.disks[diskIndex]
+  //   const solutionIndex = disk ? PATTERN.NAMES.indexOf(disk.pattern) : 0
+  //   // console.log('start final simulation for gas box', solutionIndex)
+  //   sim.gasBoxes[0].setFinalSimulation(new GasBoxSim(solutionIndex))
+  // }
+
+  if (sim._stepCount === (STEPS_BEFORE_BRANCH) && sim.branchSeed !== -1) {
+    // console.log('set mid seed')
+    Perturbations.setSeed(sim.branchSeed)
+    // console.log(`set branch seed ${sim.branchSeed} for sim with step count ${sim.stepCount}`)
+  }
+
+  _activeStep(sim)
+}
+
+function _activeStep(sim: Simulation) {
+  // // update rooms
+  for (const room of sim.level.rooms) {
+    room.update(sim.stepCount)
+  }
+
+  // // update gas boxes
+  // for (const box of sim.gasBoxes) {
+  //   box.step()
+  // }
+
+  // // udpate inner obstacles
+  // for (const obs of sim.obstacles) {
+  //   obs.step()
+  //   // Perturbations.blinkObstacle(obs)
+  // }
+
+  // collide disks with barriers
+  for (const [_diskIndex, disk] of sim.disks.entries()) {
+    disk.advance(sim.obstacles, sim._stepCount)
+    disk.pushInBounds(sim.level.bounds)
+    //Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
+    disk.nextState.dy += 1 // gravity
+  }
+
+  // collide disks with disks
+  for (let a = 1; a < sim.disks.length; a++) {
+    for (let b = 0; b < a; b++) {
+      collideDisks(sim.disks[a], sim.disks[b])
+    }
+  }
+
+  // update stats
+  for (const [diskIndex, disk] of sim.disks.entries()) {
+    if ((sim.winningDiskIndex === -1)
+      && sim.finish.isTouchingDisk(disk.nextState.x, disk.nextState.y)
+    ) {
+      // console.log(`disk index ${diskIndex} won after ${sim._stepCount} steps`)
+      sim.winningDiskIndex = diskIndex
+    }
+
+    // update lowest Y
+    if (disk.nextState.y > sim.maxBallY) {
+      sim.maxBallY = disk.nextState.y
+    }
+  }
+
+  Disk.flushStates(sim.disks) // commit updates after collisions
+
+  // check determinism hash at interval steps
+  // checkSimHash(this)
+
+  // Disk.updateHistory(sim.disks) // add to graphical tail
+}

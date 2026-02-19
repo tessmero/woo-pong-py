@@ -8,7 +8,7 @@ import { twopi } from 'util/math-util'
 import { Lut, i32 } from '../lut'
 import type { LeafSchema, LeafValues } from '../lut'
 import { LUT_BLOBS } from 'set-by-build'
-import { N_GEAR_FRAMES, GEAR_ORBIT_RADIUS } from 'simulation/gear-constants'
+import { N_GEAR_FRAMES, GEAR_ORBIT_RADIUS } from 'simulation/rotating/gear-constants'
 
 const angleDelta = twopi / N_GEAR_FRAMES
 

@@ -8,7 +8,7 @@ import { lerp, twopi, type Vec2 } from 'util/math-util'
 import { RoomLayout } from '../room-layout'
 import {
   BIG_CIRCLE_RADIUS, GEAR_ORBIT_RADIUS, N_GEAR_FRAMES, N_GEAR_TEETH, TOOTH_RADIUS,
-} from 'simulation/gear-constants'
+} from 'simulation/rotating/gear-constants'
 import { VALUE_SCALE } from 'simulation/constants'
 
 export const N_TWO_GEAR_LAYOUTS = 10

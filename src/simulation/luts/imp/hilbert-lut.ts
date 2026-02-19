@@ -10,8 +10,8 @@
  * a source image; at runtime the curve is loaded from a blob.
  */
 
-import { N_HILBERT_POINTS } from 'simulation/hilbert-constants'
-import { Lut, i16Array, i32Array } from '../lut'
+import { N_HILBERT_POINTS } from 'hilbert-constants'
+import { Lut, i16Array } from '../lut'
 import type { LeafSchema, LeafValues } from '../lut'
 import { LUT_BLOBS } from 'set-by-build'
 
@@ -48,10 +48,18 @@ export class HilbertLut extends Lut {
 
     const { px, py } = solver(index[0])
 
-    return {
+    const result = {
       px: Array.from(px),
       py: Array.from(py),
     }
+
+    const trim = 0
+    for (let i = 0; i < trim; i++) {
+      result.px[i] = -1
+      result.px[px.length - i - 1] = -1
+    }
+
+    return result
   }
 
   static {

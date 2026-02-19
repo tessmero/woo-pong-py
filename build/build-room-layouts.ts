@@ -1,5 +1,5 @@
 /**
- * @file rebuild-layouts.ts
+ * @file build-room-layouts.ts
  *
  * Rebuild layouts for obstacles in basic rooms.
  */
@@ -27,7 +27,7 @@ for (const rlName of ROOM_LAYOUT.NAMES) {
   // Assert all [x, y] are integers
   for (const [group, [x, y]] of positions) {
     if (!Number.isInteger(x) || !Number.isInteger(y)) {
-      throw new Error(`Non-integer position in layout '${rlName}': [${group}, [${x}, ${y}]]`)
+      throw new Error(`Non-integer position in room layout '${rlName}': [${group}, [${x}, ${y}]]`)
     }
   }
   layouts[rlName] = positions

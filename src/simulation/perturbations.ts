@@ -10,15 +10,22 @@ import type { Obstacle } from './obstacle'
 
 const minSpeed = 10 // only perterb vel along axes greater than this magnitude
 
+let state = 0
+
 export class Perturbations {
   public static nextInt = _makePRNG(_randomSeed())
 
   // expose helper publically
   static randomSeed = _randomSeed
 
+  static getSeed(): number {
+    return state
+  }
+
   static setSeed(seed: number) {
     // console.log('set seed', seed)
-    Perturbations.nextInt = _makePRNG(seed)
+    state = seed
+    //Perturbations.nextInt = _makePRNG(seed)
   }
 
   static blinkBarrier(barrier: Barrier) {
@@ -71,7 +78,7 @@ function _randomSeed() {
 
 // Seedable 32-bit integer-only PRNG (xorshift32)
 function _makePRNG(seed) {
-  let state = seed | 0
+  state = seed | 0
   if (state === 0) state = 1
   return function nextInt() {
     state ^= state << 13

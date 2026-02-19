@@ -5,7 +5,11 @@
  */
 
 import { Graphics } from 'gfx/graphics'
-import { HILBERT_HEIGHT, HILBERT_WIDTH, N_HILBERT_POINTS } from 'simulation/hilbert-constants'
+import { Pattern } from 'gfx/patterns/pattern'
+import { buildFillStyle } from 'gfx/patterns/pattern-util'
+import type { PatternName } from 'imp-names'
+import { VALUE_SCALE } from 'simulation/constants'
+import { HILBERT_HEIGHT, HILBERT_WIDTH, N_HILBERT_POINTS } from 'hilbert-constants'
 import type { HilbertLut } from 'simulation/luts/imp/hilbert-lut'
 import { Lut } from 'simulation/luts/lut'
 import type { Vec2 } from 'util/math-util'
@@ -15,11 +19,19 @@ let _isHilbertEnabled = false
 
 export class TitleScreen {
   static update(dt: number) {
-    _updateTitleSim(dt)
-    _drawTitleSim()
+    getScaledPattern('diamond-a')
+    // _updateTitleSim(dt)
+    // _drawTitleSim()
 
+    const cvs = Graphics._mainCvs
+    const ctx = Graphics._mainCtx
+    if (!ctx) return
+    const w = cvs.width, h = cvs.height
+    // ctx.clearRect(0, 0, w, h)
+
+    _drawQuantum()
     if (_isHilbertEnabled) {
-      _drawHilbert()
+      _drawWooPong()
     }
   }
 
@@ -80,51 +92,112 @@ function _updateTitleSim(dt: number) {
   indexInTrail = (indexInTrail + 1) % TRAIL_LENGTH
 }
 
+const _hilbertDelay = 500
+const _hilbertDuration = 2000 // 30 seconds
+let _hilbertStartTime = 0
 let didInitHilbert = false
-let n = N_HILBERT_POINTS
+const n = N_HILBERT_POINTS
 const hilbertX = new Int32Array(n)
 const hilbertY = new Int32Array(n)
+const drawnX = new Int32Array(n)
+const drawnY = new Int32Array(n)
 
-function _drawHilbert() {
+const titlesDeltaY = HILBERT_HEIGHT / 2
+const titleCenterYFraction = 0.3 // fraction of screen height from top
+
+let anim
+function _drawQuantum() {
   const cvs = Graphics._mainCvs
   const ctx = Graphics._mainCtx
   if (!ctx) return
   const w = cvs.width, h = cvs.height
   const x0 = (w - HILBERT_WIDTH) / 2
 
-  if (!didInitHilbert) {
+  const titleYCenter = h * titleCenterYFraction
+  const quantumYCenter = titleYCenter - titlesDeltaY / 2
+  const y0 = quantumYCenter - HILBERT_HEIGHT / 2
+
+  if (!didInitHilbert && _isHilbertEnabled) {
     didInitHilbert = true
     const lut = Lut.create('hilbert-lut') as HilbertLut
     lut.getI16Array(0, 'px', hilbertX)
     lut.getI16Array(0, 'py', hilbertY)
-
-    // check for early stop flag in hilbert data
-    for (let i = 0; i < n; i++) {
-      if (hilbertX[i] === -1) {
-        n = i // decrease n
-        break
-      }
-    }
+    _hilbertStartTime = performance.now() + _hilbertDelay
   }
 
-  ctx.lineWidth = 1
-  ctx.strokeStyle = 'red'
   ctx.beginPath()
-  const anim = 0.5 + 0.5 * Math.sin(performance.now() / 1e3)
+  const t = performance.now()
+  let rawAnim = 0
+  if (_isHilbertEnabled) {
+    if (t < _hilbertStartTime) {
+      anim = 0
+    }
+    else {
+      rawAnim = Math.min(1, (t - _hilbertStartTime) / _hilbertDuration)
+      anim = rawAnim
+      // Use a scaled logistic function for a fast rise in the first second,
+      // then a slow approach to 1 over the remaining time.
+      // anim = L / (1 + exp(-k(x-x0)))
+      // L = 1, k = 16, x0 = 1/30 (so midpoint is at 1s)
+      // Scale x to [0,1]
+      const x = anim
+      const k = 16
+      const x0 = 1 / 30
+      anim = 1 / (1 + Math.exp(-k * (x - x0)))
+      // Normalize so anim(0) = 0, anim(1) = 1
+      const anim0 = 1 / (1 + Math.exp(-k * (0 - x0)))
+      const anim1 = 1 / (1 + Math.exp(-k * (1 - x0)))
+      anim = (anim - anim0) / (anim1 - anim0)
+    }
+  }
+  else {
+    anim = 0
+  }
+
   const time = performance.now() / 1e3
   const amplitude = HILBERT_HEIGHT * 0.35
-  for (let i = 0; i < n; i++) {
+  const i0 = Math.round(performance.now()/1e2) % n
+  const i1 = i0 + Math.round(n / 10)
+  for (let i = i0; i < i1; i++) {
     const t = i / (n - 1) // 0..1
-    const lineX = t * HILBERT_WIDTH
+    const lineX = HILBERT_WIDTH * t
     // Sine wave anchored at both endpoints, traveling left-to-right
     const envelope = Math.sin(Math.PI * t)
     const lineY = HILBERT_HEIGHT / 2
       + amplitude * envelope * Math.sin(twopi * 3 * t - time * 5)
-    const x = x0 + lerp(lineX, hilbertX[i], anim)
-    const y = lerp(lineY, hilbertY[i], anim)
-    ctx.lineTo(x, y)
+
+    // --- Animated oscillation in the normal direction of the Hilbert curve ---
+    // Compute tangent and normal from Hilbert curve (finite difference)
+    const hx = hilbertX[i], hy = hilbertY[i]
+    if (hx === -1) continue
+    let nx = 0, ny = 0
+    if (i > 0 && i < n - 1) {
+      const dx = drawnX[i + 1] - drawnX[i - 1]
+      const dy = drawnY[i + 1] - drawnY[i - 1]
+      const len = Math.hypot(dx, dy) || 1
+      // Normal is (-dy, dx)
+      nx = -dy / len
+      ny = dx / len
+    }
+    // Oscillation parameters
+    const oscAmp = amplitude * 0.05// no envelope, constant amplitude
+    const osc = oscAmp * Math.sin(twopi * (100 + 900 * anim) * t - time * 3)
+    // Apply only as we approach the Hilbert curve
+    const oscMix = 1 + 1 * (1 - Math.cos(Math.pow(anim, 5) * twopi))
+    const x = x0 + lerp(lineX, hx, anim)
+    const y = lerp(lineY, hy, anim)
+    drawnX[i] = x
+    drawnY[i] = y
+    ctx.lineTo(x + nx * osc * oscMix, y0 + y + ny * osc * oscMix)
   }
   ctx.imageSmoothingEnabled = false
+
+  ctx.lineWidth = 2
+  ctx.strokeStyle = '#fff'
+  ctx.stroke()
+
+  ctx.lineWidth = 1
+  ctx.strokeStyle = '#000'
   ctx.stroke()
 }
 
@@ -136,6 +209,7 @@ function _drawTitleSim() {
   if (!ctx) return
   const w = cvs.width, h = cvs.height
   const scale = Math.min(w, h) * 1
+
   // White background
   ctx.save()
   ctx.globalAlpha = 1.0
@@ -176,9 +250,72 @@ function _drawTitleSim() {
     ctx.beginPath()
     ctx.arc(x, y, BODY_RADIUS * window.devicePixelRatio, 0, 2 * Math.PI)
     ctx.fillStyle = '#aaa'
-    ctx.shadowColor = '#999'
-    ctx.shadowBlur = 8 * window.devicePixelRatio
+    // ctx.shadowColor = '#999'
+    // ctx.shadowBlur = 8 * window.devicePixelRatio
     ctx.fill()
-    ctx.shadowBlur = 0
+    // ctx.shadowBlur = 0
   }
+}
+
+function _drawWooPong() {
+  const cvs = Graphics._mainCvs
+  const ctx = Graphics._mainCtx
+  if (!ctx) return
+  const w = cvs.width, h = cvs.height
+  const x0 = (w - HILBERT_WIDTH) / 2
+  // const y0 = HILBERT_HEIGHT
+
+  const titleYCenter = h * titleCenterYFraction
+  const wooPongYCenter = titleYCenter + titlesDeltaY / 2
+
+  ctx.globalAlpha = anim
+
+  ctx.font = `normal 1000 ${Math.floor(HILBERT_HEIGHT * 0.8)}px Rubik, sans-serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  // ctx.shadowColor = '#fff'
+  // ctx.shadowBlur = HILBERT_HEIGHT * 0.12
+  ctx.fillStyle = getScaledPattern('diamond-a')
+  ctx.strokeStyle = 'black'// getScaledPattern('hex-b')
+  ctx.lineWidth = 5
+
+  // Draw centered in the Hilbert rectangle
+  const t = performance.now()
+  const x = x0 + HILBERT_WIDTH / 2
+  const y = wooPongYCenter
+
+  ctx.lineWidth = 12
+  ctx.strokeStyle = 'black'
+  ctx.strokeText('Woo Pong', x, y)
+
+  // ctx.lineWidth = 4
+  // ctx.strokeStyle = 'white'
+  // ctx.strokeText('Woo Pong', x, y)
+
+  ctx.save()
+  ctx.strokeStyle = getScaledPattern('diamond-a')
+  ctx.lineWidth = 4
+  const strokeAnimX = t * 5e-2
+  ctx.translate(strokeAnimX, 0)
+  ctx.strokeText('Woo Pong', x - strokeAnimX, y)
+  ctx.restore()
+
+  ctx.globalAlpha = 1
+}
+
+// scaled versions of disk-gfx patterns
+const scaledFillers: Partial<Record<PatternName, CanvasPattern | string>> = {}
+function getScaledPattern(pattern: PatternName): CanvasPattern | string {
+  if (!Object.hasOwn(scaledFillers, pattern)) {
+    scaledFillers[pattern] = _buildScaledPattern(pattern)
+  }
+  return scaledFillers[pattern] as CanvasPattern
+}
+
+function _buildScaledPattern(pattern: PatternName): CanvasPattern | string {
+  const original = Pattern.getFillStyle(pattern)
+  if (original instanceof CanvasPattern) {
+    return buildFillStyle(pattern, Pattern.getCanvas(pattern), 10 / VALUE_SCALE) // scaled canvas pattern
+  }
+  return original // string
 }

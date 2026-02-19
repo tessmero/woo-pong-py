@@ -46,7 +46,7 @@ export abstract class Room {
     // do nothing
   }
 
-  step(): void {
+  update(_stepIndex: number): void {
     // do nothing
   }
 

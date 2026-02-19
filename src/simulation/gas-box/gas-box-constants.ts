@@ -4,7 +4,7 @@
  * Gass box constants.
  */
 
-import { VALUE_SCALE } from './constants'
+import { VALUE_SCALE } from '../constants'
 
 export const N_GAS_BOX_PARTICLES = 1000
 

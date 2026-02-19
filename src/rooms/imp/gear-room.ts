@@ -10,7 +10,7 @@ import {
   N_GEAR_FRAMES, N_GEAR_TEETH, GEAR_ORBIT_RADIUS,
   BIG_CIRCLE_RADIUS, TOOTH_RADIUS,
   GEAR_FILLET_RADIUS, GEAR_HOLE_RADIUS,
-} from 'simulation/gear-constants'
+} from 'simulation/rotating/gear-constants'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
@@ -49,18 +49,19 @@ export class GearRoom extends Room {
   private readonly circleLut = Lut.create('obstacle-lut', 'circle') as ObstacleLut
   private readonly gearLut = Lut.create('gear-lut')
 
-  override step() {
+  override update(stepIndex: number) {
     for (const gear of this.gears) {
+      let frameIndex: number
       if (gear.dir === 'clockwise') {
-        gear.frameIndex = (gear.frameIndex + 1) % N_GEAR_FRAMES
+        frameIndex = (gear.frameIndex + stepIndex) % N_GEAR_FRAMES
       }
       else {
-        gear.frameIndex = (gear.frameIndex - 1 + N_GEAR_FRAMES) % N_GEAR_FRAMES
+        frameIndex = (((gear.frameIndex - stepIndex) % N_GEAR_FRAMES) + N_GEAR_FRAMES) % N_GEAR_FRAMES
       }
       const centerPos = gear.center.pos
       const toothDelta = N_GEAR_FRAMES / N_GEAR_TEETH
       for (let toothIndex = 0; toothIndex < N_GEAR_TEETH; toothIndex++) {
-        const i = (gear.frameIndex + toothDelta * toothIndex) % N_GEAR_FRAMES
+        const i = (frameIndex + toothDelta * toothIndex) % N_GEAR_FRAMES
 
         offset[0] = this.gearLut.get(i, 'x')
         offset[1] = this.gearLut.get(i, 'y')
