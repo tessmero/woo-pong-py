@@ -19,15 +19,15 @@
  * imported in browser code.
  */
 
-import fs from 'fs'
-import path from 'path'
-import { createCanvas, registerFont } from 'canvas'
 import {
   HILBERT_WIDTH, HILBERT_HEIGHT,
   N_HILBERT_POINTS, HILBERT_MIN_CELL,
   HILBERT_COLUMN_X,
-  N_HILBERT_FRAMES,
 } from '../src/hilbert-constants'
+
+import fs from 'fs'
+import path from 'path'
+import { createCanvas, registerFont } from 'canvas'
 
 // ── Dark-map from image file ───────────────────────────────────────────
 
@@ -122,8 +122,7 @@ function hilbertAdaptive(
   rotation: number,
   depth = 1,
 ): Array<Point> {
-
-  if( depth > currentDepthLimit ){
+  if (depth > currentDepthLimit) {
     return [[Math.round(x + cellW / 2), Math.round(y + cellH / 2)]]
   }
 
@@ -154,15 +153,15 @@ function hilbertAdaptive(
   const aspect = cellW / cellH
   if (aspect > 1.5) {
     const halfW = cellW / 2
-    const a = hilbertAdaptive(sat, w, x, y, halfW, cellH, rotation, depth+1)
-    const b = hilbertAdaptive(sat, w, x + halfW, y, halfW, cellH, rotation, depth+1)
+    const a = hilbertAdaptive(sat, w, x, y, halfW, cellH, rotation, depth + 1)
+    const b = hilbertAdaptive(sat, w, x + halfW, y, halfW, cellH, rotation, depth + 1)
     b.reverse()
     return [...a, ...b]
   }
   if (aspect < 1 / 1.5) {
     const halfH = cellH / 2
-    const a = hilbertAdaptive(sat, w, x, y, cellW, halfH, rotation, depth+1)
-    const b = hilbertAdaptive(sat, w, x, y + halfH, cellW, halfH, rotation, depth+1)
+    const a = hilbertAdaptive(sat, w, x, y, cellW, halfH, rotation, depth + 1)
+    const b = hilbertAdaptive(sat, w, x, y + halfH, cellW, halfH, rotation, depth + 1)
     b.reverse()
     return [...a, ...b]
   }
@@ -181,7 +180,7 @@ function hilbertAdaptive(
       x + QX[q] * halfW,
       y + QY[q] * halfH,
       halfW, halfH,
-      child[i], depth+1,
+      child[i], depth + 1,
     )
     points.push(...subPoints)
   }
@@ -303,20 +302,36 @@ export function solveHilbertCurve(imagePath: string, frameIndex: number): {
   // const cellSize = HILBERT_HEIGHT
   const points: Array<Point> = []
 
-  currentMinCell = HILBERT_MIN_CELL// + frameIndex
-  currentDepthLimit = 2 * (frameIndex+2)
+  currentMinCell = HILBERT_MIN_CELL // + frameIndex
+  currentDepthLimit = 2 * (frameIndex + 2)
 
-  const nCols = HILBERT_COLUMN_X.length-1
+  const nCols = HILBERT_COLUMN_X.length - 1
+  let prevEnd: [number, number] | null = null
   for (let col = 0; col < nCols; col++) {
     const x = HILBERT_COLUMN_X[col]
-    const w = HILBERT_COLUMN_X[col+1] - x
+    const w = HILBERT_COLUMN_X[col + 1] - x
     const sub = hilbertAdaptive(
       sat, HILBERT_WIDTH,
       x, 0,
       w, HILBERT_HEIGHT,
       0,
     )
-    points.push(...sub)
+    if (col === 0) {
+      // For the first cell, just add its points
+      points.push(...sub)
+    } else {
+      // For subsequent cells, insert two bracket joints at y=0
+      // prevEnd is the last point of the previous cell
+      if (prevEnd) {
+        // First joint: horizontal from prevEnd.x to current x at y=0
+        points.push([prevEnd[0], 0])
+        // Second joint: horizontal to the start of this cell at y=0
+        points.push([x, 0])
+      }
+      points.push(...sub)
+    }
+    // Update prevEnd to the last point of this cell
+    prevEnd = sub.length > 0 ? sub[sub.length - 1] : prevEnd
   }
 
   // eslint-disable-next-line no-console
@@ -367,14 +382,14 @@ export function createDummyImage(outPath: string): void {
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText('QUANTUM', HILBERT_WIDTH / 2, HILBERT_HEIGHT / 2)
-  ctx.lineWidth = 5
+  ctx.lineWidth = 10
   ctx.strokeText('QUANTUM', HILBERT_WIDTH / 2, HILBERT_HEIGHT / 2)
 
   ctx.fillStyle = 'black'
-  const w = HILBERT_WIDTH/5
-  const h = HILBERT_HEIGHT/100
-  ctx.fillRect(0,HILBERT_HEIGHT/2 - h/2, w, h)
-  ctx.fillRect(HILBERT_WIDTH - w,HILBERT_HEIGHT/2 - h/2, w, h)
+  const w = HILBERT_WIDTH / 5
+  const h = HILBERT_HEIGHT / 100
+  ctx.fillRect(0, HILBERT_HEIGHT / 2 - h / 2, w, h)
+  ctx.fillRect(HILBERT_WIDTH - w, HILBERT_HEIGHT / 2 - h / 2, w, h)
 
   // // Black filled circle in the left third
   // ctx.beginPath()
@@ -391,7 +406,36 @@ export function createDummyImage(outPath: string): void {
   // ctx.fillRect(-400, -30, 800, 60)
   // ctx.restore()
 
-  const buf = cvs.toBuffer('image/png')
+  // ── Skew the image to make text italic, center row unaffected ──
+  const srcImg = ctx.getImageData(0, 0, HILBERT_WIDTH, HILBERT_HEIGHT)
+  const skewed = createCanvas(HILBERT_WIDTH, HILBERT_HEIGHT)
+  const skewCtx = skewed.getContext('2d')
+  const skewImg = skewCtx.createImageData(HILBERT_WIDTH, HILBERT_HEIGHT)
+  const centerY = Math.floor(HILBERT_HEIGHT / 2)
+  const maxSkew = -Math.floor(HILBERT_HEIGHT * 0.05) // max horizontal shift at top/bottom
+  for (let y = 0; y < HILBERT_HEIGHT; y++) {
+    // Skew factor: 0 at center, maxSkew at top/bottom
+    const rel = (y - centerY) / centerY // -1 at top, 0 at center, 1 at bottom
+    const dx = Math.round(rel * maxSkew)
+    for (let x = 0; x < HILBERT_WIDTH; x++) {
+      let srcX = x - dx
+      const srcIdx = (y * HILBERT_WIDTH + srcX) * 4
+      const dstIdx = (y * HILBERT_WIDTH + x) * 4
+      if (srcX < 0 || srcX >= HILBERT_WIDTH) {
+        skewImg.data[dstIdx + 0] = 255
+        skewImg.data[dstIdx + 1] = 255
+        skewImg.data[dstIdx + 2] = 255
+        skewImg.data[dstIdx + 3] = 255
+        continue
+      }
+      skewImg.data[dstIdx + 0] = srcImg.data[srcIdx + 0]
+      skewImg.data[dstIdx + 1] = srcImg.data[srcIdx + 1]
+      skewImg.data[dstIdx + 2] = srcImg.data[srcIdx + 2]
+      skewImg.data[dstIdx + 3] = srcImg.data[srcIdx + 3]
+    }
+  }
+  skewCtx.putImageData(skewImg, 0, 0)
+  const buf = skewed.toBuffer('image/png')
   fs.mkdirSync(path.dirname(outPath), { recursive: true })
   fs.writeFileSync(outPath, buf)
   // eslint-disable-next-line no-console

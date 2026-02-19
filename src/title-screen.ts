@@ -136,7 +136,7 @@ function _drawQuantum() {
       // anim = 1 / (1 + exp(-k(x-0.5)))
       // Normalize so anim(0) = 0, anim(1) = 1
       const x = anim
-      const k = 10
+      const k = 20
       const x0 = 0.5
       anim = 1 / (1 + Math.exp(-k * (x - x0)))
       const anim0 = 1 / (1 + Math.exp(-k * (0 - x0)))
@@ -156,7 +156,7 @@ function _drawQuantum() {
   let frameFraction = 0
   if (_isHilbertEnabled && hilbertLut) {
     // 0..1 over _hilbertDuration
-    const frame = Math.min( nFrames, (Math.pow(rawAnim,1) * nFrames) )
+    const frame = Math.min( nFrames, (Math.pow(rawAnim,4) * nFrames) )
     frameIndex = Math.floor(frame)
     frameFraction = frame - frameIndex
   }
@@ -205,8 +205,8 @@ function _drawQuantum() {
       ny = dx / len
     }
     // Oscillation parameters
-    const oscAmp = amplitude * 0.01// no envelope, constant amplitude
-    const osc = oscAmp * Math.sin(100 * t - time * 30)
+    const oscAmp = amplitude * 0.01 // no envelope, constant amplitude
+    const osc = oscAmp * Math.sin(150 * t - time * 25)
     // Apply only as we approach the Hilbert curve
     const oscMix = 1
     const x = x0 + lerp(lineX, hx, anim)
@@ -221,7 +221,7 @@ function _drawQuantum() {
   // ctx.strokeStyle = '#fff'
   // ctx.stroke()
 
-  ctx.lineWidth = 2
+  ctx.lineWidth = 1.5
   ctx.strokeStyle = '#000'
   ctx.stroke()
 }

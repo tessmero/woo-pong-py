@@ -45,5 +45,6 @@ export const HILBERT_COLUMN_X: Array<number> = [
   544,
   646,
   750, // M
-  868, // righ tmargin
+  868, // right margin
 ]
+

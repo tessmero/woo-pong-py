@@ -110,7 +110,7 @@ export function _verify(sim: Simulation, entryIndex: number, seed: number) {
 }
 
 function _captureCheckpoint(sim: Simulation, entryIndex: number, seed: number) {
-  console.log('capture serialized sim entry', entryIndex)
+  // console.log('capture serialized sim entry', entryIndex)
 
   seeds[entryIndex] = seed
 
@@ -121,7 +121,7 @@ function _captureCheckpoint(sim: Simulation, entryIndex: number, seed: number) {
     const { x, y, dx, dy } = disk.currentState
     if (isFirst) {
       isFirst = false
-      console.log('capture disk state', x, y, dx, dy)
+      // console.log('capture disk state', x, y, dx, dy)
     }
     pos[i] = x
     pos[i + 1] = y
