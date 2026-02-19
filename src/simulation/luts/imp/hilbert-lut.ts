@@ -10,7 +10,7 @@
  * a source image; at runtime the curve is loaded from a blob.
  */
 
-import { N_HILBERT_POINTS } from 'hilbert-constants'
+import { N_HILBERT_FRAMES, N_HILBERT_POINTS } from 'hilbert-constants'
 import { Lut, i16Array } from '../lut'
 import type { LeafSchema, LeafValues } from '../lut'
 import { LUT_BLOBS } from 'set-by-build'
@@ -31,7 +31,7 @@ export class HilbertLut extends Lut {
   schema = hilbertSchema
 
   /** One leaf per source image. For now just the single dummy image (index 0). */
-  override detail = [1]
+  override detail = [N_HILBERT_FRAMES]
 
   blobUrl = LUT_BLOBS.HILBERT_LUT.url
   blobHash = LUT_BLOBS.HILBERT_LUT.hash
@@ -53,7 +53,7 @@ export class HilbertLut extends Lut {
       py: Array.from(py),
     }
 
-    const trim = 0
+    const trim = 20
     for (let i = 0; i < trim; i++) {
       result.px[i] = -1
       result.px[px.length - i - 1] = -1

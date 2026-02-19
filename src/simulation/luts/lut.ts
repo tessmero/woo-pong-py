@@ -164,6 +164,14 @@ export abstract class Lut {
     const n = info.length!
     for (let i = 0; i < n; i++) out[i] = this.data[base + i]
   }
+  /**
+   * Copy an i16_array field into `out`. Zero-allocation hot path.
+   */
+  getI16ArrayValue(cellIndex: number, fieldName: string, i: number): number {
+    const info = this.reg.fieldInfo[fieldName]
+    const base = cellIndex * this.reg.leafLength + info.encodedOffset
+    return this.data[base + i]
+  }
 
   /**
    * Copy an i32_array field into `out`. Zero-allocation hot path.

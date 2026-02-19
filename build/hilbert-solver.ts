@@ -25,6 +25,8 @@ import { createCanvas, registerFont } from 'canvas'
 import {
   HILBERT_WIDTH, HILBERT_HEIGHT,
   N_HILBERT_POINTS, HILBERT_MIN_CELL,
+  HILBERT_COLUMN_X,
+  N_HILBERT_FRAMES,
 } from '../src/hilbert-constants'
 
 // ── Dark-map from image file ───────────────────────────────────────────
@@ -109,15 +111,24 @@ const HILBERT: Record<number, { order: [number, number, number, number], child: 
 const QX = [0, 1, 0, 1]
 const QY = [0, 0, 1, 1]
 
+let currentMinCell = HILBERT_MIN_CELL
+let currentDepthLimit = 10
+
 function hilbertAdaptive(
   sat: Float64Array,
   w: number,
   x: number, y: number,
   cellW: number, cellH: number,
   rotation: number,
+  depth = 1,
 ): Array<Point> {
+
+  if( depth > currentDepthLimit ){
+    return [[Math.round(x + cellW / 2), Math.round(y + cellH / 2)]]
+  }
+
   // If cell is at or below the minimum size, emit a single point
-  if (cellW <= HILBERT_MIN_CELL || cellH <= HILBERT_MIN_CELL) {
+  if (cellW <= currentMinCell || cellH <= currentMinCell) {
     return [[Math.round(x + cellW / 2), Math.round(y + cellH / 2)]]
   }
 
@@ -131,7 +142,7 @@ function hilbertAdaptive(
   }
 
   // If region is lightly dark and cells are already fairly small, stop
-  if (darkness < 0.15 && cellW <= HILBERT_MIN_CELL * 4 && cellH <= HILBERT_MIN_CELL * 4) {
+  if (darkness < 0.15 && cellW <= currentMinCell * 4 && cellH <= currentMinCell * 4) {
     return [[Math.round(x + cellW / 2), Math.round(y + cellH / 2)]]
   }
 
@@ -143,15 +154,15 @@ function hilbertAdaptive(
   const aspect = cellW / cellH
   if (aspect > 1.5) {
     const halfW = cellW / 2
-    const a = hilbertAdaptive(sat, w, x, y, halfW, cellH, rotation)
-    const b = hilbertAdaptive(sat, w, x + halfW, y, halfW, cellH, rotation)
+    const a = hilbertAdaptive(sat, w, x, y, halfW, cellH, rotation, depth+1)
+    const b = hilbertAdaptive(sat, w, x + halfW, y, halfW, cellH, rotation, depth+1)
     b.reverse()
     return [...a, ...b]
   }
   if (aspect < 1 / 1.5) {
     const halfH = cellH / 2
-    const a = hilbertAdaptive(sat, w, x, y, cellW, halfH, rotation)
-    const b = hilbertAdaptive(sat, w, x, y + halfH, cellW, halfH, rotation)
+    const a = hilbertAdaptive(sat, w, x, y, cellW, halfH, rotation, depth+1)
+    const b = hilbertAdaptive(sat, w, x, y + halfH, cellW, halfH, rotation, depth+1)
     b.reverse()
     return [...a, ...b]
   }
@@ -170,7 +181,7 @@ function hilbertAdaptive(
       x + QX[q] * halfW,
       y + QY[q] * halfH,
       halfW, halfH,
-      child[i],
+      child[i], depth+1,
     )
     points.push(...subPoints)
   }
@@ -265,7 +276,7 @@ function trimToN(points: Array<Point>): { px: Int32Array, py: Int32Array } {
  * at `imagePath`.  Returns arrays of pixel coordinates for
  * N_HILBERT_POINTS waypoints.
  */
-export function solveHilbertCurve(imagePath: string): {
+export function solveHilbertCurve(imagePath: string, frameIndex: number): {
   px: Int32Array
   py: Int32Array
 } {
@@ -277,27 +288,32 @@ export function solveHilbertCurve(imagePath: string): {
   // Build summed-area table for fast region queries
   const sat = buildSAT(darkMap, HILBERT_WIDTH, HILBERT_HEIGHT)
 
-  // The canvas must be an exact multiple of the height so we can tile it
-  // with square cells left-to-right (avoids scrambled Hilbert ordering).
-  const nCols = HILBERT_WIDTH / HILBERT_HEIGHT
-  if (!Number.isInteger(nCols) || nCols < 1) {
-    throw new Error(
-      `HILBERT_WIDTH (${HILBERT_WIDTH}) must be a positive integer multiple `
-      + `of HILBERT_HEIGHT (${HILBERT_HEIGHT})`,
-    )
-  }
+  // // The canvas must be an exact multiple of the height so we can tile it
+  // // with square cells left-to-right (avoids scrambled Hilbert ordering).
+  // const nCols = HILBERT_WIDTH / HILBERT_HEIGHT
+  // if (!Number.isInteger(nCols) || nCols < 1) {
+  //   throw new Error(
+  //     `HILBERT_WIDTH (${HILBERT_WIDTH}) must be a positive integer multiple `
+  //     + `of HILBERT_HEIGHT (${HILBERT_HEIGHT})`,
+  //   )
+  // }
 
   // Fill the canvas with nCols square cells, each HILBERT_HEIGHT wide.
-  // Each cell enters at top-left and exits at top-right (rotation 0),
-  // so adjacent cells connect naturally left-to-right.
-  const cellSize = HILBERT_HEIGHT
+  // Explicitly define x-values for each column: first at x=0, last at integer < HILBERT_WIDTH.
+  // const cellSize = HILBERT_HEIGHT
   const points: Array<Point> = []
 
+  currentMinCell = HILBERT_MIN_CELL// + frameIndex
+  currentDepthLimit = 2 * (frameIndex+2)
+
+  const nCols = HILBERT_COLUMN_X.length-1
   for (let col = 0; col < nCols; col++) {
+    const x = HILBERT_COLUMN_X[col]
+    const w = HILBERT_COLUMN_X[col+1] - x
     const sub = hilbertAdaptive(
       sat, HILBERT_WIDTH,
-      col * cellSize, 0,
-      cellSize, cellSize,
+      x, 0,
+      w, HILBERT_HEIGHT,
       0,
     )
     points.push(...sub)

@@ -9,7 +9,7 @@ import { Pattern } from 'gfx/patterns/pattern'
 import { buildFillStyle } from 'gfx/patterns/pattern-util'
 import type { PatternName } from 'imp-names'
 import { VALUE_SCALE } from 'simulation/constants'
-import { HILBERT_HEIGHT, HILBERT_WIDTH, N_HILBERT_POINTS } from 'hilbert-constants'
+import { HILBERT_HEIGHT, HILBERT_WIDTH, N_HILBERT_FRAMES, N_HILBERT_POINTS } from 'hilbert-constants'
 import type { HilbertLut } from 'simulation/luts/imp/hilbert-lut'
 import { Lut } from 'simulation/luts/lut'
 import type { Vec2 } from 'util/math-util'
@@ -27,7 +27,7 @@ export class TitleScreen {
     const ctx = Graphics._mainCtx
     if (!ctx) return
     const w = cvs.width, h = cvs.height
-    // ctx.clearRect(0, 0, w, h)
+    ctx.clearRect(0, 0, w, h)
 
     _drawQuantum()
     if (_isHilbertEnabled) {
@@ -93,12 +93,11 @@ function _updateTitleSim(dt: number) {
 }
 
 const _hilbertDelay = 500
-const _hilbertDuration = 2000 // 30 seconds
+const _hilbertDuration = 2000 
 let _hilbertStartTime = 0
 let didInitHilbert = false
 const n = N_HILBERT_POINTS
-const hilbertX = new Int32Array(n)
-const hilbertY = new Int32Array(n)
+let hilbertLut: HilbertLut | null = null
 const drawnX = new Int32Array(n)
 const drawnY = new Int32Array(n)
 
@@ -119,9 +118,7 @@ function _drawQuantum() {
 
   if (!didInitHilbert && _isHilbertEnabled) {
     didInitHilbert = true
-    const lut = Lut.create('hilbert-lut') as HilbertLut
-    lut.getI16Array(0, 'px', hilbertX)
-    lut.getI16Array(0, 'py', hilbertY)
+    hilbertLut = Lut.create('hilbert-lut') as HilbertLut
     _hilbertStartTime = performance.now() + _hilbertDelay
   }
 
@@ -135,16 +132,13 @@ function _drawQuantum() {
     else {
       rawAnim = Math.min(1, (t - _hilbertStartTime) / _hilbertDuration)
       anim = rawAnim
-      // Use a scaled logistic function for a fast rise in the first second,
-      // then a slow approach to 1 over the remaining time.
-      // anim = L / (1 + exp(-k(x-x0)))
-      // L = 1, k = 16, x0 = 1/30 (so midpoint is at 1s)
-      // Scale x to [0,1]
-      const x = anim
-      const k = 16
-      const x0 = 1 / 30
-      anim = 1 / (1 + Math.exp(-k * (x - x0)))
+      // Use a symmetric scaled logistic function centered at x=0.5
+      // anim = 1 / (1 + exp(-k(x-0.5)))
       // Normalize so anim(0) = 0, anim(1) = 1
+      const x = anim
+      const k = 10
+      const x0 = 0.5
+      anim = 1 / (1 + Math.exp(-k * (x - x0)))
       const anim0 = 1 / (1 + Math.exp(-k * (0 - x0)))
       const anim1 = 1 / (1 + Math.exp(-k * (1 - x0)))
       anim = (anim - anim0) / (anim1 - anim0)
@@ -156,9 +150,17 @@ function _drawQuantum() {
 
   const time = performance.now() / 1e3
   const amplitude = HILBERT_HEIGHT * 0.35
-  const i0 = Math.round(performance.now()/1e2) % n
-  const i1 = i0 + Math.round(n / 10)
-  for (let i = i0; i < i1; i++) {
+  // Animate over 10 frames based on time
+  const nFrames = N_HILBERT_FRAMES
+  let frameIndex = 0
+  let frameFraction = 0
+  if (_isHilbertEnabled && hilbertLut) {
+    // 0..1 over _hilbertDuration
+    const frame = Math.min( nFrames, (Math.pow(rawAnim,1) * nFrames) )
+    frameIndex = Math.floor(frame)
+    frameFraction = frame - frameIndex
+  }
+  for (let i = 0; i < n; i++) {
     const t = i / (n - 1) // 0..1
     const lineX = HILBERT_WIDTH * t
     // Sine wave anchored at both endpoints, traveling left-to-right
@@ -168,7 +170,30 @@ function _drawQuantum() {
 
     // --- Animated oscillation in the normal direction of the Hilbert curve ---
     // Compute tangent and normal from Hilbert curve (finite difference)
-    const hx = hilbertX[i], hy = hilbertY[i]
+    let hx = -1, hy = -1
+    if (hilbertLut) {
+      // Gaussian kernel smoothing over all frames
+      const sigma = 0.7; // Controls the width of the smoothing window (tune as needed)
+      let sumWeights = 0;
+      let sumHx = 0;
+      let sumHy = 0;
+      const center = frameIndex + frameFraction;
+      for (let f = 0; f < nFrames; f++) {
+        // Compute shortest distance in cyclic frame space
+        let df = f - center;
+        // // Wrap cyclically
+        // if (df > nFrames / 2) df -= nFrames;
+        // if (df < -nFrames / 2) df += nFrames;
+        const weight = Math.exp(-0.5 * (df / sigma) * (df / sigma));
+        const hxF = hilbertLut.getI16ArrayValue(f, 'px', i);
+        const hyF = hilbertLut.getI16ArrayValue(f, 'py', i);
+        sumHx += hxF * weight;
+        sumHy += hyF * weight;
+        sumWeights += weight;
+      }
+      hx = sumHx / sumWeights;
+      hy = sumHy / sumWeights;
+    }
     if (hx === -1) continue
     let nx = 0, ny = 0
     if (i > 0 && i < n - 1) {
@@ -180,10 +205,10 @@ function _drawQuantum() {
       ny = dx / len
     }
     // Oscillation parameters
-    const oscAmp = amplitude * 0.05// no envelope, constant amplitude
-    const osc = oscAmp * Math.sin(twopi * (100 + 900 * anim) * t - time * 3)
+    const oscAmp = amplitude * 0.01// no envelope, constant amplitude
+    const osc = oscAmp * Math.sin(100 * t - time * 30)
     // Apply only as we approach the Hilbert curve
-    const oscMix = 1 + 1 * (1 - Math.cos(Math.pow(anim, 5) * twopi))
+    const oscMix = 1
     const x = x0 + lerp(lineX, hx, anim)
     const y = lerp(lineY, hy, anim)
     drawnX[i] = x
@@ -192,11 +217,11 @@ function _drawQuantum() {
   }
   ctx.imageSmoothingEnabled = false
 
-  ctx.lineWidth = 2
-  ctx.strokeStyle = '#fff'
-  ctx.stroke()
+  // ctx.lineWidth = 3
+  // ctx.strokeStyle = '#fff'
+  // ctx.stroke()
 
-  ctx.lineWidth = 1
+  ctx.lineWidth = 2
   ctx.strokeStyle = '#000'
   ctx.stroke()
 }

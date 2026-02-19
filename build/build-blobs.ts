@@ -30,7 +30,8 @@ const hilbertImgPath = join(hilbertImgDir, 'dummy.png')
 if (!existsSync(hilbertImgPath)) {
   createDummyImage(hilbertImgPath)
 }
-HilbertLut.hilbertSolver = (_index: number) => solveHilbertCurve(hilbertImgPath)
+HilbertLut.hilbertSolver = (frameIndex: number) =>
+  solveHilbertCurve(hilbertImgPath, frameIndex)
 
 // Remove existing files in public/luts
 const collisionsDir = join(__dirname, '../public/luts')
