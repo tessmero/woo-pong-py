@@ -10,7 +10,7 @@ import type { PinballWizard } from 'pinball-wizard'
 import { BUTTON_ICONS } from 'gfx/button-icons'
 import { Graphics, gutterPx } from 'gfx/graphics'
 
-import { stepsToSeconds } from 'simulation/constants'
+import { HISTORY_MAX_STEPS, stepsToSeconds } from 'simulation/constants'
 import { formatTime } from 'guis/imp/playing-gui'
 import { setupRubikText } from '../../canvas-text-util'
 import { drawRoundedRect, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
@@ -32,15 +32,16 @@ const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
   faster: pw => pw.speed === 'faster',
 }
 
-const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
+const clickActions: Record<LayoutKey, (pw: PinballWizard, xFrac: number) => void> = {
   bsp: (pw) => {
     if (!ballSelectionPanel.isShowing) {
       shortVibrate(pw)
     }
     ballSelectionPanel.toggle(pw)
   },
-  clock: (pw) => {
-    pw.rewindToCheckpoint(1)
+  clock: (pw,xFrac) => {
+    const stepCount = Math.floor( xFrac * HISTORY_MAX_STEPS)
+    pw.rewindToStep(stepCount)
     return true
   },
   pause: (pw) => { pw.speed = 'paused' },
@@ -66,12 +67,14 @@ export class BottomBarGfx extends GfxRegion {
     }
   }
 
-  down(pw: PinballWizard, _mousePos: Vec2) {
+  down(pw: PinballWizard, mousePos: Vec2) {
     // console.log('bottom bar down', this._hovered)
     this._held = this._hovered
 
     if (this._held) {
-      clickActions[this._held](pw)
+      const rect = this._layout![this._held]
+      const xFrac = (mousePos[0] * window.devicePixelRatio - rect[0])/ rect[2]
+      clickActions[this._held](pw,xFrac)
     }
     return false
   }
@@ -160,8 +163,16 @@ export class BottomBarGfx extends GfxRegion {
       // ctx.strokeRect(...innerRect)
 
       if (key === 'clock') {
-        // Draw the current time string centered in the rect
         const [x, y, w, h] = innerRect
+
+        // draw draggable timeline
+        const timeFrac = pw.activeSim.stepCount / HISTORY_MAX_STEPS
+        ctx.fillStyle = 'red'
+        ctx.fillRect(x, y, w, h)
+        ctx.fillStyle = 'blue'
+        ctx.fillRect(x, y, w * timeFrac, h)
+
+        // Draw the current time string centered in the rect
         ctx.save()
         ctx.translate(x + w / 2, y + h / 2)
         setupRubikText(ctx, h, 'black')// isActive ? 'white' : 'black')

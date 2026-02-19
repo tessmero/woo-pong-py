@@ -20,6 +20,7 @@ import type { Speed } from 'simulation/constants'
 import {
   DISK_COUNT,
   HALT_LOOK_AHEAD_STEPS,
+  HISTORY_CHECKPOINT_STEPS,
   INT32_MAX,
   ROOM_COUNT,
   SPEEDS, STEPS_BEFORE_BRANCH,
@@ -34,6 +35,7 @@ import type { SimGfx } from 'gfx/regions/imp/sim-gfx'
 import type { GlassGfx } from 'gfx/regions/imp/glass-gfx'
 import { settingsPanel } from 'overlay-panels/settings-panel'
 import { Serializer } from 'simulation/serializer'
+import { step } from 'simulation/sim-step'
 // import { SIM_HASHES } from 'set-by-build'
 
 // can only be constructed once
@@ -78,8 +80,12 @@ export class PinballWizard {
     didConstruct = true
   }
 
-  public rewindToCheckpoint(i: number) {
+  public rewindToStep(stepCount: number) {
+    const i = Math.floor(stepCount / HISTORY_CHECKPOINT_STEPS)
     Serializer.restore(this.activeSim, i)
+    while( this.activeSim._stepCount < stepCount ) {
+      step(this.activeSim)
+    }
   }
 
   // rough target speed setting
