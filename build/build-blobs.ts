@@ -18,6 +18,7 @@ import { solvePatternPositions } from './gas-box-pattern-solver'
 import { solveHilbertCurve, createDummyImage } from './hilbert-solver'
 import { LUT, ROOM, ROOM_LAYOUT, GFX_REGION } from '../src/imp-names'
 import { requireImps } from './require-imps'
+import { solveChainCurve } from './chain-solver'
 
 requireImps(LUT, ROOM, ROOM_LAYOUT, GFX_REGION)
 
@@ -30,8 +31,10 @@ const hilbertImgPath = join(hilbertImgDir, 'dummy.png')
 if (!existsSync(hilbertImgPath)) {
   createDummyImage(hilbertImgPath)
 }
+// HilbertLut.hilbertSolver = (frameIndex: number) =>
+//   solveHilbertCurve(hilbertImgPath, frameIndex)
 HilbertLut.hilbertSolver = (frameIndex: number) =>
-  solveHilbertCurve(hilbertImgPath, frameIndex)
+  solveChainCurve(hilbertImgPath)
 
 // Remove existing files in public/luts
 const collisionsDir = join(__dirname, '../public/luts')
