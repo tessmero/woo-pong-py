@@ -17,7 +17,7 @@ import type { ShapeName } from 'simulation/shapes'
 import { SHAPE_PATHS } from 'simulation/shapes'
 import { Gui } from 'guis/gui'
 import { Graphics } from 'gfx/graphics'
-import { TitleScreen } from 'title-screen'
+import { getTitleScreenCanvas, onTitleScreenResize, TitleScreen } from 'title-screen'
 import { BASE_FONT_SIZE } from 'gfx/canvas-text-util'
 import { shortVibrate } from 'util/vibrate'
 import { loadAllSounds } from 'audio/sound-asset-loader'
@@ -53,18 +53,18 @@ function titleAnimLoop() {
   const dt = Math.min(50, currentTime - lastTime)
   lastTime = currentTime
   TitleScreen.update(dt) // update and repaint title screen background
-}
 
-function titleAnimResize() {
-  Graphics.onResize()
+  // // debug
+  // const ctx = getTitleScreenCanvas().ctx
+  // ctx.fillStyle = 'red'
+  // ctx.fillRect(100, 100, 100, 100)
 }
 
 async function main() {
   await ensureRubikFontLoaded()
 
-  titleAnimResize()
-  window.addEventListener('resize', titleAnimResize)
-  requestAnimationFrame(titleAnimLoop) // start background animation loop
+  Graphics.onResize()
+  window.addEventListener('resize', onTitleScreenResize)
 
   const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
 
@@ -73,6 +73,10 @@ async function main() {
     iframe.addEventListener('load', () => resolve())
     iframe.src = 'title-screen.html'
   })
+
+  // start background animation loop
+  onTitleScreenResize()
+  requestAnimationFrame(titleAnimLoop)
 
   // bind start button in title screen
   const inner = iframe.contentDocument as Document
@@ -108,6 +112,10 @@ async function main() {
   pinballWizard.loadingState = 'E'
   await _initAssets(startBtn)
   TitleScreen.startHilbert()
+
+  for (const elem of inner.getElementsByClassName('toHide')) {
+    elem.setAttribute('style', 'opacity:0')
+  }
   pinballWizard.loadingState = 'F'
   startBtn.innerHTML = 'START'
   pinballWizard.loadingState = 'G'
@@ -133,7 +141,7 @@ async function main() {
     // ballSelectionPanel.show()
 
     isTitleAnimPlaying = false // break title screen loop
-    document.removeEventListener('resize', titleAnimResize)
+    document.removeEventListener('resize', onTitleScreenResize)
     mainLoop() // start first loop
   }
   pinballWizard.loadingState = 'J'
@@ -228,6 +236,4 @@ async function _initAssets(loadingLabel: HTMLElement) {
 
   // eslint-disable-next-line no-console
   console.log(`assets loaded in ${(performance.now() - t0).toFixed(0)}ms`)
-
-
 }

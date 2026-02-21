@@ -8,6 +8,7 @@ import type { InputId, PinballWizard } from 'pinball-wizard'
 import { lerp2, shuffle, twopi, type Rectangle, type Vec2 } from 'util/math-util'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { DISK_COUNT, VALUE_SCALE } from 'simulation/constants'
+import type { CanvasName } from 'gfx/graphics'
 import { CROWN_FILL, Graphics } from 'gfx/graphics'
 import type { Disk } from 'simulation/disk'
 import { GfxRegion } from '../gfx-region'
@@ -75,6 +76,11 @@ let _drawScale = 1
 export class BspGfx extends GfxRegion {
   static {
     GfxRegion.register('bsp-gfx', () => new BspGfx())
+  }
+
+  override targetCanvas: CanvasName = 'bsp'
+  override shouldDraw() {
+    return ballSelectionPanel.isShowing
   }
 
   _entranceStartTime = 0

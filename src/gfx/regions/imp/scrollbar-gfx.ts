@@ -139,7 +139,9 @@ export class ScrollbarGfx extends GfxRegion {
             // boundingRect, collisionRect
           } = obstacle
 
-          if (obstacle.isDestroyed(sim.stepCount) || !isVisible) continue
+          if (!isVisible) {
+            continue // skip drawing obstacle
+          }
           traceObstacle(bctx, pos, points)
           bctx.fill()
           bctx.stroke()

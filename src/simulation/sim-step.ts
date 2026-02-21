@@ -4,9 +4,6 @@
  * Sim step function.
  */
 
-import { PATTERN } from 'imp-names'
-import { GAS_BOX_SOLVE_STEPS } from './gas-box/gas-box-constants'
-import { GasBoxSim } from './gas-box/gas-box-sim'
 import type { Simulation } from './simulation'
 import { Perturbations } from './perturbations'
 import { collideDisks } from './luts/imp/disk-disk-lut'
@@ -20,6 +17,7 @@ export function step(sim: Simulation) {
   }
 
   sim._stepCount++
+  sim._maxStepCount = Math.max(sim._stepCount, sim._maxStepCount)
 
   if (sim._stepCount > sim.finalStepCount) {
     return // prevent simulating past the moment a disk wins
@@ -61,9 +59,9 @@ function _activeStep(sim: Simulation) {
 
   // collide disks with barriers
   for (const [_diskIndex, disk] of sim.disks.entries()) {
-    disk.advance(sim.obstacles, sim._stepCount)
+    disk.advance(sim.obstacles, sim.stepCount)
     disk.pushInBounds(sim.level.bounds)
-    //Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
+    // Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
     disk.nextState.dy += 1 // gravity
   }
 

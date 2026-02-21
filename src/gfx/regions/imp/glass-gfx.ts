@@ -6,6 +6,7 @@
 
 import type { PinballWizard } from 'pinball-wizard'
 import type { Rectangle, Vec2 } from 'util/math-util'
+import type { CanvasName } from 'gfx/graphics'
 import { Graphics } from 'gfx/graphics'
 import type { SimGfx } from './sim-gfx'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
@@ -14,6 +15,15 @@ import { GfxRegion } from '../gfx-region'
 import { settingsPanel } from 'overlay-panels/settings-panel'
 
 export class GlassGfx extends GfxRegion {
+  static {
+    GfxRegion.register('glass-gfx', () => new GlassGfx())
+  }
+
+  override targetCanvas: CanvasName = 'main'
+  override shouldDraw() {
+    return ballSelectionPanel.isShowing
+  }
+
   private _xOffset: number = 0
   // private _yOffset: number = 0
   private _yAnimOffset: number = 0
@@ -27,9 +37,6 @@ export class GlassGfx extends GfxRegion {
 
   private static readonly X_SCROLL_RATE = 1e-3 // pixels per ms
   private static readonly Y_SCROLL_RATE = 0 // pixels per ms
-  static {
-    GfxRegion.register('glass-gfx', () => new GlassGfx())
-  }
 
   // Low-res glass simulation parameters
   private static readonly GLASS_RES = 50 // max number of pixels per axis (square)

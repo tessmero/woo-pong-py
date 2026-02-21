@@ -16,12 +16,12 @@ export class Spin extends StartLayout {
   }
 
   _computePosVels(): Array<[Vec2, Vec2]> {
-    const center = [50 * VALUE_SCALE, 50 * VALUE_SCALE];
-    const ringRadius = 20 * VALUE_SCALE;
+    const center = [50 * VALUE_SCALE, 50 * VALUE_SCALE]
+    const ringRadius = 20 * VALUE_SCALE
 
-    const result: Array<[Vec2, Vec2]> = [];
+    const result: Array<[Vec2, Vec2]> = []
     for (let i = 0; i < DISK_COUNT; i++) {
-      const angle = twopi * i / DISK_COUNT;
+      const angle = twopi * i / DISK_COUNT
       result.push([
         [
           Math.round(center[0] + ringRadius * Math.cos(angle)),
@@ -31,8 +31,8 @@ export class Spin extends StartLayout {
           Math.round(releaseSpeed * Math.cos(angle - pio2)),
           Math.round(releaseSpeed * Math.sin(angle - pio2)),
         ],
-      ]);
+      ])
     }
-    return result;
+    return result
   }
 }

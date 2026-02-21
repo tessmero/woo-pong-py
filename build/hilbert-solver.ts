@@ -23,6 +23,7 @@ import {
   HILBERT_WIDTH, HILBERT_HEIGHT,
   N_HILBERT_POINTS, HILBERT_MIN_CELL,
   HILBERT_COLUMN_X,
+  HILBERT_FRAME_DEPTHS,
 } from '../src/hilbert-constants'
 
 import fs from 'fs'
@@ -303,7 +304,7 @@ export function solveHilbertCurve(imagePath: string, frameIndex: number): {
   const points: Array<Point> = []
 
   currentMinCell = HILBERT_MIN_CELL // + frameIndex
-  currentDepthLimit = 2 * (frameIndex + 2)
+  currentDepthLimit = HILBERT_FRAME_DEPTHS[frameIndex]// 2 * (frameIndex + 2)
 
   const nCols = HILBERT_COLUMN_X.length - 1
   let prevEnd: [number, number] | null = null
@@ -319,7 +320,8 @@ export function solveHilbertCurve(imagePath: string, frameIndex: number): {
     if (col === 0) {
       // For the first cell, just add its points
       points.push(...sub)
-    } else {
+    }
+    else {
       // For subsequent cells, insert two bracket joints at y=0
       // prevEnd is the last point of the previous cell
       if (prevEnd) {
@@ -412,13 +414,13 @@ export function createDummyImage(outPath: string): void {
   const skewCtx = skewed.getContext('2d')
   const skewImg = skewCtx.createImageData(HILBERT_WIDTH, HILBERT_HEIGHT)
   const centerY = Math.floor(HILBERT_HEIGHT / 2)
-  const maxSkew = -Math.floor(HILBERT_HEIGHT * 0.05) // max horizontal shift at top/bottom
+  const maxSkew = 0// -Math.floor(HILBERT_HEIGHT * 0.05) // max horizontal shift at top/bottom
   for (let y = 0; y < HILBERT_HEIGHT; y++) {
     // Skew factor: 0 at center, maxSkew at top/bottom
     const rel = (y - centerY) / centerY // -1 at top, 0 at center, 1 at bottom
     const dx = Math.round(rel * maxSkew)
     for (let x = 0; x < HILBERT_WIDTH; x++) {
-      let srcX = x - dx
+      const srcX = x - dx
       const srcIdx = (y * HILBERT_WIDTH + srcX) * 4
       const dstIdx = (y * HILBERT_WIDTH + x) * 4
       if (srcX < 0 || srcX >= HILBERT_WIDTH) {

@@ -5,6 +5,10 @@
         --color-text: #37352F;
 }
 
+.toHide {
+  transition: opacity 0.5s ease;
+  opacity: 1;
+}
 
 /* Fonts */
 @font-face {

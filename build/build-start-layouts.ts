@@ -21,14 +21,14 @@ const jsdocComment = `/**
  */`
 
 type Vec2 = [number, number]
-const layouts: Record<string, Array<[Vec2,Vec2]>> = {}
+const layouts: Record<string, Array<[Vec2, Vec2]>> = {}
 
 // write singleton luts' blobs
 for (const rlName of START_LAYOUT.NAMES) {
   const positions = StartLayout.create(rlName).computePosVels()
 
-  if( positions.length !== DISK_COUNT ){
-      throw new Error(`wrong number of disks in start layout '${rlName}': 
+  if (positions.length !== DISK_COUNT) {
+    throw new Error(`wrong number of disks in start layout '${rlName}': 
         had ${positions.length}, expected ${DISK_COUNT}
       `)
   }
@@ -44,7 +44,6 @@ for (const rlName of START_LAYOUT.NAMES) {
   }
   layouts[rlName] = positions
 }
-
 
 // Format the layouts object so that each [[xy], [vx, vy]] is on a single line
 function formatLayouts(obj: Record<string, Array<[Vec2, Vec2]>>): string {

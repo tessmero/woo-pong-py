@@ -7,8 +7,10 @@
 import { topConfig } from 'configs/imp/top-config'
 import { drawRoundedRect } from 'gfx/canvas-rounded-rect-util'
 import { drawText } from 'gfx/canvas-text-util'
+import type { CanvasName } from 'gfx/graphics'
 import { Graphics } from 'gfx/graphics'
 import { GfxRegion } from 'gfx/regions/gfx-region'
+import { settingsPanel } from 'overlay-panels/settings-panel'
 import type { PinballWizard, InputId } from 'pinball-wizard'
 import { STEP_DURATION } from 'simulation/constants'
 import { type Vec2, type Rectangle, rectContainsPoint } from 'util/math-util'
@@ -16,6 +18,11 @@ import { type Vec2, type Rectangle, rectContainsPoint } from 'util/math-util'
 export class SettingsGfx extends GfxRegion {
   static {
     GfxRegion.register('settings-gfx', () => new SettingsGfx())
+  }
+
+  override targetCanvas: CanvasName = 'settings'
+  override shouldDraw() {
+    return settingsPanel.isShowing
   }
 
   _entranceStartTime = 0

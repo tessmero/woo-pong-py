@@ -9,8 +9,6 @@ import { topConfig } from 'configs/imp/top-config'
 import { DISK_COUNT, LATENCY_LOOK_AHEAD_STEPS, TAIL_STEPS } from './constants'
 import type { Simulation } from './simulation'
 import type { Vec2 } from 'util/math-util'
-import { GfxRegion } from 'gfx/regions/gfx-region'
-import type { ScrollbarGfx } from 'gfx/regions/imp/scrollbar-gfx'
 
 const entryLength = DISK_COUNT * 2 // xy per disk
 const nEntries = LATENCY_LOOK_AHEAD_STEPS + TAIL_STEPS // number of steps to store
@@ -35,17 +33,17 @@ export class SimHistory {
       SimHistory.getPos(diskIndex++, stepsBack, displayPos)
     }
 
-    // update obstacles
-    const displayStep = sim.stepCount - stepsBack
-    // console.log('update obstacles display step:', displayStep)
-    for (const obs of sim.obstacles) {
-      if (obs.hideOnStep === displayStep) {
-        // clear rectangle in scrollbar obstacle graphics buffer
-        ;(GfxRegion.create('scrollbar-gfx') as ScrollbarGfx).hideObstacle(obs)
-      }
-      if (obs.isDestroyed(displayStep)) continue
-      if (obs.hideOnStep === -1) continue
-    }
+    // // update obstacles
+    // const displayStep = sim.stepCount - stepsBack
+    // // console.log('update obstacles display step:', displayStep)
+    // for (const obs of sim.obstacles) {
+    //   if (obs.hideOnStep === displayStep) {
+    //     // clear rectangle in scrollbar obstacle graphics buffer
+    //     ;(GfxRegion.create('scrollbar-gfx') as ScrollbarGfx).hideObstacle(obs)
+    //   }
+    //   if (obs.isDestroyed(displayStep)) continue
+    //   if (obs.hideOnStep === -1) continue
+    // }
   }
 
   static getPos(diskIndex: number, stepsBack: number, out = dummy): Vec2 {

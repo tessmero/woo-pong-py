@@ -7,17 +7,13 @@
 import { Barrier } from './barrier'
 import { DISK_COUNT, INT32_MAX, STEP_DURATION, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './constants'
 import { Disk } from './disk'
-import type { GasBox } from './gas-box/gas-box'
-import { collideDisks } from './luts/imp/disk-disk-lut'
 import type { Obstacle } from './obstacle'
 import { type Rectangle } from 'util/math-util'
 import { Perturbations } from './perturbations'
 import { Level } from 'level'
 import { SimHistory } from './sim-short-history'
 import type { StartLayoutName } from 'imp-names'
-import { PATTERN, SHUFFLED_PATTERN_NAMES } from 'imp-names'
-import { GAS_BOX_SOLVE_STEPS } from './gas-box/gas-box-constants'
-import { GasBoxSim } from './gas-box/gas-box-sim'
+import { SHUFFLED_PATTERN_NAMES } from 'imp-names'
 import { START_LAYOUT_POSVELS } from 'rooms/start-layouts/set-by-build'
 import { step } from './sim-step'
 import { Serializer } from './serializer'
@@ -53,7 +49,7 @@ export class Simulation {
   readonly level: Level
   readonly disks: Array<Disk>
   readonly obstacles: Array<Obstacle>
-  readonly gasBoxes: Array<GasBox>
+  // readonly gasBoxes: Array<GasBox>
   // readonly barriers: Array<Barrier>
   readonly finish: Barrier
 
@@ -75,8 +71,7 @@ export class Simulation {
 
     this.level = new Level()
 
-    const startLayout: StartLayoutName = 'pool'
-    const posVels = START_LAYOUT_POSVELS[startLayout]
+    const posVels = START_LAYOUT_POSVELS[this.level.startLayout]
 
     // let diskIndex = 0
     // this.disks = _disks.map((pars) => {
@@ -99,7 +94,7 @@ export class Simulation {
     // ))
 
     this.obstacles = this.level.buildObstacles()
-    this.gasBoxes = this.level.buildGasBoxes()
+    // this.gasBoxes = this.level.buildGasBoxes()
 
     // this.barriers = _barriers.map(rect =>
     //   new Barrier(...rect.map(val => val * VALUE_SCALE) as Rectangle))
@@ -109,8 +104,8 @@ export class Simulation {
   }
 
   public _stepCount = 0
+  public _maxStepCount = 0
   get stepCount() { return this._stepCount }
-  
 
   public t = 0
   update(dt: number, isBranchingAllowed = true) {

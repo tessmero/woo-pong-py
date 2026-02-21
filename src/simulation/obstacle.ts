@@ -38,17 +38,7 @@ export class Obstacle {
 
   get isFlippedX() { return this._isFlippedX }
 
-  hideOnStep = -1
-
   isVisible = true
-
-  isDestroyed(stepIndex: number) {
-    let result = false
-    if (this.hideOnStep != -1)(
-      result = stepIndex >= this.hideOnStep
-    )
-    return result
-  }
 
   label: string | null = null
 

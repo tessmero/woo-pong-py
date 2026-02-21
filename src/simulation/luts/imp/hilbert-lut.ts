@@ -53,9 +53,13 @@ export class HilbertLut extends Lut {
       py: Array.from(py),
     }
 
-    const trim = 20
-    for (let i = 0; i < trim; i++) {
+    // trim from start
+    for (let i = 0; i < 50; i++) {
       result.px[i] = -1
+    }
+
+    // trim from end
+    for (let i = 0; i < 2; i++) {
       result.px[px.length - i - 1] = -1
     }
 

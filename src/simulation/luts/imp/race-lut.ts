@@ -10,7 +10,6 @@ import type { LeafSchema, LeafValues } from '../lut'
 import { DISK_COUNT, HISTORY_MAX_STEPS, INT32_MAX, STEPS_BEFORE_BRANCH } from 'simulation/constants'
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
-import { GAS_BOX_SOLVE_STEPS } from 'simulation/gas-box/gas-box-constants'
 import { step } from 'simulation/sim-step'
 
 export type RaceLeaf = LeafValues
@@ -183,7 +182,7 @@ function _tryComputeLeaf(): LeafValues | null {
     // }
 
     // make sure level solution leaves enough time for gas box to resolve
-    const minSteps = STEPS_BEFORE_BRANCH + GAS_BOX_SOLVE_STEPS
+    const minSteps = STEPS_BEFORE_BRANCH // + GAS_BOX_SOLVE_STEPS
     if (sim.stepCount < (minSteps)) {
       // throw new Error(`level finished ${minSteps - sim.stepCount} steps too early`)
 

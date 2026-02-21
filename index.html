@@ -12,18 +12,17 @@
   
 
 
-  <canvas id="ball-selection-panel-canvas" style="z-index:2;display:none;"></canvas>
   <canvas id="main-canvas" style="z-index:3;"></canvas>
   <canvas id="bsp-canvas" style="z-index:4;display:none;background:transparent;pointer-events:none;"></canvas>
   <canvas id="settings-canvas" style="z-index:5;display:none;background:transparent;pointer-events:none;"></canvas>
 
   <div id="controls-container" style="z-index:6"></div>
 
-  <div id="title-screen" class="modal hidden">
+  <div id="title-screen" class="modal toHide">
     <div class="modal-content">
       <iframe 
         id="title-iframe" src="title-screen.html" 
-        style="width:100vw;height:100vh;border:none;background:transparent;overflow:hidden;"
+        style="width:100vw;height:100vh;border:none;background:#ccc;overflow:hidden;"
         allowtransparency="true"
         scrolling="no"
       ></iframe>

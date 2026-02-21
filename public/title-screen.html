@@ -20,9 +20,12 @@
   </head>
 
   <body>
-    <section id="main">
-      <h1 style="visibility:hidden">Quantum Woo Pong</h1>
-      <h3 style="visibility:hidden">Mystical Physics Puzzle</h3>
+     <canvas id="bg-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;display:block;"></canvas>
+     <section id="main" style="position:relative;z-index:1;">
+      <h1 class="toHide"
+      >Quantum Woo Pong</h1>
+      <h3 class="toHide"
+      >Mystical Physics Puzzle</h3>
       <ol>
         <li><strong>Observe</strong><br><span>Watch and remain open-minded</span></li>
         <li><strong>Choose</strong><br><span>Predict which ball will finish first</span></li>
@@ -34,6 +37,16 @@
     </section>
 
   <script>
+    // Ensure canvas is sized to fill the viewport
+    function resizeCanvas() {
+      const canvas = document.getElementById('bg-canvas');
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+    }
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('DOMContentLoaded', resizeCanvas);
     window.addEventListener('load', function () {
       document.querySelector('body').className = 'loaded';
     })

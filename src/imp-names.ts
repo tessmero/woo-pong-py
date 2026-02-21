@@ -43,7 +43,7 @@ export const LUT = {
     'obstacle-lut', // identify solid edge when disk collides with obstacle
     'disk-normal-lut', // bounce disk off of solid edge
     'gear-lut', // positions of teeth on a spinning gear
-    'gas-box-lut',
+    // 'gas-box-lut',
     'hilbert-lut', // density-adaptive Hilbert curve through dark image regions
 
     'race-lut', // precomputed races (start seed + midpoint seeds for each disk to win)
@@ -59,7 +59,7 @@ export const ROOM = {
     'start-room', 'finish-room',
     'basic-room', // just regular static obstacles
     'pong-room',
-    'breakout-room', // numbered bricks disappear after collision
+    // 'breakout-room', // numbered bricks disappear after collision
     // 'sorter-room', // balls pass through or end up in numbered regions
 
     'gear-room', // spinning interlocked gears

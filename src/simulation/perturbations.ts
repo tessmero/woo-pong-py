@@ -25,7 +25,7 @@ export class Perturbations {
   static setSeed(seed: number) {
     // console.log('set seed', seed)
     state = seed
-    //Perturbations.nextInt = _makePRNG(seed)
+    // Perturbations.nextInt = _makePRNG(seed)
   }
 
   static blinkBarrier(barrier: Barrier) {

@@ -14,22 +14,22 @@ export class Pool extends StartLayout {
   }
 
   override _computePosVels(): Array<[Vec2, Vec2]> {
-    const riskRadius = DISK_RADIUS;
-    const centerPos: Vec2 = [50 * VALUE_SCALE, 50 * VALUE_SCALE];
-    const rows = 4; // Pyramid with 4 rows: 1+2+3+4=10 disks
-    const diskSpacing = riskRadius * 2.2; // Slightly more than diameter for separation
-    const positions: Vec2[] = [];
-    let y = centerPos[1];
+    const riskRadius = DISK_RADIUS
+    const centerPos: Vec2 = [50 * VALUE_SCALE, 50 * VALUE_SCALE]
+    const rows = 4 // Pyramid with 4 rows: 1+2+3+4=10 disks
+    const diskSpacing = riskRadius * 2.2 // Slightly more than diameter for separation
+    const positions: Array<Vec2> = []
+    let y = centerPos[1]
     for (let row = 0; row < rows; row++) {
-      const numDisks = row + 1;
-      const rowWidth = (numDisks - 1) * diskSpacing;
-      const xStart = centerPos[0] - rowWidth / 2;
+      const numDisks = row + 1
+      const rowWidth = (numDisks - 1) * diskSpacing
+      const xStart = centerPos[0] - rowWidth / 2
       for (let i = 0; i < numDisks; i++) {
-        positions.push([xStart + i * diskSpacing, y]);
+        positions.push([xStart + i * diskSpacing, y])
       }
-      y += diskSpacing;
+      y += diskSpacing
     }
     // All disks start with zero velocity
-    return positions.map(pos => [pos, [0, 0]]);
+    return positions.map(pos => [pos, [0, 0]])
   }
 }

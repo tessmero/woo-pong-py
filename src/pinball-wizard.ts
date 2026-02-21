@@ -81,9 +81,17 @@ export class PinballWizard {
   }
 
   public rewindToStep(stepCount: number) {
+    // round down to nearest checkpoint
+    stepCount = HISTORY_CHECKPOINT_STEPS * Math.floor(stepCount / HISTORY_CHECKPOINT_STEPS)
+
+    if (stepCount > this.activeSim._maxStepCount) {
+      // cannot go to future
+      return
+    }
+
     const i = Math.floor(stepCount / HISTORY_CHECKPOINT_STEPS)
     Serializer.restore(this.activeSim, i)
-    while( this.activeSim._stepCount < stepCount ) {
+    while (this.activeSim._stepCount < stepCount) {
       step(this.activeSim)
     }
   }

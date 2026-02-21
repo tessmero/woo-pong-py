@@ -17,14 +17,25 @@ import { lerp, twopi } from 'util/math-util'
 
 let _isHilbertEnabled = false
 
+
+export function onTitleScreenResize() {
+  // Graphics.onResize()
+  
+  const {cvs,ctx} = getTitleScreenCanvas()
+  cvs.width = cvs.clientWidth * window.devicePixelRatio
+  cvs.height = cvs.clientHeight * window.devicePixelRatio
+}
+
 export class TitleScreen {
   static update(dt: number) {
     getScaledPattern('diamond-a')
     // _updateTitleSim(dt)
     // _drawTitleSim()
 
-    const cvs = Graphics._mainCvs
-    const ctx = Graphics._mainCtx
+  
+  const {cvs,ctx} = getTitleScreenCanvas()
+  // const cvs = Graphics._canvases['main']
+  // const ctx = Graphics._contexts['main']
     if (!ctx) return
     const w = cvs.width, h = cvs.height
     ctx.clearRect(0, 0, w, h)
@@ -93,7 +104,7 @@ function _updateTitleSim(dt: number) {
 }
 
 const _hilbertDelay = 500
-const _hilbertDuration = 2000 
+const _hilbertDuration = 2000
 let _hilbertStartTime = 0
 let didInitHilbert = false
 const n = N_HILBERT_POINTS
@@ -101,13 +112,29 @@ let hilbertLut: HilbertLut | null = null
 const drawnX = new Int32Array(n)
 const drawnY = new Int32Array(n)
 
-const titlesDeltaY = HILBERT_HEIGHT / 2
+const titlesDeltaY = HILBERT_HEIGHT * 0.7
 const titleCenterYFraction = 0.3 // fraction of screen height from top
+
+let _canvasAndContext
+export function getTitleScreenCanvas():
+{ cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D } {
+  if (!_canvasAndContext) {
+    const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
+
+    const inner = iframe.contentDocument as Document
+    const cvs = inner.getElementById('bg-canvas') as HTMLCanvasElement
+    _canvasAndContext = {
+      cvs, ctx: cvs.getContext('2d'),
+    }
+  }
+  return _canvasAndContext
+}
 
 let anim
 function _drawQuantum() {
-  const cvs = Graphics._mainCvs
-  const ctx = Graphics._mainCtx
+  const {cvs,ctx} = getTitleScreenCanvas()
+  // const cvs = Graphics._canvases['main']
+  // const ctx = Graphics._contexts['main']
   if (!ctx) return
   const w = cvs.width, h = cvs.height
   const x0 = (w - HILBERT_WIDTH) / 2
@@ -156,7 +183,7 @@ function _drawQuantum() {
   let frameFraction = 0
   if (_isHilbertEnabled && hilbertLut) {
     // 0..1 over _hilbertDuration
-    const frame = Math.min( nFrames, (Math.pow(rawAnim,4) * nFrames) )
+    const frame = Math.min(nFrames, (Math.pow(rawAnim, 4) * nFrames))
     frameIndex = Math.floor(frame)
     frameFraction = frame - frameIndex
   }
@@ -173,26 +200,26 @@ function _drawQuantum() {
     let hx = -1, hy = -1
     if (hilbertLut) {
       // Gaussian kernel smoothing over all frames
-      const sigma = 0.7; // Controls the width of the smoothing window (tune as needed)
-      let sumWeights = 0;
-      let sumHx = 0;
-      let sumHy = 0;
-      const center = frameIndex + frameFraction;
+      const sigma = 0.7 // Controls the width of the smoothing window (tune as needed)
+      let sumWeights = 0
+      let sumHx = 0
+      let sumHy = 0
+      const center = frameIndex + frameFraction
       for (let f = 0; f < nFrames; f++) {
         // Compute shortest distance in cyclic frame space
-        let df = f - center;
+        const df = f - center
         // // Wrap cyclically
         // if (df > nFrames / 2) df -= nFrames;
         // if (df < -nFrames / 2) df += nFrames;
-        const weight = Math.exp(-0.5 * (df / sigma) * (df / sigma));
-        const hxF = hilbertLut.getI16ArrayValue(f, 'px', i);
-        const hyF = hilbertLut.getI16ArrayValue(f, 'py', i);
-        sumHx += hxF * weight;
-        sumHy += hyF * weight;
-        sumWeights += weight;
+        const weight = Math.exp(-0.5 * (df / sigma) * (df / sigma))
+        const hxF = hilbertLut.getI16ArrayValue(f, 'px', i)
+        const hyF = hilbertLut.getI16ArrayValue(f, 'py', i)
+        sumHx += hxF * weight
+        sumHy += hyF * weight
+        sumWeights += weight
       }
-      hx = sumHx / sumWeights;
-      hy = sumHy / sumWeights;
+      hx = sumHx / sumWeights
+      hy = sumHy / sumWeights
     }
     if (hx === -1) continue
     let nx = 0, ny = 0
@@ -206,7 +233,7 @@ function _drawQuantum() {
     }
     // Oscillation parameters
     const oscAmp = amplitude * 0.01 // no envelope, constant amplitude
-    const osc = oscAmp * Math.sin(150 * t - time * 25)
+    const osc = anim * oscAmp * Math.sin(150 * t - time * 4)
     // Apply only as we approach the Hilbert curve
     const oscMix = 1
     const x = x0 + lerp(lineX, hx, anim)
@@ -228,9 +255,13 @@ function _drawQuantum() {
 
 let indexInTrail = 0
 
+
+
 function _drawTitleSim() {
-  const cvs = Graphics._mainCvs
-  const ctx = Graphics._mainCtx
+  
+  const {cvs,ctx} = getTitleScreenCanvas()
+  // const cvs = Graphics._canvases['main']
+  // const ctx = Graphics._contexts['main']
   if (!ctx) return
   const w = cvs.width, h = cvs.height
   const scale = Math.min(w, h) * 1
@@ -283,8 +314,10 @@ function _drawTitleSim() {
 }
 
 function _drawWooPong() {
-  const cvs = Graphics._mainCvs
-  const ctx = Graphics._mainCtx
+  
+  const {cvs,ctx} = getTitleScreenCanvas()
+  // const cvs = Graphics._canvases['main']
+  // const ctx = Graphics._contexts['main']
   if (!ctx) return
   const w = cvs.width, h = cvs.height
   const x0 = (w - HILBERT_WIDTH) / 2
@@ -295,7 +328,7 @@ function _drawWooPong() {
 
   ctx.globalAlpha = anim
 
-  ctx.font = `normal 1000 ${Math.floor(HILBERT_HEIGHT * 0.8)}px Rubik, sans-serif`
+  ctx.font = `normal 1000 ${Math.floor(HILBERT_HEIGHT * 0.7)}px Rubik, sans-serif`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   // ctx.shadowColor = '#fff'
@@ -318,9 +351,9 @@ function _drawWooPong() {
   // ctx.strokeText('Woo Pong', x, y)
 
   ctx.save()
-  ctx.strokeStyle = getScaledPattern('diamond-a')
+  ctx.strokeStyle = getScaledPattern('hex-a')
   ctx.lineWidth = 4
-  const strokeAnimX = t * 5e-2
+  const strokeAnimX = t * 1e-1
   ctx.translate(strokeAnimX, 0)
   ctx.strokeText('Woo Pong', x - strokeAnimX, y)
   ctx.restore()

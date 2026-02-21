@@ -16,13 +16,14 @@ export const HILBERT_WIDTH = 1000
 export const HILBERT_HEIGHT = 200
 
 export const N_HILBERT_FRAMES = 3
+export const HILBERT_FRAME_DEPTHS = [1, 3, 8]
 
 /**
  * Maximum number of waypoints stored per pattern.
  * Chosen large enough to faithfully trace every dark region at pixel
  * precision, while keeping the blob size reasonable.
  */
-export const N_HILBERT_POINTS = 10000
+export const N_HILBERT_POINTS = 12000
 
 /**
  * Minimum cell size (pixels) at the deepest recursion level.
@@ -47,4 +48,3 @@ export const HILBERT_COLUMN_X: Array<number> = [
   750, // M
   868, // right margin
 ]
-

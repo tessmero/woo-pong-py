@@ -4,6 +4,7 @@
  * Base class for gfx regions in the main sim/scrollbar/controls view.
  */
 
+import type { CanvasName } from 'gfx/graphics'
 import type { GfxRegionName } from 'imp-names'
 import type { InputId, PinballWizard } from 'pinball-wizard'
 import type { Rectangle, Vec2 } from 'util/math-util'
@@ -22,6 +23,11 @@ const _GFX_DEBUG_COLORS: Record<GfxRegionName, string> = {
 
 export abstract class GfxRegion {
   readonly name: GfxRegionName = '' as GfxRegionName // assigned when registered
+
+  public targetCanvas: CanvasName = 'main'
+  public shouldDraw() {
+    return true
+  }
 
   onResize(_rect: Rectangle) {
     // do nothing

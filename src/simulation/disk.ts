@@ -111,7 +111,6 @@ export class Disk {
     let oi = 0
     for (; oi < obstacles.length; oi++) {
       const obs = obstacles[oi]
-      if (obs.hideOnStep !== -1) continue // obstacle is hidden for purposes of simulation
       if (rectContainsPoint(obs.collisionRect, nx, ny)) {
         const xRad = (obs.lut as ObstacleLut).obsOffsetDetailX
         const yRad = (obs.lut as ObstacleLut).obsOffsetDetailY

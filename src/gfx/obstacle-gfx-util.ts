@@ -20,7 +20,14 @@ export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard) 
   const vy1 = vy0 + simViewRect[3]
   ctx.lineWidth = 0.4 * VALUE_SCALE
   for (const obstacle of sim.obstacles) {
-    const [_x, y, _w, h] = obstacle.collisionRect
+    const {
+      isVisible, pos, points,
+      collisionRect: [_x, y, _w, h],
+    } = obstacle
+
+    if (!isVisible) {
+      continue // skip drawing obstacle
+    }
     if (y > vy1) {
       // console.log('skip obstacle below view')
       continue // obstacle is below view
@@ -28,14 +35,6 @@ export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard) 
     if ((y + h) < vy0) {
       // console.log('skip obstacle above view')
       continue // obstacle is above view
-    }
-    const {
-      isVisible, pos, points,
-      // boundingRect, collisionRect
-    } = obstacle
-
-    if (obstacle.isDestroyed(sim.stepCount) || !isVisible) {
-      // skip
     }
     else {
       traceObstacle(ctx, pos, points)

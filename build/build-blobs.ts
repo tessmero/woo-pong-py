@@ -12,18 +12,16 @@ import { Lut } from '../src/simulation/luts/lut'
 import { SHAPE_NAMES } from '../src/simulation/shapes'
 
 import type { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
-import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
+// import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
 import { HilbertLut } from '../src/simulation/luts/imp/hilbert-lut'
-import { solvePatternPositions } from './gas-box-pattern-solver'
 import { solveHilbertCurve, createDummyImage } from './hilbert-solver'
 import { LUT, ROOM, ROOM_LAYOUT, GFX_REGION } from '../src/imp-names'
 import { requireImps } from './require-imps'
-import { solveChainCurve } from './chain-solver'
 
 requireImps(LUT, ROOM, ROOM_LAYOUT, GFX_REGION)
 
-// Inject the build-time pattern solver so GasBoxLut.computeLeaf() can use it
-GasBoxLut.patternSolver = solvePatternPositions
+// // Inject the build-time pattern solver so GasBoxLut.computeLeaf() can use it
+// GasBoxLut.patternSolver = solvePatternPositions
 
 // Generate the dummy Hilbert test image and inject the solver
 const hilbertImgDir = join(__dirname, 'hilbert-images')

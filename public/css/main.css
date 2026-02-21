@@ -23,6 +23,19 @@ button {
   background: #ffe0e0;
 }
 
+
+/* .hidden {
+  display: none !important;
+} */
+.toHide {
+  transition: opacity 0.5s ease;
+  opacity: 1;
+}
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .warning-details {
   background: #fffbe6;
   color: #a00;
@@ -81,10 +94,6 @@ button {
 .modal ol li strong {
   font-size: 1.3em;
   color: #ffd700;
-}
-
-.hidden {
-  display: none !important;
 }
 
 /* Warning message styles */

@@ -4,10 +4,9 @@
  * Construct level composed of rooms using prng.
  */
 
-import type { RoomName } from 'imp-names'
+import type { RoomName, StartLayoutName } from 'imp-names'
 import { Room } from 'rooms/room'
 import { ROOM_COUNT, VALUE_SCALE } from 'simulation/constants'
-import { GasBox } from 'simulation/gas-box/gas-box'
 import type { Obstacle } from 'simulation/obstacle'
 import { Perturbations } from 'simulation/perturbations'
 import type { Rectangle } from 'util/math-util'
@@ -35,9 +34,20 @@ const _bounds: Rectangle = ([
   totalHeight - 2 * thick,
 ]).map(v => v * VALUE_SCALE) as Rectangle
 
+const possibleStarts: Array<StartLayoutName> = [
+  'pool', 'spin',
+]
+function randomStartLayout(): StartLayoutName {
+  return possibleStarts[
+    (Perturbations.nextInt() >>> 0) % possibleStarts.length
+  ]
+}
+
 export class Level {
   public readonly rooms: Array<Room>
+  public readonly startLayout: StartLayoutName
   constructor() {
+    this.startLayout = randomStartLayout()
     this.rooms = Array.from({ length: ROOM_COUNT }, (_, roomIndex) => {
       const roomOffset = VALUE_SCALE * (
         startPadding
@@ -82,15 +92,13 @@ export class Level {
     return result
   }
 
-  buildGasBoxes(): Array<GasBox> {
-    const result: Array<GasBox> = []
-
-    // place gas box in last room
-    const [rx, ry, rw, rh] = this.rooms.at(-1)!.bounds
-    result.push(new GasBox([rx + rw / 2, ry + rh / 4]))
-
-    return result
-  }
+  // buildGasBoxes(): Array<GasBox> {
+  //   const result: Array<GasBox> = []
+  //   // place gas box in last room
+  //   const [rx, ry, rw, rh] = this.rooms.at(-1)!.bounds
+  //   result.push(new GasBox([rx + rw / 2, ry + rh / 4]))
+  //   return result
+  // }
 }
 
 function randomRoom(roomIndex: number, bounds: Rectangle) {
@@ -122,6 +130,6 @@ const randomRoomNames: Array<RoomName> = [
 
   // 'basic-room',
   'basic-room',
-  'breakout-room',
+  // 'breakout-room',
   // //  'pong-room',
 ]

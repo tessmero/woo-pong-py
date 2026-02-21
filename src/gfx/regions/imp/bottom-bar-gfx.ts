@@ -39,8 +39,8 @@ const clickActions: Record<LayoutKey, (pw: PinballWizard, xFrac: number) => void
     }
     ballSelectionPanel.toggle(pw)
   },
-  clock: (pw,xFrac) => {
-    const stepCount = Math.floor( xFrac * HISTORY_MAX_STEPS)
+  clock: (pw, xFrac) => {
+    const stepCount = Math.floor(xFrac * HISTORY_MAX_STEPS)
     pw.rewindToStep(stepCount)
     return true
   },
@@ -73,8 +73,8 @@ export class BottomBarGfx extends GfxRegion {
 
     if (this._held) {
       const rect = this._layout![this._held]
-      const xFrac = (mousePos[0] * window.devicePixelRatio - rect[0])/ rect[2]
-      clickActions[this._held](pw,xFrac)
+      const xFrac = (mousePos[0] * window.devicePixelRatio - rect[0]) / rect[2]
+      clickActions[this._held](pw, xFrac)
     }
     return false
   }

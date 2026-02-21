@@ -10,8 +10,6 @@ import { DISK_RADIUS } from 'simulation/constants'
 import type { PinballWizard } from 'pinball-wizard'
 import { type GfxRegionName } from 'imp-names'
 import { GfxRegion } from './regions/gfx-region'
-import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
-import { settingsPanel } from 'overlay-panels/settings-panel'
 import type { SimGfx } from './regions/imp/sim-gfx'
 import type { ScrollbarGfx } from './regions/imp/scrollbar-gfx'
 
@@ -30,8 +28,11 @@ const leftGutterWidthPx = gutterPx
 const midGutterWidthPx = gutterPx
 const rightGutterWidthPx = gutterPx
 
+export const CANVASES = ['main', 'bsp', 'settings'] as const
+export type CanvasName = (typeof CANVASES)[number]
+
 export class Graphics {
-  static get cvs() { return this._getMainCanvas() }
+  static get cvs() { return this._canvases['main'] }
 
   static innerWidth = 1
 
@@ -46,7 +47,7 @@ export class Graphics {
     if (this.bspAnim > this.targetBspAnim) {
       this.bspAnim = Math.max(this.targetBspAnim, this.bspAnim - delta)
     }
-    Graphics._bspCvs.style.setProperty('display', this.bspAnim === 0 ? 'none' : 'block')
+    Graphics._canvases['bsp'].style.setProperty('display', this.bspAnim === 0 ? 'none' : 'block')
 
     this._updateCanvasDims() // update width and height if necessary
   }
@@ -62,7 +63,7 @@ export class Graphics {
     if (this.stgAnim > this.targetStgAnim) {
       this.stgAnim = Math.max(this.targetStgAnim, this.stgAnim - delta)
     }
-    Graphics._settingsCvs.style.setProperty('display', this.stgAnim === 0 ? 'none' : 'block')
+    Graphics._canvases['settings'].style.setProperty('display', this.stgAnim === 0 ? 'none' : 'block')
 
     this._updateCanvasDims() // update width and height if necessary
   }
@@ -75,7 +76,7 @@ export class Graphics {
   private static _updateCanvasDims() {
     const dpr = window.devicePixelRatio
     const _root = Graphics._rootRect
-    const mainCvs = Graphics._mainCvs
+    const mainCvs = Graphics._canvases['main']
 
     // compute main canvas dimensions (maybe big pixels)
     const mainWidth = Math.floor(_root[2] * dpr / Graphics.mainPixelScale)
@@ -84,16 +85,16 @@ export class Graphics {
       mainCvs.width = mainWidth
       mainCvs.height = mainHeight
       const scale = mainWidth / (_root[2] * dpr)
-      this._mainCtx.setTransform(scale, 0, 0, scale, 0, 0)
+      this._contexts['main'].setTransform(scale, 0, 0, scale, 0, 0)
     }
 
     // bsp always has small pixels
-    Graphics._bspCvs.width = _root[2] * dpr
-    Graphics._bspCvs.height = _root[3] * dpr
+    Graphics._canvases['bsp'].width = _root[2] * dpr
+    Graphics._canvases['bsp'].height = _root[3] * dpr
 
     // settings always has small pixels
-    Graphics._settingsCvs.width = _root[2] * dpr
-    Graphics._settingsCvs.height = _root[3] * dpr
+    Graphics._canvases['settings'].width = _root[2] * dpr
+    Graphics._canvases['settings'].height = _root[3] * dpr
   }
 
   // public static isTitleScreen = true
@@ -152,11 +153,15 @@ export class Graphics {
     ]
     Graphics.innerWidth = _root[2] * dpr
 
-    const mainCvs = this._getMainCanvas()
-    const bspCvs = this._getBspCanvas()
-    const settingsCvs = this._getSettingsCanvas()
+    this._canvases = Object.fromEntries(
+      CANVASES.map(name => [name, this._getCanvas(name)]),
+    ) as Record<CanvasName, HTMLCanvasElement>
 
-    for (const cvs of ([mainCvs, bspCvs, settingsCvs] as const)) {
+    this._contexts = Object.fromEntries(
+      CANVASES.map(name => [name, this._getCanvas(name).getContext('2d')]),
+    ) as Record<CanvasName, CanvasRenderingContext2D>
+
+    for (const cvs of Object.values(this._canvases)) {
       cvs.style.setProperty('position', `absolute`)
       cvs.style.setProperty('left', `${_root[0]}px`)
       cvs.style.setProperty('top', `${_root[1]}px`)
@@ -164,18 +169,12 @@ export class Graphics {
       cvs.style.setProperty('height', `${_root[3]}px`)
     }
 
-    this._mainCvs = mainCvs
-    this._mainCtx = mainCvs.getContext('2d') as CanvasRenderingContext2D
     // this._mainCtx.imageSmoothingEnabled = false
     // this._mainCtx.lineCap = 'butt'
 
-    this._bspCvs = bspCvs
-    this._bspCtx = bspCvs.getContext('2d') as CanvasRenderingContext2D
-    this._bspCtx.imageSmoothingEnabled = false
+    this._contexts['bsp'].imageSmoothingEnabled = false
 
-    this._settingsCvs = settingsCvs
-    this._settingsCtx = settingsCvs.getContext('2d') as CanvasRenderingContext2D
-    this._settingsCtx.imageSmoothingEnabled = false
+    this._contexts['settings'].imageSmoothingEnabled = false
 
     this._rootRect = _root
     this._updateCanvasDims()
@@ -244,16 +243,8 @@ export class Graphics {
     })
   }
 
-  static _getSettingsCanvas() {
-    return document.getElementById('settings-canvas') as HTMLCanvasElement
-  }
-
-  static _getBspCanvas() {
-    return document.getElementById('bsp-canvas') as HTMLCanvasElement
-  }
-
-  static _getMainCanvas() {
-    return document.getElementById('main-canvas') as HTMLCanvasElement
+  static _getCanvas(name: CanvasName) {
+    return document.getElementById(`${name}-canvas`) as HTMLCanvasElement
   }
 
   public static revRegionNames: Array<GfxRegionName> = []
@@ -263,43 +254,31 @@ export class Graphics {
   private static _pxGutters: Array<Rectangle> = []
   private static _dpGutters: Array<Rectangle> = []
 
-  public static _mainCvs: HTMLCanvasElement
-  public static _mainCtx: CanvasRenderingContext2D
-  public static _bspCvs: HTMLCanvasElement
-  public static _bspCtx: CanvasRenderingContext2D
-  public static _settingsCvs: HTMLCanvasElement
-  public static _settingsCtx: CanvasRenderingContext2D
+  public static _canvases: Record<CanvasName, HTMLCanvasElement>
+  public static _contexts: Record<CanvasName, CanvasRenderingContext2D>
 
   static get regions() { return Graphics._pxRegions }
 
   static draw(pw: PinballWizard) {
     // draw all regions
     Object.keys(this._dpRegions).forEach((gfxName) => {
-      let ctx = this._mainCtx
+      const ctx = this._contexts['main']
 
-      if (gfxName === 'glass-gfx') {
-        if (!ballSelectionPanel.isShowing) {
-          return // skip drawing glass effect
-        }
-        // ctx = this._glassCtx
+      // if (gfxName === 'glass-gfx') {
+      //   if (!ballSelectionPanel.isShowing) {
+      //     return // skip drawing glass effect
+      //   }
+      //   // ctx = this._glassCtx
+      // }
+
+      const region = GfxRegion.create(gfxName as GfxRegionName)
+      if (region.shouldDraw()) {
+        const ctx = this._contexts[region.targetCanvas]
+        region.draw(ctx, pw, this._dpRegions[gfxName])
       }
-      else if (gfxName === 'bsp-gfx') {
-        if (!ballSelectionPanel.isShowing) {
-          return // skip drawing ball selection panel
-        }
-        ctx = this._bspCtx
-      }
-      else if (gfxName === 'settings-gfx') {
-        if (!settingsPanel.isShowing) {
-          return // skip drawing settings panel
-        }
-        ctx = this._settingsCtx
-      }
-      GfxRegion.create(gfxName as GfxRegionName)
-        .draw(ctx, pw, this._dpRegions[gfxName])
     })
 
-    const ctx = this._mainCtx
+    const ctx = this._contexts['main']
 
     // fill gutters
     ctx.fillStyle = OBSTACLE_FILL

@@ -164,6 +164,7 @@ export abstract class Lut {
     const n = info.length!
     for (let i = 0; i < n; i++) out[i] = this.data[base + i]
   }
+
   /**
    * Copy an i16_array field into `out`. Zero-allocation hot path.
    */

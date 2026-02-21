@@ -41,8 +41,8 @@ export const CLICKABLE_RADSQ = CLICKABLE_RADIUS * CLICKABLE_RADIUS
 // number of past steps to store for purposes of drawing tails behind disks
 export const TAIL_STEPS = 100
 
-export const HISTORY_MAX_ENTRIES = 100
-export const HISTORY_CHECKPOINT_STEPS = 1e3 // take checkpoint ever n steps
+export const HISTORY_MAX_ENTRIES = 1000
+export const HISTORY_CHECKPOINT_STEPS = 1e2 // take checkpoint ever n steps
 
 // maximum allowed simulation length
 export const HISTORY_MAX_STEPS = HISTORY_MAX_ENTRIES * HISTORY_CHECKPOINT_STEPS
