@@ -200,6 +200,11 @@ export class Graphics {
         _root[2],
         barHeightPx,
       ],
+      'timeline-gfx': [
+        0, _root[3] - barHeightPx - barHeightPx,
+        _root[2],
+        barHeightPx,
+      ],
       'top-bar-gfx': [
         0, 0,
         _root[2],

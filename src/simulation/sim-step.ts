@@ -10,9 +10,11 @@ import { collideDisks } from './luts/imp/disk-disk-lut'
 import { Disk } from './disk'
 import { HISTORY_CHECKPOINT_STEPS, STEPS_BEFORE_BRANCH } from './constants'
 import { Serializer } from 'simulation/serializer'
+import { StartLayout } from 'rooms/start-layouts/start-layout'
+import type { Vec2 } from 'util/math-util'
 
 export function step(sim: Simulation) {
-  if (sim._stepCount % HISTORY_CHECKPOINT_STEPS === 0) {
+  if ((sim._stepCount >= 0) && (sim._stepCount % HISTORY_CHECKPOINT_STEPS === 0)) {
     Serializer.passCheckpoint(sim) // save keyframe for rewinding
   }
 
@@ -21,6 +23,11 @@ export function step(sim: Simulation) {
 
   if (sim._stepCount > sim.finalStepCount) {
     return // prevent simulating past the moment a disk wins
+  }
+
+  if (sim._stepCount < 0) {
+    _startStep(sim)
+    return
   }
 
   // if (sim._stepCount + GAS_BOX_SOLVE_STEPS === sim.finalStepCount) {
@@ -40,6 +47,23 @@ export function step(sim: Simulation) {
   _activeStep(sim)
 }
 
+const pos: Vec2 = [0, 0]
+
+// t<0 scripted step
+function _startStep(sim: Simulation) {
+  const startLayout = StartLayout.create(sim.level.startLayout)
+  for (const [diskIndex, disk] of sim.disks.entries()) {
+    startLayout.getAnimPos(diskIndex, sim.stepCount, pos)
+    disk.currentState.x = pos[0]
+    disk.currentState.y = pos[1]
+  }
+  // // // update rooms
+  // for (const room of sim.level.rooms) {
+  //   room.update(sim.stepCount)
+  // }
+}
+
+// t<0 regular real-physics step
 function _activeStep(sim: Simulation) {
   // // update rooms
   for (const room of sim.level.rooms) {

@@ -122,6 +122,11 @@ export class BottomBarGfx extends GfxRegion {
     this._computeLayout(rect)
   }
 
+
+  public override shouldDraw(pw: PinballWizard): boolean {
+    return pw.activeSim.stepCount > 0
+  }
+  
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
     // ctx.clearRect(...rect)
 

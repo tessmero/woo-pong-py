@@ -20,6 +20,7 @@ const _GFX_DEBUG_COLORS: Record<GfxRegionName, string> = {
   'glass-gfx': 'yellow',
   'settings-gfx': 'black',
   'start-gfx': 'purple',
+  'timeline-gfx': '#198',
 }
 
 export abstract class GfxRegion {

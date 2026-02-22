@@ -95,6 +95,10 @@ export class ScrollbarGfx extends GfxRegion {
     fillFrameBetweenRectAndRounded(ctx, this._drawRect)
   }
 
+  public override shouldDraw(pw: PinballWizard): boolean {
+    return pw.activeSim.stepCount > 0
+  }
+
   protected _draw(
     ctx: CanvasRenderingContext2D,
     pw: PinballWizard,

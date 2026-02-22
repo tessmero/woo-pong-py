@@ -1,12 +1,13 @@
 /**
- * @file scrollbar.ts
+ * @file timeline.ts
  *
- * Draggable scrollbar.
+ * Draggable timeline.
  */
 
 import type { InputId } from 'pinball-wizard'
 
-export class Scrollbar {
+export class Timeline {
+  public static isShowing = true
   public static draggingId: InputId | null = null
 
   // public static isLocked = false

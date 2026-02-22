@@ -99,6 +99,7 @@ export const GFX_REGION = {
 
     'glass-gfx', // overlay that covers main view
 
+    'timeline-gfx', // toggleable timeline
     'bsp-gfx', // toggleable ball selection panel
     'settings-gfx', // toggleable settings panel
 

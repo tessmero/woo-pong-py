@@ -114,6 +114,10 @@ export class TopBarGfx extends GfxRegion {
     this._held = null
   }
 
+  public override shouldDraw(pw: PinballWizard): boolean {
+    return pw.activeSim.stepCount > 0
+  }
+  
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
     ctx.fillStyle = '#888'
     ctx.fillRect(...rect)

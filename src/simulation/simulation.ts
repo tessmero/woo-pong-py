@@ -102,11 +102,11 @@ export class Simulation {
     Serializer.reset()
   }
 
-  public _stepCount = 0
-  public _maxStepCount = 0
+  public _stepCount = -1000
+  public _maxStepCount = -1e8
   get stepCount() { return this._stepCount }
 
-  public t = 0
+  public t = this._stepCount * STEP_DURATION
   update(dt: number, isBranchingAllowed = true) {
     this.t += dt
     const stepIndex = Math.ceil(this.t / STEP_DURATION)

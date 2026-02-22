@@ -226,6 +226,11 @@ export class SimGfx extends GfxRegion {
 
   static debugTargetPos = 0
 
+
+  // public override shouldDraw(pw: PinballWizard): boolean {
+  //   return pw.activeSim.stepCount > 0
+  // }
+
   private _drawRect: Rectangle = [1, 1, 1, 1]
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
     const isFlashOn = this._updateFlashingState()
