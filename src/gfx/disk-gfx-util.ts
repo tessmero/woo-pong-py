@@ -141,7 +141,7 @@ export function drawDiskCrown(
 }
 
 export function drawDisk(
-  ctx: CanvasRenderingContext2D, diskIndex: number, disk: Disk,
+  ctx: CanvasRenderingContext2D, diskIndex: number, disk: Disk, stroke='black', fill?: string,
 ) {
   // const [cx, cy, _dx, _dy] = disk.currentState
   const [cx, cy] = disk.displayPos
@@ -175,9 +175,9 @@ export function drawDisk(
   ctx.lineWidth = edgeRad
   ctx.lineCap = 'round'
   ctx.lineJoin = 'round'
-  ctx.strokeStyle = 'black'
+  ctx.strokeStyle = stroke
   ctx.stroke()
-  ctx.fillStyle = Pattern.getFillStyle(disk.pattern)
+  ctx.fillStyle = fill ?? Pattern.getFillStyle(disk.pattern)
   ctx.imageSmoothingEnabled = false
   ctx.fill()
 }

@@ -101,6 +101,8 @@ export const GFX_REGION = {
 
     'bsp-gfx', // toggleable ball selection panel
     'settings-gfx', // toggleable settings panel
+
+    'start-gfx', // temporary layer on top
   ],
   SOURCES: ['src/gfx/regions/imp/'],
 } as const satisfies ImpManifest

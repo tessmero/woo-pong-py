@@ -28,7 +28,7 @@ const leftGutterWidthPx = gutterPx
 const midGutterWidthPx = gutterPx
 const rightGutterWidthPx = gutterPx
 
-export const CANVASES = ['main', 'bsp', 'settings'] as const
+export const CANVASES = ['main', 'bsp', 'settings', 'start'] as const
 export type CanvasName = (typeof CANVASES)[number]
 
 export class Graphics {
@@ -89,12 +89,12 @@ export class Graphics {
     }
 
     // bsp always has small pixels
-    Graphics._canvases['bsp'].width = _root[2] * dpr
-    Graphics._canvases['bsp'].height = _root[3] * dpr
-
-    // settings always has small pixels
-    Graphics._canvases['settings'].width = _root[2] * dpr
-    Graphics._canvases['settings'].height = _root[3] * dpr
+    const smallPxCanvases: Array<CanvasName> = ['bsp', 'settings', 'start']
+    for (const name of smallPxCanvases) {
+      const cvs = Graphics._canvases[name]
+      cvs.width = _root[2] * dpr
+      cvs.height = _root[3] * dpr
+    }
   }
 
   // public static isTitleScreen = true
@@ -186,6 +186,10 @@ export class Graphics {
         leftGutterWidthPx, barHeightPx,
         simCssWidth, cssHeight - barHeightPx * 2,
       ],
+      'start-gfx': [
+        leftGutterWidthPx, barHeightPx,
+        simCssWidth, cssHeight - barHeightPx * 2,
+      ],
       'scrollbar-gfx': [
         leftGutterWidthPx + simCssWidth + midGutterWidthPx, barHeightPx,
         scrollbarWidth,
@@ -272,7 +276,7 @@ export class Graphics {
       // }
 
       const region = GfxRegion.create(gfxName as GfxRegionName)
-      if (region.shouldDraw()) {
+      if (region.shouldDraw(pw)) {
         const ctx = this._contexts[region.targetCanvas]
         region.draw(ctx, pw, this._dpRegions[gfxName])
       }

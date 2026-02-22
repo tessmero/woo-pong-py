@@ -19,13 +19,14 @@ const _GFX_DEBUG_COLORS: Record<GfxRegionName, string> = {
   'sim-gfx': 'green',
   'glass-gfx': 'yellow',
   'settings-gfx': 'black',
+  'start-gfx': 'purple',
 }
 
 export abstract class GfxRegion {
   readonly name: GfxRegionName = '' as GfxRegionName // assigned when registered
 
   public targetCanvas: CanvasName = 'main'
-  public shouldDraw() {
+  public shouldDraw(_pw: PinballWizard) {
     return true
   }
 

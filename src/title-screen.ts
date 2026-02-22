@@ -4,7 +4,6 @@
  * Title screen with 3-body problem animation.
  */
 
-import { Graphics } from 'gfx/graphics'
 import { Pattern } from 'gfx/patterns/pattern'
 import { buildFillStyle } from 'gfx/patterns/pattern-util'
 import type { PatternName } from 'imp-names'
@@ -17,11 +16,10 @@ import { lerp, twopi } from 'util/math-util'
 
 let _isHilbertEnabled = false
 
-
 export function onTitleScreenResize() {
   // Graphics.onResize()
-  
-  const {cvs,ctx} = getTitleScreenCanvas()
+
+  const { cvs, ctx } = getTitleScreenCanvas()
   cvs.width = cvs.clientWidth * window.devicePixelRatio
   cvs.height = cvs.clientHeight * window.devicePixelRatio
 }
@@ -32,10 +30,9 @@ export class TitleScreen {
     // _updateTitleSim(dt)
     // _drawTitleSim()
 
-  
-  const {cvs,ctx} = getTitleScreenCanvas()
-  // const cvs = Graphics._canvases['main']
-  // const ctx = Graphics._contexts['main']
+    const { cvs, ctx } = getTitleScreenCanvas()
+    // const cvs = Graphics._canvases['main']
+    // const ctx = Graphics._contexts['main']
     if (!ctx) return
     const w = cvs.width, h = cvs.height
     ctx.clearRect(0, 0, w, h)
@@ -132,7 +129,7 @@ export function getTitleScreenCanvas():
 
 let anim
 function _drawQuantum() {
-  const {cvs,ctx} = getTitleScreenCanvas()
+  const { cvs, ctx } = getTitleScreenCanvas()
   // const cvs = Graphics._canvases['main']
   // const ctx = Graphics._contexts['main']
   if (!ctx) return
@@ -255,11 +252,8 @@ function _drawQuantum() {
 
 let indexInTrail = 0
 
-
-
 function _drawTitleSim() {
-  
-  const {cvs,ctx} = getTitleScreenCanvas()
+  const { cvs, ctx } = getTitleScreenCanvas()
   // const cvs = Graphics._canvases['main']
   // const ctx = Graphics._contexts['main']
   if (!ctx) return
@@ -314,8 +308,7 @@ function _drawTitleSim() {
 }
 
 function _drawWooPong() {
-  
-  const {cvs,ctx} = getTitleScreenCanvas()
+  const { cvs, ctx } = getTitleScreenCanvas()
   // const cvs = Graphics._canvases['main']
   // const ctx = Graphics._contexts['main']
   if (!ctx) return
