@@ -41,7 +41,7 @@ export class Serializer {
 
       // // already passed this checkpoint
 
-      // verify seed and disk states
+      // // verify seed and disk states
       // _verify(sim, entryIndex, seed)
 
       // already passed checkpoint, and current state checks out
@@ -57,11 +57,11 @@ export class Serializer {
 
     // capture
     _captureCheckpoint(sim, entryIndex, seed)
-    Perturbations.nextInt()
+    // Perturbations.nextInt()
   }
 
   static restore(sim: Simulation, entryIndex: number) {
-    // console.log('restore serialized sim entry', entryIndex)
+  // console.log(`restore serialized sim entry ${entryIndex} with seed ${seeds[entryIndex]}`)
 
     Perturbations.setSeed(seeds[entryIndex])
     sim._stepCount = entryIndex * HISTORY_CHECKPOINT_STEPS
@@ -86,11 +86,11 @@ export class Serializer {
   }
 }
 
-export function _verify(sim: Simulation, entryIndex: number, _seed: number) {
+export function _verify(sim: Simulation, entryIndex: number, seed: number) {
   // // verify seed
-  // if (seed !== seeds[entryIndex]) {
-  //   throw new Error('reached checkpoint with different seed again after rewinding')
-  // }
+  if (seed !== seeds[entryIndex]) {
+    throw new Error('reached checkpoint with different seed again after rewinding')
+  }
 
   // verify disk states
   let i = entryLength * entryIndex
@@ -109,7 +109,7 @@ export function _verify(sim: Simulation, entryIndex: number, _seed: number) {
 }
 
 function _captureCheckpoint(sim: Simulation, entryIndex: number, seed: number) {
-  // console.log('capture serialized sim entry', entryIndex)
+  // console.log(`capture serialized sim entry ${entryIndex} with seed ${seed}`)
 
   seeds[entryIndex] = seed
 

@@ -85,7 +85,7 @@ export function checkSimHash(sim: Simulation): void {
   const key = sim.stepCount
   if (!(key in expected)) return
 
-  console.log('verifying sim against build-time hash')
+  // console.log('verifying sim against build-time hash')
 
   const actual = computeSimHash(sim)
   if (actual !== expected[key]) {

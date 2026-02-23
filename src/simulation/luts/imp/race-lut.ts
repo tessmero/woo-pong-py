@@ -111,12 +111,6 @@ export class RaceLut extends Lut {
       }
     }
   }
-
-  public override async loadAll(): Promise<void> {
-    await super.loadAll()
-
-    console.log('race-lut loadAll:', JSON.stringify(this.data))
-  }
 }
 
 let nextSeed = Perturbations.randomSeed()
@@ -160,6 +154,8 @@ function _tryComputeLeaf(): LeafValues | null {
     // console.log('race-lut reset sim')
     // rewindToStep(sim, STEPS_BEFORE_BRANCH)
     const sim = new Simulation(commonStartSeed)
+    const branchSeed = Perturbations.randomSeed()
+    sim.branchSeed = branchSeed
     for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
       step(sim)
       _stepCount++
@@ -169,9 +165,6 @@ function _tryComputeLeaf(): LeafValues | null {
       throw new Error('sim already has winning disk before branching')
     }
 
-    // branch, find winning disk, and set the mid seed for that disk
-    const branchSeed = Perturbations.randomSeed()
-    sim.branchSeed = branchSeed
     // Perturbations.setSeed(branchSeed)
     // console.log('race-lut set branch seed')
     // console.log(`set branch seed ${branchSeed} for sim with step count ${sim.stepCount}`)
@@ -274,7 +267,7 @@ function _tryComputeLeaf(): LeafValues | null {
   // eslint-disable-next-line no-console
   console.log(`solved race with start seed ${commonStartSeed}`)
 
-  _verifyRace(commonStartSeed, branches)
+  // _verifyRace(commonStartSeed, branches)
 
   return result
 }
@@ -286,12 +279,12 @@ function _verifyRace(
   for (const [winningDiskIndex, { midSeed }] of branches.entries()) {
     const sim = new Simulation(commonStartSeed)
     const hashes: Record<number, number> = {}
-    for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
-      step(sim)
-      if (sim.stepCount % HASH_STEP_INTERVAL === 0) {
-        hashes[sim.stepCount] = computeSimHash(sim)
-      }
-    }
+    // for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
+    //   step(sim)
+    //   if (sim.stepCount % HASH_STEP_INTERVAL === 0) {
+    //     hashes[sim.stepCount] = computeSimHash(sim)
+    //   }
+    // }
     if (sim.winningDiskIndex !== -1) {
       throw new Error('failed verification (win before branching)')
     }

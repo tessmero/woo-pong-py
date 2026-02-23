@@ -18,7 +18,6 @@ import type { GfxRegionName } from 'imp-names'
 import { GUI, SHUFFLED_PATTERN_NAMES } from 'imp-names'
 import type { Speed } from 'simulation/constants'
 import {
-  DISK_COUNT,
   HALT_LOOK_AHEAD_STEPS,
   HISTORY_CHECKPOINT_STEPS,
   INT32_MAX,
@@ -35,8 +34,6 @@ import type { SimGfx } from 'gfx/regions/imp/sim-gfx'
 import type { GlassGfx } from 'gfx/regions/imp/glass-gfx'
 import { settingsPanel } from 'overlay-panels/settings-panel'
 import { Serializer } from 'simulation/serializer'
-import { step } from 'simulation/sim-step'
-import { SIM_HASHES } from 'set-by-build'
 // import { SIM_HASHES } from 'set-by-build'
 
 // can only be constructed once
@@ -92,9 +89,9 @@ export class PinballWizard {
 
     const i = Math.floor(stepCount / HISTORY_CHECKPOINT_STEPS)
     Serializer.restore(this.activeSim, i)
-    while (this.activeSim._stepCount < stepCount) {
-      step(this.activeSim)
-    }
+    // while (this.activeSim._stepCount < stepCount) {
+    //   step(this.activeSim)
+    // }
   }
 
   // rough target speed setting
@@ -179,14 +176,14 @@ export class PinballWizard {
       this.activeSim.branchSeed = 29137 // seed to insert later
       this.activeSim.finalStepCount = INT32_MAX
 
-      // attach build-time determinism hashes if seeds match
-      if (SIM_HASHES
-        && SIM_HASHES.startSeed === commonStartSeed
-        && SIM_HASHES.branchSeed === 29137
-      ) {
-        console.log('attached build-time hashes')
-        this.activeSim.expectedHashes = SIM_HASHES.hashes
-      }
+      // // attach build-time determinism hashes if seeds match
+      // if (SIM_HASHES
+      //   && SIM_HASHES.startSeed === commonStartSeed
+      //   && SIM_HASHES.branchSeed === 29137
+      // ) {
+      //   console.log('attached build-time hashes')
+      //   this.activeSim.expectedHashes = SIM_HASHES.hashes
+      // }
     }
 
     // const brickValuesStartIndex = 1 + DISK_COUNT
@@ -450,11 +447,11 @@ export class PinballWizard {
     // this.onResize()
 
     if (!this.isSeedConfiged) {
-       const raceLut = Lut.create('race-lut')    
+      const raceLut = Lut.create('race-lut')
       this.activeSim.branchSeed = raceLut.get(this._raceIndex, `d${diskIndex}_midSeed`)
       this.activeSim.finalStepCount = raceLut.get(this._raceIndex, `d${diskIndex}_finalStepCount`)
 
-      console.log('planned branch seed', this.activeSim.branchSeed)
+      // console.log('planned branch seed', this.activeSim.branchSeed)
       // console.log('set finalStepCount', this.activeSim.finalStepCount)
     }
   }

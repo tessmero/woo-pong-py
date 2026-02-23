@@ -220,7 +220,7 @@ function hBounce(state: DiskState) {
   // applyFrictionX(state)
 }
 
-function vBounce(state: DiskState) {
+function _vBounce(state: DiskState) {
   state.dy *= -1
   playImpact(state, false, 2 * Math.abs(state.dy))
   // applyFrictionX(state)

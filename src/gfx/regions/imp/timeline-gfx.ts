@@ -12,6 +12,7 @@ import type { PinballWizard, InputId } from 'pinball-wizard'
 import { HISTORY_MAX_STEPS } from 'simulation/constants'
 import { Timeline } from 'timeline'
 import { type Vec2, type Rectangle, rectContainsPoint, twopi } from 'util/math-util'
+import { shortVibrate } from 'util/vibrate'
 
 // const drawCount = 0
 
@@ -54,6 +55,7 @@ export class TimelineGfx extends GfxRegion {
         this._setSlider(pw, x)
       }
 
+      shortVibrate(pw)
       return true // consume event
     }
     // throw new Error('Method not implemented.')

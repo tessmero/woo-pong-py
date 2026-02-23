@@ -4,9 +4,7 @@
  * Pseudo-random adjustments to velocity used for branching.
  */
 
-import type { Barrier } from './barrier'
 import type { DiskState } from './disk'
-import type { Obstacle } from './obstacle'
 
 const minSpeed = 10 // only perterb vel along axes greater than this magnitude
 

@@ -229,7 +229,7 @@ export abstract class Lut {
         for (let j = 0; j < field.length!; j++) {
           // Properly reconstruct signed 32-bit value from two int16s
           let hi = values[i]
-          let lo = values[i + 1] & 0xFFFF
+          const lo = values[i + 1] & 0xFFFF
           // sign-extend hi
           if (hi < 0) hi = hi + 0x10000
           let val = (hi << 16) | lo
@@ -252,7 +252,7 @@ export abstract class Lut {
       }
       else if (field.type === 'i32') {
         let hi = values[i]
-        let lo = values[i + 1] & 0xFFFF
+        const lo = values[i + 1] & 0xFFFF
         if (hi < 0) hi = hi + 0x10000
         let val = (hi << 16) | lo
         if (val & 0x80000000) val = val | 0xFFFFFFFF00000000

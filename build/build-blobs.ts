@@ -10,7 +10,7 @@ import { LutEncoder } from '../src/simulation/lut-encoder'
 import { createHash } from 'crypto'
 import { Lut } from '../src/simulation/luts/lut'
 import { SHAPE_NAMES } from '../src/simulation/shapes'
-import {getCollectedSimHashes} from '../src/simulation/luts/imp/race-lut'
+import { getCollectedSimHashes } from '../src/simulation/luts/imp/race-lut'
 
 import type { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 // import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
@@ -79,7 +79,7 @@ for (const shapeName of SHAPE_NAMES) {
 
   // Read back and verify
   const originalData = lut.data.slice()
-  const fileBuf = require('fs').readFileSync(outputPath)
+  const fileBuf = require('fs').readFileSync(outputPath) // eslint-disable-line @typescript-eslint/no-require-imports
   const arrayBuf = fileBuf.buffer.slice(fileBuf.byteOffset, fileBuf.byteOffset + fileBuf.byteLength)
   const int16 = new Int16Array(arrayBuf)
   lut.loadFromBlob(int16)
@@ -88,15 +88,15 @@ for (const shapeName of SHAPE_NAMES) {
   if (!dataEqual) {
     // Show a preview of the first mismatch
     let mismatchIdx = 0
-    while (mismatchIdx < originalData.length && originalData[mismatchIdx] === lut.data[mismatchIdx]) mismatchIdx++;
+    while (mismatchIdx < originalData.length && originalData[mismatchIdx] === lut.data[mismatchIdx]) mismatchIdx++
     const context = 5
     const origPreview = originalData.slice(Math.max(0, mismatchIdx - context), mismatchIdx + context)
     const loadedPreview = lut.data.slice(Math.max(0, mismatchIdx - context), mismatchIdx + context)
     throw new Error(
-      `Decoded LUT data does not match original for ${shapeName}.\n` +
-      `First mismatch at index ${mismatchIdx}:\n` +
-      `Original: [${origPreview.join(', ')}]\n` +
-      `Loaded:   [${loadedPreview.join(', ')}]`
+      `Decoded LUT data does not match original for ${shapeName}.\n`
+      + `First mismatch at index ${mismatchIdx}:\n`
+      + `Original: [${origPreview.join(', ')}]\n`
+      + `Loaded:   [${loadedPreview.join(', ')}]`,
     )
   }
 
@@ -134,7 +134,7 @@ for (const lutName of LUT.NAMES) {
   // Read back and verify
   const originalData = lut.data.slice()
 
-  const fileBuf = require('fs').readFileSync(outputPath)
+  const fileBuf = require('fs').readFileSync(outputPath) // eslint-disable-line @typescript-eslint/no-require-imports
   const arrayBuf = fileBuf.buffer.slice(fileBuf.byteOffset, fileBuf.byteOffset + fileBuf.byteLength)
   const int16 = new Int16Array(arrayBuf)
   lut.loadFromBlob(int16)
@@ -143,22 +143,22 @@ for (const lutName of LUT.NAMES) {
   if (!dataEqual) {
     // Show a preview of the first mismatch
     let mismatchIdx = 0
-    while (mismatchIdx < originalData.length && originalData[mismatchIdx] === lut.data[mismatchIdx]) mismatchIdx++;
+    while (mismatchIdx < originalData.length && originalData[mismatchIdx] === lut.data[mismatchIdx]) mismatchIdx++
     const context = 5
     const origPreview = originalData.slice(Math.max(0, mismatchIdx - context), mismatchIdx + context)
     const loadedPreview = lut.data.slice(Math.max(0, mismatchIdx - context), mismatchIdx + context)
     throw new Error(
-      `Decoded LUT data does not match original for ${lutName}.\n` +
-      `First mismatch at index ${mismatchIdx}:\n` +
-      `Original: [${origPreview.join(', ')}]\n` +
-      `Loaded:   [${loadedPreview.join(', ')}]`
+      `Decoded LUT data does not match original for ${lutName}.\n`
+      + `First mismatch at index ${mismatchIdx}:\n`
+      + `Original: [${origPreview.join(', ')}]\n`
+      + `Loaded:   [${loadedPreview.join(', ')}]`,
     )
   }
 
-  // debug
-  if( lutName === 'race-lut' ){
-    console.log(JSON.stringify(originalData))
-  }
+  // // debug
+  // if (lutName === 'race-lut') {
+  //   console.log(JSON.stringify(originalData))
+  // }
 
   const varPrefix = lutName.replaceAll('-', '_').toUpperCase()
   lutBlobs[varPrefix] = {

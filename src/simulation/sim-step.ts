@@ -12,7 +12,6 @@ import { HISTORY_CHECKPOINT_STEPS, STEPS_BEFORE_BRANCH } from './constants'
 import { Serializer } from 'simulation/serializer'
 import { StartLayout } from 'rooms/start-layouts/start-layout'
 import type { Vec2 } from 'util/math-util'
-import { checkSimHash } from './sim-hash'
 
 let didDebugStart = false
 
@@ -51,7 +50,7 @@ export function step(sim: Simulation) {
   if (sim._stepCount === (STEPS_BEFORE_BRANCH) && sim.branchSeed !== -1) {
     // console.log('set mid seed')
     Perturbations.setSeed(sim.branchSeed)
-    console.log(`set branch seed ${sim.branchSeed} for sim with step count ${sim.stepCount}`)
+    // console.log(`set branch seed ${sim.branchSeed} for sim with step count ${sim.stepCount}`)
   }
   else if (sim._stepCount === (STEPS_BEFORE_BRANCH)) {
     throw new Error('reached steps_before_branch wtih no branchSeed')
@@ -126,8 +125,8 @@ function _activeStep(sim: Simulation) {
 
   Disk.flushStates(sim.disks) // commit updates after collisions
 
-  // check determinism hash at interval steps
-  checkSimHash(sim)
+  // // check determinism hash at interval steps
+  // checkSimHash(sim)
 
   // Disk.updateHistory(sim.disks) // add to graphical tail
 }

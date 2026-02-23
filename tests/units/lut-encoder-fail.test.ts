@@ -6,11 +6,10 @@
 
 import { strict as assert } from 'assert'
 import { Lut, LutEncoder } from '../../src/simulation/luts/lut'
-import { LUT } from '../../src/imp-names'
 
 describe('LutEncoder encode/decode bug reproduction', function () {
-  const fs = require('fs')
-  const path = require('path')
+  const fs = require('fs') // eslint-disable-line @typescript-eslint/no-require-imports
+  const path = require('path') // eslint-disable-line @typescript-eslint/no-require-imports
   it('should preserve LUT data for disk-friction-lut (file roundtrip, runtime logic)', function () {
     // Use the same LUT name that fails in build-blobs.ts
     const lutName = 'disk-friction-lut'
@@ -33,28 +32,28 @@ describe('LutEncoder encode/decode bug reproduction', function () {
     if (!dataEqual) {
       // Show a preview of the first mismatch
       let mismatchIdx = 0
-      while (mismatchIdx < originalData.length && originalData[mismatchIdx] === lut2.data[mismatchIdx]) mismatchIdx++;
+      while (mismatchIdx < originalData.length && originalData[mismatchIdx] === lut2.data[mismatchIdx]) mismatchIdx++
       const context = 5
       const origPreview = originalData.slice(Math.max(0, mismatchIdx - context), mismatchIdx + context)
       const loadedPreview = lut2.data.slice(Math.max(0, mismatchIdx - context), mismatchIdx + context)
       assert.fail(
-        `Decoded LUT data does not match original for ${lutName}.\n` +
-        `First mismatch at index ${mismatchIdx}:\n` +
-        `Original: [${origPreview.join(', ')}]\n` +
-        `Loaded:   [${loadedPreview.join(', ')}]`
+        `Decoded LUT data does not match original for ${lutName}.\n`
+        + `First mismatch at index ${mismatchIdx}:\n`
+        + `Original: [${origPreview.join(', ')}]\n`
+        + `Loaded:   [${loadedPreview.join(', ')}]`,
       )
     }
     fs.unlinkSync(tmpPath)
   })
 })
 
-function findFirstMismatch(a: string, b: string): string {
+function _findFirstMismatch(a: string, b: string): string {
   let i = 0
   while (i < a.length && i < b.length && a[i] === b[i]) i++
   const context = 20
   return (
-    `index ${i}:\n` +
-    `Original: ...${a.slice(Math.max(0, i - context), i + context)}...\n` +
-    `Decoded:  ...${b.slice(Math.max(0, i - context), i + context)}...`
+    `index ${i}:\n`
+    + `Original: ...${a.slice(Math.max(0, i - context), i + context)}...\n`
+    + `Decoded:  ...${b.slice(Math.max(0, i - context), i + context)}...`
   )
 }

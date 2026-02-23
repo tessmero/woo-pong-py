@@ -70,7 +70,7 @@ export class Simulation {
   public t: number// = this._stepCount * STEP_DURATION
 
   constructor(seed: number) {
-    console.log(`construct simulation with starting seed ${seed}`)
+    // console.log(`construct simulation with starting seed ${seed}`)
 
     Perturbations.setSeed(seed)
 
