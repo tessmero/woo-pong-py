@@ -9,19 +9,21 @@ import { puppetTestSequence } from './puppet-test-sequence'
 
 const params = {
   targets: [
-    {
-      shortName: 'demo',
-      name: 'development build of woo-pong',
-      serverCmd: [
-        'python3', ['-m', 'http.server', '8642'], { cwd: 'dist' },
-      ],
-      url: 'http://localhost:8642/index.html',
-    },
-    {
-      shortName: 'site',
-      name: 'development build of tessmero.github.io',
-      url: 'http://localhost:3000/woo-pong/',
-    },
+
+    // {
+    //   shortName: 'demo',
+    //   name: 'development build of woo-pong',
+    //   serverCmd: [
+    //     'python3', ['-m', 'http.server', '8642'], { cwd: 'dist' },
+    //   ],
+    //   url: 'http://localhost:8642/index.html',
+    // },
+
+    // {
+    //   shortName: 'site',
+    //   name: 'development build of tessmero.github.io',
+    //   url: 'http://localhost:3000/woo-pong/',
+    // },
   ],
   sequence: puppetTestSequence,
 }

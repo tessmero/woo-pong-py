@@ -188,6 +188,15 @@ export class Disk {
   }
 
   pushInBounds(bounds: Rectangle) {
+    // // top wall
+    // if ((this.nextState.y - DISK_RADIUS) < bounds[1]) {
+    //   this.nextState.y = bounds[1] + DISK_RADIUS
+    //   if (this.nextState.dy < 0) {
+    //     vBounce(this.nextState)
+    //   }
+    // }
+
+    // left wall
     if ((this.nextState.x - DISK_RADIUS) < bounds[0]) {
       this.nextState.x = bounds[0] + DISK_RADIUS
       if (this.nextState.dx < 0) {
@@ -195,6 +204,7 @@ export class Disk {
       }
     }
 
+    // right wall
     if ((this.nextState.x + DISK_RADIUS) > (bounds[0] + bounds[2])) {
       this.nextState.x = bounds[0] + bounds[2] - DISK_RADIUS
       if (this.nextState.dx > 0) {
@@ -207,5 +217,11 @@ export class Disk {
 function hBounce(state: DiskState) {
   state.dx *= -1
   playImpact(state, false, 2 * Math.abs(state.dx))
+  // applyFrictionX(state)
+}
+
+function vBounce(state: DiskState) {
+  state.dy *= -1
+  playImpact(state, false, 2 * Math.abs(state.dy))
   // applyFrictionX(state)
 }

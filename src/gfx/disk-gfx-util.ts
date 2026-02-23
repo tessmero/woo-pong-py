@@ -141,7 +141,7 @@ export function drawDiskCrown(
 }
 
 export function drawDisk(
-  ctx: CanvasRenderingContext2D, diskIndex: number, disk: Disk, stroke='black', fill?: string,
+  ctx: CanvasRenderingContext2D, diskIndex: number, disk: Disk, stroke = 'black', fill?: string,
 ) {
   // const [cx, cy, _dx, _dy] = disk.currentState
   const [cx, cy] = disk.displayPos

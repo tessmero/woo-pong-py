@@ -11,10 +11,11 @@ import { DISK_COUNT, HISTORY_MAX_STEPS, INT32_MAX, STEPS_BEFORE_BRANCH } from 's
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
 import { step } from 'simulation/sim-step'
+import { computeSimHash, HASH_STEP_INTERVAL } from 'simulation/sim-hash'
 
 export type RaceLeaf = LeafValues
 
-const nRaces = 10
+const nRaces = 1
 const maxStepsTotal = 1e7
 
 export type BranchDatum = {
@@ -114,11 +115,22 @@ export class RaceLut extends Lut {
   public override async loadAll(): Promise<void> {
     await super.loadAll()
 
-    // console.log('race-lut loadAll:', this.tree)
+    console.log('race-lut loadAll:', JSON.stringify(this.data))
   }
 }
 
 let nextSeed = Perturbations.randomSeed()
+
+// function rewindToStep(sim: Simulation, stepCount: number) {
+//   stepCount = HISTORY_CHECKPOINT_STEPS * Math.floor(stepCount / HISTORY_CHECKPOINT_STEPS)
+//   if (stepCount > sim._maxStepCount) {
+//     // cannot go to future
+//     return
+//   }
+//   const i = Math.floor(stepCount / HISTORY_CHECKPOINT_STEPS)
+//   Serializer.restore(sim, i)
+//   sim.winningDiskIndex = -1
+// }
 
 function _tryComputeLeaf(): LeafValues | null {
   // console.log('race-lut comput eleaf')
@@ -146,6 +158,7 @@ function _tryComputeLeaf(): LeafValues | null {
 
     // run common start
     // console.log('race-lut reset sim')
+    // rewindToStep(sim, STEPS_BEFORE_BRANCH)
     const sim = new Simulation(commonStartSeed)
     for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
       step(sim)
@@ -158,7 +171,8 @@ function _tryComputeLeaf(): LeafValues | null {
 
     // branch, find winning disk, and set the mid seed for that disk
     const branchSeed = Perturbations.randomSeed()
-    Perturbations.setSeed(branchSeed)
+    sim.branchSeed = branchSeed
+    // Perturbations.setSeed(branchSeed)
     // console.log('race-lut set branch seed')
     // console.log(`set branch seed ${branchSeed} for sim with step count ${sim.stepCount}`)
     while (sim.winningDiskIndex === -1 && _stepCount < maxStepsTotal) {
@@ -166,8 +180,9 @@ function _tryComputeLeaf(): LeafValues | null {
       _stepCount++
     }
 
-    // console.log(`got winning disk ${sim.winningDiskIndex}`
-    //   + ` (${DISK_PATTERNS[sim.winningDiskIndex % DISK_PATTERNS.length]}) after ${_stepCount} steps`)
+    // // debug
+    // const pos = sim.disks[sim.winningDiskIndex].currentState
+    // console.log(`got winning disk ${sim.winningDiskIndex} after ${_stepCount} steps (${JSON.stringify(pos)})`)
 
     // // get breakout sequences
     // const roomSeqs: Array<Array<number> | null> = []
@@ -189,11 +204,13 @@ function _tryComputeLeaf(): LeafValues | null {
       // eslint-disable-next-line no-console
       console.log(`level finished ${minSteps - sim.stepCount} steps too early`)
 
-      break // give up on this starting seed
+      // break // give up on this starting seed
     }
 
     if (sim.stepCount > HISTORY_MAX_STEPS) {
+      // eslint-disable-next-line no-console
       console.log(`level ran ${sim.stepCount - HISTORY_MAX_STEPS} steps too long`)
+
       continue // don't use this branch as a solution
     }
 
@@ -204,10 +221,10 @@ function _tryComputeLeaf(): LeafValues | null {
       // roomSeqs: roomSeqs,
     }
 
-    // use as dummy data for all disks to trigger early finish
-    for (let i = 0; i < DISK_COUNT; i++) {
-      branches[i] = branches[sim.winningDiskIndex]
-    }
+    // // use as dummy data for all disks to trigger early finish
+    // for (let i = 0; i < DISK_COUNT; i++) {
+    //   branches[i] = branches[sim.winningDiskIndex]
+    // }
 
     if (_stepCount > maxStepsTotal) {
       // console.log('')
@@ -257,7 +274,7 @@ function _tryComputeLeaf(): LeafValues | null {
   // eslint-disable-next-line no-console
   console.log(`solved race with start seed ${commonStartSeed}`)
 
-  // _verifyRace(commonStartSeed, branches)
+  _verifyRace(commonStartSeed, branches)
 
   return result
 }
@@ -268,49 +285,48 @@ function _verifyRace(
 ): void {
   for (const [winningDiskIndex, { midSeed }] of branches.entries()) {
     const sim = new Simulation(commonStartSeed)
-    // const hashes: Record<number, number> = {}
+    const hashes: Record<number, number> = {}
     for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
       step(sim)
-      // if (sim.stepCount % HASH_STEP_INTERVAL === 0) {
-      //   hashes[sim.stepCount] = computeSimHash(sim)
-      // }
+      if (sim.stepCount % HASH_STEP_INTERVAL === 0) {
+        hashes[sim.stepCount] = computeSimHash(sim)
+      }
     }
     if (sim.winningDiskIndex !== -1) {
       throw new Error('failed verification (win before branching)')
     }
-    const branchSeed = midSeed
-    Perturbations.setSeed(branchSeed)
+    sim.branchSeed = midSeed
     while (sim.winningDiskIndex === -1 && sim.stepCount < maxStepsTotal) {
       step(sim)
-      // if (sim.stepCount % HASH_STEP_INTERVAL === 0) {
-      //   hashes[sim.stepCount] = computeSimHash(sim)
-      // }
+      if (sim.stepCount % HASH_STEP_INTERVAL === 0) {
+        hashes[sim.stepCount] = computeSimHash(sim)
+      }
     }
     // // also hash at the winning step
-    // hashes[sim.stepCount] = computeSimHash(sim)
+    hashes[sim.stepCount] = computeSimHash(sim)
 
     if (sim.winningDiskIndex !== winningDiskIndex) {
       throw new Error('failed verification (wrong winning disk)')
     }
 
-    // // store hashes for disk 0 (the default runtime branch)
-    // if (winningDiskIndex === 0 as number) {
-    //   _collectedHashes = {
-    //     startSeed: commonStartSeed,
-    //     branchSeed: midSeed,
-    //     hashes,
-    //   }
-    // }
+    // store hashes for disk 0 (the default runtime branch)
+    if (winningDiskIndex === 0 as number) {
+      _collectedHashes = {
+        startSeed: commonStartSeed,
+        branchSeed: midSeed,
+        hashes,
+      }
+    }
   }
 }
 
-// let _collectedHashes: {
-//   startSeed: number
-//   branchSeed: number
-//   hashes: Record<number, number>
-// } | null = null
+let _collectedHashes: {
+  startSeed: number
+  branchSeed: number
+  hashes: Record<number, number>
+} | null = null
 
-// /** Called by rebuild-blobs.ts to retrieve hashes computed during verification. */
-// export function getCollectedSimHashes() {
-//   return _collectedHashes
-// }
+/** Called by rebuild-blobs.ts to retrieve hashes computed during verification. */
+export function getCollectedSimHashes() {
+  return _collectedHashes
+}

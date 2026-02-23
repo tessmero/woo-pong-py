@@ -226,7 +226,6 @@ export class SimGfx extends GfxRegion {
 
   static debugTargetPos = 0
 
-
   // public override shouldDraw(pw: PinballWizard): boolean {
   //   return pw.activeSim.stepCount > 0
   // }

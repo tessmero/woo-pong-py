@@ -17,7 +17,6 @@ export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard) 
   const { simViewRect } = pw
   const sim = pw.activeSim
 
-  
   // // update rooms
   for (const room of sim.level.rooms) {
     room.update(sim.stepCount - topConfig.flatConfig.audioLatencySteps)

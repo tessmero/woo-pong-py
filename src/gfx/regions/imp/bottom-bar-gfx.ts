@@ -10,7 +10,7 @@ import type { PinballWizard } from 'pinball-wizard'
 import { BUTTON_ICONS } from 'gfx/button-icons'
 import { Graphics, gutterPx } from 'gfx/graphics'
 
-import { HISTORY_MAX_STEPS, stepsToSeconds } from 'simulation/constants'
+import { stepsToSeconds } from 'simulation/constants'
 import { formatTime } from 'guis/imp/playing-gui'
 import { setupRubikText } from '../../canvas-text-util'
 import { drawRoundedRect, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
@@ -40,7 +40,7 @@ const clickActions: Record<LayoutKey, (pw: PinballWizard, xFrac: number) => void
     }
     ballSelectionPanel.toggle(pw)
   },
-  clock: (pw, xFrac) => {
+  clock: () => {
     Timeline.toggle()
   },
   pause: (pw) => { pw.speed = 'paused' },
@@ -167,7 +167,6 @@ export class BottomBarGfx extends GfxRegion {
 
       if (key === 'clock') {
         const [x, y, w, h] = innerRect
-
 
         // Draw the current time string centered in the rect
         ctx.save()

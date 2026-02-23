@@ -8,9 +8,8 @@ import { DISK_COUNT, HISTORY_CHECKPOINT_STEPS, HISTORY_MAX_ENTRIES, STEP_DURATIO
 import { Disk } from './disk'
 import { Perturbations } from './perturbations'
 import type { Simulation } from './simulation'
-import type { Vec2 } from 'util/math-util'
 
-const dummy: Vec2 = [0, 0]
+// const dummy: Vec2 = [0, 0]
 
 const stepInterval = HISTORY_CHECKPOINT_STEPS // steps between checkpoints
 const nEntries = HISTORY_MAX_ENTRIES // number of checkpoints to store
@@ -38,12 +37,12 @@ export class Serializer {
     }
 
     if (entryIndex <= _lastEntryIndex) {
-      console.log('already passed checkpoint', entryIndex)
+      // console.log('already passed checkpoint', entryIndex)
 
       // // already passed this checkpoint
 
       // verify seed and disk states
-      _verify(sim, entryIndex, seed)
+      // _verify(sim, entryIndex, seed)
 
       // already passed checkpoint, and current state checks out
       return // do nothing
@@ -62,7 +61,7 @@ export class Serializer {
   }
 
   static restore(sim: Simulation, entryIndex: number) {
-    console.log('restore serialized sim entry', entryIndex)
+    // console.log('restore serialized sim entry', entryIndex)
 
     Perturbations.setSeed(seeds[entryIndex])
     sim._stepCount = entryIndex * HISTORY_CHECKPOINT_STEPS
@@ -77,8 +76,8 @@ export class Serializer {
       disk.nextState.dy = vel[i + 1]
       if (isFirst) {
         isFirst = false
-        const { x, y, dx, dy } = disk.nextState
-        console.log('restore disk state', x, y, dx, dy)
+        // const { x, y, dx, dy } = disk.nextState
+        // console.log('restore disk state', x, y, dx, dy)
       }
 
       i += 2
@@ -87,7 +86,7 @@ export class Serializer {
   }
 }
 
-export function _verify(sim: Simulation, entryIndex: number, seed: number) {
+export function _verify(sim: Simulation, entryIndex: number, _seed: number) {
   // // verify seed
   // if (seed !== seeds[entryIndex]) {
   //   throw new Error('reached checkpoint with different seed again after rewinding')
@@ -97,10 +96,10 @@ export function _verify(sim: Simulation, entryIndex: number, seed: number) {
   let i = entryLength * entryIndex
   let isFirst = true
   for (const disk of sim.disks) {
-    const { x, y, dx, dy } = disk.currentState
+    const { x } = disk.currentState
     if (isFirst) {
       isFirst = false
-      console.log('verify disk state', x, y, dx, dy)
+      // console.log('verify disk state', x, y, dx, dy)
     }
     if (pos[i] !== x) {
       throw new Error('reached checkpoint with different x after rewinding')

@@ -23,8 +23,9 @@ export class Spin extends StartLayout {
   // step index starts at -1000 and ends at 0
   override getAnimPos(diskIndex: number, stepIndex: number, out: Vec2): void {
     const totalSteps = this.animDur
-    const t = (stepIndex + totalSteps) / totalSteps // t: 0 (start) to 1 (end)
-    const angle = twopi * diskIndex / DISK_COUNT + finalAngularSpeed * Math.pow(stepIndex + totalSteps, 3) / (3 * Math.pow(totalSteps, 2))
+    // const t = (stepIndex + totalSteps) / totalSteps // t: 0 (start) to 1 (end)
+    const angle = twopi * diskIndex / DISK_COUNT
+      + finalAngularSpeed * Math.pow(stepIndex + totalSteps, 3) / (3 * Math.pow(totalSteps, 2))
     out[0] = Math.round(center[0] + ringRadius * Math.cos(angle))
     out[1] = Math.round(center[1] + ringRadius * Math.sin(angle))
   }

@@ -35,7 +35,7 @@ const _bounds: Rectangle = ([
 ]).map(v => v * VALUE_SCALE) as Rectangle
 
 const possibleStarts: Array<StartLayoutName> = [
-  // 'pool', 
+  // 'pool',
   'spin',
 ]
 function randomStartLayout(): StartLayoutName {
@@ -126,8 +126,8 @@ function randomRoom(roomIndex: number, bounds: Rectangle) {
 }
 
 const randomRoomNames: Array<RoomName> = [
-  'gear-room',
-  'ferris-wheel-room',
+  // 'gear-room',
+  // 'ferris-wheel-room',
 
   // 'basic-room',
   'basic-room',

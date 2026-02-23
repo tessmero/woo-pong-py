@@ -11,7 +11,7 @@ type Registered = () => StartLayout
 
 export abstract class StartLayout {
   animDur = 0 // steps to run animation before starting real sim
-  getAnimPos(diskIndex: number, stepIndex: number, out: Vec2) {
+  getAnimPos(_diskIndex: number, _stepIndex: number, _out: Vec2) {
     // set out with position of disk at step in animation
   }
 

@@ -70,7 +70,7 @@ export class Simulation {
   public t: number// = this._stepCount * STEP_DURATION
 
   constructor(seed: number) {
-    // console.log(`construct simulation with starting seed ${seed}`)
+    console.log(`construct simulation with starting seed ${seed}`)
 
     Perturbations.setSeed(seed)
 
@@ -79,7 +79,7 @@ export class Simulation {
     const animDur = sl.animDur
     this._stepCount = -animDur
     this.t = this._stepCount * STEP_DURATION
-    console.log(`got anim dur ${animDur} for start layout ${this.level.startLayout}`)
+    // console.log(`got anim dur ${animDur} for start layout ${this.level.startLayout}`)
 
     const posVels = START_LAYOUT_POSVELS[this.level.startLayout]
 

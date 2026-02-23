@@ -86,13 +86,6 @@ export class ObstacleLut extends Lut {
     super.computeAll() // uses this.detail to iterate over indices
   }
 
-  // extend lut.ts
-  public override async loadAll(): Promise<void> {
-    // use shape-specific members already assigned in create (lut.ts)
-
-    await super.loadAll() // uses this.detail to iterate over indices
-  }
-
   computeLeaf(index: Array<number>): LeafValues | null {
     const dx = this.indexToXOffset(index[0] - this.obsOffsetDetailX)
     const dy = this.indexToYOffset(index[1] - this.obsOffsetDetailY)

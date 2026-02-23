@@ -5,7 +5,6 @@
  */
 
 import { topConfig } from 'configs/imp/top-config'
-import { drawRoundedRect } from 'gfx/canvas-rounded-rect-util'
 import type { CanvasName } from 'gfx/graphics'
 import { Graphics } from 'gfx/graphics'
 import { GfxRegion } from 'gfx/regions/gfx-region'
@@ -14,7 +13,7 @@ import { HISTORY_MAX_STEPS } from 'simulation/constants'
 import { Timeline } from 'timeline'
 import { type Vec2, type Rectangle, rectContainsPoint, twopi } from 'util/math-util'
 
-let drawCount = 0
+// const drawCount = 0
 
 export class TimelineGfx extends GfxRegion {
   static {
@@ -23,7 +22,7 @@ export class TimelineGfx extends GfxRegion {
 
   override targetCanvas: CanvasName = 'main'
   override shouldDraw() {
-    return Timeline.isShowing
+    return Timeline.isShowing || Timeline.anim > 0
   }
 
   _entranceStartTime = 0
@@ -89,14 +88,12 @@ export class TimelineGfx extends GfxRegion {
   private readonly slider: Rectangle = [0, 0, 1, 1]
 
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
-    drawCount++
-    if (drawCount === 1000) {
-      Timeline.hide()
-    }
+    Timeline.updateAnim()
+    ctx.globalAlpha = Timeline.anim
 
     const [x, y, w, h] = rect
 
-    const dpr = window.devicePixelRatio
+    // const dpr = window.devicePixelRatio
     // const size = Math.min(360 * dpr, 0.9 * Math.min(w, h))// * Graphics.stgAnim
 
     // // debug
@@ -105,7 +102,7 @@ export class TimelineGfx extends GfxRegion {
 
     const { inner, sliderBar, slider } = this
 
-    const centerX = x + w / 2
+    // const centerX = x + w / 2
     const centerY = y + h / 2
 
     // ctx.fillRect(...inner )
@@ -143,19 +140,24 @@ export class TimelineGfx extends GfxRegion {
     // drawRoundedRect(ctx, slider, this._isDragging, false, false)
 
     // drawRoundedRect(ctx, details, false, false, true)
+
+    ctx.globalAlpha = 1
   }
 }
 
 function _drawTimelineBar(
   ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle,
-  isActive = false, isHovered = false,
+  _isActive = false, _isHovered = false,
 ) {
   const [x, y, w, h] = rect
 
+  const barThickness = h / 10 // horizontal bar
+  const sliderRad = h / 6 // circular slider
+  const edgeThickness = 2 // edge around bar and slider
+
   const x0 = x
   const x1 = x + w
-  const thick = h / 10
-  const y0 = y + h / 2 - thick / 2
+  // const y0 = y + h / 2 - barThickness / 2
 
   const cy = y + h / 2
 
@@ -164,18 +166,28 @@ function _drawTimelineBar(
   const playedWidth = (x1 - x0) * timeFrac
 
   ctx.lineCap = 'round'
-  ctx.lineWidth = thick
 
-  // ctx.fillStyle = 'blue'
-  // ctx.fillRect(x0, y0, playedWidth, thick)
+  // draw outline around bar
+  ctx.lineWidth = barThickness + 2 * edgeThickness
+  ctx.beginPath()
+  ctx.moveTo(x0, cy)
+  ctx.lineTo(x1, cy)
+  ctx.strokeStyle = 'black'
+  ctx.stroke()
+
+  // draw outline around slider
+  ctx.beginPath()
+  ctx.arc(x0 + playedWidth, cy, sliderRad + edgeThickness, 0, twopi)
+  ctx.fillStyle = 'black'
+  ctx.fill()
+
+  // draw bar in two parts
+  ctx.lineWidth = barThickness
   ctx.beginPath()
   ctx.moveTo(x0 + playedWidth, cy)
   ctx.lineTo(x1, cy)
   ctx.strokeStyle = 'gray'
   ctx.stroke()
-
-  // ctx.fillStyle = 'red'
-  // ctx.fillRect(x0, y0, x1 - x0, thick)
   ctx.beginPath()
   ctx.moveTo(x0, cy)
   ctx.lineTo(x0 + playedWidth, cy)
@@ -183,8 +195,7 @@ function _drawTimelineBar(
   ctx.stroke()
 
   ctx.beginPath()
-  const rad = h / 6
-  ctx.arc(x0 + playedWidth, cy, rad, 0, twopi)
+  ctx.arc(x0 + playedWidth, cy, sliderRad, 0, twopi)
   ctx.fillStyle = 'red'
   ctx.fill()
 }

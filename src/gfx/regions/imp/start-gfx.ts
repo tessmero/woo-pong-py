@@ -7,7 +7,7 @@
 import type { PinballWizard, InputId } from 'pinball-wizard'
 import { type Vec2, type Rectangle } from 'util/math-util'
 import { GfxRegion } from '../gfx-region'
-import { Graphics, OBSTACLE_FILL, type CanvasName } from 'gfx/graphics'
+import { OBSTACLE_FILL, type CanvasName } from 'gfx/graphics'
 import { VALUE_SCALE } from 'simulation/constants'
 import { drawDisk } from 'gfx/disk-gfx-util'
 
@@ -28,7 +28,7 @@ export class StartGfx extends GfxRegion {
   private _drawRect: Rectangle = [1, 1, 1, 1]
   protected override _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
     // throw new Error("Method not implemented.");
-    if( pw.activeSim.stepCount < 0 && !isShowing ){
+    if (pw.activeSim.stepCount < 0 && !isShowing) {
       isShowing = true
       document.getElementById('start-canvas-container')!.classList.remove('hidden')
     }
@@ -70,7 +70,7 @@ export class StartGfx extends GfxRegion {
 
     const { simViewRect } = pw
     const y0 = simViewRect[1]
-    const y1 = y0 + simViewRect[3]
+    const _y1 = y0 + simViewRect[3]
 
     // this._drawBounds(ctx, pw)
     // this._drawBoundsOuterEdges(ctx, pw)
@@ -122,20 +122,20 @@ export class StartGfx extends GfxRegion {
     ctx.restore()
   }
 
-  override down(pw: PinballWizard, mousePos: Vec2, inputId: InputId): boolean {
+  override down(_pw: PinballWizard, _mousePos: Vec2, _inputId: InputId): boolean {
     return false
     // throw new Error("Method not implemented.");
   }
 
-  override move(pw: PinballWizard, mousePos: Vec2, inputId: InputId): void {
+  override move(_pw: PinballWizard, _mousePos: Vec2, _inputId: InputId): void {
     // throw new Error("Method not implemented.");
   }
 
-  override leave(pw: PinballWizard, mousePos: Vec2, inputId: InputId): void {
+  override leave(_pw: PinballWizard, _mousePos: Vec2, _inputId: InputId): void {
     // throw new Error("Method not implemented.");
   }
 
-  override up(pw: PinballWizard, mousePos: Vec2, inputId: InputId): void {
+  override up(_pw: PinballWizard, _mousePos: Vec2, _inputId: InputId): void {
     // throw new Error("Method not implemented.");
   }
 }

@@ -12,7 +12,7 @@ import type { PlayingLayoutKey } from 'guis/layouts/playing-layout'
 import { PLAYING_LAYOUT } from 'guis/layouts/playing-layout'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import type { InputId, PinballWizard } from 'pinball-wizard'
-import { SECONDS_BEFORE_BRANCH } from 'simulation/constants'
+import { SECONDS_BEFORE_BRANCH, STEPS_BEFORE_BRANCH, stepsToSeconds } from 'simulation/constants'
 import type { Vec2 } from 'util/math-util'
 import { shortVibrate } from 'util/vibrate'
 
@@ -231,22 +231,32 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
 }
 
 export function getStatusText(
-  pinballWizard: PinballWizard,
-  secondsElapsed: number,
+  pw: PinballWizard,
 ) {
+  const maxSteps = pw.activeSim._maxStepCount // maximum reached step count
+  if (maxSteps >= STEPS_BEFORE_BRANCH) {
+    // user passed branching points and may have rewinded
+    if (pw.activeSim.winningDiskIndex !== -1) {
+      return 'finished'
+    }
+    return `Choice locked`
+  }
+
+  const steps = pw.activeSim.stepCount // displayed step count
+  const secondsElapsed = stepsToSeconds(steps)
   const remainingSeconds = SECONDS_BEFORE_BRANCH - secondsElapsed
 
-  if (pinballWizard.activeSim.winningDiskIndex !== -1) {
+  if (pw.activeSim.winningDiskIndex !== -1) {
     return 'finished'
   }
-  if (pinballWizard.isHalted) {
+  if (pw.isHalted) {
     return `you must choose a ball`
   }
-  const i = pinballWizard.selectedDiskIndex
+  const i = pw.selectedDiskIndex
   if (i === -1) {
     return `${remainingSeconds} sec choose a ball`
   }
-  if (pinballWizard.hasBranched) {
+  if (pw.hasBranched) {
     return `Choice locked`
   }
 

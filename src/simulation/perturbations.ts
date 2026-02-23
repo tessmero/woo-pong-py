@@ -28,12 +28,12 @@ export class Perturbations {
     // Perturbations.nextInt = _makePRNG(seed)
   }
 
-  static blinkBarrier(barrier: Barrier) {
-    const modVal = (Perturbations.nextInt() >>> 0) % 1000
-    if (modVal === 0) {
-      barrier.isHidden = !barrier.isHidden
-    }
-  }
+  // static blinkBarrier(barrier: Barrier) {
+  //   const modVal = (Perturbations.nextInt() >>> 0) % 1000
+  //   if (modVal === 0) {
+  //     barrier.isHidden = !barrier.isHidden
+  //   }
+  // }
 
   // static blinkObstacle(obstacle: Obstacle) {
   //   const modVal = (Perturbations.nextInt() >>> 0) % 1000
@@ -41,12 +41,12 @@ export class Perturbations {
   //     obstacle.isHidden = !obstacle.isHidden
   //   }
   // }
-  static reverseObstacle(obstacle: Obstacle) {
-    const modVal = (Perturbations.nextInt() >>> 0) % 1000
-    if (modVal === 0) {
-      obstacle.vel[0] *= -1
-    }
-  }
+  // static reverseObstacle(obstacle: Obstacle) {
+  //   const modVal = (Perturbations.nextInt() >>> 0) % 1000
+  //   if (modVal === 0) {
+  //     obstacle.vel[0] *= -1
+  //   }
+  // }
 
   static perturbDisk(state: DiskState) {
     // dx

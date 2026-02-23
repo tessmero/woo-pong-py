@@ -13,6 +13,7 @@
 import type { ShapeName } from 'simulation/shapes'
 import type { LutName } from '../../imp-names'
 import { LutEncoder } from '../lut-encoder'
+export { LutEncoder }
 import { type ObstacleLut } from './imp/obstacle-lut'
 import { LUT_BLOBS } from 'set-by-build'
 import { INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, OBSTACLE_DETAIL_SCALE } from 'simulation/constants'
@@ -200,19 +201,22 @@ export abstract class Lut {
       else if (field.type === 'i16_array') {
         const arr = leaf[field.name] as ReadonlyArray<number>
         for (let i = 0; i < field.length!; i++) {
-          result.push(Math.round(arr[i]))
+          let v = Math.round(arr[i])
+          if (v < 0) v += 0x10000
+          result.push(v & 0xFFFF)
         }
       }
       else if (field.type === 'i32') {
         const val = Math.round(leaf[field.name] as number)
         result.push((val >> 16) & 0xFFFF, val & 0xFFFF)
       }
-      else {
-        result.push(Math.round(leaf[field.name] as number))
+      else { // i16
+        let v = Math.round(leaf[field.name] as number)
+        if (v < 0) v += 0x10000
+        result.push(v & 0xFFFF)
       }
     }
-    // Convert unsigned to signed int16 for Int16Array storage
-    return result.map(v => (v > INT16_MAX) ? v - 0x10000 : v)
+    return result
   }
 
   /** Decode int16 values from blob back into a named leaf. Driven by schema. */
@@ -223,9 +227,15 @@ export abstract class Lut {
       if (field.type === 'i32_array') {
         const arr: Array<number> = []
         for (let j = 0; j < field.length!; j++) {
-          const hi = values[i] & 0xFFFF
-          const lo = values[i + 1] & 0xFFFF
-          arr.push((hi << 16) | lo)
+          // Properly reconstruct signed 32-bit value from two int16s
+          let hi = values[i]
+          let lo = values[i + 1] & 0xFFFF
+          // sign-extend hi
+          if (hi < 0) hi = hi + 0x10000
+          let val = (hi << 16) | lo
+          // sign-extend 32-bit
+          if (val & 0x80000000) val = val | 0xFFFFFFFF00000000
+          arr.push(val)
           i += 2
         }
         result[field.name] = arr
@@ -233,19 +243,26 @@ export abstract class Lut {
       else if (field.type === 'i16_array') {
         const arr: Array<number> = []
         for (let j = 0; j < field.length!; j++) {
-          arr.push(values[i])
+          let v = values[i] & 0xFFFF
+          if (v & 0x8000) v = v - 0x10000
+          arr.push(v)
           i += 1
         }
         result[field.name] = arr
       }
       else if (field.type === 'i32') {
-        const hi = values[i] & 0xFFFF
-        const lo = values[i + 1] & 0xFFFF
-        result[field.name] = (hi << 16) | lo
+        let hi = values[i]
+        let lo = values[i + 1] & 0xFFFF
+        if (hi < 0) hi = hi + 0x10000
+        let val = (hi << 16) | lo
+        if (val & 0x80000000) val = val | 0xFFFFFFFF00000000
+        result[field.name] = val
         i += 2
       }
-      else {
-        result[field.name] = values[i]
+      else { // i16
+        let v = values[i] & 0xFFFF
+        if (v & 0x8000) v = v - 0x10000
+        result[field.name] = v
         i += 1
       }
     }

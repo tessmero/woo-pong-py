@@ -12,17 +12,16 @@ import { HISTORY_CHECKPOINT_STEPS, STEPS_BEFORE_BRANCH } from './constants'
 import { Serializer } from 'simulation/serializer'
 import { StartLayout } from 'rooms/start-layouts/start-layout'
 import type { Vec2 } from 'util/math-util'
-import { Timeline } from 'timeline'
+import { checkSimHash } from './sim-hash'
 
 let didDebugStart = false
 
 export function step(sim: Simulation) {
-
   // debug
-  if( !didDebugStart ){
+  if (!didDebugStart) {
     didDebugStart = true
     // Timeline.toggle(false)
-    console.log(`start sim with step count ${sim.stepCount}`)
+    // console.log(`start sim with step count ${sim.stepCount}`)
   }
 
   if ((sim._stepCount >= 0) && (sim._stepCount % HISTORY_CHECKPOINT_STEPS === 0)) {
@@ -32,9 +31,9 @@ export function step(sim: Simulation) {
   sim._stepCount++
   sim._maxStepCount = Math.max(sim._stepCount, sim._maxStepCount)
 
-  if (sim._stepCount > sim.finalStepCount) {
-    return // prevent simulating past the moment a disk wins
-  }
+  // if (sim._stepCount > sim.finalStepCount) {
+  //   return // prevent simulating past the moment a disk wins
+  // }
 
   if (sim._stepCount < 0) {
     _startStep(sim)
@@ -52,7 +51,10 @@ export function step(sim: Simulation) {
   if (sim._stepCount === (STEPS_BEFORE_BRANCH) && sim.branchSeed !== -1) {
     // console.log('set mid seed')
     Perturbations.setSeed(sim.branchSeed)
-    // console.log(`set branch seed ${sim.branchSeed} for sim with step count ${sim.stepCount}`)
+    console.log(`set branch seed ${sim.branchSeed} for sim with step count ${sim.stepCount}`)
+  }
+  else if (sim._stepCount === (STEPS_BEFORE_BRANCH)) {
+    throw new Error('reached steps_before_branch wtih no branchSeed')
   }
 
   _activeStep(sim)
@@ -96,7 +98,7 @@ function _activeStep(sim: Simulation) {
   for (const [_diskIndex, disk] of sim.disks.entries()) {
     disk.advance(sim.obstacles, sim.stepCount)
     disk.pushInBounds(sim.level.bounds)
-    // Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
+    Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
     disk.nextState.dy += 1 // gravity
   }
 
@@ -125,7 +127,7 @@ function _activeStep(sim: Simulation) {
   Disk.flushStates(sim.disks) // commit updates after collisions
 
   // check determinism hash at interval steps
-  // checkSimHash(this)
+  checkSimHash(sim)
 
   // Disk.updateHistory(sim.disks) // add to graphical tail
 }

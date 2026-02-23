@@ -19,13 +19,13 @@ let _isHilbertEnabled = false
 export function onTitleScreenResize() {
   // Graphics.onResize()
 
-  const { cvs, ctx } = getTitleScreenCanvas()
+  const { cvs } = getTitleScreenCanvas()
   cvs.width = cvs.clientWidth * window.devicePixelRatio
   cvs.height = cvs.clientHeight * window.devicePixelRatio
 }
 
 export class TitleScreen {
-  static update(dt: number) {
+  static update(_dt: number) {
     getScaledPattern('diamond-a')
     // _updateTitleSim(dt)
     // _drawTitleSim()

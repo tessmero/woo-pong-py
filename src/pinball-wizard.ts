@@ -36,6 +36,7 @@ import type { GlassGfx } from 'gfx/regions/imp/glass-gfx'
 import { settingsPanel } from 'overlay-panels/settings-panel'
 import { Serializer } from 'simulation/serializer'
 import { step } from 'simulation/sim-step'
+import { SIM_HASHES } from 'set-by-build'
 // import { SIM_HASHES } from 'set-by-build'
 
 // can only be constructed once
@@ -131,7 +132,7 @@ export class PinballWizard {
   }
 
   private isSeedConfiged = false
-  private _race: Array<number> = []
+  private _raceIndex: number = 0
   async init() {
     if (didInit) {
       throw new Error('PinballWizard initialized multiple times')
@@ -160,31 +161,32 @@ export class PinballWizard {
 
     const raceLut = Lut.create('race-lut')
     const raceCount = raceLut.detail[0]
-    const raceIndex = Math.floor(Math.random() * raceCount)
-    const startSeed = raceLut.get(raceIndex, 'startSeed')
-    this._race = [startSeed]
-    for (let d = 0; d < DISK_COUNT; d++) {
-      this._race.push(raceLut.get(raceIndex, `d${d}_midSeed`))
-      this._race.push(raceLut.get(raceIndex, `d${d}_finalStepCount`))
-    }
+    this._raceIndex = Math.floor(Math.random() * raceCount)
+    const startSeed = raceLut.get(this._raceIndex, 'startSeed')
+    // this._race = [startSeed]
+    // for (let d = 0; d < DISK_COUNT; d++) {
+    //   this._race.push(raceLut.get(raceIndex, `d${d}_midSeed`))
+    //   this._race.push(raceLut.get(raceIndex, `d${d}_finalStepCount`))
+    // }
     // console.log('decoded race', this._race)
-    const commonStartSeed = this.isSeedConfiged ? cfgSeed : this._race[0]
+    const commonStartSeed = this.isSeedConfiged ? cfgSeed : startSeed
 
     shuffle(SHUFFLED_PATTERN_NAMES) // shuffle appearance of bouncing balls
 
     this.activeSim = new Simulation(commonStartSeed)
-    
+
     if (!this.isSeedConfiged) {
-      this.activeSim.branchSeed = this._race[1] // seed to insert later
+      this.activeSim.branchSeed = 29137 // seed to insert later
       this.activeSim.finalStepCount = INT32_MAX
 
-      // // attach build-time determinism hashes if seeds match
-      // if (SIM_HASHES
-      //   && SIM_HASHES.startSeed === commonStartSeed
-      //   && SIM_HASHES.branchSeed === this._race[1]
-      // ) {
-      //   this.activeSim.expectedHashes = SIM_HASHES.hashes
-      // }
+      // attach build-time determinism hashes if seeds match
+      if (SIM_HASHES
+        && SIM_HASHES.startSeed === commonStartSeed
+        && SIM_HASHES.branchSeed === 29137
+      ) {
+        console.log('attached build-time hashes')
+        this.activeSim.expectedHashes = SIM_HASHES.hashes
+      }
     }
 
     // const brickValuesStartIndex = 1 + DISK_COUNT
@@ -448,9 +450,11 @@ export class PinballWizard {
     // this.onResize()
 
     if (!this.isSeedConfiged) {
-      this.activeSim.branchSeed = this._race[1 + 2 * diskIndex]
-      this.activeSim.finalStepCount = this._race[1 + 2 * diskIndex + 1]
+       const raceLut = Lut.create('race-lut')    
+      this.activeSim.branchSeed = raceLut.get(this._raceIndex, `d${diskIndex}_midSeed`)
+      this.activeSim.finalStepCount = raceLut.get(this._raceIndex, `d${diskIndex}_finalStepCount`)
 
+      console.log('planned branch seed', this.activeSim.branchSeed)
       // console.log('set finalStepCount', this.activeSim.finalStepCount)
     }
   }

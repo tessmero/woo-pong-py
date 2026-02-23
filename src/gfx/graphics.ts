@@ -270,9 +270,8 @@ export class Graphics {
   static get regions() { return Graphics._pxRegions }
 
   static draw(pw: PinballWizard) {
-
     // needed for some reason
-    drawRoundedRect(this._contexts['main'], [10,10,10,10], false, false, true)
+    drawRoundedRect(this._contexts['main'], [10, 10, 10, 10], false, false, true)
 
     // draw all regions
     Object.keys(this._dpRegions).forEach((gfxName) => {
