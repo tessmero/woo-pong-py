@@ -15,10 +15,14 @@ import type { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 // import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
 import { HilbertLut } from '../src/simulation/luts/imp/hilbert-lut'
 import { solveHilbertCurve, createDummyImage } from './hilbert-solver'
-import { LUT, ROOM, ROOM_LAYOUT, GFX_REGION } from '../src/imp-names'
+import { LUT, ROOM, ROOM_LAYOUT, GFX_REGION, START_LAYOUT } from '../src/imp-names'
 import { requireImps } from './require-imps'
+import {Spin} from '../src/rooms/start-layouts/imp/spin'
 
-requireImps(LUT, ROOM, ROOM_LAYOUT, GFX_REGION)
+requireImps(LUT, ROOM, ROOM_LAYOUT, GFX_REGION, START_LAYOUT)
+
+//test
+const _test = [Spin]
 
 // // Inject the build-time pattern solver so GasBoxLut.computeLeaf() can use it
 // GasBoxLut.patternSolver = solvePatternPositions

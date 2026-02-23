@@ -14,7 +14,7 @@ import { step } from 'simulation/sim-step'
 
 export type RaceLeaf = LeafValues
 
-const nRaces = 1
+const nRaces = 10
 const maxStepsTotal = 1e7
 
 export type BranchDatum = {

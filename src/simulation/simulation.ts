@@ -16,6 +16,7 @@ import { SHUFFLED_PATTERN_NAMES } from 'imp-names'
 import { START_LAYOUT_POSVELS } from 'rooms/start-layouts/set-by-build'
 import { step } from './sim-step'
 import { Serializer } from './serializer'
+import { StartLayout } from 'rooms/start-layouts/start-layout'
 
 const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 5; i++) {
@@ -63,12 +64,22 @@ export class Simulation {
 
   maxBallY = -Infinity // record lowest y position for any ball so far
 
+  public _stepCount: number// = -1000
+  public _maxStepCount = -1e8
+  get stepCount() { return this._stepCount }
+  public t: number// = this._stepCount * STEP_DURATION
+
   constructor(seed: number) {
     // console.log(`construct simulation with starting seed ${seed}`)
 
     Perturbations.setSeed(seed)
 
     this.level = new Level()
+    const sl = StartLayout.create(this.level.startLayout)
+    const animDur = sl.animDur
+    this._stepCount = -animDur
+    this.t = this._stepCount * STEP_DURATION
+    console.log(`got anim dur ${animDur} for start layout ${this.level.startLayout}`)
 
     const posVels = START_LAYOUT_POSVELS[this.level.startLayout]
 
@@ -102,11 +113,6 @@ export class Simulation {
     Serializer.reset()
   }
 
-  public _stepCount = -1000
-  public _maxStepCount = -1e8
-  get stepCount() { return this._stepCount }
-
-  public t = this._stepCount * STEP_DURATION
   update(dt: number, isBranchingAllowed = true) {
     this.t += dt
     const stepIndex = Math.ceil(this.t / STEP_DURATION)

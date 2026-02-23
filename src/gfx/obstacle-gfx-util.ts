@@ -11,10 +11,17 @@ import { VALUE_SCALE } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
 import { getDetailedPoints, type ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import type { Vec2 } from 'util/math-util'
+import { topConfig } from 'configs/imp/top-config'
 
 export function drawObstacles(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
   const { simViewRect } = pw
   const sim = pw.activeSim
+
+  
+  // // update rooms
+  for (const room of sim.level.rooms) {
+    room.update(sim.stepCount - topConfig.flatConfig.audioLatencySteps)
+  }
 
   const vy0 = simViewRect[1]
   const vy1 = vy0 + simViewRect[3]

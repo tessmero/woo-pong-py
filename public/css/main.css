@@ -3,6 +3,11 @@
   text-align: center;
 }
 
+body {
+  overflow: hidden;
+  background-color: #ddd;
+}
+
 button {
   background: #fffbe6;
   color: #a00;
@@ -22,6 +27,7 @@ button {
 .warning-toggle[aria-expanded="true"] {
   background: #ffe0e0;
 }
+
 
 
 /* .hidden {
@@ -130,12 +136,8 @@ body {
   user-select: none;
 }
 
-body {
-  overflow: hidden;
-  background-color: rgb(221,221,221);
-}
 
-canvas {
+canvas, .container {
   position: absolute;
   left: 0px;
   top: 0px;

@@ -12,6 +12,7 @@ import { type GfxRegionName } from 'imp-names'
 import { GfxRegion } from './regions/gfx-region'
 import type { SimGfx } from './regions/imp/sim-gfx'
 import type { ScrollbarGfx } from './regions/imp/scrollbar-gfx'
+import { drawRoundedRect } from './canvas-rounded-rect-util'
 
 // const cvs = ((typeof document === 'undefined') ? null : document.getElementById('sim-canvas')) as HTMLCanvasElement
 // const ctx = (cvs ? cvs.getContext('2d') : null) as CanvasRenderingContext2D
@@ -269,9 +270,13 @@ export class Graphics {
   static get regions() { return Graphics._pxRegions }
 
   static draw(pw: PinballWizard) {
+
+    // needed for some reason
+    drawRoundedRect(this._contexts['main'], [10,10,10,10], false, false, true)
+
     // draw all regions
     Object.keys(this._dpRegions).forEach((gfxName) => {
-      const ctx = this._contexts['main']
+      // const ctx = this._contexts['main']
 
       // if (gfxName === 'glass-gfx') {
       //   if (!ballSelectionPanel.isShowing) {
@@ -325,6 +330,9 @@ export class Graphics {
     // ctx.lineWidth = 2
     // ctx.strokeStyle = 'black'
     // ctx.strokeRect(...(this._dpRegions['sim-gfx'] as Rectangle))
+
+    // // debug
+    // drawRoundedRect(ctx, [100, 100, 100, 100])
 
     // //
     // // this.hasSpaceOnSides = false

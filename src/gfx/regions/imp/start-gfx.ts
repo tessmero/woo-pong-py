@@ -11,6 +11,8 @@ import { Graphics, OBSTACLE_FILL, type CanvasName } from 'gfx/graphics'
 import { VALUE_SCALE } from 'simulation/constants'
 import { drawDisk } from 'gfx/disk-gfx-util'
 
+let isShowing = false
+
 export class StartGfx extends GfxRegion {
   static {
     GfxRegion.register('start-gfx', () => new StartGfx())
@@ -26,8 +28,14 @@ export class StartGfx extends GfxRegion {
   private _drawRect: Rectangle = [1, 1, 1, 1]
   protected override _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
     // throw new Error("Method not implemented.");
-    if (pw.activeSim.stepCount > 1000) {
-      Graphics._canvases['start'].classList.add('hidden')
+    if( pw.activeSim.stepCount < 0 && !isShowing ){
+      isShowing = true
+      document.getElementById('start-canvas-container')!.classList.remove('hidden')
+    }
+    if (pw.activeSim.stepCount > 0 && isShowing) {
+      isShowing = false
+      // Graphics._canvases['start'].classList.add('hidden')
+      document.getElementById('start-canvas-container')!.classList.add('hidden')
     }
 
     // const isFlashOn = false //this._updateFlashingState()

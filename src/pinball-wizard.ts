@@ -173,6 +173,7 @@ export class PinballWizard {
     shuffle(SHUFFLED_PATTERN_NAMES) // shuffle appearance of bouncing balls
 
     this.activeSim = new Simulation(commonStartSeed)
+    
     if (!this.isSeedConfiged) {
       this.activeSim.branchSeed = this._race[1] // seed to insert later
       this.activeSim.finalStepCount = INT32_MAX

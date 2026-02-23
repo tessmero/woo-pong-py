@@ -12,8 +12,19 @@ import { HISTORY_CHECKPOINT_STEPS, STEPS_BEFORE_BRANCH } from './constants'
 import { Serializer } from 'simulation/serializer'
 import { StartLayout } from 'rooms/start-layouts/start-layout'
 import type { Vec2 } from 'util/math-util'
+import { Timeline } from 'timeline'
+
+let didDebugStart = false
 
 export function step(sim: Simulation) {
+
+  // debug
+  if( !didDebugStart ){
+    didDebugStart = true
+    // Timeline.toggle(false)
+    console.log(`start sim with step count ${sim.stepCount}`)
+  }
+
   if ((sim._stepCount >= 0) && (sim._stepCount % HISTORY_CHECKPOINT_STEPS === 0)) {
     Serializer.passCheckpoint(sim) // save keyframe for rewinding
   }

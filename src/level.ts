@@ -35,7 +35,8 @@ const _bounds: Rectangle = ([
 ]).map(v => v * VALUE_SCALE) as Rectangle
 
 const possibleStarts: Array<StartLayoutName> = [
-  'pool', 'spin',
+  // 'pool', 
+  'spin',
 ]
 function randomStartLayout(): StartLayoutName {
   return possibleStarts[

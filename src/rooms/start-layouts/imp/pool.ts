@@ -6,12 +6,14 @@
 
 import type { Vec2 } from 'util/math-util'
 import { StartLayout } from '../start-layout'
-import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
+import { DISK_COUNT, DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 
 export class Pool extends StartLayout {
   static {
     StartLayout.register('pool', () => new Pool())
   }
+
+  override animDur: number = 0
 
   override _computePosVels(): Array<[Vec2, Vec2]> {
     const riskRadius = DISK_RADIUS
@@ -27,9 +29,17 @@ export class Pool extends StartLayout {
       for (let i = 0; i < numDisks; i++) {
         positions.push([xStart + i * diskSpacing, y])
       }
-      y += diskSpacing
+      y -= diskSpacing
     }
-    // All disks start with zero velocity
-    return positions.map(pos => [pos, [0, 0]])
+
+    // // All disks start with zero velocity
+    // return positions.map(pos => [pos, [0, 0]])
+
+    const result: Array<[Vec2, Vec2]> = []
+    for (let i = 0; i < DISK_COUNT; i++) {
+      result.push([positions[i], [0, 0]])
+    }
+
+    return result
   }
 }

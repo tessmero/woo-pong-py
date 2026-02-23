@@ -18,6 +18,7 @@ import { shortVibrate } from 'util/vibrate'
 import { drawButton as drawIconOnButton } from 'gfx/icons-gfx-util'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { settingsPanel } from 'overlay-panels/settings-panel'
+import { Timeline } from 'timeline'
 
 const _LAYOUT_KEYS = ['bsp', 'clock', 'pause', 'play', 'fast', 'faster'] as const
 type LayoutKey = (typeof _LAYOUT_KEYS)[number]
@@ -25,7 +26,7 @@ type Layout = Record<LayoutKey, Rectangle>
 
 const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
   bsp: () => ballSelectionPanel.isShowing,
-  clock: pw => true,
+  clock: () => Timeline.isShowing,
   pause: pw => pw.speed === 'paused',
   play: pw => pw.speed === 'normal',
   fast: pw => pw.speed === 'fast',
@@ -40,9 +41,7 @@ const clickActions: Record<LayoutKey, (pw: PinballWizard, xFrac: number) => void
     ballSelectionPanel.toggle(pw)
   },
   clock: (pw, xFrac) => {
-    const stepCount = Math.floor(xFrac * HISTORY_MAX_STEPS)
-    pw.rewindToStep(stepCount)
-    return true
+    Timeline.toggle()
   },
   pause: (pw) => { pw.speed = 'paused' },
   play: (pw) => { pw.speed = 'normal' },
@@ -122,11 +121,10 @@ export class BottomBarGfx extends GfxRegion {
     this._computeLayout(rect)
   }
 
-
   public override shouldDraw(pw: PinballWizard): boolean {
     return pw.activeSim.stepCount > 0
   }
-  
+
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
     // ctx.clearRect(...rect)
 
@@ -159,8 +157,8 @@ export class BottomBarGfx extends GfxRegion {
       // ctx.restore()
 
       drawRoundedRect(ctx, innerRect, isActive,
-        isHovered && key !== 'clock', // no change when hovering over clock
-        key === 'clock', // no light/shadow slivers for clock
+        isHovered,
+        false, // key === 'clock', // no light/shadow slivers for clock
       )
 
       // // Draw border
@@ -170,12 +168,6 @@ export class BottomBarGfx extends GfxRegion {
       if (key === 'clock') {
         const [x, y, w, h] = innerRect
 
-        // draw draggable timeline
-        const timeFrac = pw.activeSim.stepCount / HISTORY_MAX_STEPS
-        ctx.fillStyle = 'red'
-        ctx.fillRect(x, y, w, h)
-        ctx.fillStyle = 'blue'
-        ctx.fillRect(x, y, w * timeFrac, h)
 
         // Draw the current time string centered in the rect
         ctx.save()
