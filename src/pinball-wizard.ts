@@ -351,7 +351,7 @@ export class PinballWizard {
   }
 
   public get hasBranched() {
-    return this.activeSim.stepCount >= STEPS_BEFORE_BRANCH
+    return this.activeSim._maxStepCount >= STEPS_BEFORE_BRANCH
   }
 
   public get hasFinished() {

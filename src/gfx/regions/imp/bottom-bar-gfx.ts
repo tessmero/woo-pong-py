@@ -35,12 +35,11 @@ const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
 
 const clickActions: Record<LayoutKey, (pw: PinballWizard, xFrac: number) => void> = {
   bsp: (pw) => {
-    if (!ballSelectionPanel.isShowing) {
-      shortVibrate(pw)
-    }
+    shortVibrate(pw)
     ballSelectionPanel.toggle(pw)
   },
-  clock: () => {
+  clock: (pw) => {
+    shortVibrate(pw)
     Timeline.toggle()
   },
   pause: (pw) => { pw.speed = 'paused' },

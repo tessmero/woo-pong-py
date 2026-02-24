@@ -203,7 +203,7 @@ export class Graphics {
       ],
       'timeline-gfx': [
         0, _root[3] - barHeightPx - barHeightPx,
-        _root[2],
+        _root[2] - scrollbarWidth - midGutterWidthPx,
         barHeightPx,
       ],
       'top-bar-gfx': [
