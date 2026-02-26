@@ -228,8 +228,9 @@ export class LoopGfx extends GfxRegion {
 
     this._updateSimViewRect(pw)
 
+    // overwrite simViewRect to center on disk
     const { simViewRect } = pw
-    const centerDisk = pw.activeSim.disks[0].currentState
+    const centerDisk = pw.activeSim.disks[pw.activeSim.loopDiskIndex].currentState
     const oldX = simViewRect[0]
     const oldY = simViewRect[1]
     simViewRect[0] = centerDisk.x - simViewRect[2] / 2

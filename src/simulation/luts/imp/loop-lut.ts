@@ -10,6 +10,8 @@ import { i32, Lut } from '../lut'
 import { Perturbations } from 'simulation/perturbations'
 import { VALUE_SCALE } from 'simulation/constants'
 import { Simulation } from 'simulation/simulation'
+import { step } from 'simulation/sim-step'
+import { LoopError } from 'rooms/imp/loop-room'
 
 const loopSchema: LeafSchema = [
   i32('startSeed'), // prng seed
@@ -46,6 +48,16 @@ export class LoopLut extends Lut {
     const y1 = 100 * VALUE_SCALE
 
     const sim = new Simulation(startSeed, true)
+    while (true) {
+      try {
+        step(sim)
+      }
+      catch (error) {
+        if (error instanceof LoopError) {
+          console.log(JSON.stringify(error.params))
+        }
+      }
+    }
 
     return {
       startSeed,

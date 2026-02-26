@@ -7,17 +7,46 @@
 import type { GfxRegionName } from 'imp-names'
 import type { PinballWizard } from 'pinball-wizard'
 import { Room } from 'rooms/room'
-import { VALUE_SCALE } from 'simulation/constants'
+import { STEP_DURATION, VALUE_SCALE } from 'simulation/constants'
+import { Disk } from 'simulation/disk'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
+import { Serializer } from 'simulation/serializer'
 import type { ShapeName } from 'simulation/shapes'
 import type { Simulation } from 'simulation/simulation'
+
+type SpawnEvent = {
+  step: number
+  state: [number, number, number, number]
+  didPass?: boolean
+}
+
+type LoopErrorParams = {
+  expected: SpawnEvent
+  actual: SpawnEvent
+}
+export class LoopError extends Error {
+  public readonly userId?: string
+
+  constructor(
+    public readonly params: LoopErrorParams,
+  ) {
+    // Call the parent Error constructor
+    super(`Loop Error: ${JSON.stringify(params)}`)
+  }
+}
 
 export class LoopRoom extends Room {
   static {
     Room.register('loop-room', () => new LoopRoom())
   }
+
+  private readonly spawnEvents: Array<SpawnEvent> = [
+    { step: 1319, state: [414402, 205, -824, 390], didPass: false },
+  ]
+
+  private readonly stepsBack = 1000
 
   override drawDecorations(ctx: CanvasRenderingContext2D, _pw: PinballWizard, _gfxName: GfxRegionName): void {
     ctx.strokeStyle = 'orange'
@@ -27,10 +56,53 @@ export class LoopRoom extends Room {
     _drawPortal(ctx, 50 * VALUE_SCALE, 100 * VALUE_SCALE)
   }
 
+  private didEnterPortal = false
+
   override update(sim: Simulation, _stepIndex: number): void {
+    for (const [i, evt] of this.spawnEvents.entries()) {
+      if (!evt.didPass && sim._stepCount === evt.step) {
+        console.log(`hit unpassed spawn event on step ${sim._stepCount}`)
+        evt.didPass = true
+        sim.disks.push(Disk.fromJson(evt.state))
+        Disk.flushStates(sim.disks)
+        Serializer.captureLoopCheckpoint(sim, i)
+      }
+    }
+
     for (const disk of sim.disks) {
-      if (disk.currentState.y > 100 * VALUE_SCALE) {
+      if (disk.currentState.y < 0) {
+        throw new Error('disk entered top portal')
+      }
+      if (!this.didEnterPortal && disk.currentState.y > 100 * VALUE_SCALE) {
+        console.log(`disk entered bottom portal on step ${sim._stepCount}`)
+        this.didEnterPortal = true
+
         disk.currentState.y -= 100 * VALUE_SCALE
+
+        // there shuld have been a matching spawn event in the past
+        const expected: SpawnEvent = {
+          step: sim._stepCount - this.stepsBack,
+          state: disk.currentState.toArray(),
+          didPass: true,
+        }
+        const eventIndex = 0
+        const actual = this.spawnEvents[eventIndex]
+        if (_spawnEventsEqual(expected, actual)) {
+          console.log('before looping', sim._stepCount, JSON.stringify(sim.disks[0].currentState.toArray()))
+
+          // console.log(`looped correctly: ${JSON.stringify(actual)}`)
+          const remainingSteps = sim.targetStepCount - sim._stepCount
+          Serializer.restore(sim, eventIndex) // rewind sim to first checkpoint
+          sim._stepCount = actual.step
+          sim.t = sim._stepCount * STEP_DURATION
+          sim.targetStepCount = sim._stepCount + remainingSteps
+          sim.loopDiskIndex = 1
+
+          console.log('after looping', sim._stepCount, JSON.stringify(sim.disks[0].currentState.toArray()))
+        }
+        else {
+          throw new LoopError({ expected, actual })
+        }
       }
     }
   }
@@ -49,6 +121,10 @@ export class LoopRoom extends Room {
       new Obstacle([x1, y1], shape, shapeLut, this),
     ]
   }
+}
+
+function _spawnEventsEqual(a: SpawnEvent, b: SpawnEvent) {
+  return JSON.stringify(a) === JSON.stringify(b)
 }
 
 const portalRad = 25 * VALUE_SCALE

@@ -25,8 +25,15 @@ export class Serializer {
     _lastEntryIndex = -1
   }
 
+  // used just for loop room
+  static captureLoopCheckpoint(sim: Simulation, entryIndex: number) {
+    const seed = Perturbations.getSeed()
+    _captureCheckpoint(sim, entryIndex, seed)
+  }
+
   // called when periodic checkpoint times are reached
   static passCheckpoint(sim: Simulation) {
+    if (sim.isLoop) return // no regular checkpoints for loop sim
     const seed = Perturbations.getSeed()
 
     // assert this is a valid step to serialize the sim
@@ -76,9 +83,9 @@ export class Serializer {
       disk.nextState.dy = vel[i + 1]
       if (isFirst) {
         isFirst = false
-        // const { x, y, dx, dy } = disk.nextState
-        // console.log('restore disk state', x, y, dx, dy)
       }
+      // const { x, y, dx, dy } = disk.nextState
+      // console.log('restore disk state', x, y, dx, dy)
 
       i += 2
     }
@@ -120,8 +127,8 @@ function _captureCheckpoint(sim: Simulation, entryIndex: number, seed: number) {
     const { x, y, dx, dy } = disk.currentState
     if (isFirst) {
       isFirst = false
-      // console.log('capture disk state', x, y, dx, dy)
     }
+    console.log(`on step ${sim._stepCount}, captured disk state `, x, y, dx, dy)
     pos[i] = x
     pos[i + 1] = y
     vel[i] = dx

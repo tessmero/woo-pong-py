@@ -182,17 +182,10 @@ export class TopBarGfx extends GfxRegion {
     ctx.fillStyle = OBSTACLE_FILL
     ctx.fillRect(x, y, w * progress, h)
 
-    const label = getStatusText(pw)
+    const label = `step ${pw.activeSim._stepCount}`//getStatusText(pw)
     // debug
     // const label = `${Scrollbar.isDragging}`
     drawText(ctx, rect, label)
-  }
-
-  private getCurrentTime(pw: PinballWizard) {
-    const steps = pw.activeSim.stepCount
-    const seconds = stepsToSeconds(steps)
-    const label = formatTime(seconds)
-    return label
   }
 }
 

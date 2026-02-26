@@ -45,10 +45,6 @@ if (_disks.length !== DISK_COUNT) throw new Error('wrong disk count')
 //   [outerWallXOffset, outerWallYOffset + outerWallHeight, outerWallWidth, thick], // bottom
 // ] as const
 
-type SpawnEvent = {
-  step: number
-  state: [number, number, number, number]
-}
 
 export class Simulation {
   readonly level: Level
@@ -64,6 +60,8 @@ export class Simulation {
   selectedDiskIndex = -1 // index of first disk to hit finish
   winningDiskIndex = -1 // index of first disk to hit finish
 
+  loopDiskIndex = 0 // only for loop sim
+
   /** Expected hashes at interval steps, set from build-time data for determinism checking. */
   expectedHashes: Record<number, number> | null = null
 
@@ -74,14 +72,11 @@ export class Simulation {
   get stepCount() { return this._stepCount }
   public t: number// = this._stepCount * STEP_DURATION
 
-  private readonly spawnEvents: Array<SpawnEvent> = [
-    { step: 1000, state: [50 * VALUE_SCALE, 50 * VALUE_SCALE, 10, 10] },
-  ]
 
   constructor(seed: number,
     public readonly isLoop = false,
   ) {
-    // console.log(`construct simulation with starting seed ${seed}`)
+    console.log(`construct simulation with starting seed ${seed}`)
 
     Perturbations.setSeed(seed)
 
@@ -126,21 +121,18 @@ export class Simulation {
     Serializer.reset()
   }
 
+  public targetStepCount = 0 // target for current update call
+
   update(dt: number, isBranchingAllowed = true) {
     this.t += dt
-    const stepIndex = Math.ceil(this.t / STEP_DURATION)
+    this.targetStepCount = Math.ceil(this.t / STEP_DURATION)
 
     // // fraction of last step
     // const stepFrac = (this.t - ((stepIndex - 1) * STEP_DURATION)) / STEP_DURATION
 
     // advance the simulation by n steps
-    while (this._stepCount < stepIndex) {
+    while (this._stepCount < this.targetStepCount) {
       if (this.isLoop) {
-        for (const evt of this.spawnEvents) {
-          if (this._stepCount === evt.step) {
-            this.disks.push(Disk.fromJson(evt.state))
-          }
-        }
       }
       else {
         // prevent advancing past branch time without a ball selected
