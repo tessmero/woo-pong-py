@@ -20,6 +20,7 @@ import { OBSTACLE_FILL } from 'gfx/graphics'
 import type { ShapeName } from 'simulation/shapes'
 import { Perturbations } from 'simulation/perturbations'
 import { N_GEAR_FRAMES } from 'simulation/rotating/gear-constants'
+import type { Simulation } from 'simulation/simulation'
 
 type Direction = 'clockwise' | 'counter-clockwise'
 
@@ -68,7 +69,7 @@ export class FerrisWheelRoom extends Room {
   private readonly circleLut = Lut.create('obstacle-lut', this.toothShape) as ObstacleLut
   private readonly gearLut = Lut.create('gear-lut')
 
-  override update(stepIndex: number) {
+  override update(_sim: Simulation, stepIndex: number) {
     for (const wheel of this.wheels) {
       let frameIndex: number
       if (wheel.dir === 'clockwise') {

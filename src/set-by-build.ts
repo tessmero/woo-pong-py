@@ -6,9 +6,9 @@
 
 export const LUT_BLOBS = {
   "ROUNDRECT": {
-    "url": "luts/roundrect-a8b0546c568a18f4.bin",
-    "hash": "a8b0546c568a18f48f31d63d96125acc3013d3ab295f5b4899fd87b9207b5893",
-    "xRad": 155,
+    "url": "luts/roundrect-04c9f05fb3de5a90.bin",
+    "hash": "04c9f05fb3de5a90b7e60eef8914c39ae0fd1234def0cdf4da46299f1e46142d",
+    "xRad": 271,
     "yRad": 71
   },
   "BREAKOUTBRICK": {
@@ -134,8 +134,12 @@ export const LUT_BLOBS = {
     "hash": "96e8a511fe636fbd052d1355a392228aae013fca786c0a79eae461f082fb4640"
   },
   "RACE_LUT": {
-    "url": "luts/race-lut-242445746305e98a.bin",
-    "hash": "242445746305e98af704bde6b1ef7688392cfe6999ccf07c3d9d2b4aaa2ef3ec"
+    "url": "luts/race-lut-3930a8c7d7b128ff.bin",
+    "hash": "3930a8c7d7b128ff3c01b19074ad4bded58223e2995411b9de68ab857c82f7cc"
+  },
+  "LOOP_LUT": {
+    "url": "luts/loop-lut-d3ac0f52983c9ebf.bin",
+    "hash": "d3ac0f52983c9ebfa291992516b1d19bc0a4da7ee7b6f5aec79618c53688b5eb"
   }
 };
 

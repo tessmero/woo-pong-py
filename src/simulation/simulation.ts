@@ -45,6 +45,11 @@ if (_disks.length !== DISK_COUNT) throw new Error('wrong disk count')
 //   [outerWallXOffset, outerWallYOffset + outerWallHeight, outerWallWidth, thick], // bottom
 // ] as const
 
+type SpawnEvent = {
+  step: number
+  state: [number, number, number, number]
+}
+
 export class Simulation {
   readonly level: Level
   readonly disks: Array<Disk>
@@ -69,23 +74,31 @@ export class Simulation {
   get stepCount() { return this._stepCount }
   public t: number// = this._stepCount * STEP_DURATION
 
-  constructor(seed: number) {
+  private readonly spawnEvents: Array<SpawnEvent> = [
+    { step: 1000, state: [50 * VALUE_SCALE, 50 * VALUE_SCALE, 10, 10] },
+  ]
+
+  constructor(seed: number,
+    public readonly isLoop = false,
+  ) {
     // console.log(`construct simulation with starting seed ${seed}`)
 
     Perturbations.setSeed(seed)
 
-    this.level = new Level()
+    this.level = new Level(isLoop)
     const sl = StartLayout.create(this.level.startLayout)
     const animDur = sl.animDur
     this._stepCount = -animDur
     this.t = this._stepCount * STEP_DURATION
     // console.log(`got anim dur ${animDur} for start layout ${this.level.startLayout}`)
 
-    const posVels = START_LAYOUT_POSVELS[this.level.startLayout]
+    const posVels = isLoop
+      ? [[[50 * VALUE_SCALE, 50 * VALUE_SCALE], [50, 50]]]
+      : START_LAYOUT_POSVELS[this.level.startLayout]
 
     // let diskIndex = 0
     // this.disks = _disks.map((pars) => {
-    this.disks = Array.from({ length: DISK_COUNT }, (_, diskIndex) => {
+    this.disks = Array.from({ length: posVels.length }, (_, diskIndex) => {
       // const scaledPars = [...pars]
       // scaledPars[0] *= VALUE_SCALE
       // scaledPars[1] *= VALUE_SCALE
@@ -122,9 +135,19 @@ export class Simulation {
 
     // advance the simulation by n steps
     while (this._stepCount < stepIndex) {
-      if ((!isBranchingAllowed) && (this.stepCount >= (STEPS_BEFORE_BRANCH - 2))) {
-        this.t = STEP_DURATION * (STEPS_BEFORE_BRANCH - 2)
-        break
+      if (this.isLoop) {
+        for (const evt of this.spawnEvents) {
+          if (this._stepCount === evt.step) {
+            this.disks.push(Disk.fromJson(evt.state))
+          }
+        }
+      }
+      else {
+        // prevent advancing past branch time without a ball selected
+        if ((!isBranchingAllowed) && (this.stepCount >= (STEPS_BEFORE_BRANCH - 2))) {
+          this.t = STEP_DURATION * (STEPS_BEFORE_BRANCH - 2)
+          break
+        }
       }
 
       step(this)

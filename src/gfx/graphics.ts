@@ -6,7 +6,7 @@
 
 import type { Rectangle, Vec2 } from 'util/math-util'
 import { twopi } from 'util/math-util'
-import { DISK_RADIUS } from 'simulation/constants'
+import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 import type { PinballWizard } from 'pinball-wizard'
 import { type GfxRegionName } from 'imp-names'
 import { GfxRegion } from './regions/gfx-region'
@@ -140,7 +140,7 @@ export class Graphics {
     if (pw) {
       // compute scrollbar bounds
       const levelShape = [...(pw?.activeSim?.level?.bounds ?? [1, 1, 1, 1])]
-      levelShape[3] *= 1.2
+      levelShape[3] = 15 * 100 * VALUE_SCALE //*= 1.2
       const scrollbarHeight = Math.min(600, window.innerHeight)
       scrollbarWidth = scrollbarHeight * (levelShape[2] / levelShape[3])
       simCssWidth = rootWidthPx - scrollbarWidth - leftGutterWidthPx - midGutterWidthPx - rightGutterWidthPx
@@ -183,7 +183,7 @@ export class Graphics {
     const barHeightPx = 50 // / dpr
 
     this._pxRegions = {
-      'sim-gfx': [
+      'loop-gfx': [
         leftGutterWidthPx, barHeightPx,
         simCssWidth, cssHeight - barHeightPx * 2,
       ],

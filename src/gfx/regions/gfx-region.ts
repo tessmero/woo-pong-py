@@ -21,6 +21,7 @@ const _GFX_DEBUG_COLORS: Record<GfxRegionName, string> = {
   'settings-gfx': 'black',
   'start-gfx': 'purple',
   'timeline-gfx': '#198',
+  'loop-gfx': '#355',
 }
 
 export abstract class GfxRegion {

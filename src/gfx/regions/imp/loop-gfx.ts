@@ -1,7 +1,7 @@
 /**
- * @file sim-gfx.ts
+ * @file loop-gfx.ts
  *
- * Graphics region for sim visuals.
+ * Graphics region for loop visuals.
  */
 
 import type { InputId, PinballWizard } from 'pinball-wizard'
@@ -22,9 +22,9 @@ const ballFlashCycles = 5 // cycles per duration
 
 const dummy: Vec2 = [0, 0]
 
-export class SimGfx extends GfxRegion {
+export class LoopGfx extends GfxRegion {
   static {
-    GfxRegion.register('sim-gfx', () => new SimGfx())
+    GfxRegion.register('loop-gfx', () => new LoopGfx())
   }
 
   down(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
@@ -81,24 +81,6 @@ export class SimGfx extends GfxRegion {
     const [simMouseX, simMouseY] = this.screenToSimPos(mousePos)
     pw.simMousePos[0] = simMouseX
     pw.simMousePos[1] = simMouseY
-
-    // this.simViewRect[0] = drawOffset[0] / drawSimScale
-    // this.simViewRect[1] = -drawOffset[1] / drawSimScale
-    // if( this.activeSim )this.simViewRect[2] = this.activeSim.level.bounds[2]
-    // this.simViewRect[3] = window.innerHeight / drawSimScale * window.devicePixelRatio
-
-    // // // debug, position obstacle on mouse
-    // const obs = this.activeSim.obstacles.at(-1) as Obstacle
-    // obs.pos[0] = simMouseX
-    // obs.pos[1] = simMouseY
-
-    // // debug identify hovered room
-    // for (const [roomIndex, room] of this.activeSim.level.rooms.entries()) {
-    //   const bounds = room.bounds
-    //   if (rectContainsPoint(bounds, simMouseX, simMouseY)) {
-    //     console.log(`hovered room ${roomIndex}`)
-    //   }
-    // }
 
     // this.gui.move(this, this.mousePos)
 
@@ -157,12 +139,6 @@ export class SimGfx extends GfxRegion {
     pw.simViewRect[2] = this._drawRect[2] / drawSimScale
     // if (pw.activeSim)pw.simViewRect[2] = pw.activeSim.level.bounds[2]
     pw.simViewRect[3] = this._drawRect[3] / drawSimScale
-
-    // // debug, shrink simViewRect
-    // const shrinkFraction = 0.2
-    // const shrinkAmt = pw.simViewRect[3] * shrinkFraction
-    // pw.simViewRect[1] += shrinkAmt
-    // pw.simViewRect[3] -= 2 * shrinkAmt
   }
 
   locateDiskOnScreen(pw: PinballWizard, diskIndex: number): Rectangle {
@@ -235,7 +211,9 @@ export class SimGfx extends GfxRegion {
     const isFlashOn = this._updateFlashingState()
 
     this._drawRect = rect
+
     const [x, y, w, h] = rect
+
     const sim = pw.activeSim
     // const { followDiskIndex, selectedDiskIndex: selectedDiskIndex, hoveredDiskIndex } = pw
     const scale = (w) / 100 / VALUE_SCALE
@@ -250,10 +228,19 @@ export class SimGfx extends GfxRegion {
 
     this._updateSimViewRect(pw)
 
+    const { simViewRect } = pw
+    const centerDisk = pw.activeSim.disks[0].currentState
+    const oldX = simViewRect[0]
+    const oldY = simViewRect[1]
+    simViewRect[0] = centerDisk.x - simViewRect[2] / 2
+    simViewRect[1] = centerDisk.y - simViewRect[3] / 2
+    const dx = (simViewRect[0] - oldX)
+    const dy = (simViewRect[1] - oldY)
+
     ctx.clearRect(x, y, w, h)
 
     ctx.save()
-    ctx.translate(x, y + this.drawOffset[1])
+    ctx.translate(x-(dx * this.drawSimScale), y + this.drawOffset[1]-(dy * this.drawSimScale))
     ctx.scale(this.drawSimScale, this.drawSimScale)
     this.drawFinish(ctx, sim.finish)
     ctx.restore()
@@ -263,7 +250,7 @@ export class SimGfx extends GfxRegion {
     strokeInnerRoundedRect(ctx, rect, 'black')
 
     ctx.save()
-    ctx.translate(x, y + this.drawOffset[1])
+    ctx.translate(x-(dx * this.drawSimScale), y + this.drawOffset[1]-(dy * this.drawSimScale))
     ctx.scale(this.drawSimScale, this.drawSimScale)
     ctx.lineWidth = VALUE_SCALE
 
@@ -271,7 +258,6 @@ export class SimGfx extends GfxRegion {
 
     // this._drawBoundsInnerEdges(ctx, pw)
 
-    const { simViewRect } = pw
     const y0 = simViewRect[1]
     const y1 = y0 + simViewRect[3]
 
@@ -290,49 +276,12 @@ export class SimGfx extends GfxRegion {
       room.drawDecorations(ctx, pw, 'sim-gfx')
     }
 
-    // this._drawBounds(ctx, pw)
-    // this._drawBoundsOuterEdges(ctx, pw)
-
     for (const [diskIndex, disk] of sim.disks.entries()) {
       drawDisk(ctx, diskIndex, disk)
       if (isFlashOn) {
         drawDiskHoverHalo(ctx, disk)
       }
     }
-
-    // // debug impact sounds
-    // const rad = DISK_RADIUS / 2
-    // ctx.fillStyle = 'yellow'
-    // for (const impact of getRecentImpacts()) {
-    //   ctx.fillRect(
-    //     impact.pos[0] - rad, impact.pos[1] - rad,
-    //     2 * rad, 2 * rad,
-    //   )
-    // }
-
-    // this.drawHalos(ctx,pw)
-
-    // for (const barrier of sim.barriers) {
-    //   Graphics.drawBarrier(barrier)
-    // }
-
-    // // debug camera target height
-    // ctx.strokeStyle = 'green'
-    // ctx.lineWidth = 0.4 * VALUE_SCALE
-    // const camY = Graphics.drawOf
-    // ctx.strokeRect(...sim.level.bounds)
-
-    // // debug bounds
-    // ctx.strokeStyle = 'red'
-    // ctx.lineWidth = 0.5 * VALUE_SCALE
-    // ctx.strokeRect(...sim.level.bounds)
-
-    // // debug mouse pose
-    // Graphics.drawCursor(pw.simMousePos)
-
-    // // debug view rect
-    // Graphics.drawViewRect(ctx, pw.simViewRect)
-
     // // debug room bounds
     ctx.strokeStyle = 'blue'
     ctx.fillStyle = 'blue'
@@ -342,51 +291,6 @@ export class SimGfx extends GfxRegion {
 
     ctx.restore()
   }
-
-  // ctx.lineWidth = 0.2 * VALUE_SCALE * gfxScale
-  // for (const room of sim.level.rooms) {
-  //   const [x, y, w, h] = room.bounds
-  //   // console.log(`room bounds: ${JSON.stringify(room.bounds)}`)
-  //   ctx.strokeRect(x * gfxScale, y * gfxScale, w * gfxScale, h * gfxScale)
-  //   // draw center of room bounds
-  //   const rad = .1 * VALUE_SCALE
-  //   ctx.strokeRect((x+w/2) * gfxScale - rad, (y+h/2) * gfxScale - rad, 2 * rad, 2 * rad)
-  //   // if (room.name === 'breakout-room') {
-  //   //   ctx.fillText(`SCORE: ${(room as BreakoutRoom).score}`, x * gfxScale, y * gfxScale)
-  //   // }
-  //   // else {
-  //   //   ctx.fillText(room.name, x * gfxScale, y * gfxScale)
-  //   // }
-  // }
-
-  // // debugTargetPos
-  //   const [rx,ry,rw,rh] = sim.level.rooms[0].bounds as Rectangle
-  //   const rad = .1 * VALUE_SCALE
-  //   ctx.fillStyle = CROWN_FILL
-  //   ctx.fillRect(
-  //     (rx+rw/2) * gfxScale - rad,
-  //     (-SimGfx.debugTargetPos) * gfxScale - rad,
-  //     2 * rad, 2 * rad)
-
-  // // draw labels on breakout bricks
-  // for (const obstacle of sim.obstacles) {
-  //   if (obstacle.label && !obstacle.isHidden) {
-  //     const [x, y] = obstacle.pos
-  //     ctx.fillText(obstacle.label, x * gfxScale, y * gfxScale)
-  //   }
-  // }
-
-  // // debug hideOnStep for breakout bricks
-  // const displayStep = sim.stepCount - topConfig.flatConfig.audioLatencySteps
-  // for (const obstacle of sim.obstacles) {
-  //   const [x, y] = obstacle.pos
-  //   ctx.fillText(`${obstacle.hideOnStep} (${displayStep})`, x * gfxScale, y * gfxScale)
-  // }
-
-  // // debug inner width
-  // ctx.strokeStyle = 'red'
-  // ctx.lineWidth = 1
-  // ctx.strokeRect(Graphics.drawOffset[0], 0, Graphics.innerWidth, cvs.height)
 
   public drawHalos(ctx: CanvasRenderingContext2D, pw: PinballWizard) {
     const [x, y] = this._drawRect

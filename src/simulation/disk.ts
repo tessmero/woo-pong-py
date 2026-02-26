@@ -4,7 +4,6 @@
  * Sliding circle on airhockey table.
  */
 
-import type { Rectangle } from 'util/math-util'
 import { rectContainsPoint, type Vec2 } from 'util/math-util'
 import type { Obstacle } from './obstacle'
 import type { ObstacleLut } from './luts/imp/obstacle-lut'
@@ -13,6 +12,7 @@ import { speedDetail, speedToIndex } from './luts/imp/disk-normal-lut'
 import { DISK_RADIUS } from './constants'
 import { playImpact } from 'audio/collision-sounds'
 import type { PatternName } from 'imp-names'
+import type { Simulation } from './simulation'
 
 let _dnlCache: Lut | null = null
 function _getDnl() {
@@ -187,12 +187,23 @@ export class Disk {
     }
   }
 
-  pushInBounds(bounds: Rectangle) {
-    // // top wall
-    // if ((this.nextState.y - DISK_RADIUS) < bounds[1]) {
-    //   this.nextState.y = bounds[1] + DISK_RADIUS
-    //   if (this.nextState.dy < 0) {
-    //     vBounce(this.nextState)
+  pushInBounds(sim: Simulation) {
+    const bounds = sim.level.bounds
+
+    // if (sim.isSimple) {
+    //   // top wall
+    //   if ((this.nextState.y - DISK_RADIUS) < bounds[1]) {
+    //     this.nextState.y = bounds[1] + DISK_RADIUS
+    //     if (this.nextState.dy < 0) {
+    //       vBounce(this.nextState)
+    //     }
+    //   }
+    //   // bottom wall
+    //   if ((this.nextState.y + DISK_RADIUS) > (bounds[1] + bounds[3])) {
+    //     this.nextState.y = bounds[1] + bounds[3] - DISK_RADIUS
+    //     if (this.nextState.dy > 0) {
+    //       vBounce(this.nextState)
+    //     }
     //   }
     // }
 
@@ -220,7 +231,7 @@ function hBounce(state: DiskState) {
   // applyFrictionX(state)
 }
 
-function _vBounce(state: DiskState) {
+function vBounce(state: DiskState) {
   state.dy *= -1
   playImpact(state, false, 2 * Math.abs(state.dy))
   // applyFrictionX(state)

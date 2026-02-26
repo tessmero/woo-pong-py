@@ -48,6 +48,8 @@ export const LUT = {
 
     'race-lut', // precomputed races (start seed + midpoint seeds for each disk to win)
 
+    'loop-lut', // precomputed time travel loop (start seed, start states, portals)
+
   ],
   SOURCES: ['src/simulation/luts/imp/**/*.ts'],
 } as const satisfies ImpManifest
@@ -64,6 +66,9 @@ export const ROOM = {
 
     'gear-room', // spinning interlocked gears
     'ferris-wheel-room', // spinning wheel
+  
+    'empty-room', // no obstacles
+    'loop-room', // used for loop sim
   ],
   SOURCES: ['src/rooms/imp/**/*.ts'],
 } as const satisfies ImpManifest
@@ -94,8 +99,8 @@ export type StartLayoutName = (typeof START_LAYOUT.NAMES)[number]
 export const GFX_REGION = {
   NAMES: [
 
-    // always visible
-    'sim-gfx', 'scrollbar-gfx', 'bottom-bar-gfx', 'top-bar-gfx',
+    'sim-gfx', 'loop-gfx',
+    'scrollbar-gfx', 'bottom-bar-gfx', 'top-bar-gfx',
 
     'glass-gfx', // overlay that covers main view
 

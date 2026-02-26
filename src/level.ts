@@ -28,12 +28,6 @@ const _finish: Rectangle = [
 
 const thick = 1 // thickness of walls
 
-const _bounds: Rectangle = ([
-  thick, thick,
-  100 - 2 * thick,
-  totalHeight - 2 * thick,
-]).map(v => v * VALUE_SCALE) as Rectangle
-
 const possibleStarts: Array<StartLayoutName> = [
   // 'pool',
   'spin',
@@ -47,36 +41,46 @@ function randomStartLayout(): StartLayoutName {
 export class Level {
   public readonly rooms: Array<Room>
   public readonly startLayout: StartLayoutName
-  constructor() {
+  private readonly _bounds: Rectangle
+  constructor(isSimple = false) {
     this.startLayout = randomStartLayout()
-    this.rooms = Array.from({ length: ROOM_COUNT }, (_, roomIndex) => {
-      const roomOffset = VALUE_SCALE * (
-        startPadding
-        + (100 + roomPadding) * roomIndex
-      )
-      const roomBounds: Rectangle = [
-        0, roomOffset, 100 * VALUE_SCALE, 100 * VALUE_SCALE,
+    if (isSimple) {
+      // empty 100x100 single room
+      this._bounds = ([
+        thick, thick,
+        100 - 2 * thick,
+        100 - 2 * thick,
+      ]).map(v => v * VALUE_SCALE) as Rectangle
+      this.rooms = [
+        Room.create('loop-room', [
+          0, 0, 100 * VALUE_SCALE, 100 * VALUE_SCALE,
+        ]),
       ]
+    }
+    else {
+      // full level with multiple rooms
+      this._bounds = ([
+        thick, thick,
+        100 - 2 * thick,
+        totalHeight - 2 * thick,
+      ]).map(v => v * VALUE_SCALE) as Rectangle
+      this.rooms = Array.from({ length: ROOM_COUNT }, (_, roomIndex) => {
+        const roomOffset = VALUE_SCALE * (
+          startPadding
+          + (100 + roomPadding) * roomIndex
+        )
+        const roomBounds: Rectangle = [
+          0, roomOffset, 100 * VALUE_SCALE, 100 * VALUE_SCALE,
+        ]
 
-      return randomRoom(roomIndex, roomBounds)
-    })
-
-    // // make sure at least one is an animated gear room
-    // const requiredRoom = 'gear-room'
-    // if (this.rooms.some(room => room.name === requiredRoom)) {
-    //   // has gear room
-    // }
-    // else {
-    //   // overwrite a room in the middle of the level
-    //   const i = Math.floor(ROOM_COUNT / 2)
-    //   this.rooms[i]
-    //     = Room.create(requiredRoom, this.rooms[i].bounds)
-    // }
+        return randomRoom(roomIndex, roomBounds)
+      })
+    }
   }
 
   get finish(): Rectangle { return _finish }
 
-  get bounds(): Rectangle { return _bounds }
+  get bounds(): Rectangle { return this._bounds }
 
   buildObstacles(): Array<Obstacle> {
     const result: Array<Obstacle> = []

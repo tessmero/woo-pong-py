@@ -15,7 +15,7 @@ import { computeSimHash, HASH_STEP_INTERVAL } from 'simulation/sim-hash'
 
 export type RaceLeaf = LeafValues
 
-const nRaces = 100
+const nRaces = 1
 const maxStepsTotal = 1e7
 
 export type BranchDatum = {

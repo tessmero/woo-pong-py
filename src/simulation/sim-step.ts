@@ -79,7 +79,7 @@ function _startStep(sim: Simulation) {
 function _activeStep(sim: Simulation) {
   // // update rooms
   for (const room of sim.level.rooms) {
-    room.update(sim.stepCount)
+    room.update(sim, sim.stepCount)
   }
 
   // // update gas boxes
@@ -96,7 +96,7 @@ function _activeStep(sim: Simulation) {
   // collide disks with barriers
   for (const [_diskIndex, disk] of sim.disks.entries()) {
     disk.advance(sim.obstacles, sim.stepCount)
-    disk.pushInBounds(sim.level.bounds)
+    disk.pushInBounds(sim)
     Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
     disk.nextState.dy += 1 // gravity
   }
