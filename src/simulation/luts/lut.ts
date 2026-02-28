@@ -340,7 +340,7 @@ export abstract class Lut {
     for (const field of this.schema) {
       const value = leaf[field.name]
       if (value === undefined) {
-        throw new Error(`${this.name}: missing field '${field.name}' in leaf`)
+        throw new Error(`${this.name}: missing field '${field.name}' in leaf ${JSON.stringify(leaf)}`)
       }
       if (field.type === 'i16_array' || field.type === 'i32_array') {
         const arr = value as ReadonlyArray<number>

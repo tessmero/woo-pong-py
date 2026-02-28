@@ -17,6 +17,7 @@ import { START_LAYOUT_POSVELS } from 'rooms/start-layouts/set-by-build'
 import { step } from './sim-step'
 import { Serializer } from './serializer'
 import { StartLayout } from 'rooms/start-layouts/start-layout'
+import { LoopRoom } from 'rooms/imp/loop-room'
 
 const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 5; i++) {
@@ -45,7 +46,6 @@ if (_disks.length !== DISK_COUNT) throw new Error('wrong disk count')
 //   [outerWallXOffset, outerWallYOffset + outerWallHeight, outerWallWidth, thick], // bottom
 // ] as const
 
-
 export class Simulation {
   readonly level: Level
   readonly disks: Array<Disk>
@@ -72,11 +72,10 @@ export class Simulation {
   get stepCount() { return this._stepCount }
   public t: number// = this._stepCount * STEP_DURATION
 
-
   constructor(seed: number,
     public readonly isLoop = false,
   ) {
-    console.log(`construct simulation with starting seed ${seed}`)
+    // console.log(`construct simulation with starting seed ${seed}`)
 
     Perturbations.setSeed(seed)
 
@@ -88,7 +87,10 @@ export class Simulation {
     // console.log(`got anim dur ${animDur} for start layout ${this.level.startLayout}`)
 
     const posVels = isLoop
-      ? [[[50 * VALUE_SCALE, 50 * VALUE_SCALE], [50, 50]]]
+      ? [[
+          [LoopRoom.startState[0], LoopRoom.startState[1]],
+          [LoopRoom.startState[2], LoopRoom.startState[3]],
+        ]]
       : START_LAYOUT_POSVELS[this.level.startLayout]
 
     // let diskIndex = 0

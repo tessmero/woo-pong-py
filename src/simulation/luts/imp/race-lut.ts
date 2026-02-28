@@ -135,12 +135,13 @@ function _tryComputeLeaf(): LeafValues | null {
     () => ({ midSeed: -1, finalStepCount: INT32_MAX }),
   )
 
-  // // return dummy race-lut to skip simulations
-  // return [
-  //   commonStartSeed,
-  //   ...branches.flatMap(() => [12345,INT32_MAX]),
-  //   // ...breakoutSolution,
-  // ]
+  // return dummy race-lut to skip simulations
+  const dummyResult: LeafValues = { startSeed: commonStartSeed }
+  for (let d = 0; d < DISK_COUNT; d++) {
+    dummyResult[`d${d}_midSeed`] = commonStartSeed
+    dummyResult[`d${d}_finalStepCount`] = INT32_MAX
+  }
+  return dummyResult
 
   console.log(`attempting to solve race with start seed ${commonStartSeed}...`)// eslint-disable-line no-console
 

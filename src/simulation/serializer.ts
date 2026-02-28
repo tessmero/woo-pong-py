@@ -128,7 +128,7 @@ function _captureCheckpoint(sim: Simulation, entryIndex: number, seed: number) {
     if (isFirst) {
       isFirst = false
     }
-    console.log(`on step ${sim._stepCount}, captured disk state `, x, y, dx, dy)
+    // console.log(`on step ${sim._stepCount}, captured disk state `, x, y, dx, dy)
     pos[i] = x
     pos[i + 1] = y
     vel[i] = dx

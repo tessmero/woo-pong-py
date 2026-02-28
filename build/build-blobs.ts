@@ -1,3 +1,43 @@
+// --- Build Python package zip with standard module structure ---
+import archiver from 'archiver'
+
+function buildPythonPackageZip() {
+  const pySrcDir = join(__dirname, '../public/py')
+  const outZip = join(__dirname, '../public/data_py_pkg.zip')
+  const pkgName = 'data_py_pkg'
+  const tmpDir = join(__dirname, '../public', pkgName)
+  // Create package dir and __init__.py
+  if (!existsSync(tmpDir)) {
+    require('fs').mkdirSync(tmpDir)
+  }
+  // Copy all .py files into the package dir
+  const pyFiles = readdirSync(pySrcDir).filter(f => f.endsWith('.py'))
+  for (const f of pyFiles) {
+    const src = join(pySrcDir, f)
+    const dest = join(tmpDir, f)
+    require('fs').copyFileSync(src, dest)
+  }
+  // Ensure __init__.py exists
+  const initPath = join(tmpDir, '__init__.py')
+  if (!existsSync(initPath)) {
+    writeFileSync(initPath, '# Package init\n')
+  }
+  // Create the zip
+  const output = require('fs').createWriteStream(outZip)
+  const archive = archiver('zip', { zlib: { level: 9 } })
+  archive.pipe(output)
+  archive.directory(tmpDir, pkgName)
+  archive.finalize()
+  output.on('close', () => {
+    // Clean up temp dir
+    for (const f of readdirSync(tmpDir)) {
+      unlinkSync(join(tmpDir, f))
+    }
+    require('fs').rmdirSync(tmpDir)
+    console.log(`Python package zip created at: ${outZip}`)
+  })
+}
+
 /**
  * @file build-blobs.ts
  *
@@ -11,6 +51,7 @@ import { createHash } from 'crypto'
 import { Lut } from '../src/simulation/luts/lut'
 import { SHAPE_NAMES } from '../src/simulation/shapes'
 import { getCollectedSimHashes } from '../src/simulation/luts/imp/race-lut'
+import { exportLutAsPython } from './lut-exporter-py'
 
 import type { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 // import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
@@ -77,6 +118,14 @@ for (const shapeName of SHAPE_NAMES) {
   writeFileSync(outputPath, buffer) // Removed encoding option
   console.log(`Blob file replaced at: ${outputPath}`) // eslint-disable-line no-console
 
+  // write python object
+  const pyName = shapeName.replaceAll('-', '_').toUpperCase()
+  const pyFilepath = join(__dirname,
+    `../public/py/${pyName}.py`,
+  )
+  const pyContent = exportLutAsPython(lut, pyName)
+  writeFileSync(pyFilepath, pyContent)
+
   // Read back and verify
   const originalData = lut.data.slice()
   const fileBuf = require('fs').readFileSync(outputPath) // eslint-disable-line @typescript-eslint/no-require-imports
@@ -111,7 +160,9 @@ for (const shapeName of SHAPE_NAMES) {
 
 // write singleton luts' blobs
 for (const lutName of LUT.NAMES) {
-  if (lutName === 'obstacle-lut') continue
+  if (lutName === 'obstacle-lut') {
+    continue // skip obstacle-lut, because it is not a singleton
+  }
 
   const lut = Lut.create(lutName)
   lut.computeAll()
@@ -128,8 +179,16 @@ for (const lutName of LUT.NAMES) {
   const filename = `${lutName}-${hash.slice(0, 16)}.bin`
   const outputPath = join(__dirname, '../public/luts', filename)
 
-  writeFileSync(outputPath, buffer) // Removed encoding option
+  writeFileSync(outputPath, buffer)
   console.log(`Blob file replaced at: ${outputPath}`) // eslint-disable-line no-console
+
+  // write python object
+  const pyName = lutName.replaceAll('-', '_').toUpperCase()
+  const pyFilepath = join(__dirname,
+    `../public/py/${pyName}.py`,
+  )
+  const pyContent = exportLutAsPython(lut, pyName)
+  writeFileSync(pyFilepath, pyContent)
 
   // Read back and verify
   const originalData = lut.data.slice()
@@ -193,8 +252,12 @@ const newSourceCode = [
   jsdocComment, '', lutBlobsStr, '', simHashesExport, '',
 ].join('\n')
 writeFileSync(sourceFilePath, newSourceCode, 'utf-8')
+
 // eslint-disable-next-line no-console
 console.log(`Updated constants in: ${sourceFilePath}`)
+
+// Build Python package zip at the end
+buildPythonPackageZip()
 
 if (simHashes) {
   const nHashes = Object.keys(simHashes.hashes).length

@@ -42,15 +42,20 @@ export class LoopRoom extends Room {
     Room.register('loop-room', () => new LoopRoom())
   }
 
-  private readonly spawnEvents: Array<SpawnEvent> = [
-    { step: 1319, state: [414402, 205, -824, 390], didPass: false },
-  ]
 
-  private readonly stepsBack = 1000
+  public static topPortalX = 30 * VALUE_SCALE
+  public static stepsBack = 1000
+  public static spawnStep = 1319
+  public static startState: [number, number, number, number] = [2 * VALUE_SCALE, 205, 50, 390]
+  public static spawnState: [number, number, number, number] = [414402, 205, 0, 390]
+
+  private readonly spawnEvents: Array<SpawnEvent> = [
+    { step: LoopRoom.spawnStep, state: LoopRoom.spawnState, didPass: false },
+  ]
 
   override drawDecorations(ctx: CanvasRenderingContext2D, _pw: PinballWizard, _gfxName: GfxRegionName): void {
     ctx.strokeStyle = 'orange'
-    _drawPortal(ctx, 50 * VALUE_SCALE, 0)
+    _drawPortal(ctx, LoopRoom.topPortalX, 0)
 
     ctx.strokeStyle = 'blue'
     _drawPortal(ctx, 50 * VALUE_SCALE, 100 * VALUE_SCALE)
@@ -78,17 +83,18 @@ export class LoopRoom extends Room {
         this.didEnterPortal = true
 
         disk.currentState.y -= 100 * VALUE_SCALE
+        disk.currentState.x -= (50 * VALUE_SCALE - LoopRoom.topPortalX)
 
         // there shuld have been a matching spawn event in the past
         const expected: SpawnEvent = {
-          step: sim._stepCount - this.stepsBack,
+          step: sim._stepCount - LoopRoom.stepsBack,
           state: disk.currentState.toArray(),
           didPass: true,
         }
         const eventIndex = 0
         const actual = this.spawnEvents[eventIndex]
         if (_spawnEventsEqual(expected, actual)) {
-          console.log('before looping', sim._stepCount, JSON.stringify(sim.disks[0].currentState.toArray()))
+          // console.log('before looping', sim._stepCount, JSON.stringify(sim.disks[0].currentState.toArray()))
 
           // console.log(`looped correctly: ${JSON.stringify(actual)}`)
           const remainingSteps = sim.targetStepCount - sim._stepCount
@@ -98,7 +104,7 @@ export class LoopRoom extends Room {
           sim.targetStepCount = sim._stepCount + remainingSteps
           sim.loopDiskIndex = 1
 
-          console.log('after looping', sim._stepCount, JSON.stringify(sim.disks[0].currentState.toArray()))
+          // console.log('after looping', sim._stepCount, JSON.stringify(sim.disks[0].currentState.toArray()))
         }
         else {
           throw new LoopError({ expected, actual })
@@ -110,15 +116,14 @@ export class LoopRoom extends Room {
   override buildObstacles(): Array<Obstacle> {
     const shape: ShapeName = 'roundrect'
     const shapeLut = Lut.create('obstacle-lut', shape) as ObstacleLut
-    const x0 = 10 * VALUE_SCALE
-    const x1 = 90 * VALUE_SCALE
+    const xOff = 50 * VALUE_SCALE - LoopRoom.topPortalX
     const y0 = 0
     const y1 = 100 * VALUE_SCALE
     return [
-      new Obstacle([x0, y0], shape, shapeLut, this),
-      new Obstacle([x1, y0], shape, shapeLut, this),
-      new Obstacle([x0, y1], shape, shapeLut, this),
-      new Obstacle([x1, y1], shape, shapeLut, this),
+      new Obstacle([10 * VALUE_SCALE - xOff, y0], shape, shapeLut, this),
+      new Obstacle([90 * VALUE_SCALE - xOff, y0], shape, shapeLut, this),
+      new Obstacle([10 * VALUE_SCALE, y1], shape, shapeLut, this),
+      new Obstacle([90 * VALUE_SCALE, y1], shape, shapeLut, this),
     ]
   }
 }

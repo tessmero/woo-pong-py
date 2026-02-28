@@ -98,7 +98,10 @@ function _activeStep(sim: Simulation) {
     disk.advance(sim.obstacles, sim.stepCount)
     disk.pushInBounds(sim)
     Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
+    
+    // if( !sim.isLoop ) {
     disk.nextState.dy += 1 // gravity
+    // }
   }
 
   // collide disks with disks
