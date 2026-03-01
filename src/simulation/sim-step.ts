@@ -230,8 +230,8 @@ def active_step(sim, DISK_DISK_LUT):
     for disk in sim.disks:
         advance(disk)
         pushInBounds(disk.nextState) # force in bounds and bounce
-        perturbDisk(disk.nextState)
-        disk.nextState.dy += 1  # gravity
+        # perturbDisk(disk.nextState)
+        # disk.nextState.dy += 1  # gravity
 
     # Collide disks with disks
     for a in range(1, len(sim.disks)):

@@ -257,10 +257,10 @@ function buildPythonPackageZip() {
   if (!existsSync(initPath)) {
     writeFileSync(initPath, '# Package init\n')
   }
-  const cdPath = join(tmpDir, 'collide_disks.py')
-  writeFileSync(cdPath, PY_COLLIDE_DISKS)
+  // const cdPath = join(tmpDir, 'collide_disks.py')
+  // writeFileSync(cdPath, PY_COLLIDE_DISKS)
   const stepPath = join(tmpDir, 'sim_step.py')
-  writeFileSync(stepPath, PY_ACTIVE_STEP)
+  writeFileSync(stepPath, `${PY_COLLIDE_DISKS}\n${PY_ACTIVE_STEP}`)
   // Create the zip
   const output = require('fs').createWriteStream(outZip)
   const archive = archiver('zip', { zlib: { level: 9 } })
