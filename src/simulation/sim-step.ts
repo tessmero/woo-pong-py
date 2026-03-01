@@ -8,7 +8,7 @@ import type { Simulation } from './simulation'
 import { Perturbations } from './perturbations'
 import { collideDisks } from './luts/imp/disk-disk-lut'
 import { Disk } from './disk'
-import { HISTORY_CHECKPOINT_STEPS, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './constants'
+import { DISK_RADIUS, HISTORY_CHECKPOINT_STEPS, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './constants'
 import { Serializer } from 'simulation/serializer'
 import { StartLayout } from 'rooms/start-layouts/start-layout'
 import type { Vec2 } from 'util/math-util'
@@ -138,6 +138,7 @@ function _activeStep(sim: Simulation) {
 export const PY_ACTIVE_STEP = `
 
 VALUE_SCALE = ${VALUE_SCALE}
+DISK_RADIUS = ${DISK_RADIUS}
 BOUNDS_X = 0
 BOUNDS_Y = 0
 BOUNDS_W = 100 * VALUE_SCALE
@@ -213,11 +214,22 @@ def perturbDisk(state):
     elif d6 == 1:
       state.dy -= 1
 
+def advance(disk):
+    disk.nextState.x = disk.currentState.x + disk.currentState.dx
+    disk.nextState.y = disk.currentState.y + disk.currentState.dy
+
+def flushStates(disks):
+    for disk in disks:
+        disk.currentState.x = disk.nextState.x
+        disk.currentState.y = disk.nextState.y
+        disk.currentState.dx = disk.nextState.dx
+        disk.currentState.dy = disk.nextState.dy
+
 def active_step(sim, DISK_DISK_LUT):
     # Collide disks with barriers (not present)
     for disk in sim.disks:
-        # disk.advance(sim.obstacles, sim.stepCount)  # skipped
-        pushInBounds(disk.nextState)  # clamp to bounds
+        advance(disk)
+        pushInBounds(disk.nextState) # force in bounds and bounce
         perturbDisk(disk.nextState)
         disk.nextState.dy += 1  # gravity
 
@@ -226,13 +238,5 @@ def active_step(sim, DISK_DISK_LUT):
         for b in range(a):
             collide_disks(sim.disks[a], sim.disks[b], DISK_DISK_LUT)
 
-    ## Update stats
-    #for diskIndex, disk in enumerate(sim.disks):
-    #    if sim.winningDiskIndex == -1 and sim.finish.isTouchingDisk(disk.nextState.x, disk.nextState.y):
-    #        sim.winningDiskIndex = diskIndex
-    #    if disk.nextState.y > sim.maxBallY:
-    #        sim.maxBallY = disk.nextState.y
-
-    # Disk.flushStates(sim.disks)  # commit updates after collisions
-    # (Assume flushStates is implemented elsewhere)
+    flushStates(sim.disks)  # commit updates after collisions
 `
