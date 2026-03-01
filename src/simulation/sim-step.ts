@@ -171,7 +171,7 @@ import numpy as np
 # - sim.winningDiskIndex, sim.maxBallY, sim.finish, sim._stepCount exist
 # - collide_disks(a, b, DISK_DISK_LUT) is available
 # - No obstacles, no rooms
-Perturbations = {
+p_dict = {
   "minSpeed": 10,
   "state": 0,
 }
@@ -181,34 +181,35 @@ def randomSeed():
   return int(np.random.rand() * 32000)
 
 def setSeed(seed):
-  Perturbations["state"] = int(seed)
+  p_dict["state"] = int(seed)
+p_dict["setSeed"] = setSeed
 
 def getSeed():
-  return Perturbations["state"]
+  return p_dict["state"]
 
 def _makePRNG(seed):
-  Perturbations["state"] = int(seed) or 1
+  p_dict["state"] = int(seed) or 1
   def nextInt():
-    Perturbations["state"] ^= (Perturbations["state"] << 13) & 0xFFFFFFFF
-    Perturbations["state"] ^= (Perturbations["state"] >> 17)
-    Perturbations["state"] ^= (Perturbations["state"] << 5) & 0xFFFFFFFF
-    Perturbations["state"] &= 0xFFFFFFFF
-    return Perturbations["state"]
+    p_dict["state"] ^= (p_dict["state"] << 13) & 0xFFFFFFFF
+    p_dict["state"] ^= (p_dict["state"] >> 17)
+    p_dict["state"] ^= (p_dict["state"] << 5) & 0xFFFFFFFF
+    p_dict["state"] &= 0xFFFFFFFF
+    return p_dict["state"]
   return nextInt
 
-Perturbations["nextInt"] = _makePRNG(randomSeed())
+p_dict["nextInt"] = _makePRNG(randomSeed())
 
 def perturbDisk(state):
   # dx
-  if abs(state.dx) > Perturbations["minSpeed"]:
-    d6 = (Perturbations["nextInt"]() & 0xFFFFFFFF) % 6
+  if abs(state.dx) > p_dict["minSpeed"]:
+    d6 = (p_dict["nextInt"]() & 0xFFFFFFFF) % 6
     if d6 == 0:
       state.dx += 1
     elif d6 == 1:
       state.dx -= 1
   # dy
-  if abs(state.dy) > Perturbations["minSpeed"]:
-    d6 = (Perturbations["nextInt"]() & 0xFFFFFFFF) % 6
+  if abs(state.dy) > p_dict["minSpeed"]:
+    d6 = (p_dict["nextInt"]() & 0xFFFFFFFF) % 6
     if d6 == 0:
       state.dy += 1
     elif d6 == 1:
@@ -239,4 +240,13 @@ def active_step(sim, DISK_DISK_LUT):
             collide_disks(sim.disks[a], sim.disks[b], DISK_DISK_LUT)
 
     flushStates(sim.disks)  # commit updates after collisions
+
+class obj:
+    def __init__(self, d):
+        for k, v in d.items():
+            if isinstance(v, (list, tuple)):
+                setattr(self, k, [obj(x) if isinstance(x, dict) else x for x in v])
+            else:
+                setattr(self, k, obj(v) if isinstance(v, dict) else v)
+Perturbations = obj(p_dict)
 `
