@@ -1,43 +1,6 @@
 // --- Build Python package zip with standard module structure ---
 import archiver from 'archiver'
 
-function buildPythonPackageZip() {
-  const pySrcDir = join(__dirname, '../public/py')
-  const outZip = join(__dirname, '../public/data_py_pkg.zip')
-  const pkgName = 'data_py_pkg'
-  const tmpDir = join(__dirname, '../public', pkgName)
-  // Create package dir and __init__.py
-  if (!existsSync(tmpDir)) {
-    require('fs').mkdirSync(tmpDir)
-  }
-  // Copy all .py files into the package dir
-  const pyFiles = readdirSync(pySrcDir).filter(f => f.endsWith('.py'))
-  for (const f of pyFiles) {
-    const src = join(pySrcDir, f)
-    const dest = join(tmpDir, f)
-    require('fs').copyFileSync(src, dest)
-  }
-  // Ensure __init__.py exists
-  const initPath = join(tmpDir, '__init__.py')
-  if (!existsSync(initPath)) {
-    writeFileSync(initPath, '# Package init\n')
-  }
-  // Create the zip
-  const output = require('fs').createWriteStream(outZip)
-  const archive = archiver('zip', { zlib: { level: 9 } })
-  archive.pipe(output)
-  archive.directory(tmpDir, pkgName)
-  archive.finalize()
-  output.on('close', () => {
-    // Clean up temp dir
-    for (const f of readdirSync(tmpDir)) {
-      unlinkSync(join(tmpDir, f))
-    }
-    require('fs').rmdirSync(tmpDir)
-    console.log(`Python package zip created at: ${outZip}`)
-  })
-}
-
 /**
  * @file build-blobs.ts
  *
@@ -52,6 +15,8 @@ import { Lut } from '../src/simulation/luts/lut'
 import { SHAPE_NAMES } from '../src/simulation/shapes'
 import { getCollectedSimHashes } from '../src/simulation/luts/imp/race-lut'
 import { exportLutAsPython } from './lut-exporter-py'
+import { PY_COLLIDE_DISKS } from '../src/simulation/luts/imp/disk-disk-lut'
+import {PY_ACTIVE_STEP} from '../src/simulation/sim-step'
 
 import type { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 // import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
@@ -267,4 +232,47 @@ if (simHashes) {
     + ` (startSeed=${simHashes.startSeed},`
     + ` branchSeed=${simHashes.branchSeed})`,
   )
+}
+
+
+
+function buildPythonPackageZip() {
+  const pySrcDir = join(__dirname, '../public/py')
+  const outZip = join(__dirname, '../public/data_py_pkg.zip')
+  const pkgName = 'data_py_pkg'
+  const tmpDir = join(__dirname, '../public', pkgName)
+  // Create package dir and __init__.py
+  if (!existsSync(tmpDir)) {
+    require('fs').mkdirSync(tmpDir)
+  }
+  // Copy all .py files into the package dir
+  const pyFiles = readdirSync(pySrcDir).filter(f => f.endsWith('.py'))
+  for (const f of pyFiles) {
+    const src = join(pySrcDir, f)
+    const dest = join(tmpDir, f)
+    require('fs').copyFileSync(src, dest)
+  }
+  // Ensure __init__.py exists
+  const initPath = join(tmpDir, '__init__.py')
+  if (!existsSync(initPath)) {
+    writeFileSync(initPath, '# Package init\n')
+  }
+  const cdPath = join(tmpDir, 'collide_disks.py')
+  writeFileSync(cdPath, PY_COLLIDE_DISKS)
+  const stepPath = join(tmpDir, 'sim_step.py')
+  writeFileSync(stepPath, PY_ACTIVE_STEP)
+  // Create the zip
+  const output = require('fs').createWriteStream(outZip)
+  const archive = archiver('zip', { zlib: { level: 9 } })
+  archive.pipe(output)
+  archive.directory(tmpDir, pkgName)
+  archive.finalize()
+  output.on('close', () => {
+    // Clean up temp dir
+    for (const f of readdirSync(tmpDir)) {
+      unlinkSync(join(tmpDir, f))
+    }
+    require('fs').rmdirSync(tmpDir)
+    console.log(`Python package zip created at: ${outZip}`)
+  })
 }

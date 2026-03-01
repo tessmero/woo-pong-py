@@ -48,9 +48,6 @@ export class Perturbations {
 
   static perturbDisk(state: DiskState) {
 
-    // debug skip perturbations
-    return
-
     // dx
     if (Math.abs(state.dx) > minSpeed) {
       const d6 = (Perturbations.nextInt() >>> 0) % 6
