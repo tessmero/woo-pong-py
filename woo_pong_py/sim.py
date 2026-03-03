@@ -146,11 +146,15 @@ def flushStates(disks):
         disk.currentState.dy = disk.nextState.dy
 
 def active_step(sim):
+    
+    if sim.step_count == sim.branch_on_step:
+        sim.prng = PRNG(sim.branch_seed)
+
     # Collide disks with barriers (not present)
     for disk in sim.disks:
         advance(disk)
         pushInBounds(disk.nextState) # force in bounds and bounce
-        # perturbDisk(disk.nextState, self.prng)
+        perturbDisk(disk.nextState, sim.prng)
         disk.nextState.dy += 1  # gravity
 
     # Collide disks with disks
@@ -202,4 +206,6 @@ class Simulation:
         ]
         self.winning_disk_index = -1
         self.step_count = 0
+        self.branch_on_step = -1
+        self.branch_seed = 0
 
