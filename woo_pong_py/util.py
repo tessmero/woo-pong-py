@@ -1,14 +1,13 @@
 
 
-DISK_RADIUS = 40000
 
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from matplotlib.animation import FuncAnimation
-from .sim import active_step, VALUE_SCALE
-
+from .constants import VALUE_SCALE, DISK_RADIUS
+from .step import active_step
 # Default palette used when no colors are supplied
 _DEFAULT_COLORS = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink', 'cyan']
 
@@ -26,6 +25,151 @@ def _resolve_colors(base_color, n_disks):
     face = [rgba.tolist()] + [light.tolist()] * (n_disks - 1)
     edge = ['black'] + [rgba.tolist()] * (n_disks - 1)
     return face, edge
+
+
+# special animation for time travel loop
+def sim_loop_pyplot_animation(
+    sim, extra_sim,
+    step_limit=1e10,
+    colors=None,
+    static_circles=None,
+    steps_per_frame=10,
+    figsize=(5, 5),
+):
+
+    sims = [sim,extra_sim]
+    n_sims = len(sims)
+
+    if colors is None:
+        colors = [_DEFAULT_COLORS[i % len(_DEFAULT_COLORS)] for i in range(n_sims)]
+    elif isinstance(colors, str):
+        colors = [colors]
+    while len(colors) < n_sims:
+        colors.append(_DEFAULT_COLORS[len(colors) % len(_DEFAULT_COLORS)])
+
+    # ── figure / axes ───────────────────────────────────────────────
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot()
+
+    max_w = max(s.width for s in sims)
+    max_h = max(s.height for s in sims)
+    
+    # Initial view centered on first disk
+    view_width = max_w
+    view_height = max_h
+    ax.set_xlim(-view_width/2, view_width/2)
+    ax.set_ylim(-view_height/2, view_height/2)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+    
+    # Add static rectangle showing sim bounds
+    from matplotlib.patches import Rectangle
+    bounds_rect = Rectangle(
+        (0, 0), max_w, max_h,
+        fill=False, edgecolor='gray', linewidth=2, linestyle='--',
+        zorder=-1
+    )
+    ax.add_patch(bounds_rect)
+
+    # ── static circles ──────────────────────────────────────────────
+    if static_circles:
+        for sc_def in static_circles:
+            c = plt.Circle(
+                (sc_def['x'], max_h - sc_def['y']),
+                sc_def.get('radius', DISK_RADIUS),
+                color=sc_def.get('color', 'gray'),
+                ec=sc_def.get('edgecolor', 'black'),
+                alpha=sc_def.get('alpha', 0.4),
+                zorder=0,
+            )
+            ax.add_patch(c)
+            if 'label' in sc_def:
+                ax.text(
+                    sc_def['x'], max_h - sc_def['y'],
+                    sc_def['label'],
+                    ha='center', va='center',
+                    zorder=1,
+                )
+
+    # ── one scatter artist per simulation ───────────────────────────
+    scatters = []
+    for idx, sim in enumerate(sims):
+        face, edge = _resolve_colors(colors[idx], sim.n_disks)
+        sc = ax.scatter(
+            range(sim.n_disks), range(sim.n_disks),
+            s=DISK_RADIUS ** 0.6,
+            edgecolors=edge,
+            color=face,
+            zorder=idx + 1,
+            label=f"sim {idx}",
+        )
+        scatters.append(sc)
+
+    # ax.legend(loc='upper right', fontsize='x-small', framealpha=0.6)
+
+    # ── animation helpers ───────────────────────────────────────────
+    def frames():
+        for i in itertools.count():
+            if all(s.step_count >= step_limit for s in sims):
+                break
+            yield i
+
+    focus_disk_index = 0
+    focus_sim_index = 0
+    def animate(frame):
+        nonlocal focus_disk_index
+        nonlocal focus_sim_index
+        for idx, sim in enumerate(sims):
+            for _ in range(steps_per_frame):
+                if idx == 0 and sim.entered_portal_on_step != -1:
+                    focus_disk_index = 1 # focus post-loop disk
+                    focus_sim_index = 1 # focus extra sim that froze at spawn time
+                    break
+                if focus_sim_index == 0 and idx == 1 and sim.step_count >= sim.spawn_on_step:
+                    break # this is the extra sim, reached spawn time, now waiting for loop
+                if sim.step_count >= step_limit:
+                    break
+                active_step(sim)
+        
+        # Center view on first disk of first sim
+        center_disk = sims[focus_sim_index].disks[focus_disk_index]
+        center_x = center_disk.current_state.x
+        center_y = max_h - center_disk.current_state.y
+        
+        # Update axis limits to center on disk
+        ax.set_xlim(center_x - view_width/2, center_x + view_width/2)
+        ax.set_ylim(center_y - view_height/2, center_y + view_height/2)
+        
+        # Update bounds rectangle to follow camera (stays in sim coords)
+        bounds_rect.set_xy((0, 0))
+        
+        # Update disk positions (in sim coordinates)
+        for idx, sim in enumerate(sims):
+            if idx == focus_sim_index:
+                scatters[idx].set_offsets(
+                    [[d.current_state.x, max_h - d.current_state.y] for d in sim.disks]
+                )
+            else:
+                scatters[idx].set_offsets(
+                    [[-1e10,-1e10] for d in sim.disks]
+                )
+        
+        ax.set_title(f"step {sims[focus_sim_index].step_count}")
+        return tuple(scatters) + (bounds_rect,)
+
+    ani = FuncAnimation(
+        fig,
+        animate,
+        frames=frames(),
+        interval=20,
+        repeat=False,
+        cache_frame_data=False,
+        save_count=None,
+    )
+
+    return ani
 
 
 def sim_pyplot_animation(
@@ -137,7 +281,7 @@ def sim_pyplot_animation(
                     break
                 active_step(sim)
             scatters[idx].set_offsets(
-                [[d.currentState.x, max_h - d.currentState.y] for d in sim.disks]
+                [[d.current_state.x, max_h - d.current_state.y] for d in sim.disks]
             )
         ax.set_title(f"step {max(s.step_count for s in sims)}")
         return tuple(scatters)
@@ -244,7 +388,7 @@ def sim_pyplot(
             active_step(sim)
             # Record positions
             for disk_idx, disk in enumerate(sim.disks):
-                paths[disk_idx].append((disk.currentState.x, max_h - disk.currentState.y))
+                paths[disk_idx].append((disk.current_state.x, max_h - disk.current_state.y))
 
         # Plot paths
         face, edge = _resolve_colors(colors[idx], sim.n_disks)
@@ -256,8 +400,8 @@ def sim_pyplot(
                            color=edge[disk_idx], alpha=0.3, linewidth=0.5, zorder=idx)
 
         # Plot final positions
-        final_x = [d.currentState.x for d in sim.disks]
-        final_y = [max_h - d.currentState.y for d in sim.disks]
+        final_x = [d.current_state.x for d in sim.disks]
+        final_y = [max_h - d.current_state.y for d in sim.disks]
         
         ax.scatter(
             final_x, final_y,

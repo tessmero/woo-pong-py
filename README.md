@@ -1,6 +1,6 @@
 Play the js web game "Quantum Woo Pong" [here](https://tessmero.github.io/woo-pong)
 
-This repo contains a python implementation of the woo-pong physics engine. It generates chaotic simulations that can branch between different pre-determined outcomes.
+This repo contains a python implementation of the woo-pong physics engine. It generates chaotic simulations that can branch between different pre-determined outcomes. We can also incorporate scipy.optimize to solve time-traveling simulations.
 
 Run this python notebook on google collab:
 
