@@ -9,14 +9,14 @@
  * - Optional edge tubes: black tubes that trace the front face outline
  * - Optional outer edges: duplicated tube geometry layered through extrusion depth
  * - High-contrast lighting: directional lights create solid black faces
- * - Perspective mode: tilt text back to create classic comic book cover effect
- *   where top edge is horizontal and bottom edge recedes with perspective
+ * - Isometric mode: tilt text back with an orthographic camera to preserve
+ *   parallel depth lines while keeping a strong 3D look
  *
- * Perspective Mode Details:
+ * Isometric Mode Details:
  *   When usePerspective is enabled, the text is rotated around the X-axis and
- *   viewed with a perspective camera. The top and bottom edges of the text mesh
- *   align with the specified line segments, creating the classic comic book effect
- *   where the title appears to recede into the distance.
+ *   viewed with an orthographic isometric camera. The top and bottom edges of
+ *   the text mesh align with the specified line segments while depth remains
+ *   parallel instead of converging to a vanishing point.
  *
  *   Edge lines are defined by their left and right Y-coordinates:
  *   - topEdgeLeftY/topEdgeRightY: Y positions at left and right sides of top edge
@@ -36,9 +36,11 @@
  *   - showEdgeTubes: Add black tube outlines on the front face
  *   - showOuterEdges: Draw duplicated tube outlines behind the title through depth
  *   - edgeTubeRadius: Thickness of the edge tubes (default: 0.4)
- *   - usePerspective: Enable perspective camera and text tilt
+ *   - usePerspective: Enable isometric camera and text tilt
  *   - perspectiveTilt: Angle in degrees to tilt text back (default: 20)
- *   - perspectiveWidthFactor: Horizontal compression/expansion in perspective mode
+ *   - perspectiveWidthFactor: Horizontal compression/expansion in isometric mode
+ *   - extrusionViewAngleX: Horizontal viewing angle (0=front, +right, -left, default: 45)
+ *   - extrusionViewAngleY: Vertical viewing angle (0=level, +above, -below, default: 31)
  *   - topEdgeLeftY/topEdgeRightY: Y positions for top edge line endpoints
  *   - bottomEdgeLeftY/bottomEdgeRightY: Y positions for bottom edge line endpoints
  *   - edgeLineX: Horizontal distance for edge lines (default: 30)
@@ -59,7 +61,10 @@ interface CoverOptions {
   edgeTubeRadius?: number
   usePerspective?: boolean
   perspectiveTilt?: number // Degrees to tilt text back (default: 15)
-  perspectiveWidthFactor?: number // Horizontal compression/expansion in perspective mode (default: 1)
+  perspectiveWidthFactor?: number // Horizontal compression/expansion in isometric mode (default: 1)
+  // Extrusion appearance control
+  extrusionViewAngleX?: number // Horizontal viewing angle in degrees: 0=front, positive=right, negative=left (default: 45)
+  extrusionViewAngleY?: number // Vertical viewing angle in degrees: 0=level, positive=above, negative=below (default: 35)
   // Line segments for edge alignment (defaults create horizontal lines)
   topEdgeLeftY?: number // Y position of top edge at left side
   topEdgeRightY?: number // Y position of top edge at right side
@@ -72,76 +77,20 @@ interface CoverOptions {
 const coverImgDir = join(__dirname, 'cover-images')
 
 async function main() {
-  // Create multiple test images
-  // await createCoverImage(join(coverImgDir, 'basic.png'), {
-  //   mainText: 'QUANTUM',
-  //   topText: 'AMAZING SCIENCE-FICTION TALES!',
-  // })
 
-  // await createCoverImage(join(coverImgDir, 'with-tubes.png'), {
-  //   mainText: 'STRANGE',
-  //   topText: 'DC COMICS',
-  //   showEdgeTubes: true,
-  // })
 
-  // await createCoverImage(join(coverImgDir, 'with-outline.png'), {
-  //   mainText: 'ADVENTURES',
-  //   showOuterEdges: true,
-  //   outerEdgeDilation: 0.5,
-  // })
-
-  // await createCoverImage(join(coverImgDir, 'all-features.png'), {
-  //   mainText: 'QUANTUM',
-  //   topText: 'AMAZING SCIENCE-FICTION TALES!',
-  //   showEdgeTubes: true,
-  //   showOuterEdges: true,
-  //   edgeTubeRadius: 0.3,
-  //   outerEdgeDilation: 0.6,
-  // })
-
-  // await createCoverImage(join(coverImgDir, 'perspective.png'), {
-  //   mainText: 'STRANGE',
-  //   topText: 'AMAZING SCIENCE-FICTION TALES!',
-  //   usePerspective: true,
-  //   perspectiveTilt: 20,
-  //   showOuterEdges: true,
-  //   showGuideLines: true,
-  // })
-
-  // await createCoverImage(join(coverImgDir, 'perspective-adventures.png'), {
-  //   mainText: 'ADVENTURES',
-  //   topText: 'DC COMICS',
-  //   usePerspective: true,
-  //   perspectiveTilt: 25,
-  //   showEdgeTubes: true,
-  //   showGuideLines: true,
-  // })
-
-  // // Classic comic book style with strong perspective
-  // await createCoverImage(join(coverImgDir, 'comic-style.png'), {
-  //   mainText: 'STRANGE',
-  //   topText: 'AMAZING SCIENCE-FICTION TALES!',
-  //   usePerspective: true,
-  //   perspectiveTilt: 30,
-  //   topEdgeLeftY: 12,
-  //   topEdgeRightY: 12,
-  //   bottomEdgeLeftY: -18,
-  //   bottomEdgeRightY: -18,
-  //   showOuterEdges: true,
-  //   outerEdgeDilation: 0.8,
-  // })
-
-  // Slanted edges - top horizontal, bottom slopes down to right
-  await createCoverImage(join(coverImgDir, 'slanted.png'), {
+  // Example: Extrusions appear to extend down and to the left
+  await createCoverImage(join(coverImgDir, 'extrude-left-down.png'), {
     mainText: 'QUANTUM',
-    topText: 'DC COMICS',
     usePerspective: true,
     perspectiveTilt: 25,
     perspectiveWidthFactor: 2,
+    extrusionViewAngleX: -15, 
+    extrusionViewAngleY: -15,
     topEdgeLeftY: 18,
     topEdgeRightY: 18,
-    bottomEdgeLeftY: 14,
-    bottomEdgeRightY: 14,
+    bottomEdgeLeftY: 8,
+    bottomEdgeRightY: 12,
     showEdgeTubes: true,
     showOuterEdges: true,
     showGuideLines: true,
@@ -200,6 +149,8 @@ function generateThreeJSHTML(options: CoverOptions): string {
     usePerspective = false,
     perspectiveTilt = 20,
     perspectiveWidthFactor = 1,
+    extrusionViewAngleX = 45,
+    extrusionViewAngleY = 31,
     topEdgeLeftY = 15,
     topEdgeRightY = 15,
     bottomEdgeLeftY = -15,
@@ -246,10 +197,31 @@ function generateThreeJSHTML(options: CoverOptions): string {
     
     ${usePerspective
       ? `
-    // Perspective camera for 3D depth effect
-    camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
-    camera.position.set(0, 5, 60);
+    // Isometric view: orthographic projection from a diagonal camera angle.
+    // This preserves parallel depth lines and avoids FOV/vanishing-point distortion.
+    // Camera position is calculated from viewing angles using spherical coordinates.
+    const cameraDistance = 87.6;
+    const angleXRad = THREE.MathUtils.degToRad(${extrusionViewAngleX}); // Horizontal angle (azimuthal)
+    const angleYRad = THREE.MathUtils.degToRad(${extrusionViewAngleY}); // Vertical angle (elevation)
+    
+    // Convert spherical coordinates to Cartesian
+    const cameraX = cameraDistance * Math.cos(angleYRad) * Math.sin(angleXRad);
+    const cameraY = cameraDistance * Math.sin(angleYRad);
+    const cameraZ = cameraDistance * Math.cos(angleYRad) * Math.cos(angleXRad);
+    
+    const isoFrustumSize = 54;
+    camera = new THREE.OrthographicCamera(
+      -isoFrustumSize * aspect / 2,
+      isoFrustumSize * aspect / 2,
+      isoFrustumSize / 2,
+      -isoFrustumSize / 2,
+      0.1,
+      1000
+    );
+    camera.position.set(cameraX, cameraY, cameraZ);
     camera.lookAt(0, 0, 0);
+    
+    console.log('Camera position:', cameraX.toFixed(2), cameraY.toFixed(2), cameraZ.toFixed(2));
     `
       : `
     // Orthographic camera for flat look
@@ -292,6 +264,47 @@ function generateThreeJSHTML(options: CoverOptions): string {
     // Add guide lines to show alignment boundaries
     const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 5 });
     
+    ${usePerspective
+      ? `
+    // For isometric camera, to make lines appear horizontal on screen,
+    // we need to adjust Z as X changes based on the camera viewing angle.
+    // The ratio depends on how the camera projects the X and Z axes onto the screen.
+    const isoRatio = cameraX / Math.max(0.01, cameraZ);
+    
+    const avgTargetHeight = ((${topEdgeLeftY} - ${bottomEdgeLeftY}) + (${topEdgeRightY} - ${bottomEdgeRightY})) / 2;
+    const tiltRadians = THREE.MathUtils.degToRad(${perspectiveTilt});
+    const tiltDepthRange = Math.tan(Math.abs(tiltRadians)) * avgTargetHeight * 0.35;
+    const tiltSign = Math.sign(${perspectiveTilt}) || 1;
+    
+    // Calculate base depth for top edge (v ≈ 1 at top)
+    const topV = 1;
+    const topCenteredV = (topV - 0.5) * 2;
+    const topBaseDepth = THREE.MathUtils.clamp(-tiltSign * topCenteredV * tiltDepthRange, -8, 8);
+    
+    // Calculate base depth for bottom edge (v ≈ 0 at bottom)
+    const bottomV = 0;
+    const bottomCenteredV = (bottomV - 0.5) * 2;
+    const bottomBaseDepth = THREE.MathUtils.clamp(-tiltSign * bottomCenteredV * tiltDepthRange, -8, 8);
+    
+    // Top guide line: Z adjusts as X changes to appear horizontal
+    const topLineGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-${edgeLineX}, ${topEdgeLeftY}, topBaseDepth + ${edgeLineX} * isoRatio),
+      new THREE.Vector3(${edgeLineX}, ${topEdgeRightY}, topBaseDepth - ${edgeLineX} * isoRatio)
+    ]);
+    const topLine = new THREE.Line(topLineGeo, lineMaterial);
+    scene.add(topLine);
+    
+    // Bottom guide line: Z adjusts as X changes to appear horizontal
+    const bottomLineGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-${edgeLineX}, ${bottomEdgeLeftY}, bottomBaseDepth + ${edgeLineX} * isoRatio),
+      new THREE.Vector3(${edgeLineX}, ${bottomEdgeRightY}, bottomBaseDepth - ${edgeLineX} * isoRatio)
+    ]);
+    const bottomLine = new THREE.Line(bottomLineGeo, lineMaterial);
+    scene.add(bottomLine);
+    
+    console.log('Isometric ratio (X/Z adjustment):', isoRatio.toFixed(3));
+    `
+      : `
     // Top guide line (can be slanted)
     const topLineGeo = new THREE.BufferGeometry().setFromPoints([
       new THREE.Vector3(-${edgeLineX}, ${topEdgeLeftY}, 0),
@@ -307,6 +320,7 @@ function generateThreeJSHTML(options: CoverOptions): string {
     ]);
     const bottomLine = new THREE.Line(bottomLineGeo, lineMaterial);
     scene.add(bottomLine);
+    `}
     `
       : ''}
 
@@ -353,6 +367,7 @@ function generateThreeJSHTML(options: CoverOptions): string {
         // variation when guide-line spacing differs across X.
         ${usePerspective
           ? `
+        const isoRatio = cameraX / Math.max(0.01, cameraZ);
         warpGeometryToEdgeLines(textGeo, {
           edgeLineX: ${edgeLineX},
           topEdgeLeftY: ${topEdgeLeftY},
@@ -362,6 +377,7 @@ function generateThreeJSHTML(options: CoverOptions): string {
           extrudeDepth,
           perspectiveTilt: ${perspectiveTilt},
           perspectiveWidthFactor: ${perspectiveWidthFactor},
+          isoRatio: isoRatio,
         });
         `
           : ''}
@@ -481,6 +497,7 @@ function generateThreeJSHTML(options: CoverOptions): string {
         extrudeDepth,
         perspectiveTilt,
         perspectiveWidthFactor,
+        isoRatio,
       } = config;
 
       geometry.computeBoundingBox();
@@ -497,10 +514,11 @@ function generateThreeJSHTML(options: CoverOptions): string {
       const avgTargetHeight =
         ((topEdgeLeftY - bottomEdgeLeftY) + (topEdgeRightY - bottomEdgeRightY)) / 2;
 
-      // Use a conservative depth ramp so wider columns appear slightly closer,
-      // reinforcing perspective without causing extreme distortion.
-      const cameraDistance = 60;
-      const tiltStrength = Math.sin(Math.abs(perspectiveTilt) * Math.PI / 180);
+      // Apply depth shift by vertical position so perspectiveTilt behaves like
+      // rotation around the X axis (top recedes, bottom comes forward).
+      const tiltRadians = THREE.MathUtils.degToRad(perspectiveTilt);
+      const tiltDepthRange = Math.tan(Math.abs(tiltRadians)) * avgTargetHeight * 0.35;
+      const tiltSign = Math.sign(perspectiveTilt) || 1;
 
       for (let i = 0; i < position.count; i++) {
         const x = position.getX(i);
@@ -517,14 +535,21 @@ function generateThreeJSHTML(options: CoverOptions): string {
         const bottomY = THREE.MathUtils.lerp(bottomEdgeLeftY, bottomEdgeRightY, u);
         const targetY = THREE.MathUtils.lerp(bottomY, topY, v);
 
-        const localHeight = Math.max(1e-6, topY - bottomY);
-        const relativeScale = localHeight / Math.max(1e-6, avgTargetHeight);
-        const targetZFromScale = cameraDistance * (1 - 1 / Math.max(1e-6, relativeScale));
-        const clampedDepthShift = THREE.MathUtils.clamp(targetZFromScale * tiltStrength * 0.35, -8, 8);
+        // Depth varies by row instead of column to avoid Y-axis-style skew.
+        const centeredV = (v - 0.5) * 2;
+        const baseDepthShift = THREE.MathUtils.clamp(
+          -tiltSign * centeredV * tiltDepthRange,
+          -8,
+          8
+        );
+
+        // For isometric camera, to make lines appear horizontal on screen,
+        // Z must be adjusted based on X position using the camera-dependent ratio.
+        const isoZAdjustment = -targetX * isoRatio;
 
         // Preserve front/back layering while shifting each X column in depth.
         const depthT = (z + extrudeDepth) / Math.max(1e-6, extrudeDepth);
-        const targetZ = clampedDepthShift + THREE.MathUtils.lerp(-extrudeDepth, 0, depthT);
+        const targetZ = baseDepthShift + isoZAdjustment + THREE.MathUtils.lerp(-extrudeDepth, 0, depthT);
 
         position.setXYZ(i, targetX, targetY, targetZ);
       }
