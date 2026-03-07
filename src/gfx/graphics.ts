@@ -183,7 +183,7 @@ export class Graphics {
     const barHeightPx = 50 // / dpr
 
     this._pxRegions = {
-      'loop-gfx': [
+      'sim-gfx': [
         leftGutterWidthPx, barHeightPx,
         simCssWidth, cssHeight - barHeightPx * 2,
       ],

@@ -95,6 +95,11 @@ function _activeStep(sim: Simulation) {
 
   // collide disks with barriers
   for (const [_diskIndex, disk] of sim.disks.entries()) {
+
+
+      //debug
+      console.log(`update disk with x ${disk.currentState.x}`)
+
     disk.advance(sim.obstacles, sim.stepCount)
     disk.pushInBounds(sim)
     Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
@@ -133,120 +138,3 @@ function _activeStep(sim: Simulation) {
 
   // Disk.updateHistory(sim.disks) // add to graphical tail
 }
-
-// Self-contained Python implementation of activeStep and Perturbations, as a string for export
-export const PY_ACTIVE_STEP = `
-
-VALUE_SCALE = ${VALUE_SCALE}
-DISK_RADIUS = ${DISK_RADIUS}
-BOUNDS_X = 0
-BOUNDS_Y = 0
-BOUNDS_W = 100 * VALUE_SCALE
-BOUNDS_H = 100 * VALUE_SCALE
-
-def pushInBounds(state, radius=0):
-  # Clamp disk position to within bounds, and reflect velocity if out of bounds
-  bounced = False
-  if state.x < BOUNDS_X + radius:
-    state.x = BOUNDS_X + radius
-    state.dx = abs(state.dx)
-    bounced = True
-  elif state.x > BOUNDS_X + BOUNDS_W - radius:
-    state.x = BOUNDS_X + BOUNDS_W - radius
-    state.dx = -abs(state.dx)
-    bounced = True
-  if state.y < BOUNDS_Y + radius:
-    state.y = BOUNDS_Y + radius
-    state.dy = abs(state.dy)
-    bounced = True
-  elif state.y > BOUNDS_Y + BOUNDS_H - radius:
-    state.y = BOUNDS_Y + BOUNDS_H - radius
-    state.dy = -abs(state.dy)
-    bounced = True
-  return bounced
-import numpy as np
-
-# Assumptions:
-# - sim.disks: list of Disk objects, each with .currentState and .nextState (with x, y, dx, dy)
-# - sim.winningDiskIndex, sim.maxBallY, sim.finish, sim._stepCount exist
-# - collide_disks(a, b, DISK_DISK_LUT) is available
-# - No obstacles, no rooms
-p_dict = {
-  "minSpeed": 10,
-  "state": 0,
-}
-
-def randomSeed():
-  import numpy as np
-  return int(np.random.rand() * 32000)
-
-def setSeed(seed):
-  p_dict["state"] = int(seed)
-p_dict["setSeed"] = setSeed
-
-def getSeed():
-  return p_dict["state"]
-
-def _makePRNG(seed):
-  p_dict["state"] = int(seed) or 1
-  def nextInt():
-    p_dict["state"] ^= (p_dict["state"] << 13) & 0xFFFFFFFF
-    p_dict["state"] ^= (p_dict["state"] >> 17)
-    p_dict["state"] ^= (p_dict["state"] << 5) & 0xFFFFFFFF
-    p_dict["state"] &= 0xFFFFFFFF
-    return p_dict["state"]
-  return nextInt
-
-p_dict["nextInt"] = _makePRNG(randomSeed())
-
-def perturbDisk(state):
-  # dx
-  if abs(state.dx) > p_dict["minSpeed"]:
-    d6 = (p_dict["nextInt"]() & 0xFFFFFFFF) % 6
-    if d6 == 0:
-      state.dx += 1
-    elif d6 == 1:
-      state.dx -= 1
-  # dy
-  if abs(state.dy) > p_dict["minSpeed"]:
-    d6 = (p_dict["nextInt"]() & 0xFFFFFFFF) % 6
-    if d6 == 0:
-      state.dy += 1
-    elif d6 == 1:
-      state.dy -= 1
-
-def advance(disk):
-    disk.nextState.x = disk.currentState.x + disk.currentState.dx
-    disk.nextState.y = disk.currentState.y + disk.currentState.dy
-
-def flushStates(disks):
-    for disk in disks:
-        disk.currentState.x = disk.nextState.x
-        disk.currentState.y = disk.nextState.y
-        disk.currentState.dx = disk.nextState.dx
-        disk.currentState.dy = disk.nextState.dy
-
-def active_step(sim, DISK_DISK_LUT):
-    # Collide disks with barriers (not present)
-    for disk in sim.disks:
-        advance(disk)
-        pushInBounds(disk.nextState) # force in bounds and bounce
-        # perturbDisk(disk.nextState)
-        # disk.nextState.dy += 1  # gravity
-
-    # Collide disks with disks
-    for a in range(1, len(sim.disks)):
-        for b in range(a):
-            collide_disks(sim.disks[a], sim.disks[b], DISK_DISK_LUT)
-
-    flushStates(sim.disks)  # commit updates after collisions
-
-class obj:
-    def __init__(self, d):
-        for k, v in d.items():
-            if isinstance(v, (list, tuple)):
-                setattr(self, k, [obj(x) if isinstance(x, dict) else x for x in v])
-            else:
-                setattr(self, k, obj(v) if isinstance(v, dict) else v)
-Perturbations = obj(p_dict)
-`

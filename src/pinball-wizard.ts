@@ -169,7 +169,7 @@ export class PinballWizard {
 
     shuffle(SHUFFLED_PATTERN_NAMES) // shuffle appearance of bouncing balls
 
-    this.activeSim = new Simulation(commonStartSeed, true)
+    this.activeSim = new Simulation(commonStartSeed)
 
     if (!this.isSeedConfiged) {
       this.activeSim.branchSeed = 29137 // seed to insert later

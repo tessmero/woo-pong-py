@@ -26,6 +26,8 @@ export function onTitleScreenResize() {
 
 export class TitleScreen {
   static update(_dt: number) {
+    return
+
     getScaledPattern('diamond-a')
     // _updateTitleSim(dt)
     // _drawTitleSim()

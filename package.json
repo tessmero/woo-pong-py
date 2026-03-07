@@ -11,7 +11,8 @@
     "build": "npm run build-starts && npm run build-rooms && npm run build-blobs",
     "build-blobs": "ts-node -r tsconfig-paths/register build/build-blobs.ts",
     "build-rooms": "ts-node -r tsconfig-paths/register build/build-room-layouts.ts",
-    "build-starts": "ts-node -r tsconfig-paths/register build/build-start-layouts.ts"
+    "build-starts": "ts-node -r tsconfig-paths/register build/build-start-layouts.ts",
+    "build-cover": "ts-node -r tsconfig-paths/register build/build-cover.ts"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +31,7 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^24.1.0",
     "@types/pngjs": "^6.0.5",
+    "@types/three": "^0.183.1",
     "@typescript-eslint/rule-tester": "^8.34.1",
     "@typescript-eslint/utils": "^8.34.1",
     "archiver": "^7.0.1",
@@ -40,6 +42,7 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsdoc": "^51.0.3",
     "eslint-plugin-unused-imports": "^4.1.4",
+    "gl": "^8.1.6",
     "glob": "^11.0.3",
     "jiti": "^2.4.2",
     "jsdom": "^27.0.0",
@@ -52,6 +55,7 @@
     "puppeteer": "^24.32.0",
     "serve": "^13.0.4",
     "serve-handler": "^1.0.0",
+    "three": "^0.183.2",
     "ts-mocha": "^11.1.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",

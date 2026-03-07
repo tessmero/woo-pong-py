@@ -46,7 +46,7 @@ export class LoopRoom extends Room {
   public static topPortalX = 30 * VALUE_SCALE
   public static stepsBack = 1000
   public static spawnStep = 1319
-  public static startState: [number, number, number, number] = [2 * VALUE_SCALE, 205, 50, 390]
+  public static startState: [number, number, number, number] = [10 * VALUE_SCALE, 50 * VALUE_SCALE, 390, -300]
   public static spawnState: [number, number, number, number] = [414402, 205, 0, 390]
 
   private readonly spawnEvents: Array<SpawnEvent> = [

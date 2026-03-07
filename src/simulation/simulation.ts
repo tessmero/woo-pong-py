@@ -81,8 +81,12 @@ export class Simulation {
 
     this.level = new Level(isLoop)
     const sl = StartLayout.create(this.level.startLayout)
-    const animDur = sl.animDur
-    this._stepCount = -animDur
+    if (isLoop) {
+      this._stepCount = 0
+    } else {
+      const animDur = sl.animDur
+      this._stepCount = -animDur
+    }
     this.t = this._stepCount * STEP_DURATION
     // console.log(`got anim dur ${animDur} for start layout ${this.level.startLayout}`)
 
@@ -102,6 +106,7 @@ export class Simulation {
       // const disk = Disk.fromJson(scaledPars)
       const [[x, y], [vx, vy]] = posVels[diskIndex]
       const disk = Disk.fromJson([x, y, vx, vy])
+
       disk.pattern = SHUFFLED_PATTERN_NAMES[diskIndex % SHUFFLED_PATTERN_NAMES.length]
       // diskIndex++
       return disk

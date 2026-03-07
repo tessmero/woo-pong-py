@@ -113,9 +113,9 @@ async function main() {
   await _initAssets(startBtn)
   TitleScreen.startHilbert()
 
-  for (const elem of inner.getElementsByClassName('toHide')) {
-    elem.setAttribute('style', 'opacity:0')
-  }
+  // for (const elem of inner.getElementsByClassName('toHide')) {
+  //   elem.setAttribute('style', 'opacity:0')
+  // }
   pinballWizard.loadingState = 'F'
   startBtn.innerHTML = 'START'
   pinballWizard.loadingState = 'G'

@@ -182,7 +182,8 @@ export class TopBarGfx extends GfxRegion {
     ctx.fillStyle = OBSTACLE_FILL
     ctx.fillRect(x, y, w * progress, h)
 
-    const label = `step ${pw.activeSim._stepCount}`//getStatusText(pw)
+    const label = getStatusText(pw)
+    // const label = `step ${pw.activeSim._stepCount}`
     // debug
     // const label = `${Scrollbar.isDragging}`
     drawText(ctx, rect, label)
