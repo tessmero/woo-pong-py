@@ -46,12 +46,13 @@
  *   - edgeLineX: Horizontal distance for edge lines (default: 30)
  *   - showGuideLines: Show red guide lines for alignment debugging
  */
-import { mkdirSync, writeFileSync } from 'fs'
+import { mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
 import puppeteer from 'puppeteer'
 
-const COVER_WIDTH = 420
-const COVER_HEIGHT = 588
+const SCALE = 5
+const COVER_WIDTH = 420 * SCALE
+const COVER_HEIGHT = 588 * SCALE
 
 interface CoverOptions {
   topText?: string
@@ -72,29 +73,298 @@ interface CoverOptions {
   bottomEdgeRightY?: number // Y position of bottom edge at right side
   edgeLineX?: number // X distance from center for edge lines (default: 30)
   showGuideLines?: boolean // Show alignment guide lines for debugging
+  visibleLetters?: number[] | 'all' // Array of letter indices to show, or 'all' for all letters
 }
 
-const coverImgDir = join(__dirname, 'cover-images')
+type LetterManifestEntry = {
+  index: number
+  file: string
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+const coverImgDir = join(__dirname, '..', 'public', 'cover-images')
 
 async function main() {
-
-
-  // Example: Extrusions appear to extend down and to the left
-  await createCoverImage(join(coverImgDir, 'extrude-left-down.png'), {
-    mainText: 'QUANTUM',
+  const baseOptions = {
+    mainText: 'QUANTUM\nWOO PONG',
     usePerspective: true,
     perspectiveTilt: 25,
-    perspectiveWidthFactor: 2,
-    extrusionViewAngleX: -15, 
-    extrusionViewAngleY: -15,
-    topEdgeLeftY: 18,
-    topEdgeRightY: 18,
+    perspectiveWidthFactor: 1.8,
+    extrusionViewAngleX: -8, 
+    extrusionViewAngleY: -13,
+    topEdgeLeftY: 25,
+    topEdgeRightY: 25,
     bottomEdgeLeftY: 8,
-    bottomEdgeRightY: 12,
+    bottomEdgeRightY: 19,
     showEdgeTubes: true,
     showOuterEdges: true,
-    showGuideLines: true,
+    showGuideLines: false,
+  }
+
+  // First, create full text image
+  console.log('Creating full text image...')
+  await createCoverImage(join(coverImgDir, 'cover-full.png'), {
+    ...baseOptions,
+    visibleLetters: 'all',
   })
+
+  // Get the letter count by creating a temporary image to count components
+  const letterCount = await getLetterCount(baseOptions)
+  console.log(`Found ${letterCount} letter components, creating individual images...`)
+
+  // Create one image per letter
+  clearOldLetterImages()
+  const letterManifest: Array<LetterManifestEntry> = []
+  for (let i = 0; i < letterCount; i++) {
+    console.log(`Creating image for letter ${i + 1}/${letterCount}...`)
+    const rawLetterPath = join(coverImgDir, `cover-letter-${i}.png`)
+    await createCoverImage(rawLetterPath, {
+      ...baseOptions,
+      visibleLetters: [i],
+    })
+
+    const trim = await trimImageToAlphaBounds(rawLetterPath)
+    const trimmedName = `cover-letter-${i}-x${trim.x}-y${trim.y}.png`
+    const trimmedPath = join(coverImgDir, trimmedName)
+    writeFileSync(trimmedPath, trim.png)
+    unlinkSync(rawLetterPath)
+    console.log(`  wrote trimmed letter image: ${trimmedPath}`)
+
+    letterManifest.push({
+      index: i,
+      file: trimmedName,
+      x: trim.x,
+      y: trim.y,
+      width: trim.width,
+      height: trim.height,
+    })
+  }
+
+  console.log('Recombining individual letter images...')
+  await createRecombinedImage(join(coverImgDir, 'cover-recombined.png'))
+
+  const manifestPath = join(coverImgDir, 'cover-letters-manifest.json')
+  writeFileSync(
+    manifestPath,
+    `${JSON.stringify({
+      width: COVER_WIDTH,
+      height: COVER_HEIGHT,
+      letters: letterManifest,
+    }, null, 2)}\n`,
+  )
+  console.log(`  wrote manifest: ${manifestPath}`)
+
+  console.log('Done!')
+}
+
+function clearOldLetterImages(): void {
+  const files = readdirSync(coverImgDir)
+  for (const file of files) {
+    if (/^cover-letter-\d+(?:-x-?\d+-y-?\d+)?\.png$/.test(file)) {
+      unlinkSync(join(coverImgDir, file))
+    }
+  }
+}
+
+async function trimImageToAlphaBounds(imagePath: string): Promise<{ png: Buffer; x: number; y: number; width: number; height: number }> {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  })
+
+  const page = await browser.newPage()
+  const dataUrl = `data:image/png;base64,${readFileSync(imagePath).toString('base64')}`
+
+  await page.setContent(`<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;background:transparent;"></body>
+</html>`)
+
+  const result = await page.evaluate(async (src: string) => {
+    const loadImage = (url: string) =>
+      new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => resolve(img)
+        img.onerror = () => reject(new Error('Failed to load source image'))
+        img.src = url
+      })
+
+    const img = await loadImage(src)
+    const srcCanvas = document.createElement('canvas')
+    srcCanvas.width = img.width
+    srcCanvas.height = img.height
+    const srcCtx = srcCanvas.getContext('2d')
+    if (!srcCtx) throw new Error('Missing source canvas context')
+    srcCtx.drawImage(img, 0, 0)
+
+    const imageData = srcCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height)
+    const data = imageData.data
+
+    let minX = srcCanvas.width
+    let minY = srcCanvas.height
+    let maxX = -1
+    let maxY = -1
+
+    for (let y = 0; y < srcCanvas.height; y++) {
+      for (let x = 0; x < srcCanvas.width; x++) {
+        const alpha = data[(y * srcCanvas.width + x) * 4 + 3]
+        if (alpha === 0) continue
+        if (x < minX) minX = x
+        if (y < minY) minY = y
+        if (x > maxX) maxX = x
+        if (y > maxY) maxY = y
+      }
+    }
+
+    if (maxX < minX || maxY < minY) {
+      const tinyCanvas = document.createElement('canvas')
+      tinyCanvas.width = 1
+      tinyCanvas.height = 1
+      return {
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+        dataUrl: tinyCanvas.toDataURL('image/png'),
+      }
+    }
+
+    const cropW = maxX - minX + 1
+    const cropH = maxY - minY + 1
+    const outCanvas = document.createElement('canvas')
+    outCanvas.width = cropW
+    outCanvas.height = cropH
+    const outCtx = outCanvas.getContext('2d')
+    if (!outCtx) throw new Error('Missing output canvas context')
+    outCtx.drawImage(srcCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH)
+
+    return {
+      x: minX,
+      y: minY,
+      width: cropW,
+      height: cropH,
+      dataUrl: outCanvas.toDataURL('image/png'),
+    }
+  }, dataUrl)
+
+  await browser.close()
+
+  const base64 = String(result.dataUrl).replace(/^data:image\/png;base64,/, '')
+  return {
+    png: Buffer.from(base64, 'base64'),
+    x: result.x,
+    y: result.y,
+    width: result.width,
+    height: result.height,
+  }
+}
+
+async function createRecombinedImage(outPath: string): Promise<void> {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  })
+
+  const page = await browser.newPage()
+  await page.setViewport({ width: COVER_WIDTH, height: COVER_HEIGHT })
+
+  const letterFiles = readdirSync(coverImgDir)
+    .map(name => {
+      const match = /^cover-letter-(\d+)-x(-?\d+)-y(-?\d+)\.png$/.exec(name)
+      if (!match) return null
+      return {
+        name,
+        index: Number(match[1]),
+        x: Number(match[2]),
+        y: Number(match[3]),
+      }
+    })
+    .filter((entry): entry is { name: string; index: number; x: number; y: number } => entry !== null)
+    .sort((a, b) => a.index - b.index)
+
+  const letterImages = letterFiles.map(file => {
+    const png = readFileSync(join(coverImgDir, file.name))
+    return {
+      x: file.x,
+      y: file.y,
+      dataUrl: `data:image/png;base64,${png.toString('base64')}`,
+    }
+  })
+
+  await page.setContent(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    html, body { margin: 0; padding: 0; background: transparent; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <canvas id="recombined" width="${COVER_WIDTH}" height="${COVER_HEIGHT}"></canvas>
+  <script>
+    window.renderComplete = false;
+  </script>
+</body>
+</html>`)
+
+  await page.evaluate(async (images: Array<{ x: number; y: number; dataUrl: string }>) => {
+    const canvas = document.getElementById('recombined') as HTMLCanvasElement
+    const ctx = canvas.getContext('2d')
+    if (!ctx) throw new Error('2D canvas context not available')
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    const loadImage = (src: string) =>
+      new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => resolve(img)
+        img.onerror = () => reject(new Error(`Failed to load image: ${src.slice(0, 32)}...`))
+        img.src = src
+      })
+
+    for (const image of images) {
+      const img = await loadImage(image.dataUrl)
+      ctx.drawImage(img, image.x, image.y)
+    }
+
+    ;(window as any).renderComplete = true
+  }, letterImages)
+
+  await page.waitForFunction(() => (window as any).renderComplete === true, { timeout: 10000 })
+  const screenshot = await page.screenshot({ type: 'png', omitBackground: true })
+
+  await browser.close()
+
+  mkdirSync(dirname(outPath), { recursive: true })
+  writeFileSync(outPath, screenshot)
+  console.log(`  wrote recombined image: ${outPath}`)
+}
+
+async function getLetterCount(options: CoverOptions): Promise<number> {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  })
+
+  const page = await browser.newPage()
+  
+  // Suppress logs for counting
+  await page.setViewport({ width: 100, height: 100 })
+
+  const html = generateThreeJSHTML({ ...options, visibleLetters: 'all' })
+  await page.setContent(html)
+
+  await page.waitForFunction(() => (window as any).letterCount !== undefined, { timeout: 10000 })
+  const letterCount = await page.evaluate(() => (window as any).letterCount)
+
+  await browser.close()
+
+  return letterCount
 }
 
 main().catch(console.error)
@@ -128,7 +398,7 @@ async function createCoverImage(outPath: string, options: CoverOptions): Promise
   await page.waitForFunction(() => (window as any).renderComplete === true, { timeout: 10000 })
 
   // Take screenshot
-  const screenshot = await page.screenshot({ type: 'png' })
+  const screenshot = await page.screenshot({ type: 'png', omitBackground: true })
 
   await browser.close()
 
@@ -157,6 +427,7 @@ function generateThreeJSHTML(options: CoverOptions): string {
     bottomEdgeRightY = -15,
     edgeLineX = 30,
     showGuideLines = false,
+    visibleLetters = 'all',
   } = options
 
   return `<!DOCTYPE html>
@@ -183,13 +454,15 @@ function generateThreeJSHTML(options: CoverOptions): string {
     import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 
     window.renderComplete = false;
+    const MAIN_TEXT = \`${mainText}\`
+    const VISIBLE_LETTERS = ${JSON.stringify(visibleLetters)};
 
     const COVER_WIDTH = ${COVER_WIDTH};
     const COVER_HEIGHT = ${COVER_HEIGHT};
 
     // Scene setup
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xffffff);
+    scene.background = null;
 
     // Camera setup
     const aspect = COVER_WIDTH / COVER_HEIGHT;
@@ -239,19 +512,26 @@ function generateThreeJSHTML(options: CoverOptions): string {
     `}
 
     // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(COVER_WIDTH, COVER_HEIGHT);
+    renderer.setClearColor(0x000000, 0);
     document.body.appendChild(renderer.domElement);
     const extrudeDepth = 4;
 
-    // High-contrast lighting for solid black faces
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    keyLight.position.set(5, 5, 10);
-    scene.add(keyLight);
+    // bright front
+    const frontLight = new THREE.DirectionalLight(0xffffff, 100);
+    frontLight.position.set(0,0,1000);
+    scene.add(frontLight);
 
-    const sideLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    sideLight.position.set(-10, 0, 5);
-    scene.add(sideLight);
+    // // red left
+    // const leftLight = new THREE.DirectionalLight(0xff0000, 0.8);
+    // leftLight.position.set(-1000, 0, 0);
+    // scene.add(leftLight);
+
+    // blue bottom
+    const bottomLight = new THREE.DirectionalLight(0x8855ff, 0.8);
+    bottomLight.position.set(0, -1000, 0);
+    scene.add(bottomLight);
 
     // Minimal ambient for high contrast
     const ambient = new THREE.AmbientLight(0xffffff, 0.1);
@@ -349,8 +629,8 @@ function generateThreeJSHTML(options: CoverOptions): string {
         `
           : ''}
 
-        // Main extruded text
-        const textGeo = new TextGeometry('${mainText}', {
+        // Main extruded text - create merged geometry first
+        const { mergedGeo: mergedTextGeo, letterTriangleRanges } = createMultilineTextGeometry(MAIN_TEXT, {
           font: font,
           size: 8,
           depth: extrudeDepth,
@@ -358,17 +638,14 @@ function generateThreeJSHTML(options: CoverOptions): string {
           bevelEnabled: false,
         });
 
-        textGeo.translate(0,0,-extrudeDepth)
-        textGeo.computeBoundingBox();
-        const textWidth = textGeo.boundingBox.max.x - textGeo.boundingBox.min.x;
-
+        mergedTextGeo.translate(0, 0, -extrudeDepth);
+        
         // Map text vertices so each X column spans between the configured
-        // top and bottom guide lines. This creates left/right perspective
-        // variation when guide-line spacing differs across X.
+        // top and bottom guide lines. This warps the ENTIRE text block.
         ${usePerspective
           ? `
         const isoRatio = cameraX / Math.max(0.01, cameraZ);
-        warpGeometryToEdgeLines(textGeo, {
+        warpGeometryToEdgeLines(mergedTextGeo, {
           edgeLineX: ${edgeLineX},
           topEdgeLeftY: ${topEdgeLeftY},
           topEdgeRightY: ${topEdgeRightY},
@@ -382,101 +659,94 @@ function generateThreeJSHTML(options: CoverOptions): string {
         `
           : ''}
 
-        // Main text mesh
-        const textMaterial = new THREE.MeshStandardMaterial({
-          color: 0xff4444,
-          metalness: 0.3,
-          roughness: 0.7,
-        });
-        const textMesh = new THREE.Mesh(textGeo, textMaterial);
-        ${usePerspective
-          ? 'textMesh.position.set(0, 0, 0);'
-          : 'textMesh.position.set(-textWidth / 2, -4, 0);'}
-        group.add(textMesh);
+        // Now separate the warped geometry back into individual letters using the tracked ranges
+        const letterGeometries = separateByTriangleRanges(mergedTextGeo, letterTriangleRanges);
+        console.log('Separated into', letterGeometries.length, 'letter components');
         
-        // DEBUG: Add green sphere at text mesh center
-        const centerSphereGeo = new THREE.SphereGeometry(0.5, 16, 16);
-        const centerSphereMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        const centerSphere = new THREE.Mesh(centerSphereGeo, centerSphereMat);
-        centerSphere.position.copy(textMesh.position);
-        group.add(centerSphere);
+        // Store letter count for external access
+        window.letterCount = letterGeometries.length;
 
-        // Perspective placement is baked into the geometry in warpGeometryToEdgeLines().
-
-        // Edge tubes and optional outer edge layers based on front-face loops
-        ${showEdgeTubes || showOuterEdges
-          ? `
-        const frontEdgeLoops = extractFrontEdgeLoops(textGeo);
-        console.log('Found', frontEdgeLoops.length, 'loops');
-        frontEdgeLoops.forEach((loop, idx) => {
-          if (loop.length < 2) return;
-          
-          console.log('Loop', idx, ':', loop.length, 'points, first point x:', loop[0].x, 'y:', loop[0].y, 'z:', loop[0].z);
-          
-            // DEBUG: Check loop connectivity
-            let maxGap = 0;
-            let avgGap = 0;
-            for (let k = 1; k < loop.length; k++) {
-              const gap = loop[k].distanceTo(loop[k - 1]);
-              avgGap += gap;
-              if (gap > maxGap) maxGap = gap;
-            }
-            avgGap /= (loop.length - 1);
-            console.log('Loop', idx, 'max gap:', maxGap.toFixed(3), 'avg gap:', avgGap.toFixed(3));
-          
-          
-          const curve = new EdgeCurve(loop);
-          const tubeRadius = ${edgeTubeRadius * 2};
-          const tubularSegments = 1000 // Math.max(20, Math.floor(loop.length / 10));
-          console.log('Creating tube with radius', tubeRadius, 'and', tubularSegments, 'tubular segments');
-
-          const buildTubeGeoAtOffset = (zOffset) => {
-            const tubeGeo = new THREE.TubeGeometry(
-              curve,
-              tubularSegments,
-              tubeRadius,
-              8,
-              true
-            );
-            tubeGeo.translate(0, 0, extrudeDepth + zOffset);
-            return tubeGeo;
-          };
-
-          if (${showOuterEdges}) {
-            const outerLayerCount = Math.max(2, Math.floor(extrudeDepth * 8));
-            const outerStep = outerLayerCount > 1 ? extrudeDepth / (outerLayerCount - 1) : extrudeDepth;
-            const outerMaterial = new THREE.MeshBasicMaterial({
-              color: 0x000000,
-              depthWrite: false,
-              depthTest: false,
-            });
-
-            for (let layer = 0; layer < outerLayerCount; layer++) {
-              const zOffset = -layer * outerStep;
-              const outerMesh = new THREE.Mesh(buildTubeGeoAtOffset(zOffset), outerMaterial);
-              outerMesh.renderOrder = -999; // Draw before everything else to sit visually behind.
-              outerMesh.position.set(textMesh.position.x, textMesh.position.y, 0);
-              group.add(outerMesh);
-            }
-          }
-
-          if (${showEdgeTubes}) {
-            const tubeMaterial = new THREE.MeshBasicMaterial({
-              color: 0x000000,
-              depthWrite: false,
-              depthTest: false,
-            });
-            const tubeMesh = new THREE.Mesh(buildTubeGeoAtOffset(0), tubeMaterial);
-            tubeMesh.renderOrder = 999; // Force to render last/on top.
-            // The loop points are in geometry space (already includes the z=-4 translation)
-            // So we only need to apply the x,y offset from textMesh
-            tubeMesh.position.set(textMesh.position.x, textMesh.position.y, 0);
-            console.log('Tube mesh', idx, 'position x:', tubeMesh.position.x, 'y:', tubeMesh.position.y, 'z:', tubeMesh.position.z);
-            group.add(tubeMesh);
-          }
+        // Determine which letters to show based on VISIBLE_LETTERS
+        const visibilityMask = letterGeometries.map((_, idx) => {
+          if (VISIBLE_LETTERS === 'all') return true;
+          if (Array.isArray(VISIBLE_LETTERS)) return VISIBLE_LETTERS.includes(idx);
+          return false;
         });
-        `
-          : ''}
+        const visibleCount = visibilityMask.filter(v => v).length;
+        console.log('Showing', visibleCount, 'of', letterGeometries.length, 'letters');
+
+        // Process each letter geometry
+        letterGeometries.forEach((letterGeo, letterIdx) => {
+          if (!visibilityMask[letterIdx]) {
+            console.log('Hiding letter', letterIdx);
+            return; // Skip hidden letters
+          }
+
+          // Main text mesh for this letter
+          const textMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+          });
+          const letterMesh = new THREE.Mesh(letterGeo, textMaterial);
+          letterMesh.position.set(0, 0, 0);
+          group.add(letterMesh);
+
+          // Edge tubes and optional outer edge layers based on front-face loops
+          ${showEdgeTubes || showOuterEdges
+            ? `
+          const frontEdgeLoops = extractFrontEdgeLoops(letterGeo);
+          console.log('Letter', letterIdx, ': Found', frontEdgeLoops.length, 'loops');
+          frontEdgeLoops.forEach((loop, loopIdx) => {
+            if (loop.length < 2) return;
+            
+            const curve = new EdgeCurve(loop);
+            const tubeRadius = ${edgeTubeRadius};
+            const tubularSegments = 1000;
+
+            const buildTubeGeoAtOffset = (zOffset, tubeRadius) => {
+              const tubeGeo = new THREE.TubeGeometry(
+                curve,
+                tubularSegments,
+                tubeRadius,
+                8,
+                true
+              );
+              tubeGeo.translate(0, 0, extrudeDepth + zOffset);
+              return tubeGeo;
+            };
+
+            if (${showOuterEdges}) {
+              const outerLayerCount = Math.max(2, Math.floor(extrudeDepth * 8));
+              const outerStep = outerLayerCount > 1 ? extrudeDepth / (outerLayerCount - 1) : extrudeDepth;
+              const outerMaterial = new THREE.MeshBasicMaterial({
+                color: 0x000000,
+                depthWrite: false,
+                depthTest: false,
+              });
+
+              for (let layer = 0; layer < outerLayerCount; layer++) {
+                const zOffset = -layer * outerStep;
+                const outerMesh = new THREE.Mesh(buildTubeGeoAtOffset(zOffset, tubeRadius * 2), outerMaterial);
+                outerMesh.renderOrder = -999;
+                outerMesh.position.set(letterMesh.position.x, letterMesh.position.y, 0);
+                group.add(outerMesh);
+              }
+            }
+
+            if (${showEdgeTubes}) {
+              const tubeMaterial = new THREE.MeshBasicMaterial({
+                color: 0x000000,
+                depthWrite: false,
+                depthTest: false,
+              });
+              const tubeMesh = new THREE.Mesh(buildTubeGeoAtOffset(0, tubeRadius), tubeMaterial);
+              tubeMesh.renderOrder = 999;
+              tubeMesh.position.set(letterMesh.position.x, letterMesh.position.y, 0);
+              group.add(tubeMesh);
+            }
+          });
+          `
+            : ''}
+        });
 
         scene.add(group);
 
@@ -485,6 +755,222 @@ function generateThreeJSHTML(options: CoverOptions): string {
         window.renderComplete = true;
       }
     );
+
+    function createMultilineTextGeometry(text, textOptions) {
+      const lines = String(text).split('\\n');
+      const lineCount = Math.max(1, lines.length);
+      const lineHeight = textOptions.size * 1.2;
+      const topBaselineY = ((lineCount - 1) * lineHeight) / 2;
+      const letterGeometries = [];
+
+      for (let lineIdx = 0; lineIdx < lineCount; lineIdx++) {
+        const line = lines[lineIdx];
+        if (!line || line.length === 0) continue;
+
+        // Create geometries for each character to get their individual widths
+        const charInfos = [];
+        for (let charIdx = 0; charIdx < line.length; charIdx++) {
+          const char = line[charIdx];
+          if (char === ' ') {
+            charInfos.push({ char, geometry: null, width: textOptions.size * 0.5 });
+            continue;
+          }
+
+          const charGeo = new TextGeometry(char, textOptions);
+          charGeo.computeBoundingBox();
+          const bbox = charGeo.boundingBox;
+          const width = bbox.max.x - bbox.min.x;
+          charInfos.push({ char, geometry: charGeo, width, bbox });
+        }
+
+        // Calculate total line width to center it
+        const totalWidth = charInfos.reduce((sum, info) => sum + info.width, 0);
+        const lineStartX = -totalWidth / 2;
+
+        // Position each character
+        let currentX = lineStartX;
+        const baselineY = topBaselineY - lineIdx * lineHeight;
+
+        for (const info of charInfos) {
+          if (info.geometry) {
+            const charGeo = info.geometry.clone();
+            // Position relative to its own bbox
+            charGeo.translate(currentX - info.bbox.min.x, baselineY, 0);
+            letterGeometries.push(charGeo);
+          }
+          currentX += info.width;
+        }
+      }
+
+      // Track which triangles belong to which letter
+      const letterTriangleRanges = [];
+      let triangleOffset = 0;
+      
+      for (const geo of letterGeometries) {
+        const triCount = Math.floor(geo.attributes.position.count / 3);
+        letterTriangleRanges.push({
+          start: triangleOffset,
+          end: triangleOffset + triCount
+        });
+        triangleOffset += triCount;
+      }
+
+      return {
+        mergedGeo: mergeGeometries(letterGeometries),
+        letterTriangleRanges
+      };
+    }
+
+    function mergeGeometries(geometries) {
+      if (!geometries || geometries.length === 0) {
+        return new THREE.BufferGeometry();
+      }
+
+      const nonIndexed = geometries.map((g) => (g.index ? g.toNonIndexed() : g));
+      let totalPositionValues = 0;
+      for (const g of nonIndexed) {
+        totalPositionValues += g.attributes.position.array.length;
+      }
+
+      const mergedPositions = new Float32Array(totalPositionValues);
+      let positionOffset = 0;
+      for (const g of nonIndexed) {
+        const source = g.attributes.position.array;
+        mergedPositions.set(source, positionOffset);
+        positionOffset += source.length;
+      }
+
+      const merged = new THREE.BufferGeometry();
+      merged.setAttribute('position', new THREE.BufferAttribute(mergedPositions, 3));
+      merged.computeVertexNormals();
+      merged.computeBoundingBox();
+      merged.computeBoundingSphere();
+      return merged;
+    }
+
+    function separateByTriangleRanges(geometry, letterTriangleRanges) {
+      const position = geometry.attributes.position;
+      const letterGeometries = [];
+
+      for (const range of letterTriangleRanges) {
+        const triCount = range.end - range.start;
+        const vertexCount = triCount * 3;
+        const positions = new Float32Array(vertexCount * 3);
+
+        for (let i = 0; i < triCount; i++) {
+          const srcTri = range.start + i;
+          for (let v = 0; v < 3; v++) {
+            const srcIdx = srcTri * 3 + v;
+            const dstIdx = i * 3 + v;
+            positions[dstIdx * 3 + 0] = position.getX(srcIdx);
+            positions[dstIdx * 3 + 1] = position.getY(srcIdx);
+            positions[dstIdx * 3 + 2] = position.getZ(srcIdx);
+          }
+        }
+
+        const letterGeo = new THREE.BufferGeometry();
+        letterGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        letterGeo.computeVertexNormals();
+        letterGeometries.push(letterGeo);
+      }
+
+      return letterGeometries;
+    }
+
+    function separateIntoConnectedComponents(geometry) {
+      const position = geometry.attributes.position;
+      const triangleCount = Math.floor(position.count / 3);
+      
+      if (triangleCount === 0) return [];
+
+      // Build vertex connectivity - which triangles share vertices
+      const vertexToTriangles = new Map();
+      
+      for (let t = 0; t < triangleCount; t++) {
+        for (let v = 0; v < 3; v++) {
+          const idx = t * 3 + v;
+          const x = position.getX(idx);
+          const y = position.getY(idx);
+          const z = position.getZ(idx);
+          const key = x.toFixed(6) + ',' + y.toFixed(6) + ',' + z.toFixed(6);
+          
+          if (!vertexToTriangles.has(key)) {
+            vertexToTriangles.set(key, []);
+          }
+          vertexToTriangles.get(key).push(t);
+        }
+      }
+
+      // Build triangle adjacency graph
+      const triangleNeighbors = new Map();
+      for (let t = 0; t < triangleCount; t++) {
+        triangleNeighbors.set(t, new Set());
+      }
+
+      for (const triangles of vertexToTriangles.values()) {
+        // All triangles sharing this vertex are neighbors
+        for (let i = 0; i < triangles.length; i++) {
+          for (let j = i + 1; j < triangles.length; j++) {
+            triangleNeighbors.get(triangles[i]).add(triangles[j]);
+            triangleNeighbors.get(triangles[j]).add(triangles[i]);
+          }
+        }
+      }
+
+      // Find connected components using flood fill
+      const visited = new Set();
+      const components = [];
+
+      for (let seed = 0; seed < triangleCount; seed++) {
+        if (visited.has(seed)) continue;
+
+        const component = [];
+        const queue = [seed];
+        visited.add(seed);
+
+        while (queue.length > 0) {
+          const t = queue.shift();
+          component.push(t);
+
+          for (const neighbor of triangleNeighbors.get(t)) {
+            if (!visited.has(neighbor)) {
+              visited.add(neighbor);
+              queue.push(neighbor);
+            }
+          }
+        }
+
+        components.push(component);
+      }
+
+      console.log('Found', components.length, 'connected components');
+
+      // Create separate geometries for each component
+      const componentGeometries = [];
+      
+      for (const component of components) {
+        const vertexCount = component.length * 3;
+        const positions = new Float32Array(vertexCount * 3);
+        
+        for (let i = 0; i < component.length; i++) {
+          const t = component[i];
+          for (let v = 0; v < 3; v++) {
+            const srcIdx = t * 3 + v;
+            const dstIdx = i * 3 + v;
+            positions[dstIdx * 3 + 0] = position.getX(srcIdx);
+            positions[dstIdx * 3 + 1] = position.getY(srcIdx);
+            positions[dstIdx * 3 + 2] = position.getZ(srcIdx);
+          }
+        }
+
+        const compGeo = new THREE.BufferGeometry();
+        compGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        compGeo.computeVertexNormals();
+        componentGeometries.push(compGeo);
+      }
+
+      return componentGeometries;
+    }
 
     // Helper function to extract front face edge loops (one per letter/hole)
     function warpGeometryToEdgeLines(geometry, config) {

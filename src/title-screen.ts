@@ -16,6 +16,46 @@ import { lerp, twopi } from 'util/math-util'
 
 let _isHilbertEnabled = false
 
+export type TitleCoverLetterAsset = {
+  img: HTMLImageElement
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+type AnimatedCoverLetter = TitleCoverLetterAsset & {
+  phase: number
+  freq: number
+  scaleAmp: number
+  driftPx: number
+}
+
+const _coverLetters: Array<AnimatedCoverLetter> = []
+let _coverSourceWidth = 1
+let _coverSourceHeight = 1
+
+export function setTitleCoverLetters(
+  letters: Array<TitleCoverLetterAsset>,
+  sourceWidth: number,
+  sourceHeight: number,
+) {
+  _coverLetters.length = 0
+  _coverSourceWidth = Math.max(1, sourceWidth)
+  _coverSourceHeight = Math.max(1, sourceHeight)
+
+  letters.forEach((letter, index) => {
+    const seed = index + 1
+    _coverLetters.push({
+      ...letter,
+      phase: seed * 1.618,
+      freq: 0.7 + (seed % 7) * 0.08,
+      scaleAmp: 0.015 + (seed % 5) * 0.003,
+      driftPx: 0.4 + (seed % 6) * 0.2,
+    })
+  })
+}
+
 export function onTitleScreenResize() {
   // Graphics.onResize()
 
@@ -26,9 +66,8 @@ export function onTitleScreenResize() {
 
 export class TitleScreen {
   static update(_dt: number) {
-    return
+    // getScaledPattern('diamond-a')
 
-    getScaledPattern('diamond-a')
     // _updateTitleSim(dt)
     // _drawTitleSim()
 
@@ -39,15 +78,62 @@ export class TitleScreen {
     const w = cvs.width, h = cvs.height
     ctx.clearRect(0, 0, w, h)
 
-    _drawQuantum()
-    if (_isHilbertEnabled) {
-      _drawWooPong()
-    }
+    // draw animated cover letters
+    _drawAnimatedCoverLetters(ctx, w, h)
+
+    // _drawQuantum()
+    // if (_isHilbertEnabled) {
+    //   _drawWooPong()
+    // }
   }
 
   static startHilbert() {
     _isHilbertEnabled = true
   }
+}
+
+const _drawOrder = [6, 5, 4, 3, 2, 1, 0, 13, 12, 11, 10, 9, 8, 7 ]
+
+function _drawAnimatedCoverLetters(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  if (_coverLetters.length === 0) return
+
+  const inset = 0.08
+  const targetW = w * (1 - inset * 2)
+  const targetH = h * (1 - inset * 2)
+  const coverScale = Math.min(targetW / _coverSourceWidth, targetH / _coverSourceHeight)
+  const drawW = _coverSourceWidth * coverScale
+  const drawH = _coverSourceHeight * coverScale
+  const drawX = (w - drawW) * 0.5
+  const drawY = (h - drawH) * 0.5
+
+  const t = performance.now() * 1e-3
+  for (const letterIndex of _drawOrder) {
+    const letter = _coverLetters[letterIndex]
+    const baseX = drawX + letter.x * coverScale
+    const baseY = drawY + letter.y * coverScale
+    const baseW = letter.width * coverScale
+    const baseH = letter.height * coverScale
+    const centerX = baseX + baseW * 0.5
+    const centerY = baseY + baseH * 0.5
+
+    const wobble = t * letter.freq + letter.phase
+    const driftX = Math.sin(wobble) * letter.driftPx * window.devicePixelRatio
+    const driftY = Math.cos(wobble * 1.13) * letter.driftPx * 0.8 * window.devicePixelRatio
+    const letterScale = 1 + Math.sin(wobble * 1.21) * letter.scaleAmp
+
+    ctx.save()
+    ctx.translate(centerX + driftX, centerY + driftY)
+    ctx.scale(letterScale, letterScale)
+    ctx.drawImage(letter.img, -baseW * 0.5, -baseH * 0.5, baseW, baseH)
+    ctx.restore()
+  }
+
+  // Debug: outline full inscribed cover bounds.
+  ctx.save()
+  ctx.strokeStyle = '#00ff66'
+  ctx.lineWidth = Math.max(1, Math.floor(window.devicePixelRatio))
+  ctx.strokeRect(drawX, drawY, drawW, drawH)
+  ctx.restore()
 }
 
 type Body = {

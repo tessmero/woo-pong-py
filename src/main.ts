@@ -17,12 +17,27 @@ import type { ShapeName } from 'simulation/shapes'
 import { SHAPE_PATHS } from 'simulation/shapes'
 import { Gui } from 'guis/gui'
 import { Graphics } from 'gfx/graphics'
-import { onTitleScreenResize, TitleScreen } from 'title-screen'
+import { onTitleScreenResize, setTitleCoverLetters, TitleScreen } from 'title-screen'
 import { BASE_FONT_SIZE } from 'gfx/canvas-text-util'
 import { shortVibrate } from 'util/vibrate'
 import { loadAllSounds } from 'audio/sound-asset-loader'
 import { loadAllButtonImages } from 'gfx/icons-gfx-util'
 import { initListeners } from 'input'
+
+type CoverLetterManifestEntry = {
+  index: number
+  file: string
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+type CoverLetterManifest = {
+  width: number
+  height: number
+  letters: Array<CoverLetterManifestEntry>
+}
 
 // Utility to ensure Rubik font is loaded before drawing
 async function ensureRubikFontLoaded() {
@@ -39,6 +54,34 @@ async function ensureRubikFontLoaded() {
       console.error('[RubikFont] Error loading font:', e)
     }
   }
+}
+
+async function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = () => reject(new Error(`Failed to load image: ${src}`))
+    img.src = src
+  })
+}
+
+async function loadTitleCoverLetters() {
+  const response = await fetch('cover-images/cover-letters-manifest.json', { cache: 'no-store' })
+  if (!response.ok) {
+    throw new Error(`Failed to fetch cover letter manifest: ${response.status}`)
+  }
+
+  const manifest = await response.json() as CoverLetterManifest
+  const sorted = [...manifest.letters].sort((a, b) => a.index - b.index)
+  const letters = await Promise.all(sorted.map(async letter => ({
+    img: await loadImage(`cover-images/${letter.file}`),
+    x: letter.x,
+    y: letter.y,
+    width: letter.width,
+    height: letter.height,
+  })))
+
+  setTitleCoverLetters(letters, manifest.width, manifest.height)
 }
 
 let isTitleAnimPlaying = true
@@ -73,6 +116,14 @@ async function main() {
     iframe.addEventListener('load', () => resolve())
     iframe.src = 'title-screen.html'
   })
+
+  try {
+    await loadTitleCoverLetters()
+  }
+  catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('Unable to load title cover letters:', e)
+  }
 
   // start background animation loop
   onTitleScreenResize()
