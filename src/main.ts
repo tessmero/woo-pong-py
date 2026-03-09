@@ -23,6 +23,9 @@ import {
   setTitleCoverLetters,
   setTitleCoverParts,
   TitleScreen,
+  advanceTitlePage,
+  setPageSourceDimensions,
+  initTitleScreenFlipCanvas,
 } from 'title-screen'
 import { BASE_FONT_SIZE } from 'gfx/canvas-text-util'
 import { shortVibrate } from 'util/vibrate'
@@ -88,6 +91,7 @@ async function loadTitleCoverImages() {
   })))
 
   setTitleCoverLetters(letters, manifest.width, manifest.height)
+  setPageSourceDimensions(manifest.width, manifest.height)
 
   const [partA, partB, background] = await Promise.all([
     loadImage('cover-images/cover-sphere-part-a.png'),
@@ -164,6 +168,7 @@ async function main() {
   titleScreenElem.classList.remove('hidden')
   pinballWizard.loadingState = 'K'
 
+  initTitleScreenFlipCanvas()
   initListeners(pinballWizard)
   pinballWizard.loadingState = 'D'
   // Scrollbar.initListeners(pinballWizard)
@@ -188,6 +193,13 @@ async function main() {
 
   startBtn.onclick = async () => {
     shortVibrate(pinballWizard)
+
+    // Check if we should advance to next page or start the game
+    const shouldStartGame = advanceTitlePage()
+    if (!shouldStartGame) {
+      // Page advanced, wait for next click
+      return
+    }
 
     // document.documentElement.requestFullscreen()
     await pinballWizard.init()

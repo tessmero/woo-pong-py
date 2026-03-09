@@ -124,3 +124,13 @@ export const PATTERN = {
 } as const satisfies ImpManifest
 export type PatternName = (typeof PATTERN.NAMES)[number]
 export const SHUFFLED_PATTERN_NAMES = [...PATTERN.NAMES]
+
+// title screen pages
+export const PAGE = {
+  NAMES: [
+    'cover-page',
+    'test-page',
+  ],
+  SOURCES: ['src/title-screen/pages/imp/**/*.ts'],
+} as const satisfies ImpManifest
+export type PageName = (typeof PAGE.NAMES)[number]
