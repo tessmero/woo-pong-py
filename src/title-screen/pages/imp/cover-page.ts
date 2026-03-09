@@ -21,7 +21,7 @@ type AnimatedCoverLetter = TitleCoverLetterAsset & {
   driftPx: number
 }
 
-type TitleCoverPartAsset = {
+type TitleCoverForegroundAsset = {
   img: HTMLImageElement
 }
 
@@ -32,8 +32,7 @@ export class CoverPage extends Page {
   }
 
   private coverBackground: HTMLImageElement | null = null
-  private coverPartA: HTMLImageElement | null = null
-  private coverPartB: HTMLImageElement | null = null
+  private coverForeground: HTMLImageElement | null = null
   private coverLetters: Array<AnimatedCoverLetter> = []
   private coverSourceWidth = 1
   private coverSourceHeight = 1
@@ -42,9 +41,8 @@ export class CoverPage extends Page {
     this.coverBackground = bg
   }
 
-  setCoverParts(parts: { partA: TitleCoverPartAsset, partB: TitleCoverPartAsset }) {
-    this.coverPartA = parts.partA.img
-    this.coverPartB = parts.partB.img
+  setCoverForeground(foreground: TitleCoverForegroundAsset) {
+    this.coverForeground = foreground.img
   }
 
   setCoverLetters(
@@ -68,6 +66,11 @@ export class CoverPage extends Page {
     })
   }
 
+  override getStartButtonPosition(): { x: number, y: number } | null {
+    // Position button at 50% width, 88.4% height (centered horizontally, near bottom)
+    return { x: 0.5, y: 0.884 }
+  }
+
   draw(ctx: CanvasRenderingContext2D, w: number, h: number): void {
     ctx.clearRect(0, 0, w, h)
 
@@ -85,17 +88,12 @@ export class CoverPage extends Page {
       ctx.drawImage(this.coverBackground, drawX, drawY, drawW, drawH)
     }
 
-    // Draw part B (back layer)
-    if (this.coverPartB) {
-      ctx.drawImage(this.coverPartB, drawX, drawY, drawW, drawH)
-    }
-
     // Draw animated letters
     this._drawAnimatedLetters(ctx, drawX, drawY, drawW, drawH, coverScale)
 
-    // Draw part A (front layer)
-    if (this.coverPartA) {
-      ctx.drawImage(this.coverPartA, drawX, drawY, drawW, drawH)
+    // Draw foreground (front layer)
+    if (this.coverForeground) {
+      ctx.drawImage(this.coverForeground, drawX, drawY, drawW, drawH)
     }
   }
 

@@ -33,6 +33,14 @@ export abstract class Page {
    */
   abstract draw(ctx: CanvasRenderingContext2D, w: number, h: number): void
 
+  /**
+   * Get start button position in normalized coordinates (0-1 range).
+   * @returns { x, y } where x and y are fractions of page width/height, or null to hide button
+   */
+  getStartButtonPosition(): { x: number, y: number } | null {
+    return null // default: no button
+  }
+
   // static registry pattern
   protected constructor() {}
   static _registry: Partial<Record<PageName, Registered>> = {}

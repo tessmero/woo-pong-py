@@ -13,6 +13,11 @@ export class TestPage extends Page {
     Page.register('test-page', () => new TestPage())
   }
 
+  override getStartButtonPosition(): { x: number, y: number } | null {
+    // Position button at 50% width, 85% height (centered horizontally, near bottom)
+    return { x: 0.5, y: 0.85 }
+  }
+
   draw(ctx: CanvasRenderingContext2D, w: number, h: number): void {
     // Get shared page dimensions
     const dims = getPageSourceDimensions()

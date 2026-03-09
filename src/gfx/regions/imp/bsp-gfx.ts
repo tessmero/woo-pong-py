@@ -70,6 +70,24 @@ const centerDiskPos = lerp2(diskPositions[4], diskPositions[5])
 const diskStaggerOrder = Array.from({ length: DISK_COUNT }, (_, i) => i)
 shuffle(diskStaggerOrder)
 
+// Animation properties for disks (similar to animated letters)
+type AnimatedDisk = {
+  phase: number
+  freq: number
+  scaleAmp: number
+  driftPx: number
+}
+const diskAnimations: Array<AnimatedDisk> = []
+for (let i = 0; i < DISK_COUNT; i++) {
+  const seed = i + 1
+  diskAnimations.push({
+    phase: seed * 1.618,
+    freq: 0.7 + (seed % 7) * 0.08,
+    scaleAmp: 0.015 + (seed % 5) * 0.003,
+    driftPx: 0.4 + (seed % 6) * 0.2,
+  })
+}
+
 const _drawOffset: Vec2 = [0, 0]
 let _drawScale = 1
 
@@ -157,6 +175,8 @@ export class BspGfx extends GfxRegion {
 
     if (!pw.activeSim) return
 
+    const t = performance.now() * 1e-3
+
     // draw balls
     for (let i = 0; i < DISK_COUNT; i++) {
       const disk = pw.activeSim.disks[i]
@@ -174,9 +194,15 @@ export class BspGfx extends GfxRegion {
         diskAnim = 1
       }
 
+      const anim = diskAnimations[i]
+      const wobble = t * anim.freq + anim.phase
+      const driftX = 1 * Math.sin(wobble) * anim.driftPx
+      const driftY = 1 * Math.cos(wobble * 1.13) * anim.driftPx * 0.8
+      const scaleAdjust = 1 + 1 * Math.sin(wobble * 1.21) * anim.scaleAmp
+
       drawDisk(ctx, disk,
-        x0 + x * scale, y0 + y * scale,
-        scale * diskAnim,
+        x0 + (x + driftX) * scale, y0 + (y + driftY) * scale,
+        scale * diskAnim * scaleAdjust,
         i === pw.selectedDiskIndex,
         i === pw.hoveredDiskIndex,
         i === pw.followDiskIndex,
@@ -198,6 +224,8 @@ function drawDisk(
 ) {
   const [x0, y0] = disk.displayPos.map(v => -v / VALUE_SCALE)
   const scaledRadius = diskRadius * scale
+
+  ctx.imageSmoothingEnabled = true
 
   ctx.save()
   ctx.translate(x0 * scale, y0 * scale)

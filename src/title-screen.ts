@@ -18,7 +18,7 @@ export type TitleCoverLetterAsset = {
   height: number
 }
 
-export type TitleCoverPartAsset = {
+export type TitleCoverForegroundAsset = {
   img: HTMLImageElement
 }
 
@@ -91,6 +91,8 @@ class PageBook {
       if (this.currentPageIndex < this.pageNames.length) {
         const newPage = this.getCurrentPage()
         newPage.init()
+        // Trigger button reposition for the new page
+        onTitleScreenResize()
       }
     }
   }
@@ -112,7 +114,7 @@ class PageBook {
 
     // Translate to center, rotate around center, then slide right
     ctx.translate(centerX, centerY)
-    ctx.rotate(rotationAngle)
+    // ctx.rotate(rotationAngle)
     ctx.translate(slideDistance, 0)
     ctx.drawImage(flipCvs, -centerX, -centerY)
 
@@ -129,14 +131,45 @@ class PageBook {
 
 const _pageBook = new PageBook()
 
+let _startButton: HTMLElement | null = null
+
+export function setTitleScreenStartButton(button: HTMLElement) {
+  _startButton = button
+}
+
+export function getTitleCanvasTransform(): {
+  scale: number
+  drawX: number
+  drawY: number
+  drawW: number
+  drawH: number
+} | null {
+  const { cvs } = getTitleScreenCanvas()
+  const parent = cvs.parentElement
+  if (!parent) return null
+
+  const parentWidth = parent.clientWidth
+  const parentHeight = parent.clientHeight
+  const dims = getPageSourceDimensions()
+  const targetW = parentWidth
+  const targetH = parentHeight
+  const scale = Math.min(targetW / dims.width, targetH / dims.height)
+  const drawW = dims.width * scale
+  const drawH = dims.height * scale
+  const drawX = (parentWidth - drawW) * 0.5
+  const drawY = (parentHeight - drawH) * 0.5
+
+  return { scale, drawX, drawY, drawW, drawH }
+}
+
 export function setTitleCoverBackground(bg: HTMLImageElement) {
   const coverPage = Page.create('cover-page') as any
   coverPage.setCoverBackground(bg)
 }
 
-export function setTitleCoverParts(parts: { partA: TitleCoverPartAsset, partB: TitleCoverPartAsset }) {
+export function setTitleCoverForeground(foreground: TitleCoverForegroundAsset) {
   const coverPage = Page.create('cover-page') as any
-  coverPage.setCoverParts(parts)
+  coverPage.setCoverForeground(foreground)
 }
 
 export function setTitleCoverLetters(
@@ -150,6 +183,39 @@ export function setTitleCoverLetters(
 
 export function onTitleScreenResize() {
   // Graphics.onResize()
+  
+  // Position start button to align with current page's preferred position
+  if (_startButton) {
+    const currentPage = _pageBook.getCurrentPage()
+    const buttonPos = currentPage.getStartButtonPosition()
+    
+    if (!buttonPos) {
+      // Hide button if page doesn't want it
+      _startButton.style.display = 'none'
+      return
+    }
+    
+    _startButton.style.display = ''
+    
+    const transform = getTitleCanvasTransform()
+    if (transform) {
+      const { scale, drawX, drawY } = transform
+      const dims = getPageSourceDimensions()
+      
+      // Transform normalized coordinates to screen coordinates
+      const buttonCenterX = drawX + buttonPos.x * dims.width * scale
+      const buttonCenterY = drawY + buttonPos.y * dims.height * scale
+      
+      // Get button dimensions (or use default if not yet measured)
+      const buttonWidth = _startButton.offsetWidth || 120
+      const buttonHeight = _startButton.offsetHeight || 40
+      
+      // Position button centered on the target point
+      _startButton.style.position = 'absolute'
+      _startButton.style.left = `${buttonCenterX - buttonWidth / 2}px`
+      _startButton.style.top = `${buttonCenterY - buttonHeight / 2}px`
+    }
+  }
 }
 
 export function advanceTitlePage(): boolean {
@@ -181,7 +247,7 @@ export class TitleScreen {
     const parentHeight = parent.clientHeight
     
     // Calculate drawable region bounds to set canvas size appropriately
-    const inset = 0.08
+    const inset = 0//0.08
     const dims = getPageSourceDimensions()
     const targetW = parentWidth * (1 - inset * 2)
     const targetH = parentHeight * (1 - inset * 2)
@@ -249,16 +315,17 @@ export function getFlipCanvas():
     cvs.width = mainCvs.width
     cvs.height = mainCvs.height
     
-    // Style for debugging - visible, floating on left, doesn't affect layout
-    cvs.style.position = 'fixed'
-    cvs.style.left = '10px'
-    cvs.style.top = '10px'
-    cvs.style.pointerEvents = 'none'
-    cvs.style.zIndex = '10000'
-    cvs.style.border = '2px solid red'
-    cvs.style.opacity = '0.8'
-    cvs.style.maxWidth = '200px'
-    cvs.style.maxHeight = '280px'
+    cvs.style.display = 'none'
+    // // Style for debugging - visible, floating on left, doesn't affect layout
+    // cvs.style.position = 'fixed'
+    // cvs.style.left = '10px'
+    // cvs.style.top = '10px'
+    // cvs.style.pointerEvents = 'none'
+    // cvs.style.zIndex = '10000'
+    // cvs.style.border = '2px solid red'
+    // cvs.style.opacity = '0.8'
+    // cvs.style.maxWidth = '200px'
+    // cvs.style.maxHeight = '280px'
     
     document.body.appendChild(cvs)
     

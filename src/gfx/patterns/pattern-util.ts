@@ -74,7 +74,7 @@ export function createHexDotsPattern(
 
 export function createHorizontalStripePattern(
   stripeColor = '#000', bgColor = '#fff',
-  stripeHeight = 1, gapHeight = 1,
+  stripeHeight = 256, gapHeight = 256,
 ) {
   const totalHeight = stripeHeight + gapHeight
   const patternCanvas = makeCanvas(1, totalHeight)
@@ -99,8 +99,8 @@ export function createHorizontalStripePattern(
 export function createVerticalStripePattern(
   stripeColor = '#000',
   bgColor = '#fff',
-  stripeWidth = 1,
-  gapWidth = 1,
+  stripeWidth = 256,
+  gapWidth = 256,
 ) {
   const totalWidth = stripeWidth + gapWidth
   const patternCanvas = makeCanvas(totalWidth, 1)

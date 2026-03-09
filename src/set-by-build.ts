@@ -134,12 +134,12 @@ export const LUT_BLOBS = {
     "hash": "96e8a511fe636fbd052d1355a392228aae013fca786c0a79eae461f082fb4640"
   },
   "RACE_LUT": {
-    "url": "luts/race-lut-3bbc7dca47bf6016.bin",
-    "hash": "3bbc7dca47bf6016256cfcca4fe046aa6eeba891fb0cf8fb81923fe5b158d95e"
+    "url": "luts/race-lut-d0b93be160943868.bin",
+    "hash": "d0b93be160943868e5a573b9f9673888f765bddbb0a202d7c37f7ace89107faa"
   },
   "LOOP_LUT": {
-    "url": "luts/loop-lut-3ace5251ba110f2d.bin",
-    "hash": "3ace5251ba110f2d451590af3a58e698e0ce0556454876a1b4c17a19dedb3537"
+    "url": "luts/loop-lut-d1791b93c8d3a6ad.bin",
+    "hash": "d1791b93c8d3a6ad4ec2addb6b3021cf348dd176a243dcc9d6f3e8777d7c8ebf"
   }
 };
 

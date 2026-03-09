@@ -158,6 +158,11 @@ a:not(.imgLink) {
     display: inline-block;
 }
 
+#start-button {
+    /* Disable transitions on position properties for instant repositioning */
+    transition: background-color ease 50ms, transform ease 50ms !important;
+}
+
 
 a:not(.imgLink):hover {
     background-color: rgb(204, 204, 204);

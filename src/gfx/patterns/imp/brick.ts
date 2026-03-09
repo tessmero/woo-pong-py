@@ -13,7 +13,7 @@ export class Brick extends Pattern {
   }
 
   public override getScale(): number {
-    return 1 / 4
+    return 1 / 20
   }
 
   protected override getCanvas(): HTMLCanvasElement | null {
@@ -24,7 +24,7 @@ export class Brick extends Pattern {
 function createBrickPattern(
   color1 = '#000',
   color2 = '#fff',
-  resolution = 100,
+  resolution = 512,
 ) {
   const patternCanvas = makeCanvas(resolution, resolution)
   const ctx = patternCanvas.getContext('2d') as CanvasRenderingContext2D

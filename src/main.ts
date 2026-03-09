@@ -21,7 +21,8 @@ import {
   onTitleScreenResize,
   setTitleCoverBackground,
   setTitleCoverLetters,
-  setTitleCoverParts,
+  setTitleCoverForeground,
+  setTitleScreenStartButton,
   TitleScreen,
   advanceTitlePage,
   setPageSourceDimensions,
@@ -93,16 +94,12 @@ async function loadTitleCoverImages() {
   setTitleCoverLetters(letters, manifest.width, manifest.height)
   setPageSourceDimensions(manifest.width, manifest.height)
 
-  const [partA, partB, background] = await Promise.all([
+  const [foreground, background] = await Promise.all([
     loadImage('cover-images/cover-sphere-part-a.png'),
-    loadImage('cover-images/cover-sphere-part-b.png'),
-    loadImage('cover-images/cover-background.png'),
+    loadImage('cover-images/cover-background-combined.png'),
   ])
 
-  setTitleCoverParts({
-    partA: { img: partA },
-    partB: { img: partB },
-  })
+  setTitleCoverForeground({ img: foreground })
   setTitleCoverBackground(background)
 }
 
@@ -140,12 +137,17 @@ async function main() {
   })
 
   // start background animation loop
-  onTitleScreenResize()
   requestAnimationFrame(titleAnimLoop)
 
   // bind start button in title screen
   const inner = iframe.contentDocument as Document
   const startBtn = inner.getElementById('start-button') as HTMLElement
+
+  // Register button with title screen module so it can be positioned
+  setTitleScreenStartButton(startBtn)
+  
+  // Position button initially
+  onTitleScreenResize()
 
   // const layeredViewport = new LayeredViewport()
   gfxConfig.refreshConfig()

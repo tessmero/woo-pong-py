@@ -8,10 +8,18 @@ import { mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 
 import { dirname, join } from 'path'
 import puppeteer from 'puppeteer'
 import { createCanvas, loadImage } from 'canvas'
+import { PATTERN, type PatternName } from '../src/imp-names'
+import { Pattern } from '../src/gfx/patterns/pattern'
+import { VALUE_SCALE } from '../src/simulation/constants'
+import { requireImps } from './require-imps'
 
 const SCALE = 5
 const COVER_WIDTH = 420 * SCALE
 const COVER_HEIGHT = 588 * SCALE
+const BSP_PATTERN_SCALE_MULT = 20 / VALUE_SCALE
+
+// Register pattern implementations for build-time usage.
+requireImps(PATTERN)
 
 interface CoverOptions {
   topText?: string
@@ -39,6 +47,9 @@ interface CoverOptions {
   sphereSliceY1?: number
   sphereSliceX2?: number
   sphereSliceY2?: number
+  // Which outlined sphere spiral to render in generateOutlinedSphereHTML.
+  // 'both' keeps current behavior, 'first' renders j=0 only, 'second' renders j=1 only.
+  outlinedSphereSpiral?: 'both' | 'first' | 'second'
 }
 
 type LetterManifestEntry = {
@@ -81,8 +92,39 @@ async function main() {
 
   console.log('Creating outlined sphere image...')
   const spherePath = join(coverImgDir, 'cover-sphere.png')
-  await createOutlinedSphereImage(spherePath, baseOptions)
-  await splitOutlinedSphereImageByLine(spherePath, baseOptions)
+  const sphereSpiralAPath = join(coverImgDir, 'cover-sphere-spiral-a.png')
+  const sphereSpiralBPath = join(coverImgDir, 'cover-sphere-spiral-b.png')
+  const combinedBackgroundPath = join(coverImgDir, 'cover-background-combined.png')
+
+  await createOutlinedSphereImage(spherePath, {
+    ...baseOptions,
+    outlinedSphereSpiral: 'both',
+  })
+  await createOutlinedSphereImage(sphereSpiralAPath, {
+    ...baseOptions,
+    outlinedSphereSpiral: 'first',
+  })
+  await createOutlinedSphereImage(sphereSpiralBPath, {
+    ...baseOptions,
+    outlinedSphereSpiral: 'second',
+  })
+
+  console.log('Applying fill patterns to outlined sphere images...')
+  await applyFillPatternToOutlinedSphereImage(spherePath, 'hex-a')
+  await applyFillPatternToOutlinedSphereImage(sphereSpiralAPath, 'hex-a')
+  await applyFillPatternToOutlinedSphereImage(sphereSpiralBPath, 'diamond-a')
+
+  // Slice only the first spiral into animated front/back parts.
+  await splitOutlinedSphereImageByLine(sphereSpiralAPath, baseOptions)
+
+  console.log('Creating combined background image...')
+  await createCombinedCoverBackground(
+    combinedBackgroundPath,
+    join(coverImgDir, 'cover-background.png'),
+    join(coverImgDir, 'cover-sphere-part-b.png'),
+    sphereSpiralBPath,
+  )
+
 
   return
 
@@ -437,7 +479,7 @@ async function createBackgroundImage(outPath: string, options: CoverOptions): Pr
   }
 
   // Draw ordered list
-  _drawOrderedList(ctx as unknown as CanvasRenderingContext2D)
+  // _drawOrderedList(ctx as unknown as CanvasRenderingContext2D)
 
   // Save to file
   mkdirSync(dirname(outPath), { recursive: true })
@@ -650,6 +692,98 @@ async function createOutlinedSphereImage(outPath: string, options: CoverOptions)
   console.log(`  wrote outlined sphere image: ${outPath}`)
 }
 
+const outlinedSpherePatternDarkMaskCache = new Map<string, Uint8Array>()
+
+async function applyFillPatternToOutlinedSphereImage(imagePath: string, patternName: PatternName): Promise<void> {
+  const image = await loadImage(imagePath)
+  const width = image.width
+  const height = image.height
+
+  const canvas = createCanvas(width, height)
+  const ctx = canvas.getContext('2d')
+  ctx.clearRect(0, 0, width, height)
+  ctx.drawImage(image, 0, 0)
+
+  const imageData = ctx.getImageData(0, 0, width, height)
+  const data = imageData.data
+  const darkMap = _getOutlinedSpherePatternDarkMap(patternName, width, height)
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = (y * width + x) * 4
+      const a = data[idx + 3]
+      if (a < 100) continue
+
+      const r = data[idx]
+      const g = data[idx + 1]
+      const b = data[idx + 2]
+
+      // Only apply patterns on bright grayscale pixels (white/gray sphere regions).
+      if (!_isPatternTargetPixel(r, g, b)) continue
+
+      const isBlackPatternRegion = darkMap[y * width + x] === 1
+      if (!isBlackPatternRegion) continue
+
+      const shade = 0.8
+      data[idx] = Math.round(r * shade)
+      data[idx + 1] = Math.round(g * shade)
+      data[idx + 2] = Math.round(b * shade)
+    }
+  }
+
+  ctx.putImageData(imageData, 0, 0)
+  writeFileSync(imagePath, canvas.toBuffer('image/png'))
+  // eslint-disable-next-line no-console
+  console.log(`  applied fill pattern: ${imagePath}`)
+}
+
+function _isPatternTargetPixel(r: number, g: number, b: number): boolean {
+  // const maxChannelDelta = Math.max(
+  //   Math.abs(r - g),
+  //   Math.abs(r - b),
+  //   Math.abs(g - b),
+  // )
+  // if (maxChannelDelta > 16) return false
+
+  const brightness = (r + g + b) // / 3
+  return brightness >= 30
+}
+
+function _getOutlinedSpherePatternDarkMap(patternName: PatternName, width: number, height: number): Uint8Array {
+  const cacheKey = `${patternName}:${width}x${height}`
+  const cached = outlinedSpherePatternDarkMaskCache.get(cacheKey)
+  if (cached) return cached
+
+  const darkMap = new Uint8Array(width * height)
+  const tile = Pattern.getCanvas(patternName)
+
+  if (tile) {
+    const patternScale = BSP_PATTERN_SCALE_MULT * VALUE_SCALE * Pattern.create(patternName).getScale()
+    const safeScale = Math.max(1e-4, patternScale)
+    const tileCtx = tile.getContext('2d') as CanvasRenderingContext2D
+    const tileW = Math.max(1, tile.width)
+    const tileH = Math.max(1, tile.height)
+    const tileData = tileCtx.getImageData(0, 0, tileW, tileH).data
+
+    for (let y = 0; y < height; y++) {
+      const sy = ((Math.floor(y / safeScale) % tileH) + tileH) % tileH
+      for (let x = 0; x < width; x++) {
+        const sx = ((Math.floor(x / safeScale) % tileW) + tileW) % tileW
+        const off = (sy * tileW + sx) * 4
+        darkMap[y * width + x] = (tileData[off] + tileData[off + 1] + tileData[off + 2]) < 128 * 3 ? 1 : 0
+      }
+    }
+  }
+  else {
+    // Solid fallback for non-canvas patterns (e.g. 'black', 'white').
+    const solidIsDark = patternName === 'black'
+    darkMap.fill(solidIsDark ? 1 : 0)
+  }
+
+  outlinedSpherePatternDarkMaskCache.set(cacheKey, darkMap)
+  return darkMap
+}
+
 async function splitOutlinedSphereImageByLine(imagePath: string, options: CoverOptions): Promise<void> {
   const {
     sphereSliceX1 = COVER_WIDTH * 0.33,
@@ -765,11 +899,41 @@ async function splitOutlinedSphereImageByLine(imagePath: string, options: CoverO
   console.log(`  wrote sphere debug image: ${debugPath}`)
 }
 
+async function createCombinedCoverBackground(
+  outPath: string,
+  backgroundPath: string,
+  firstSpiralBackPath: string,
+  secondSpiralPath: string,
+): Promise<void> {
+  const [backgroundImage, firstSpiralBackImage, secondSpiralImage] = await Promise.all([
+    loadImage(backgroundPath),
+    loadImage(firstSpiralBackPath),
+    loadImage(secondSpiralPath),
+  ])
+
+  const width = backgroundImage.width
+  const height = backgroundImage.height
+  const canvas = createCanvas(width, height)
+  const ctx = canvas.getContext('2d')
+
+  // Preserve cover page layering while reducing runtime draw calls.
+  ctx.clearRect(0, 0, width, height)
+  ctx.drawImage(backgroundImage, 0, 0, width, height)
+  ctx.drawImage(firstSpiralBackImage, 0, 0, width, height)
+  ctx.drawImage(secondSpiralImage, 0, 0, width, height)
+
+  mkdirSync(dirname(outPath), { recursive: true })
+  writeFileSync(outPath, canvas.toBuffer('image/png'))
+  // eslint-disable-next-line no-console
+  console.log(`  wrote combined background image: ${outPath}`)
+}
+
 function generateOutlinedSphereHTML(options: CoverOptions): string {
   const {
     usePerspective = false,
     extrusionViewAngleX = 45,
     extrusionViewAngleY = 31,
+    outlinedSphereSpiral = 'both',
   } = options
 
   return `<!DOCTYPE html>
@@ -842,18 +1006,23 @@ function generateOutlinedSphereHTML(options: CoverOptions): string {
     renderer.setClearColor(0x000000, 0);
     document.body.appendChild(renderer.domElement);
 
-    const frontLight = new THREE.DirectionalLight(0xffffff, 2.2);
-    frontLight.position.set(0, 0, 200);
-    scene.add(frontLight);
+    const lightA = new THREE.DirectionalLight('rgb(255, 174, 238)', 2.2);
+    lightA.position.set(-2000,-2000, 100);
+    scene.add(lightA);
 
-    const fillLight = new THREE.AmbientLight(0xffffff, 0.55);
+    const lightB = new THREE.DirectionalLight('rgb(84, 253, 253)', 2.2);
+    lightB.position.set(1000, 1000, 100);
+    scene.add(lightB);
+
+    const fillLight = new THREE.AmbientLight(0xffffff, 2);
     scene.add(fillLight);
 
     const sphereGroup = new THREE.Group();
-    const sphereCount = 1000;
-    const diskCount = 1000;
+    const SPIRAL_SELECTION = ${JSON.stringify(outlinedSphereSpiral)};
+    const sphereCount = 10000;
+    const diskCount = 10000;
     const headRadius = 1;
-    const tailRadius = 0.08;
+    const tailRadius = 0;
     const spiralTurns = 2;
     const spiralSpread = 19;
     const tailDepth = -28;
@@ -863,8 +1032,13 @@ function generateOutlinedSphereHTML(options: CoverOptions): string {
 
     const sphereGeometry = new THREE.SphereGeometry(1, 20, 14);
     const diskGeometry = new THREE.CircleGeometry(1, 32);
-    const sphereMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
+    const sphereMaterialA = new THREE.MeshStandardMaterial({
+      color: 'rgb(255,255,255)',
+      roughness: 0.32,
+      metalness: 0.0,
+    });
+    const sphereMaterialB = new THREE.MeshStandardMaterial({
+      color: 'rgb(255,255,255)',
       roughness: 0.32,
       metalness: 0.0,
     });
@@ -872,28 +1046,36 @@ function generateOutlinedSphereHTML(options: CoverOptions): string {
 
     for (let i = 0; i < sphereCount; i++) {
       const p = i / Math.max(1, sphereCount - 1);
-      const radius = THREE.MathUtils.lerp(tailRadius, headRadius, Math.pow(p, 1.8));
-      const angle = 1.5 + p * spiralTurns * Math.PI * 2;
-      const orbit = spiralSpread * Math.pow(p,.5);// * Math.pow(1 - p, 1.12);
-      const x = Math.cos(angle) * orbit;
-      const y = Math.sin(angle) * orbit * verticalSquash + (1-p) * 10;
-      const z = THREE.MathUtils.lerp(tailDepth, headDepth, p);
-      const center = new THREE.Vector3(x, y, z);
+      const baseAngle = 1.5 + p * spiralTurns * Math.PI * 2;
+      for (let j = 0; j < 2; j++) {
+        if (SPIRAL_SELECTION === 'first' && j !== 0) continue;
+        if (SPIRAL_SELECTION === 'second' && j !== 1) continue;
+        const angle = baseAngle + j * Math.PI
+        const radius = THREE.MathUtils.lerp(tailRadius, headRadius, Math.pow(p, 1.8));
+        let orbit = spiralSpread * Math.pow(p,.5);// * Math.pow(1 - p, 1.12);
+        if( j === 1 ){
+          orbit *= .5
+        }
+        const x = Math.cos(angle) * orbit;
+        const y = Math.sin(angle) * orbit * verticalSquash + (1-p) * 10;
+        const z = THREE.MathUtils.lerp(tailDepth, headDepth, p);
+        const center = new THREE.Vector3(x, y, z);
 
-      // Each outlined segment is a white sphere with a slightly larger disk facing the camera.
-      if (i < diskCount) {
-        const disk = new THREE.Mesh(diskGeometry, diskMaterial);
-        disk.position.copy(center);
-        disk.lookAt(camera.position);
-        disk.scale.setScalar(radius * 1.2);
-        disk.position.addScaledVector(cameraDir, -Math.max(0.06, radius * 0.05));
-        sphereGroup.add(disk);
+        // Each outlined segment is a white sphere with a slightly larger disk facing the camera.
+        if (i < diskCount) {
+          const disk = new THREE.Mesh(diskGeometry, diskMaterial);
+          disk.position.copy(center);
+          disk.lookAt(camera.position);
+          disk.scale.setScalar(radius * 1.2);
+          disk.position.addScaledVector(cameraDir, -Math.max(0.06, radius * 0.05));
+          sphereGroup.add(disk);
+        }
+
+        const sphere = new THREE.Mesh(sphereGeometry, j ? sphereMaterialA : sphereMaterialB );
+        sphere.position.copy(center);
+        sphere.scale.setScalar(radius);
+        sphereGroup.add(sphere);
       }
-
-      const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-      sphere.position.copy(center);
-      sphere.scale.setScalar(radius);
-      sphereGroup.add(sphere);
     }
 
     scene.add(sphereGroup);
@@ -1025,7 +1207,7 @@ function generateThreeJSHTML(options: CoverOptions): string {
     // scene.add(leftLight);
 
     // blue bottom
-    const bottomLight = new THREE.DirectionalLight('rgb(131,165,224)', 5);
+    const bottomLight = new THREE.DirectionalLight('rgb(56,221,221)', 5);
     bottomLight.position.set(500, -1000, 0);
     scene.add(bottomLight);
 
