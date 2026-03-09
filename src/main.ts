@@ -17,7 +17,13 @@ import type { ShapeName } from 'simulation/shapes'
 import { SHAPE_PATHS } from 'simulation/shapes'
 import { Gui } from 'guis/gui'
 import { Graphics } from 'gfx/graphics'
-import { onTitleScreenResize, setTitleCoverLetters, TitleScreen } from 'title-screen'
+import {
+  onTitleScreenResize,
+  setTitleCoverBackground,
+  setTitleCoverLetters,
+  setTitleCoverParts,
+  TitleScreen,
+} from 'title-screen'
 import { BASE_FONT_SIZE } from 'gfx/canvas-text-util'
 import { shortVibrate } from 'util/vibrate'
 import { loadAllSounds } from 'audio/sound-asset-loader'
@@ -65,7 +71,7 @@ async function loadImage(src: string): Promise<HTMLImageElement> {
   })
 }
 
-async function loadTitleCoverLetters() {
+async function loadTitleCoverImages() {
   const response = await fetch('cover-images/cover-letters-manifest.json', { cache: 'no-store' })
   if (!response.ok) {
     throw new Error(`Failed to fetch cover letter manifest: ${response.status}`)
@@ -82,6 +88,18 @@ async function loadTitleCoverLetters() {
   })))
 
   setTitleCoverLetters(letters, manifest.width, manifest.height)
+
+  const [partA, partB, background] = await Promise.all([
+    loadImage('cover-images/cover-sphere-part-a.png'),
+    loadImage('cover-images/cover-sphere-part-b.png'),
+    loadImage('cover-images/cover-background.png'),
+  ])
+
+  setTitleCoverParts({
+    partA: { img: partA },
+    partB: { img: partB },
+  })
+  setTitleCoverBackground(background)
 }
 
 let isTitleAnimPlaying = true
@@ -117,14 +135,6 @@ async function main() {
     iframe.src = 'title-screen.html'
   })
 
-  try {
-    await loadTitleCoverLetters()
-  }
-  catch (e) {
-    // eslint-disable-next-line no-console
-    console.error('Unable to load title cover letters:', e)
-  }
-
   // start background animation loop
   onTitleScreenResize()
   requestAnimationFrame(titleAnimLoop)
@@ -135,8 +145,6 @@ async function main() {
 
   // const layeredViewport = new LayeredViewport()
   gfxConfig.refreshConfig()
-
-  await loadAllButtonImages()
 
   const pinballWizard = new PinballWizard()
   pinballWizard.loadingState = 'B'
@@ -164,9 +172,9 @@ async function main() {
   await _initAssets(startBtn)
   TitleScreen.startHilbert()
 
-  // for (const elem of inner.getElementsByClassName('toHide')) {
-  //   elem.setAttribute('style', 'opacity:0')
-  // }
+  for (const elem of inner.getElementsByClassName('toHide')) {
+    elem.setAttribute('style', 'opacity:0')
+  }
   pinballWizard.loadingState = 'F'
   startBtn.innerHTML = 'START'
   pinballWizard.loadingState = 'G'
@@ -247,7 +255,7 @@ async function _initAssets(loadingLabel: HTMLElement) {
   const isComputing = false
   const t0 = performance.now()
 
-  const totalTasks = Object.keys(SHAPE_PATHS).length + (LUT.NAMES.length - 1)
+  const totalTasks = 3 + Object.keys(SHAPE_PATHS).length + (LUT.NAMES.length - 1)
   let tasksFinished = 0
 
   function finishTask() {
@@ -255,6 +263,12 @@ async function _initAssets(loadingLabel: HTMLElement) {
     const pctFinished = Math.floor(100 * tasksFinished / totalTasks)
     if (loadingLabel) loadingLabel.innerHTML = `LOADING (${pctFinished}%)`
   }
+
+  await loadTitleCoverImages()
+  finishTask()
+
+  await loadAllButtonImages()
+  finishTask()
 
   await loadAllSounds()
   finishTask()
@@ -286,5 +300,5 @@ async function _initAssets(loadingLabel: HTMLElement) {
   }
 
   // eslint-disable-next-line no-console
-  console.log(`assets loaded in ${(performance.now() - t0).toFixed(0)}ms`)
+  console.log(`${tasksFinished} (expected ${totalTasks}) assets loaded in ${(performance.now() - t0).toFixed(0)}ms`)
 }

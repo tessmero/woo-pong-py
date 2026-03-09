@@ -174,7 +174,6 @@ export class Graphics {
     // this._mainCtx.lineCap = 'butt'
 
     this._contexts['bsp'].imageSmoothingEnabled = false
-
     this._contexts['settings'].imageSmoothingEnabled = false
 
     this._rootRect = _root
