@@ -32,6 +32,8 @@ const rightGutterWidthPx = gutterPx
 export const CANVASES = ['main', 'bsp', 'settings', 'start'] as const
 export type CanvasName = (typeof CANVASES)[number]
 
+const dummyRect: Rectangle = [10, 10, 10, 10]
+
 export class Graphics {
   static get cvs() { return this._canvases['main'] }
 
@@ -140,7 +142,7 @@ export class Graphics {
     if (pw) {
       // compute scrollbar bounds
       const levelShape = [...(pw?.activeSim?.level?.bounds ?? [1, 1, 1, 1])]
-      levelShape[3] = 15 * 100 * VALUE_SCALE //*= 1.2
+      levelShape[3] = 15 * 100 * VALUE_SCALE //* = 1.2
       const scrollbarHeight = Math.min(600, window.innerHeight)
       scrollbarWidth = scrollbarHeight * (levelShape[2] / levelShape[3])
       simCssWidth = rootWidthPx - scrollbarWidth - leftGutterWidthPx - midGutterWidthPx - rightGutterWidthPx
@@ -270,7 +272,7 @@ export class Graphics {
 
   static draw(pw: PinballWizard) {
     // needed for some reason
-    drawRoundedRect(this._contexts['main'], [10, 10, 10, 10], false, false, true)
+    drawRoundedRect(this._contexts['main'], dummyRect, false, false, true)
 
     // draw all regions
     Object.keys(this._dpRegions).forEach((gfxName) => {

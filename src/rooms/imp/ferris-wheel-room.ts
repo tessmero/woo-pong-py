@@ -82,12 +82,11 @@ export class FerrisWheelRoom extends Room {
       const toothDelta = N_FERRIS_FRAMES / N_FERRIS_CARS
       for (let toothIndex = 0; toothIndex < N_FERRIS_CARS; toothIndex++) {
         const i = (frameIndex + toothDelta * toothIndex) % N_FERRIS_FRAMES
-        const offset: Vec2 = [this.gearLut.get(i, 'x'), this.gearLut.get(i, 'y')]
 
-        const cx = centerPos[0] + offset[0] * 2
+        const cx = centerPos[0] + this.gearLut.get(i, 'x') * 2
         const rx = cx - this.circleLut.maxOffsetX
 
-        const cy = centerPos[1] + offset[1] * 2
+        const cy = centerPos[1] + this.gearLut.get(i, 'y') * 2
         const ry = cy - this.circleLut.maxOffsetY
         const tooth = wheel.teeth[toothIndex]
         if (!Number.isInteger(cx)) throw new Error('cx must be an integer')

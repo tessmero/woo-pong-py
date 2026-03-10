@@ -1,4 +1,3 @@
-
 /**
  * @file disk-disk-lut.ts
  *
@@ -162,4 +161,3 @@ export function collideDisks(a: Disk, b: Disk): boolean {
 
   return true
 }
-

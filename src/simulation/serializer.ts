@@ -33,7 +33,7 @@ export class Serializer {
 
   // called when periodic checkpoint times are reached
   static passCheckpoint(sim: Simulation) {
-    if (sim.isLoop) return // no regular checkpoints for loop sim
+    // if (sim.isLoop) return // no regular checkpoints for loop sim
     const seed = Perturbations.getSeed()
 
     // assert this is a valid step to serialize the sim

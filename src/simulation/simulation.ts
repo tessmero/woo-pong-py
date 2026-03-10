@@ -17,7 +17,6 @@ import { START_LAYOUT_POSVELS } from 'rooms/start-layouts/set-by-build'
 import { step } from './sim-step'
 import { Serializer } from './serializer'
 import { StartLayout } from 'rooms/start-layouts/start-layout'
-import { LoopRoom } from 'rooms/imp/loop-room'
 
 const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 5; i++) {
@@ -72,30 +71,19 @@ export class Simulation {
   get stepCount() { return this._stepCount }
   public t: number// = this._stepCount * STEP_DURATION
 
-  constructor(seed: number,
-    public readonly isLoop = false,
-  ) {
+  constructor(seed: number) {
     // console.log(`construct simulation with starting seed ${seed}`)
 
     Perturbations.setSeed(seed)
 
-    this.level = new Level(isLoop)
+    this.level = new Level()
     const sl = StartLayout.create(this.level.startLayout)
-    if (isLoop) {
-      this._stepCount = 0
-    } else {
-      const animDur = sl.animDur
-      this._stepCount = -animDur
-    }
+    const animDur = sl.animDur
+    this._stepCount = -animDur
     this.t = this._stepCount * STEP_DURATION
     // console.log(`got anim dur ${animDur} for start layout ${this.level.startLayout}`)
 
-    const posVels = isLoop
-      ? [[
-          [LoopRoom.startState[0], LoopRoom.startState[1]],
-          [LoopRoom.startState[2], LoopRoom.startState[3]],
-        ]]
-      : START_LAYOUT_POSVELS[this.level.startLayout]
+    const posVels = START_LAYOUT_POSVELS[this.level.startLayout]
 
     // let diskIndex = 0
     // this.disks = _disks.map((pars) => {
@@ -139,14 +127,10 @@ export class Simulation {
 
     // advance the simulation by n steps
     while (this._stepCount < this.targetStepCount) {
-      if (this.isLoop) {
-      }
-      else {
-        // prevent advancing past branch time without a ball selected
-        if ((!isBranchingAllowed) && (this.stepCount >= (STEPS_BEFORE_BRANCH - 2))) {
-          this.t = STEP_DURATION * (STEPS_BEFORE_BRANCH - 2)
-          break
-        }
+      // prevent advancing past branch time without a ball selected
+      if ((!isBranchingAllowed) && (this.stepCount >= (STEPS_BEFORE_BRANCH - 2))) {
+        this.t = STEP_DURATION * (STEPS_BEFORE_BRANCH - 2)
+        break
       }
 
       step(this)

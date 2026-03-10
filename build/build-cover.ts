@@ -7,7 +7,7 @@
 import { mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
 import puppeteer from 'puppeteer'
-import { createCanvas, loadImage } from 'canvas'
+import { createCanvas, loadImage, registerFont } from 'canvas'
 import { PATTERN, type PatternName } from '../src/imp-names'
 import { Pattern } from '../src/gfx/patterns/pattern'
 import { BUTTON_ICONS, type IconName } from '../src/gfx/button-icons'
@@ -25,6 +25,8 @@ requireImps(PATTERN)
 interface CoverOptions {
   topText?: string
   topTextSkew?: number // Horizontal skew in pixels across text height (default: 0)
+  bottomText?: string
+  bottomTextSkew?: number // Horizontal skew in pixels across text height (default: 0)
   mainText: string
   showEdgeTubes?: boolean
   showOuterEdges?: boolean
@@ -33,8 +35,8 @@ interface CoverOptions {
   perspectiveTilt?: number // Degrees to tilt text back (default: 15)
   perspectiveWidthFactor?: number // Horizontal compression/expansion in isometric mode (default: 1)
   // Extrusion appearance control
-  extrusionViewAngleX?: number // Horizontal viewing angle in degrees: 0=front, positive=right, negative=left (default: 45)
-  extrusionViewAngleY?: number // Vertical viewing angle in degrees: 0=level, positive=above, negative=below (default: 35)
+  extrusionViewAngleX?: number //  angle in degrees: 0=front, positive=right, negative=left (default: 45)
+  extrusionViewAngleY?: number //   angle in degrees: 0=level, positive=above, negative=below (default: 35)
   // Line segments for edge alignment (defaults create horizontal lines)
   topEdgeLeftY?: number // Y position of top edge at left side
   topEdgeRightY?: number // Y position of top edge at right side
@@ -65,11 +67,19 @@ type LetterManifestEntry = {
 const coverImgDir = join(__dirname, '..', 'public', 'cover-images')
 const coverCircleIconCache = new Map<IconName, Awaited<ReturnType<typeof loadImage>>>()
 
+// Register TTF font for bottom text
+registerFont(join(__dirname, '..', 'public', 'fonts', 'Chewy-Regular.ttf'), { family: 'MyFont' })
+
 async function main() {
   const baseOptions = {
     topText: 'MASTER THE MULTIVERSE!',
     topTextSkew: -20,
+
     mainText: 'QUANTUM\nWOO PONG',
+
+    bottomText: 'THE MYSTICAL PHYSICS CONUNDRUM',
+    bottomTextSkew: -15,
+
     usePerspective: true,
     perspectiveTilt: 35,
     perspectiveWidthFactor: 1.8,
@@ -89,10 +99,10 @@ async function main() {
   }
 
   // Create background image with top text and frame
-  console.log('Creating background image with top text and frame...')
+  // console.log('Creating background image with top text and frame...')
   await createBackgroundImage(join(coverImgDir, 'cover-background.png'), baseOptions)
 
-  console.log('Creating outlined sphere image...')
+  // console.log('Creating outlined sphere image...')
   const spherePath = join(coverImgDir, 'cover-sphere.png')
   const sphereSpiralAPath = join(coverImgDir, 'cover-sphere-spiral-a.png')
   const sphereSpiralBPath = join(coverImgDir, 'cover-sphere-spiral-b.png')
@@ -111,7 +121,7 @@ async function main() {
     outlinedSphereSpiral: 'second',
   })
 
-  console.log('Applying fill patterns to outlined sphere images...')
+  // console.log('Applying fill patterns to outlined sphere images...')
   await applyFillPatternToOutlinedSphereImage(spherePath, 'hex-a')
   await applyFillPatternToOutlinedSphereImage(sphereSpiralAPath, 'hex-a')
   await applyFillPatternToOutlinedSphereImage(sphereSpiralBPath, 'diamond-a')
@@ -119,7 +129,7 @@ async function main() {
   // Slice only the first spiral into animated front/back parts.
   await splitOutlinedSphereImageByLine(sphereSpiralAPath, baseOptions)
 
-  console.log('Creating combined background image...')
+  // console.log('Creating combined background image...')
   await createCombinedCoverBackground(
     combinedBackgroundPath,
     join(coverImgDir, 'cover-background.png'),
@@ -127,11 +137,10 @@ async function main() {
     sphereSpiralBPath,
   )
 
-
   return
 
   // First, create full text image
-  console.log('Creating full text image...')
+  // console.log('Creating full text image...')
   await createCoverImage(join(coverImgDir, 'cover-full.png'), {
     ...baseOptions,
     visibleLetters: 'all',
@@ -139,13 +148,13 @@ async function main() {
 
   // Get the letter count by creating a temporary image to count components
   const letterCount = await getLetterCount(baseOptions)
-  console.log(`Found ${letterCount} letter components, creating individual images...`)
+  // console.log(`Found ${letterCount} letter components, creating individual images...`)
 
   // Create one image per letter
   clearOldLetterImages()
   const letterManifest: Array<LetterManifestEntry> = []
   for (let i = 0; i < letterCount; i++) {
-    console.log(`Creating image for letter ${i + 1}/${letterCount}...`)
+    // console.log(`Creating image for letter ${i + 1}/${letterCount}...`)
     const rawLetterPath = join(coverImgDir, `cover-letter-${i}.png`)
     await createCoverImage(rawLetterPath, {
       ...baseOptions,
@@ -157,7 +166,7 @@ async function main() {
     const trimmedPath = join(coverImgDir, trimmedName)
     writeFileSync(trimmedPath, trim.png)
     unlinkSync(rawLetterPath)
-    console.log(`  wrote trimmed letter image: ${trimmedPath}`)
+    // console.log(`  wrote trimmed letter image: ${trimmedPath}`)
 
     letterManifest.push({
       index: i,
@@ -169,7 +178,7 @@ async function main() {
     })
   }
 
-  console.log('Recombining individual letter images...')
+  // console.log('Recombining individual letter images...')
   await createRecombinedImage(join(coverImgDir, 'cover-recombined.png'))
 
   const manifestPath = join(coverImgDir, 'cover-letters-manifest.json')
@@ -181,9 +190,9 @@ async function main() {
       letters: letterManifest,
     }, null, 2)}\n`,
   )
-  console.log(`  wrote manifest: ${manifestPath}`)
+  // console.log(`  wrote manifest: ${manifestPath}`)
 
-  console.log('Done!')
+  // console.log('Done!')
 }
 
 function clearOldLetterImages(): void {
@@ -195,7 +204,13 @@ function clearOldLetterImages(): void {
   }
 }
 
-async function trimImageToAlphaBounds(imagePath: string): Promise<{ png: Buffer, x: number, y: number, width: number, height: number }> {
+async function trimImageToAlphaBounds(imagePath: string): Promise<{
+  png: Buffer
+  x: number
+  y: number
+  width: number
+  height: number
+}> {
   const browser = await puppeteer.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -358,17 +373,17 @@ async function createRecombinedImage(outPath: string): Promise<void> {
       ctx.drawImage(img, image.x, image.y)
     }
 
-    ;(window as any).renderComplete = true
+    ;(window as any).renderComplete = true // eslint-disable-line
   }, letterImages)
 
-  await page.waitForFunction(() => (window as any).renderComplete === true, { timeout: 10000 })
+  await page.waitForFunction(() => (window as any).renderComplete === true, { timeout: 10000 }) // eslint-disable-line
   const screenshot = await page.screenshot({ type: 'png', omitBackground: true })
 
   await browser.close()
 
   mkdirSync(dirname(outPath), { recursive: true })
   writeFileSync(outPath, screenshot)
-  console.log(`  wrote recombined image: ${outPath}`)
+  // console.log(`  wrote recombined image: ${outPath}`)
 }
 
 async function getLetterCount(options: CoverOptions): Promise<number> {
@@ -385,7 +400,7 @@ async function getLetterCount(options: CoverOptions): Promise<number> {
   const html = generateThreeJSHTML({ ...options, visibleLetters: 'all' })
   await page.setContent(html)
 
-  await page.waitForFunction(() => (window as any).letterCount !== undefined, { timeout: 10000 })
+  await page.waitForFunction(() => (window as any).letterCount !== undefined, { timeout: 10000 })  // eslint-disable-line
   const letterCount = await page.evaluate(() => (window as any).letterCount)
 
   await browser.close()
@@ -393,10 +408,10 @@ async function getLetterCount(options: CoverOptions): Promise<number> {
   return letterCount
 }
 
-main().catch(console.error)
+main().catch(console.error) // eslint-disable-line no-console
 
 async function createBackgroundImage(outPath: string, options: CoverOptions): Promise<void> {
-  const { topText = '', topTextSkew = 0 } = options
+  const { topText = '', topTextSkew = 0, bottomText = '', bottomTextSkew = 0 } = options
   const backgroundPath = join(__dirname, 'background.png')
 
   // Create canvas
@@ -484,6 +499,64 @@ async function createBackgroundImage(outPath: string, options: CoverOptions): Pr
     }
   }
 
+  // Draw bottom text
+  if (bottomText) {
+    ctx.font = `${18 * SCALE}px MyFont`
+    ctx.textAlign = 'right'
+    ctx.textBaseline = 'middle'
+
+    const textY = COVER_HEIGHT * 0.975
+    const textX = COVER_WIDTH - 17 * SCALE
+    ctx.fillStyle = 'white'
+
+    if (Math.abs(bottomTextSkew) < 0.001) {
+      ctx.fillText(bottomText, textX, textY)
+      ctx.strokeStyle = 'black'
+      ctx.lineWidth = 0.5 * SCALE
+      ctx.strokeText(bottomText, textX, textY)
+    }
+    else {
+      const metrics = ctx.measureText(bottomText)
+      const textW = Math.ceil(Math.max(1, metrics.width + 8 * SCALE))
+      const textH = Math.ceil(26 * SCALE)
+
+      // Draw the non-skewed text to a temporary canvas first.
+      const tempCanvas = createCanvas(textW, textH)
+      const tempCtx = tempCanvas.getContext('2d')
+      tempCtx.font = ctx.font
+      tempCtx.textAlign = 'center'
+      tempCtx.textBaseline = 'middle'
+      tempCtx.fillStyle = 'white'
+      tempCtx.strokeStyle = 'black'
+      tempCtx.lineWidth = 0.5 * SCALE
+      tempCtx.fillText(bottomText, textW / 2, textH / 2)
+      tempCtx.strokeText(bottomText, textW / 2, textH / 2)
+
+      const topLeftX = Math.round(COVER_WIDTH - textW - 20 * SCALE)
+      const topLeftY = Math.round(textY - textH / 2)
+      const sliceHeight = 1
+
+      // Re-draw in thin horizontal slices with progressive horizontal offset.
+      for (let y = 0; y < textH; y += sliceHeight) {
+        const skewOffset = (y / textH - 0.5) * bottomTextSkew
+        ctx.drawImage(
+          tempCanvas,
+          0,
+          y,
+          textW,
+          sliceHeight,
+          topLeftX + skewOffset,
+          topLeftY + y,
+          textW,
+          sliceHeight,
+        )
+      }
+    }
+  }
+
+  // Draw miniature bullet list in bottom-left corner
+  // await _drawMiniatureBulletList(ctx as unknown as CanvasRenderingContext2D)
+
   // Draw ordered list
   // _drawOrderedList(ctx as unknown as CanvasRenderingContext2D)
 
@@ -493,6 +566,69 @@ async function createBackgroundImage(outPath: string, options: CoverOptions): Pr
   writeFileSync(outPath, buffer)
   // eslint-disable-next-line no-console
   console.log(`  wrote background image: ${outPath}`)
+}
+
+async function _drawMiniatureBulletList(ctx: CanvasRenderingContext2D): Promise<void> {
+  const bullets = [
+    { iconName: 'eye' as const, text: 'Observe' },
+    { iconName: 'choose' as const, text: 'Choose' },
+    { iconName: 'grow' as const, text: 'Grow' },
+  ]
+
+  const startX = 20 * SCALE
+  const startY = COVER_HEIGHT - 70 * SCALE
+  const itemHeight = 18 * SCALE
+  const iconSize = 12 * SCALE
+  const textMargin = 8 * SCALE
+  const fontSize = 12 * SCALE
+  const padding = 8 * SCALE
+
+  ctx.font = `bold ${fontSize}px sans-serif`
+  ctx.textAlign = 'left'
+  ctx.textBaseline = 'middle'
+
+  // Measure text to determine frame width
+  let maxTextWidth = 0
+  for (const item of bullets) {
+    const metrics = ctx.measureText(item.text)
+    maxTextWidth = Math.max(maxTextWidth, metrics.width)
+  }
+
+  // Draw frame rectangle
+  const frameLeft = startX - padding
+  const frameTop = startY - itemHeight / 2 - padding
+  const frameWidth = iconSize + textMargin + maxTextWidth + padding * 2
+  const frameHeight = itemHeight * bullets.length + padding * 2
+  const frameStroke = 1.5
+
+  ctx.fillStyle = 'white'
+  ctx.fillRect(frameLeft, frameTop, frameWidth, frameHeight)
+  ctx.strokeStyle = 'black'
+  ctx.lineWidth = frameStroke
+  ctx.strokeRect(frameLeft, frameTop, frameWidth, frameHeight)
+
+  // Draw bullets
+  ctx.fillStyle = '#444'
+
+  for (let i = 0; i < bullets.length; i++) {
+    const item = bullets[i]
+    const y = startY + i * itemHeight
+
+    // Draw icon
+    const icon = await _getCoverCircleIcon(item.iconName)
+    if (icon) {
+      ctx.drawImage(
+        icon as unknown as CanvasImageSource,
+        startX,
+        y - iconSize / 2,
+        iconSize,
+        iconSize,
+      )
+    }
+
+    // Draw text
+    ctx.fillText(item.text, startX + iconSize + textMargin, y)
+  }
 }
 
 async function _drawCircleIcon(
@@ -602,7 +738,7 @@ function _drawRingTextWithPixelMapping(
       if (relAngle > angleSpan) continue
 
       let u = relAngle / angleSpan
-      if (!isTop) u = 1 - u  // Flip horizontal coordinate for bottom text
+      if (!isTop) u = 1 - u // Flip horizontal coordinate for bottom text
       let v = (r - innerRadius) / ringThickness
       if (!isTop) v = 1 - v // Flip vertical coordinate for bottom text
       if (v < 0 || v > 1) continue
@@ -651,7 +787,7 @@ function _drawOrderedList(ctx: CanvasRenderingContext2D): void {
   const startY = COVER_HEIGHT * 0.4
   const itemSpacing = COVER_HEIGHT * 0.1
   const leftMargin = COVER_WIDTH * 0.1
-  const maxWidth = COVER_WIDTH * 0.8
+  // const maxWidth = COVER_WIDTH * 0.8
 
   ctx.textAlign = 'left'
   ctx.textBaseline = 'top'
@@ -685,12 +821,12 @@ function _drawOrderedList(ctx: CanvasRenderingContext2D): void {
 }
 
 async function createCoverImage(outPath: string, options: CoverOptions): Promise<void> {
-  const {
-    topText = '',
-    mainText,
-    showEdgeTubes = false,
-    edgeTubeRadius = 0.4,
-  } = options
+  // const {
+  //   topText = '',
+  //   mainText,
+  //   showEdgeTubes = false,
+  //   edgeTubeRadius = 0.4,
+  // } = options
 
   const browser = await puppeteer.launch({
     headless: true,
@@ -700,8 +836,8 @@ async function createCoverImage(outPath: string, options: CoverOptions): Promise
   const page = await browser.newPage()
 
   // Enable console logging from the page
-  page.on('console', msg => console.log('PAGE LOG:', msg.text()))
-  page.on('pageerror', error => console.error('PAGE ERROR:', error))
+  // page.on('console', msg => console.log('PAGE LOG:', msg.text()))
+  // page.on('pageerror', error => console.error('PAGE ERROR:', error))
 
   await page.setViewport({ width: COVER_WIDTH, height: COVER_HEIGHT })
 
@@ -711,7 +847,7 @@ async function createCoverImage(outPath: string, options: CoverOptions): Promise
 
   // Wait for rendering to complete
   await page.waitForFunction(
-    () => (window as any).renderComplete === true,
+    () => (window as any).renderComplete === true, // eslint-disable-line @typescript-eslint/no-explicit-any
     { timeout: 120000 },
   )
 
@@ -740,7 +876,7 @@ async function createOutlinedSphereImage(outPath: string, options: CoverOptions)
   await page.setContent(html)
 
   await page.waitForFunction(
-    () => (window as any).renderComplete === true,
+    () => (window as any).renderComplete === true, // eslint-disable-line @typescript-eslint/no-explicit-any
     { timeout: 120000 },
   )
 
@@ -1081,8 +1217,8 @@ function generateOutlinedSphereHTML(options: CoverOptions): string {
 
     const sphereGroup = new THREE.Group();
     const SPIRAL_SELECTION = ${JSON.stringify(outlinedSphereSpiral)};
-    const sphereCount = 1;//10000;
-    const diskCount = 1;//10000;
+    const sphereCount = 10000;
+    const diskCount = 10000;
     const headRadius = 1;
     const tailRadius = 0;
     const spiralTurns = 2;

@@ -241,7 +241,7 @@ export class LoopGfx extends GfxRegion {
     ctx.clearRect(x, y, w, h)
 
     ctx.save()
-    ctx.translate(x-(dx * this.drawSimScale), y + this.drawOffset[1]-(dy * this.drawSimScale))
+    ctx.translate(x - (dx * this.drawSimScale), y + this.drawOffset[1] - (dy * this.drawSimScale))
     ctx.scale(this.drawSimScale, this.drawSimScale)
     this.drawFinish(ctx, sim.finish)
     ctx.restore()
@@ -251,7 +251,7 @@ export class LoopGfx extends GfxRegion {
     strokeInnerRoundedRect(ctx, rect, 'black')
 
     ctx.save()
-    ctx.translate(x-(dx * this.drawSimScale), y + this.drawOffset[1]-(dy * this.drawSimScale))
+    ctx.translate(x - (dx * this.drawSimScale), y + this.drawOffset[1] - (dy * this.drawSimScale))
     ctx.scale(this.drawSimScale, this.drawSimScale)
     ctx.lineWidth = VALUE_SCALE
 

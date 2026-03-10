@@ -1,5 +1,4 @@
 // --- Build Python package zip with standard module structure ---
-import archiver from 'archiver'
 
 /**
  * @file build-blobs.ts
@@ -7,19 +6,18 @@ import archiver from 'archiver'
  * Rebuild lookup collision lookup table blobs.
  */
 
-import { existsSync, readdirSync, unlinkSync, writeFileSync } from 'fs'
+import { readdirSync, unlinkSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { LutEncoder } from '../src/simulation/lut-encoder'
 import { createHash } from 'crypto'
 import { Lut } from '../src/simulation/luts/lut'
-import { SHAPE_NAMES, ShapeName } from '../src/simulation/shapes'
+import { SHAPE_NAMES } from '../src/simulation/shapes'
 import { getCollectedSimHashes } from '../src/simulation/luts/imp/race-lut'
 import { exportLutAsPython } from './lut-exporter-py'
 
 import type { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 // import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
 // import { HilbertLut } from '../src/simulation/luts/imp/hilbert-lut'
-import { solveHilbertCurve, createDummyImage } from './hilbert-solver'
 import { LUT, ROOM, ROOM_LAYOUT, GFX_REGION, START_LAYOUT } from '../src/imp-names'
 import { requireImps } from './require-imps'
 import { Spin } from '../src/rooms/start-layouts/imp/spin'

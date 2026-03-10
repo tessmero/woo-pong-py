@@ -108,7 +108,6 @@ export class CoverPage extends Page {
     if (this.coverLetters.length === 0) return
 
     const t = performance.now() * 1e-3
-    const drawOrder = [6, 5, 4, 3, 2, 1, 0, 13, 12, 11, 10, 9, 8, 7]
 
     for (const letterIndex of drawOrder) {
       if (letterIndex >= this.coverLetters.length) continue
@@ -134,3 +133,5 @@ export class CoverPage extends Page {
     }
   }
 }
+
+const drawOrder = [6, 5, 4, 3, 2, 1, 0, 13, 12, 11, 10, 9, 8, 7]

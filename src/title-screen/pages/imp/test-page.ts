@@ -18,8 +18,8 @@ export class TestPage extends Page {
   }
 
   override getStartButtonPosition(): { x: number, y: number } | null {
-    // Position button at 50% width, 85% height (centered horizontally, near bottom)
-    return { x: 0.5, y: 0.85 }
+    // Position button at 50% width, 88.4% height (centered horizontally, near bottom)
+    return { x: 0.5, y: 0.884 }
   }
 
   draw(ctx: CanvasRenderingContext2D, w: number, h: number): void {
@@ -59,27 +59,6 @@ export class TestPage extends Page {
     drawH: number,
     pageScale: number,
   ): void {
-    const listItems = [
-      {
-        number: '1.',
-        strong: 'Observe',
-        description: 'Watch and remain open-minded',
-        iconName: 'eye' as const,
-      },
-      {
-        number: '2.',
-        strong: 'Choose',
-        description: 'Predict which ball will finish first',
-        iconName: 'choose' as const,
-      },
-      {
-        number: '3.',
-        strong: 'Grow',
-        description: 'Unlock the power of your subconscious',
-        iconName: 'grow' as const,
-      },
-    ]
-
     const startY = drawY + drawH * 0.4
     const itemSpacing = drawH * 0.1
     const leftMargin = drawX + drawW * 0.1
@@ -104,7 +83,7 @@ export class TestPage extends Page {
       ctx.globalAlpha = alpha
 
       const iconSize = 35 * 5 * pageScale
-      const iconX = drawW - iconSize - 8 * 5 * pageScale
+      const iconX = drawW - iconSize - 50 * 5 * pageScale
       const iconY = y + 2 * 5 * pageScale
       const icon = TestPage._getBulletIcon(item.iconName)
       if (icon.complete) {
@@ -153,3 +132,23 @@ export class TestPage extends Page {
   }
 }
 
+const listItems = [
+  {
+    number: '1.',
+    strong: 'Observe',
+    description: 'Watch and remain open-minded',
+    iconName: 'eye' as const,
+  },
+  {
+    number: '2.',
+    strong: 'Choose',
+    description: 'Predict which ball will finish first',
+    iconName: 'choose' as const,
+  },
+  {
+    number: '3.',
+    strong: 'Grow',
+    description: 'Unlock the subconscious',
+    iconName: 'grow' as const,
+  },
+]

@@ -8,7 +8,7 @@ import type { Simulation } from './simulation'
 import { Perturbations } from './perturbations'
 import { collideDisks } from './luts/imp/disk-disk-lut'
 import { Disk } from './disk'
-import { DISK_RADIUS, HISTORY_CHECKPOINT_STEPS, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './constants'
+import { HISTORY_CHECKPOINT_STEPS, STEPS_BEFORE_BRANCH } from './constants'
 import { Serializer } from 'simulation/serializer'
 import { StartLayout } from 'rooms/start-layouts/start-layout'
 import type { Vec2 } from 'util/math-util'
@@ -95,10 +95,8 @@ function _activeStep(sim: Simulation) {
 
   // collide disks with barriers
   for (const [_diskIndex, disk] of sim.disks.entries()) {
-
-
-      // //debug
-      // console.log(`update disk with x ${disk.currentState.x}`)
+    // //debug
+    // console.log(`update disk with x ${disk.currentState.x}`)
 
     disk.advance(sim.obstacles, sim.stepCount)
     disk.pushInBounds(sim)

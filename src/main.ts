@@ -145,7 +145,7 @@ async function main() {
 
   // Register button with title screen module so it can be positioned
   setTitleScreenStartButton(startBtn)
-  
+
   // Position button initially
   onTitleScreenResize()
 
@@ -194,6 +194,7 @@ async function main() {
   pinballWizard.loadingState = 'I'
 
   startBtn.onclick = async () => {
+    startBtn.innerText = 'READY'
     shortVibrate(pinballWizard)
 
     // Check if we should advance to next page or start the game

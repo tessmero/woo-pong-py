@@ -21,7 +21,7 @@ import { OBSTACLE_FILL, OBSTACLE_STROKE } from 'gfx/graphics'
 import { ROOM_LAYOUT_POSITIONS } from 'rooms/room-layouts/set-by-build'
 import { Perturbations } from 'simulation/perturbations'
 import { N_TWO_GEAR_LAYOUTS } from 'rooms/room-layouts/imp/two-gears'
-import { Simulation } from 'simulation/simulation'
+import type { Simulation } from 'simulation/simulation'
 
 type DisplayMode = 'circles' | 'fidget-spinner'
 const displayMode: DisplayMode = 'fidget-spinner'

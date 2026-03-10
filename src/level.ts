@@ -42,40 +42,25 @@ export class Level {
   public readonly rooms: Array<Room>
   public readonly startLayout: StartLayoutName
   private readonly _bounds: Rectangle
-  constructor(isSimple = false) {
+  constructor() {
     this.startLayout = randomStartLayout()
-    if (isSimple) {
-      // empty 100x100 single room
-      this._bounds = ([
-        thick, thick,
-        100 - 2 * thick,
-        100 - 2 * thick,
-      ]).map(v => v * VALUE_SCALE) as Rectangle
-      this.rooms = [
-        Room.create('loop-room', [
-          0, 0, 100 * VALUE_SCALE, 100 * VALUE_SCALE,
-        ]),
+    // full level with multiple rooms
+    this._bounds = ([
+      thick, thick,
+      100 - 2 * thick,
+      totalHeight - 2 * thick,
+    ]).map(v => v * VALUE_SCALE) as Rectangle
+    this.rooms = Array.from({ length: ROOM_COUNT }, (_, roomIndex) => {
+      const roomOffset = VALUE_SCALE * (
+        startPadding
+        + (100 + roomPadding) * roomIndex
+      )
+      const roomBounds: Rectangle = [
+        0, roomOffset, 100 * VALUE_SCALE, 100 * VALUE_SCALE,
       ]
-    }
-    else {
-      // full level with multiple rooms
-      this._bounds = ([
-        thick, thick,
-        100 - 2 * thick,
-        totalHeight - 2 * thick,
-      ]).map(v => v * VALUE_SCALE) as Rectangle
-      this.rooms = Array.from({ length: ROOM_COUNT }, (_, roomIndex) => {
-        const roomOffset = VALUE_SCALE * (
-          startPadding
-          + (100 + roomPadding) * roomIndex
-        )
-        const roomBounds: Rectangle = [
-          0, roomOffset, 100 * VALUE_SCALE, 100 * VALUE_SCALE,
-        ]
 
-        return randomRoom(roomIndex, roomBounds)
-      })
-    }
+      return randomRoom(roomIndex, roomBounds)
+    })
   }
 
   get finish(): Rectangle { return _finish }

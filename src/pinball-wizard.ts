@@ -227,59 +227,57 @@ export class PinballWizard {
     const wasBranched = this.hasBranched
     const wasFinished = this.hasFinished
 
-    if (!this.activeSim.isLoop) {
     // anticipate halting needed soon
-      if ((!this._isHalted)
-        && (this.activeSim.stepCount >= (STEPS_BEFORE_BRANCH - HALT_LOOK_AHEAD_STEPS))
-        && (this.selectedDiskIndex === -1)) {
-        if (this._speed !== 'paused') {
-          this._speedBeforeHalt = this._speed
-          this.speed = 'paused'
-        }
+    if ((!this._isHalted)
+      && (this.activeSim.stepCount >= (STEPS_BEFORE_BRANCH - HALT_LOOK_AHEAD_STEPS))
+      && (this.selectedDiskIndex === -1)) {
+      if (this._speed !== 'paused') {
+        this._speedBeforeHalt = this._speed
+        this.speed = 'paused'
+      }
 
-        settingsPanel.hide(this)
-        ballSelectionPanel.show(this)
+      settingsPanel.hide(this)
+      ballSelectionPanel.show(this)
 
-        // console.log('sim may need to halt soon, near branching time with no selection')
+      // console.log('sim may need to halt soon, near branching time with no selection')
 
-        if (this._speedMult === 0) {
-          this._isHalted = true // real speed has reached 0 before emergency halt
+      if (this._speedMult === 0) {
+        this._isHalted = true // real speed has reached 0 before emergency halt
         // this.onResize()
-        }
       }
+    }
 
-      if (this._speedAnim) {
-        const { startSpeed, startTime, endTime } = this._speedAnim
-        const t = performance.now()
-        const frac = (t - startTime) / (endTime - startTime)
-        if (frac >= 1) {
+    if (this._speedAnim) {
+      const { startSpeed, startTime, endTime } = this._speedAnim
+      const t = performance.now()
+      const frac = (t - startTime) / (endTime - startTime)
+      if (frac >= 1) {
         // animation finished
-          this._speedMult = SPEEDS[this._speed]
-          this._speedAnim = null
-        }
-        else {
-          this._speedMult = lerp(startSpeed, SPEEDS[this._speed], frac)
-        }
-      }
-
-      // check if emergency halt should override speed
-      if ((!this._isHalted)
-        && (this.activeSim.stepCount >= (STEPS_BEFORE_BRANCH - 5))
-        && (this.selectedDiskIndex === -1)) {
-      // hit emergency halt somehow (maybe sim was too fast to stop in time)
-        if (this._speed !== 'paused') {
-          this._speedBeforeHalt = this._speed
-        }
-        this._isHalted = true
-        this._speedMult = 0
-        this._speed = 'paused'
+        this._speedMult = SPEEDS[this._speed]
         this._speedAnim = null
+      }
+      else {
+        this._speedMult = lerp(startSpeed, SPEEDS[this._speed], frac)
+      }
+    }
 
-        settingsPanel.hide(this)
-        ballSelectionPanel.show(this)
+    // check if emergency halt should override speed
+    if ((!this._isHalted)
+      && (this.activeSim.stepCount >= (STEPS_BEFORE_BRANCH - 5))
+      && (this.selectedDiskIndex === -1)) {
+      // hit emergency halt somehow (maybe sim was too fast to stop in time)
+      if (this._speed !== 'paused') {
+        this._speedBeforeHalt = this._speed
+      }
+      this._isHalted = true
+      this._speedMult = 0
+      this._speed = 'paused'
+      this._speedAnim = null
+
+      settingsPanel.hide(this)
+      ballSelectionPanel.show(this)
       // this.onResize()
       // console.log('sim halted, near branching time with no selection')
-      }
     }
 
     const isBranchingAllowed = this.selectedDiskIndex !== -1
@@ -334,7 +332,7 @@ export class PinballWizard {
         }
       }
     }
-    else if (!this.activeSim.isLoop) {
+    else {
       // no disk selected
     // check if next room was reached
       const nextRoomIndex = this.currentRoomIndex + 1

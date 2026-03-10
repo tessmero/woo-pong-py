@@ -13,7 +13,7 @@ export class StripeH extends Pattern {
   }
 
   public override getScale(): number {
-    return 2/256
+    return 2 / 256
   }
 
   protected override getCanvas(): HTMLCanvasElement | null {

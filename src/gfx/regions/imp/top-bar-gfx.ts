@@ -6,9 +6,9 @@
 
 import type { PinballWizard } from 'pinball-wizard'
 import { rectContainsPoint, type Rectangle, type Vec2 } from 'util/math-util'
-import { STEPS_BEFORE_BRANCH, stepsToSeconds } from 'simulation/constants'
+import { STEPS_BEFORE_BRANCH } from 'simulation/constants'
 
-import { formatTime, getStatusText } from 'guis/imp/playing-gui'
+import { getStatusText } from 'guis/imp/playing-gui'
 import { Graphics, gutterPx, OBSTACLE_FILL } from 'gfx/graphics'
 import { drawRoundedRect, fillFrameBetweenRectAndRounded, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
 import { BUTTON_ICONS } from 'gfx/button-icons'

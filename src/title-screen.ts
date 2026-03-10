@@ -23,21 +23,23 @@ export type TitleCoverForegroundAsset = {
 }
 
 // Shared source dimensions for all pages
-let _pageSourceWidth = 1
-let _pageSourceHeight = 1
+const _pageSourceShape: { width: number, height: number } = {
+  width: 1,
+  height: 1,
+}
 
 export function setPageSourceDimensions(width: number, height: number) {
-  _pageSourceWidth = Math.max(1, width)
-  _pageSourceHeight = Math.max(1, height)
+  _pageSourceShape.width = Math.max(1, width)
+  _pageSourceShape.height = Math.max(1, height)
 }
 
 export function getPageSourceDimensions(): { width: number, height: number } {
-  return { width: _pageSourceWidth, height: _pageSourceHeight }
+  return _pageSourceShape
 }
 
 // Page management with animation
 class PageBook {
-  private pageNames: PageName[] = ['cover-page', 'test-page']
+  private pageNames: Array<PageName> = ['cover-page', 'test-page']
   private currentPageIndex = 0
   private flipState: 'idle' | 'flipping' = 'idle'
   private flipStartTime = 0
@@ -66,11 +68,11 @@ class PageBook {
 
     // Capture current page to flip canvas
     const { cvs: flipCvs, ctx: flipCtx } = getFlipCanvas()
-    
+
     // Sync flip canvas dimensions with main canvas
     flipCvs.width = mainCvs.width
     flipCvs.height = mainCvs.height
-    
+
     // Copy main canvas content to flip canvas
     flipCtx.drawImage(mainCvs, 0, 0)
 
@@ -110,7 +112,7 @@ class PageBook {
     const centerX = w * 0.5
     const centerY = h * 0.5
     const slideDistance = -w * progress
-    const rotationAngle = -progress * Math.PI * 0.5
+    // const rotationAngle = -progress * Math.PI * 0.5
 
     // Translate to center, rotate around center, then slide right
     ctx.translate(centerX, centerY)
@@ -163,12 +165,12 @@ export function getTitleCanvasTransform(): {
 }
 
 export function setTitleCoverBackground(bg: HTMLImageElement) {
-  const coverPage = Page.create('cover-page') as any
+  const coverPage = Page.create('cover-page') as any // eslint-disable-line  @typescript-eslint/no-explicit-any
   coverPage.setCoverBackground(bg)
 }
 
 export function setTitleCoverForeground(foreground: TitleCoverForegroundAsset) {
-  const coverPage = Page.create('cover-page') as any
+  const coverPage = Page.create('cover-page') as any // eslint-disable-line  @typescript-eslint/no-explicit-any
   coverPage.setCoverForeground(foreground)
 }
 
@@ -177,39 +179,39 @@ export function setTitleCoverLetters(
   sourceWidth: number,
   sourceHeight: number,
 ) {
-  const coverPage = Page.create('cover-page') as any
+  const coverPage = Page.create('cover-page') as any // eslint-disable-line  @typescript-eslint/no-explicit-any
   coverPage.setCoverLetters(letters, sourceWidth, sourceHeight)
 }
 
 export function onTitleScreenResize() {
   // Graphics.onResize()
-  
+
   // Position start button to align with current page's preferred position
   if (_startButton) {
     const currentPage = _pageBook.getCurrentPage()
     const buttonPos = currentPage.getStartButtonPosition()
-    
+
     if (!buttonPos) {
       // Hide button if page doesn't want it
       _startButton.style.display = 'none'
       return
     }
-    
+
     _startButton.style.display = ''
-    
+
     const transform = getTitleCanvasTransform()
     if (transform) {
       const { scale, drawX, drawY } = transform
       const dims = getPageSourceDimensions()
-      
+
       // Transform normalized coordinates to screen coordinates
       const buttonCenterX = drawX + buttonPos.x * dims.width * scale
       const buttonCenterY = drawY + buttonPos.y * dims.height * scale
-      
+
       // Get button dimensions (or use default if not yet measured)
       const buttonWidth = _startButton.offsetWidth || 120
       const buttonHeight = _startButton.offsetHeight || 40
-      
+
       // Position button centered on the target point
       _startButton.style.position = 'absolute'
       _startButton.style.left = `${buttonCenterX - buttonWidth / 2}px`
@@ -223,7 +225,8 @@ export function advanceTitlePage(): boolean {
 
   if (_pageBook.isLastPage()) {
     return true // signal to start game
-  } else {
+  }
+  else {
     const { cvs, ctx } = getTitleScreenCanvas()
     _pageBook.startPageFlip(ctx, cvs)
     return false // don't start game yet
@@ -237,17 +240,17 @@ export function getTitlePageFlipProgress(): number {
 export class TitleScreen {
   static update(_dt: number) {
     const { cvs, ctx } = getTitleScreenCanvas()
-    
+
     // Use parent dimensions for stable sizing, not the canvas's own clientWidth/clientHeight
     // (to avoid feedback loop when we modify canvas CSS)
     const parent = cvs.parentElement
     if (!parent) return
-    
+
     const parentWidth = parent.clientWidth
     const parentHeight = parent.clientHeight
-    
+
     // Calculate drawable region bounds to set canvas size appropriately
-    const inset = 0//0.08
+    const inset = 0// 0.08
     const dims = getPageSourceDimensions()
     const targetW = parentWidth * (1 - inset * 2)
     const targetH = parentHeight * (1 - inset * 2)
@@ -287,7 +290,6 @@ export class TitleScreen {
   }
 }
 
-
 let _canvasAndContext: { cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D } | null = null
 let _flipCanvasAndContext: { cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D } | null = null
 
@@ -309,12 +311,12 @@ export function getFlipCanvas():
 { cvs: HTMLCanvasElement, ctx: CanvasRenderingContext2D } {
   if (!_flipCanvasAndContext) {
     const { cvs: mainCvs } = getTitleScreenCanvas()
-    
+
     // Create hidden canvas with same dimensions
     const cvs = document.createElement('canvas')
     cvs.width = mainCvs.width
     cvs.height = mainCvs.height
-    
+
     cvs.style.display = 'none'
     // // Style for debugging - visible, floating on left, doesn't affect layout
     // cvs.style.position = 'fixed'
@@ -326,14 +328,14 @@ export function getFlipCanvas():
     // cvs.style.opacity = '0.8'
     // cvs.style.maxWidth = '200px'
     // cvs.style.maxHeight = '280px'
-    
+
     document.body.appendChild(cvs)
-    
+
     _flipCanvasAndContext = {
       cvs, ctx: cvs.getContext('2d') as CanvasRenderingContext2D,
     }
   }
-  
+
   return _flipCanvasAndContext
 }
 

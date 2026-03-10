@@ -11,7 +11,7 @@ import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
 import type { ShapeName } from 'simulation/shapes'
-import { Simulation } from 'simulation/simulation'
+import type { Simulation } from 'simulation/simulation'
 import type { Rectangle, Vec2 } from 'util/math-util'
 
 const _wedges: Array<[Vec2, ShapeName, boolean?]> = [
