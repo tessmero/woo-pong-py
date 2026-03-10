@@ -129,17 +129,13 @@ export const LUT_BLOBS = {
     "url": "luts/gear-lut-969b4795754acfc8.bin",
     "hash": "969b4795754acfc89fbc45a1e9ae8059bf417ac1e47b7950e91e3b266684ac59"
   },
-  "HILBERT_LUT": {
-    "url": "luts/hilbert-lut-96e8a511fe636fbd.bin",
-    "hash": "96e8a511fe636fbd052d1355a392228aae013fca786c0a79eae461f082fb4640"
-  },
   "RACE_LUT": {
-    "url": "luts/race-lut-d0b93be160943868.bin",
-    "hash": "d0b93be160943868e5a573b9f9673888f765bddbb0a202d7c37f7ace89107faa"
+    "url": "luts/race-lut-7c8b20ea95bb06dd.bin",
+    "hash": "7c8b20ea95bb06dd70121f0f3c5d3841f6ddbbe2e76d20b019a06dbca10123b6"
   },
   "LOOP_LUT": {
-    "url": "luts/loop-lut-d1791b93c8d3a6ad.bin",
-    "hash": "d1791b93c8d3a6ad4ec2addb6b3021cf348dd176a243dcc9d6f3e8777d7c8ebf"
+    "url": "luts/loop-lut-e7435fb811976df3.bin",
+    "hash": "e7435fb811976df330b10422c89d5c1102a9e7f06cd48ec2a22b7c9459a15772"
   }
 };
 

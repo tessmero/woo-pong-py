@@ -15,7 +15,7 @@ import { computeSimHash, HASH_STEP_INTERVAL } from 'simulation/sim-hash'
 
 export type RaceLeaf = LeafValues
 
-const nRaces = 1
+const nRaces = 100
 const maxStepsTotal = 1e7
 
 export type BranchDatum = {
@@ -135,13 +135,13 @@ function _tryComputeLeaf(): LeafValues | null {
     () => ({ midSeed: -1, finalStepCount: INT32_MAX }),
   )
 
-  // return dummy race-lut to skip simulations
-  const dummyResult: LeafValues = { startSeed: commonStartSeed }
-  for (let d = 0; d < DISK_COUNT; d++) {
-    dummyResult[`d${d}_midSeed`] = commonStartSeed
-    dummyResult[`d${d}_finalStepCount`] = INT32_MAX
-  }
-  return dummyResult
+  // // return dummy race-lut to skip simulations
+  // const dummyResult: LeafValues = { startSeed: commonStartSeed }
+  // for (let d = 0; d < DISK_COUNT; d++) {
+  //   dummyResult[`d${d}_midSeed`] = commonStartSeed
+  //   dummyResult[`d${d}_finalStepCount`] = INT32_MAX
+  // }
+  // return dummyResult
 
   console.log(`attempting to solve race with start seed ${commonStartSeed}...`)// eslint-disable-line no-console
 

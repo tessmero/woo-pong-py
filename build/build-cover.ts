@@ -10,6 +10,7 @@ import puppeteer from 'puppeteer'
 import { createCanvas, loadImage } from 'canvas'
 import { PATTERN, type PatternName } from '../src/imp-names'
 import { Pattern } from '../src/gfx/patterns/pattern'
+import { BUTTON_ICONS, type IconName } from '../src/gfx/button-icons'
 import { VALUE_SCALE } from '../src/simulation/constants'
 import { requireImps } from './require-imps'
 
@@ -62,10 +63,11 @@ type LetterManifestEntry = {
 }
 
 const coverImgDir = join(__dirname, '..', 'public', 'cover-images')
+const coverCircleIconCache = new Map<IconName, Awaited<ReturnType<typeof loadImage>>>()
 
 async function main() {
   const baseOptions = {
-    topText: 'EXPLORE THE MULTIVERSE!',
+    topText: 'MASTER THE MULTIVERSE!',
     topTextSkew: -20,
     mainText: 'QUANTUM\nWOO PONG',
     usePerspective: true,
@@ -413,15 +415,19 @@ async function createBackgroundImage(outPath: string, options: CoverOptions): Pr
   ctx.strokeRect(0, 0, COVER_WIDTH, COVER_HEIGHT)
 
   // draw circular icons
-  _drawCircleIcon(
+  await _drawCircleIcon(
     ctx as unknown as CanvasRenderingContext2D,
     20 * SCALE, 20 * SCALE,
-    'TOP TEXT', 'BOTTOM',
+    'eye',
+    'NON EST',
+    'ARBITRIUM',
   )
-  _drawCircleIcon(
+  await _drawCircleIcon(
     ctx as unknown as CanvasRenderingContext2D,
     COVER_WIDTH - 20 * SCALE, 20 * SCALE,
-    'LEVEL 1', 'WORLD',
+    'eye',
+    'NON EST',
+    'ARBITRIUM',
   )
 
   // Draw top text
@@ -479,7 +485,7 @@ async function createBackgroundImage(outPath: string, options: CoverOptions): Pr
   }
 
   // Draw ordered list
-  _drawOrderedList(ctx as unknown as CanvasRenderingContext2D)
+  // _drawOrderedList(ctx as unknown as CanvasRenderingContext2D)
 
   // Save to file
   mkdirSync(dirname(outPath), { recursive: true })
@@ -489,15 +495,16 @@ async function createBackgroundImage(outPath: string, options: CoverOptions): Pr
   console.log(`  wrote background image: ${outPath}`)
 }
 
-function _drawCircleIcon(
+async function _drawCircleIcon(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
+  iconName: IconName,
   topText: string,
   bottomText: string,
-) {
+): Promise<void> {
   const outerRadius = 18 * SCALE
-  const innerRadius = 10 * SCALE
+  const innerRadius = 12 * SCALE
 
   // Draw outer circle
   ctx.beginPath()
@@ -515,68 +522,123 @@ function _drawCircleIcon(
   ctx.strokeStyle = 'black'
   ctx.stroke()
 
-  // Draw text in the ring
-  const ringThickness = outerRadius - innerRadius
+  _drawRingTextWithPixelMapping(ctx, x, y, innerRadius, outerRadius, topText, true)
+  _drawRingTextWithPixelMapping(ctx, x, y, innerRadius, outerRadius, bottomText, false)
 
-  // Helper to warp text into circular arc
-  const drawArcText = (text: string, isTop: boolean) => {
-    // Create temporary canvas for text
-    const fontSize = Math.floor(ringThickness * 0.9)
-    const tempCanvas = createCanvas(500, 100)
-    const tempCtx = tempCanvas.getContext('2d')
+  const icon = await _getCoverCircleIcon(iconName)
+  const iconSize = innerRadius * 1.7
+  ctx.drawImage(
+    icon as unknown as CanvasImageSource,
+    x - iconSize / 2,
+    y - iconSize / 2,
+    iconSize,
+    iconSize,
+  )
+}
 
-    tempCtx.font = `bold ${fontSize}px sans-serif`
-    tempCtx.fillStyle = 'black'
-    tempCtx.textAlign = 'center'
-    tempCtx.textBaseline = 'middle'
-    tempCtx.fillText(text, 250, 50)
+function _drawRingTextWithPixelMapping(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  innerRadius: number,
+  outerRadius: number,
+  text: string,
+  isTop: boolean,
+): void {
+  const label = text.trim()
+  if (!label) return
 
-    const metrics = tempCtx.measureText(text)
-    const textWidth = metrics.width
+  const ringThickness = Math.max(1, outerRadius - innerRadius)
+  const fontSize = Math.max(1, Math.floor(ringThickness * 0.9))
+  const padX = Math.ceil(fontSize * 0.8)
+  const padY = Math.ceil(fontSize * 0.4)
 
-    // Calculate arc parameters
-    const midRadius = (innerRadius + outerRadius) / 2
-    const arcLength = textWidth * 1.2 // Add some spacing
-    const angleSpan = arcLength / midRadius
+  const measureCanvas = createCanvas(8, 8)
+  const measureCtx = measureCanvas.getContext('2d')
+  measureCtx.font = `bold ${fontSize}px sans-serif`
+  const measuredW = Math.ceil(measureCtx.measureText(label).width)
 
-    // Start angle depends on top/bottom
-    const startAngle = isTop
-      ? -Math.PI / 2 - angleSpan / 2 // Top half (centered at top)
-      : Math.PI / 2 - angleSpan / 2 // Bottom half (centered at bottom)
+  const textW = Math.max(1, measuredW + padX * 2)
+  const textH = Math.max(1, Math.ceil(ringThickness) + padY * 2)
 
-    // Sample and warp pixels from temp canvas to circular arc
-    const samples = 200
-    for (let i = 0; i < samples; i++) {
-      const t = i / samples
-      const angle = startAngle + angleSpan * t
+  const textCanvas = createCanvas(textW, textH)
+  const textCtx = textCanvas.getContext('2d')
+  textCtx.clearRect(0, 0, textW, textH)
+  textCtx.font = `bold ${fontSize}px sans-serif`
+  textCtx.textAlign = 'center'
+  textCtx.textBaseline = 'middle'
+  textCtx.fillStyle = 'black'
+  textCtx.fillText(label, textW / 2, textH / 2)
+  const textData = textCtx.getImageData(0, 0, textW, textH).data
 
-      // Sample position in temp canvas
-      const srcX = 250 + (t - 0.5) * textWidth
-      const srcY = 50
+  const arcLength = measuredW * 1.15
+  const midRadius = (innerRadius + outerRadius) * 0.5
+  const angleSpan = Math.max(0.001, arcLength / Math.max(1, midRadius))
+  const angleCenter = isTop ? -Math.PI / 2 : Math.PI / 2
+  const angleStart = angleCenter - angleSpan / 2
 
-      if (srcX < 0 || srcX >= tempCanvas.width) continue
+  const boxLeft = Math.floor(cx - outerRadius)
+  const boxTop = Math.floor(cy - outerRadius)
+  const boxSize = Math.ceil(outerRadius * 2)
+  const dstImage = ctx.getImageData(boxLeft, boxTop, boxSize, boxSize)
+  const dst = dstImage.data
 
-      // Get pixel color from temp canvas
-      const imageData = tempCtx.getImageData(Math.floor(srcX), Math.floor(srcY), 1, 1)
-      const pixelAlpha = imageData.data[3]
+  for (let py = 0; py < boxSize; py++) {
+    const worldY = boxTop + py + 0.5
+    for (let px = 0; px < boxSize; px++) {
+      const worldX = boxLeft + px + 0.5
+      const dx = worldX - cx
+      const dy = worldY - cy
+      const r = Math.hypot(dx, dy)
 
-      if (pixelAlpha < 128) continue // Skip transparent pixels
+      if (r < innerRadius || r > outerRadius) continue
 
-      // Draw into ring at this angle
-      const radialSamples = 8
-      for (let r = 0; r < radialSamples; r++) {
-        const radius = innerRadius + (r / radialSamples) * ringThickness
-        const px = x + Math.cos(angle) * radius
-        const py = y + Math.sin(angle) * radius
+      let angle = Math.atan2(dy, dx)
+      if (angle < 0) angle += 2 * Math.PI
 
-        ctx.fillStyle = 'black'
-        ctx.fillRect(px, py, 1, 1)
-      }
+      let relAngle = angle - angleStart
+      while (relAngle < 0) relAngle += 2 * Math.PI
+      while (relAngle >= 2 * Math.PI) relAngle -= 2 * Math.PI
+      if (relAngle > angleSpan) continue
+
+      let u = relAngle / angleSpan
+      if (!isTop) u = 1 - u  // Flip horizontal coordinate for bottom text
+      let v = (r - innerRadius) / ringThickness
+      if (!isTop) v = 1 - v // Flip vertical coordinate for bottom text
+      if (v < 0 || v > 1) continue
+
+      const srcX = Math.max(0, Math.min(textW - 1, Math.floor(u * (textW - 1))))
+      const srcY = textH - 1 - Math.max(0, Math.min(textH - 1, Math.floor(v * (textH - 1))))
+      const srcIndex = (srcY * textW + srcX) * 4
+      const srcAlpha = textData[srcIndex + 3]
+      if (srcAlpha < 8) continue
+
+      const dstIndex = (py * boxSize + px) * 4
+      dst[dstIndex] = 0
+      dst[dstIndex + 1] = 0
+      dst[dstIndex + 2] = 0
+      dst[dstIndex + 3] = Math.max(dst[dstIndex + 3], srcAlpha)
     }
   }
 
-  drawArcText(topText, true)
-  drawArcText(bottomText, false)
+  ctx.putImageData(dstImage, boxLeft, boxTop)
+}
+
+function _toSolidBlackSvg(svg: string): string {
+  return svg
+    .replace(/currentColor/g, '#000')
+    .replace(/fill="none"/g, 'fill="#000"')
+}
+
+async function _getCoverCircleIcon(iconName: IconName): Promise<Awaited<ReturnType<typeof loadImage>>> {
+  const cached = coverCircleIconCache.get(iconName)
+  if (cached) return cached
+
+  const solidSvg = _toSolidBlackSvg(BUTTON_ICONS[iconName])
+  const svgDataUrl = `data:image/svg+xml;base64,${Buffer.from(solidSvg).toString('base64')}`
+  const icon = await loadImage(svgDataUrl)
+  coverCircleIconCache.set(iconName, icon)
+  return icon
 }
 
 function _drawOrderedList(ctx: CanvasRenderingContext2D): void {
@@ -1019,8 +1081,8 @@ function generateOutlinedSphereHTML(options: CoverOptions): string {
 
     const sphereGroup = new THREE.Group();
     const SPIRAL_SELECTION = ${JSON.stringify(outlinedSphereSpiral)};
-    const sphereCount = 10000;
-    const diskCount = 10000;
+    const sphereCount = 1;//10000;
+    const diskCount = 1;//10000;
     const headRadius = 1;
     const tailRadius = 0;
     const spiralTurns = 2;

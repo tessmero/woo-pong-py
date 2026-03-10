@@ -6,9 +6,11 @@
 
 import { Page } from '../../page'
 import { getPageSourceDimensions } from '../../../title-screen'
+import { BUTTON_ICONS, type IconName } from '../../../gfx/button-icons'
 
 export class TestPage extends Page {
   private orderedListStartTimeMs: number | null = null
+  private static readonly bulletIconCache = new Map<IconName, HTMLImageElement>()
 
   static {
     // Register the test page
@@ -58,9 +60,24 @@ export class TestPage extends Page {
     pageScale: number,
   ): void {
     const listItems = [
-      { number: '1.', strong: 'Observe', description: 'Watch and remain open-minded' },
-      { number: '2.', strong: 'Choose', description: 'Predict which ball will finish first' },
-      { number: '3.', strong: 'Grow', description: 'Unlock the power of your subconscious' },
+      {
+        number: '1.',
+        strong: 'Observe',
+        description: 'Watch and remain open-minded',
+        iconName: 'eye' as const,
+      },
+      {
+        number: '2.',
+        strong: 'Choose',
+        description: 'Predict which ball will finish first',
+        iconName: 'choose' as const,
+      },
+      {
+        number: '3.',
+        strong: 'Grow',
+        description: 'Unlock the power of your subconscious',
+        iconName: 'grow' as const,
+      },
     ]
 
     const startY = drawY + drawH * 0.4
@@ -78,13 +95,21 @@ export class TestPage extends Page {
 
     listItems.forEach((item, index) => {
       const y = startY + index * itemSpacing
-      const itemElapsedMs = elapsedMs - (index+1) * itemStaggerMs
+      const itemElapsedMs = elapsedMs - (index + 1) * itemStaggerMs
       const alpha = Math.max(0, Math.min(1, itemElapsedMs / fadeDurationMs))
 
       if (alpha <= 0) return
 
       ctx.save()
       ctx.globalAlpha = alpha
+
+      const iconSize = 35 * 5 * pageScale
+      const iconX = drawW - iconSize - 8 * 5 * pageScale
+      const iconY = y + 2 * 5 * pageScale
+      const icon = TestPage._getBulletIcon(item.iconName)
+      if (icon.complete) {
+        ctx.drawImage(icon, iconX, iconY, iconSize, iconSize)
+      }
 
       // Number
       ctx.font = `bold ${20 * 5 * pageScale}px Rubik`
@@ -108,6 +133,23 @@ export class TestPage extends Page {
 
       ctx.restore()
     })
+  }
+
+  private static _toSolidBlackSvg(svg: string): string {
+    return svg
+      .replace(/currentColor/g, '#000')
+      .replace(/fill="none"/g, 'fill="#000"')
+  }
+
+  private static _getBulletIcon(iconName: IconName): HTMLImageElement {
+    const cached = TestPage.bulletIconCache.get(iconName)
+    if (cached) return cached
+
+    const icon = new Image()
+    const solidSvg = TestPage._toSolidBlackSvg(BUTTON_ICONS[iconName])
+    icon.src = `data:image/svg+xml;utf8,${encodeURIComponent(solidSvg)}`
+    TestPage.bulletIconCache.set(iconName, icon)
+    return icon
   }
 }
 

@@ -97,8 +97,8 @@ function _activeStep(sim: Simulation) {
   for (const [_diskIndex, disk] of sim.disks.entries()) {
 
 
-      //debug
-      console.log(`update disk with x ${disk.currentState.x}`)
+      // //debug
+      // console.log(`update disk with x ${disk.currentState.x}`)
 
     disk.advance(sim.obstacles, sim.stepCount)
     disk.pushInBounds(sim)

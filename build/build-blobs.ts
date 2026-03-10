@@ -18,7 +18,7 @@ import { exportLutAsPython } from './lut-exporter-py'
 
 import type { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 // import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
-import { HilbertLut } from '../src/simulation/luts/imp/hilbert-lut'
+// import { HilbertLut } from '../src/simulation/luts/imp/hilbert-lut'
 import { solveHilbertCurve, createDummyImage } from './hilbert-solver'
 import { LUT, ROOM, ROOM_LAYOUT, GFX_REGION, START_LAYOUT } from '../src/imp-names'
 import { requireImps } from './require-imps'
@@ -32,16 +32,16 @@ const _test = [Spin]
 // // Inject the build-time pattern solver so GasBoxLut.computeLeaf() can use it
 // GasBoxLut.patternSolver = solvePatternPositions
 
-// Generate the dummy Hilbert test image and inject the solver
-const hilbertImgDir = join(__dirname, 'hilbert-images')
-const hilbertImgPath = join(hilbertImgDir, 'dummy.png')
-if (!existsSync(hilbertImgPath)) {
-  createDummyImage(hilbertImgPath)
-}
-HilbertLut.hilbertSolver = (frameIndex: number) =>
-  solveHilbertCurve(hilbertImgPath, frameIndex)
+// // Generate the dummy Hilbert test image and inject the solver
+// const hilbertImgDir = join(__dirname, 'hilbert-images')
+// const hilbertImgPath = join(hilbertImgDir, 'dummy.png')
+// if (!existsSync(hilbertImgPath)) {
+//   createDummyImage(hilbertImgPath)
+// }
 // HilbertLut.hilbertSolver = (frameIndex: number) =>
-//   solveChainCurve(hilbertImgPath, frameIndex)
+//   solveHilbertCurve(hilbertImgPath, frameIndex)
+// // HilbertLut.hilbertSolver = (frameIndex: number) =>
+// //   solveChainCurve(hilbertImgPath, frameIndex)
 
 // Remove existing files in public/luts
 const collisionsDir = join(__dirname, '../public/luts')
