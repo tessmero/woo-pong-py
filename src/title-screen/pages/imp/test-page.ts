@@ -8,6 +8,8 @@ import { Page } from '../../page'
 import { getPageSourceDimensions } from '../../../title-screen'
 
 export class TestPage extends Page {
+  private orderedListStartTimeMs: number | null = null
+
   static {
     // Register the test page
     Page.register('test-page', () => new TestPage())
@@ -19,6 +21,10 @@ export class TestPage extends Page {
   }
 
   draw(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+    if (this.orderedListStartTimeMs === null) {
+      this.orderedListStartTimeMs = performance.now()
+    }
+
     // Get shared page dimensions
     const dims = getPageSourceDimensions()
     const sourceWidth = dims.width
@@ -31,49 +37,77 @@ export class TestPage extends Page {
     const drawX = (w - drawW) * 0.5
     const drawY = (h - drawH) * 0.5
 
-    // Light background
-    ctx.fillStyle = '#f5f5f0'
-    ctx.fillRect(drawX, drawY, drawW, drawH)
+    // // Light background
+    // ctx.fillStyle = '#f5f5f0'
+    // ctx.fillRect(drawX, drawY, drawW, drawH)
 
-    // Page border
-    ctx.strokeStyle = '#8b7355'
-    ctx.lineWidth = Math.max(1, pageScale * 2)
-    ctx.strokeRect(drawX, drawY, drawW, drawH)
+    // // Page border
+    // ctx.strokeStyle = '#8b7355'
+    // ctx.lineWidth = Math.max(1, pageScale * 2)
+    // ctx.strokeRect(drawX, drawY, drawW, drawH)
 
-    // Title
-    ctx.fillStyle = '#2c1810'
-    ctx.font = `bold ${pageScale * 32}px Rubik`
-    ctx.textAlign = 'left'
-    ctx.fillText('How to Play', drawX + pageScale * 20, drawY + pageScale * 40)
+    this._drawOrderedList(ctx, drawX, drawY, drawW, drawH, pageScale)
+  }
 
-    // Content text
-    ctx.font = `${pageScale * 16}px Rubik`
-    ctx.fillStyle = '#4a4a4a'
-    const lineHeight = pageScale * 28
-    const startY = drawY + pageScale * 60
-    const texts = [
-      'Guide your ball through the pinball machine.',
-      'Use the flippers to keep the ball in play.',
-      'Collect points by hitting targets and bumpers.',
-      'Reach the highest score to master the game!',
+  private _drawOrderedList(
+    ctx: CanvasRenderingContext2D,
+    drawX: number,
+    drawY: number,
+    drawW: number,
+    drawH: number,
+    pageScale: number,
+  ): void {
+    const listItems = [
+      { number: '1.', strong: 'Observe', description: 'Watch and remain open-minded' },
+      { number: '2.', strong: 'Choose', description: 'Predict which ball will finish first' },
+      { number: '3.', strong: 'Grow', description: 'Unlock the power of your subconscious' },
     ]
 
-    texts.forEach((text, index) => {
-      ctx.fillText('• ' + text, drawX + pageScale * 30, startY + index * lineHeight)
+    const startY = drawY + drawH * 0.4
+    const itemSpacing = drawH * 0.1
+    const leftMargin = drawX + drawW * 0.1
+    const nowMs = performance.now()
+    const elapsedMs = nowMs - (this.orderedListStartTimeMs ?? nowMs)
+    const fadeDurationMs = 200
+    const itemStaggerMs = 750
+
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'top'
+    ctx.lineWidth = 0.75 * 5 * pageScale
+    ctx.strokeStyle = 'black'
+
+    listItems.forEach((item, index) => {
+      const y = startY + index * itemSpacing
+      const itemElapsedMs = elapsedMs - (index+1) * itemStaggerMs
+      const alpha = Math.max(0, Math.min(1, itemElapsedMs / fadeDurationMs))
+
+      if (alpha <= 0) return
+
+      ctx.save()
+      ctx.globalAlpha = alpha
+
+      // Number
+      ctx.font = `bold ${20 * 5 * pageScale}px Rubik`
+      ctx.fillStyle = '#444'
+      ctx.fillText(item.number, leftMargin, y)
+      // ctx.strokeText(item.number, leftMargin, y)
+
+      // Title
+      ctx.font = `bold ${18 * 5 * pageScale}px Rubik`
+      const numberWidth = ctx.measureText(item.number).width
+      const titleX = leftMargin + numberWidth + 15 * 5 * pageScale
+      ctx.fillStyle = '#444'
+      ctx.fillText(item.strong, titleX, y)
+      // ctx.strokeText(item.strong, titleX, y)
+
+      // Description
+      ctx.font = `${14 * 5 * pageScale}px Rubik`
+      ctx.fillStyle = '#666'
+      const descriptionY = y + 22 * 5 * pageScale
+      ctx.fillText(item.description, titleX, descriptionY)
+
+      ctx.restore()
     })
-
-    // Footer decoration
-    ctx.strokeStyle = '#c9a876'
-    ctx.lineWidth = pageScale * 1
-    ctx.beginPath()
-    ctx.moveTo(drawX + pageScale * 20, drawY + drawH - pageScale * 30)
-    ctx.lineTo(drawX + drawW - pageScale * 20, drawY + drawH - pageScale * 30)
-    ctx.stroke()
-
-    ctx.fillStyle = '#8b7355'
-    ctx.font = `${pageScale * 14}px Rubik`
-    ctx.textAlign = 'center'
-    ctx.fillText('Page 2', drawX + drawW * 0.5, drawY + drawH - pageScale * 10)
   }
 }
 

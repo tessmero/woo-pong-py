@@ -41,7 +41,7 @@ class PageBook {
   private currentPageIndex = 0
   private flipState: 'idle' | 'flipping' = 'idle'
   private flipStartTime = 0
-  private flipDuration = 0.8 // seconds
+  private flipDuration = 0.2 // seconds
 
   getCurrentPage(): Page {
     // During flip animation, show the NEW page in background

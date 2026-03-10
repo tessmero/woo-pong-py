@@ -479,7 +479,7 @@ async function createBackgroundImage(outPath: string, options: CoverOptions): Pr
   }
 
   // Draw ordered list
-  // _drawOrderedList(ctx as unknown as CanvasRenderingContext2D)
+  _drawOrderedList(ctx as unknown as CanvasRenderingContext2D)
 
   // Save to file
   mkdirSync(dirname(outPath), { recursive: true })
