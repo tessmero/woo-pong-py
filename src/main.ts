@@ -177,7 +177,7 @@ async function main() {
   // ballSelectionPanel.initListeners(pinballWizard)
   pinballWizard.loadingState = 'E'
   await _initAssets(startBtn)
-  TitleScreen.startHilbert()
+  // TitleScreen.startHilbert()
 
   for (const elem of inner.getElementsByClassName('toHide')) {
     elem.setAttribute('style', 'opacity:0')
@@ -195,6 +195,7 @@ async function main() {
 
   startBtn.onclick = async () => {
     startBtn.innerText = 'READY'
+    pinballWizard.isSecondTitleScreen = true
     shortVibrate(pinballWizard)
 
     // Check if we should advance to next page or start the game

@@ -1,0 +1,118 @@
+{
+  "width": 2100,
+  "height": 2940,
+  "letters": [
+    {
+      "index": 0,
+      "file": "cover-letter-0-x218-y167.png",
+      "x": 218,
+      "y": 167,
+      "width": 309,
+      "height": 382
+    },
+    {
+      "index": 1,
+      "file": "cover-letter-1-x457-y174.png",
+      "x": 457,
+      "y": 174,
+      "width": 268,
+      "height": 355
+    },
+    {
+      "index": 2,
+      "file": "cover-letter-2-x679-y174.png",
+      "x": 679,
+      "y": 174,
+      "width": 292,
+      "height": 338
+    },
+    {
+      "index": 3,
+      "file": "cover-letter-3-x901-y173.png",
+      "x": 901,
+      "y": 173,
+      "width": 279,
+      "height": 320
+    },
+    {
+      "index": 4,
+      "file": "cover-letter-4-x1108-y173.png",
+      "x": 1108,
+      "y": 173,
+      "width": 258,
+      "height": 296
+    },
+    {
+      "index": 5,
+      "file": "cover-letter-5-x1310-y172.png",
+      "x": 1310,
+      "y": 172,
+      "width": 268,
+      "height": 286
+    },
+    {
+      "index": 6,
+      "file": "cover-letter-6-x1513-y172.png",
+      "x": 1513,
+      "y": 172,
+      "width": 325,
+      "height": 271
+    },
+    {
+      "index": 7,
+      "file": "cover-letter-7-x95-y517.png",
+      "x": 95,
+      "y": 517,
+      "width": 373,
+      "height": 402
+    },
+    {
+      "index": 8,
+      "file": "cover-letter-8-x425-y497.png",
+      "x": 425,
+      "y": 497,
+      "width": 301,
+      "height": 368
+    },
+    {
+      "index": 9,
+      "file": "cover-letter-9-x673-y474.png",
+      "x": 673,
+      "y": 474,
+      "width": 301,
+      "height": 347
+    },
+    {
+      "index": 10,
+      "file": "cover-letter-10-x1037-y446.png",
+      "x": 1037,
+      "y": 446,
+      "width": 251,
+      "height": 322
+    },
+    {
+      "index": 11,
+      "file": "cover-letter-11-x1238-y421.png",
+      "x": 1238,
+      "y": 421,
+      "width": 301,
+      "height": 300
+    },
+    {
+      "index": 12,
+      "file": "cover-letter-12-x1477-y396.png",
+      "x": 1477,
+      "y": 396,
+      "width": 279,
+      "height": 295
+    },
+    {
+      "index": 13,
+      "file": "cover-letter-13-x1693-y378.png",
+      "x": 1693,
+      "y": 378,
+      "width": 305,
+      "height": 264
+    }
+  ]
+}

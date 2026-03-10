@@ -137,8 +137,6 @@ async function main() {
     sphereSpiralBPath,
   )
 
-  return
-
   // First, create full text image
   // console.log('Creating full text image...')
   await createCoverImage(join(coverImgDir, 'cover-full.png'), {

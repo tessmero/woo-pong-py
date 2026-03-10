@@ -5,7 +5,7 @@
  */
 
 const seed = 12345
-const winner = 8 // winning ball index for seed (guess and check)
+const winner = 5 // winning ball index for seed (guess and check)
 
 export const puppetTestSequence = [
   {
@@ -25,9 +25,16 @@ export const puppetTestSequence = [
     value: 1000,
   },
   {
-    // start game
+    // start
     test: 'button-changes-state',
     state: 'title-screen',
+    button: 'start-button',
+    targetState: 'second-title-screen',
+  },
+  {
+    // ready
+    test: 'button-changes-state',
+    state: 'second-title-screen',
     button: 'start-button',
     targetState: 'normal',
   },

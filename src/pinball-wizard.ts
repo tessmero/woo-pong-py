@@ -55,6 +55,7 @@ export class PinballWizard {
 
   public loadingState: string | null = 'A'
   public isTitleScreen = true
+  public isSecondTitleScreen = false
 
   public get selectedDiskIndex() {
     return this.activeSim?.selectedDiskIndex ?? -1
