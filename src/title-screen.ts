@@ -146,22 +146,44 @@ export function getTitleCanvasTransform(): {
   drawW: number
   drawH: number
 } | null {
-  const { cvs } = getTitleScreenCanvas()
-  const parent = cvs.parentElement
-  if (!parent) return null
-
-  const parentWidth = parent.clientWidth
-  const parentHeight = parent.clientHeight
+  const layout = getTitleCanvasLayout()
   const dims = getPageSourceDimensions()
-  const targetW = parentWidth
-  const targetH = parentHeight
-  const scale = Math.min(targetW / dims.width, targetH / dims.height)
+  const scale = layout.pageScale
   const drawW = dims.width * scale
   const drawH = dims.height * scale
-  const drawX = (parentWidth - drawW) * 0.5
-  const drawY = (parentHeight - drawH) * 0.5
+  const drawX = layout.drawX
+  const drawY = layout.drawY
 
   return { scale, drawX, drawY, drawW, drawH }
+}
+
+function getTitleCanvasLayout(): {
+  drawX: number
+  drawY: number
+  drawW: number
+  drawH: number
+  pageScale: number
+} {
+  // Use viewport dimensions so canvas and UI transforms stay aligned inside the iframe.
+  const viewportWidth = window.innerWidth
+  const viewportHeight = window.innerHeight
+  const inset = 0
+  const dims = getPageSourceDimensions()
+  const targetW = viewportWidth * (1 - inset * 2)
+  const targetH = viewportHeight * (1 - inset * 2)
+  const pageScale = Math.min(targetW / dims.width, targetH / dims.height)
+  const drawW = dims.width * pageScale
+  const drawH = dims.height * pageScale
+  const drawX = (viewportWidth - drawW) * 0.5
+  const drawY = (viewportHeight - drawH) * 0.5
+
+  return {
+    drawX,
+    drawY,
+    drawW,
+    drawH,
+    pageScale,
+  }
 }
 
 export function setTitleCoverBackground(bg: HTMLImageElement) {
@@ -208,14 +230,11 @@ export function onTitleScreenResize() {
       const buttonCenterX = drawX + buttonPos.x * dims.width * scale
       const buttonCenterY = drawY + buttonPos.y * dims.height * scale
 
-      // Get button dimensions (or use default if not yet measured)
-      const buttonWidth = _startButton.offsetWidth || 120
-      const buttonHeight = _startButton.offsetHeight || 40
-
-      // Position button centered on the target point
-      _startButton.style.position = 'absolute'
-      _startButton.style.left = `${buttonCenterX - buttonWidth / 2}px`
-      _startButton.style.top = `${buttonCenterY - buttonHeight / 2}px`
+      // Anchor to viewport space so section padding does not shift the button.
+      _startButton.style.position = 'fixed'
+      _startButton.style.left = `${buttonCenterX}px`
+      _startButton.style.top = `${buttonCenterY}px`
+      _startButton.style.transform = 'translate(-50%, -50%)'
     }
   }
 }
@@ -240,29 +259,12 @@ export function getTitlePageFlipProgress(): number {
 export class TitleScreen {
   static update(_dt: number) {
     const { cvs, ctx } = getTitleScreenCanvas()
-
-    // Use parent dimensions for stable sizing, not the canvas's own clientWidth/clientHeight
-    // (to avoid feedback loop when we modify canvas CSS)
-    const parent = cvs.parentElement
-    if (!parent) return
-
-    const parentWidth = parent.clientWidth
-    const parentHeight = parent.clientHeight
-
-    // Calculate drawable region bounds to set canvas size appropriately
-    const inset = 0// 0.08
-    const dims = getPageSourceDimensions()
-    const targetW = parentWidth * (1 - inset * 2)
-    const targetH = parentHeight * (1 - inset * 2)
-    const pageScale = Math.min(targetW / dims.width, targetH / dims.height)
-    const drawW = dims.width * pageScale
-    const drawH = dims.height * pageScale
-    const drawX = (parentWidth - drawW) * 0.5
-    const drawY = (parentHeight - drawH) * 0.5
+    const { drawX, drawY, drawW, drawH } = getTitleCanvasLayout()
+    const dpr = Math.max(1, window.devicePixelRatio || 1)
 
     // Set canvas internal size to match drawable region
-    cvs.width = drawW * window.devicePixelRatio
-    cvs.height = drawH * window.devicePixelRatio
+    cvs.width = Math.round(drawW * dpr)
+    cvs.height = Math.round(drawH * dpr)
 
     // Position canvas via CSS to center it within parent
     cvs.style.position = 'absolute'
