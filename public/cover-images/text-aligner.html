@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cover Text Aligner</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f1115;
+      --panel: #1b1f27;
+      --line: #2d3442;
+      --text: #d9e0ee;
+      --accent: #66d2ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Rubik", "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 30% 20%, #1d2431 0%, var(--bg) 50%);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(360px, 420px) minmax(480px, 1fr);
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .panel {
+      background: color-mix(in srgb, var(--panel) 92%, black 8%);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    p {
+      margin: 0 0 10px;
+      line-height: 1.4;
+      font-size: 13px;
+      color: #b8c2d6;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: 95px 1fr 82px;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .control-row label {
+      font-size: 13px;
+      color: #9cb0cf;
+    }
+
+    input[type="range"],
+    input[type="number"] {
+      width: 100%;
+      accent-color: var(--accent);
+      background: #131824;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-height: 32px;
+      padding: 0 8px;
+    }
+
+    button {
+      margin-top: 12px;
+      width: 100%;
+      border: 1px solid #3883a6;
+      background: linear-gradient(180deg, #4bb6e6 0%, #2d8fbf 100%);
+      color: #021018;
+      font-weight: 700;
+      border-radius: 10px;
+      min-height: 36px;
+      cursor: pointer;
+    }
+
+    button:hover { filter: brightness(1.05); }
+
+    textarea {
+      width: 100%;
+      margin-top: 10px;
+      min-height: 220px;
+      resize: vertical;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #0f131d;
+      color: #d2ddf2;
+      padding: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .viewport-wrap {
+      position: relative;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 28%, rgba(93, 165, 209, 0.22), transparent 60%),
+        #080b11;
+      aspect-ratio: 420 / 588;
+      height: min(calc(100vh - 36px), 100%);
+      max-height: calc(100vh - 36px);
+      justify-self: center;
+      width: auto;
+    }
+
+    #view {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .guide-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .guide-line {
+      fill: none;
+      stroke: rgba(0, 255, 102, 0.95);
+      stroke-width: 3;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .badge {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #9db1cf;
+    }
+
+    @media (max-width: 1050px) {
+      body {
+        grid-template-columns: 1fr;
+      }
+
+      .viewport-wrap {
+        width: 100%;
+        height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <aside class="panel">
+    <h1>Cover Text Aligner</h1>
+    <p>
+      Drag to orbit, wheel to zoom. Tune FOV, scale, depth, and twist.
+      Export JSON and paste into DEFAULT_TEXT_ALIGN_CAMERA in build/build-cover.ts.
+    </p>
+
+    <div class="control-row">
+      <label for="fovRange">FOV</label>
+      <input id="fovRange" type="range" min="10" max="110" step="0.1" value="55.9">
+      <input id="fovInput" type="number" min="10" max="110" step="0.1" value="55.9">
+    </div>
+
+    <div class="control-row">
+      <label for="scaleRange">Mesh Scale</label>
+      <input id="scaleRange" type="range" min="0.2" max="3" step="0.01" value="1.59">
+      <input id="scaleInput" type="number" min="0.2" max="3" step="0.01" value="1.59">
+    </div>
+
+    <div class="control-row">
+      <label for="depthRange">Extrude</label>
+      <input id="depthRange" type="range" min="0.2" max="12" step="0.1" value="2.6">
+      <input id="depthInput" type="number" min="0.2" max="12" step="0.1" value="2.6">
+    </div>
+
+    <div class="control-row">
+      <label for="twistRange">Cam Twist</label>
+      <input id="twistRange" type="range" min="-180" max="180" step="0.1" value="0">
+      <input id="twistInput" type="number" min="-180" max="180" step="0.1" value="0">
+    </div>
+
+    <button id="exportBtn" type="button">Export Camera JSON To Clipboard</button>
+    <div id="status" class="badge">Ready.</div>
+
+    <textarea id="jsonOut" spellcheck="false" readonly></textarea>
+  </aside>
+
+  <main class="viewport-wrap">
+    <canvas id="view"></canvas>
+    <svg class="guide-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <!-- View-locked visual guides (old top/bottom alignment lines) -->
+      <line class="guide-line" x1="20" y1="18" x2="80" y2="18"></line>
+      <line class="guide-line" x1="20" y1="58" x2="80" y2="48"></line>
+    </svg>
+  </main>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.181.2/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.2/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+    import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+    import { TTFLoader } from 'three/addons/loaders/TTFLoader.js';
+
+    const FONT_TTF_URL = "data:font/ttf;base64,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AAAAfAB8AHwAfAB8AHwAfAB8AHwAfAB8AHwAfAB8AHwAfAB8AHwAfAB8AHwAfAB8AHwAfAB8AHwAfAB8AHwAfAB8AHwAfAB8AHwAwAEEATwBdgG8AfoCSAKKAq4DAgNCA3ADtAPyBCgEZASmBPIFOAVsBaAF2AYeBl4GlAbYBtgG2AbYBtgG2AbYBxwHYAeYB9IIGAhWCKQI5gkKCV4JngnMChAKTgqECsALAgtOC5QLyAv8DDQMegy6DPANNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00DTQNNA00AAAAAQAAAOwAOQAEAAAAAAACABAAMACNAAAAXA4VAAAAAAAAAAgAZgADAAEECQAAAGgAAAADAAEECQABABYAaAADAAEECQACAA4AfgADAAEECQADADAAjAADAAEECQAEABYAvAADAAEECQAFAHgA0gADAAEECQAGABYBSgADAAEECQAKAIABYABUAHkAcABlAGYAYQBjAGUAIACpACAAKAB5AG8AdQByACAAYwBvAG0AcABhAG4AeQApAC4AIAAyADAAMQA4AC4AIABBAGwAbAAgAFIAaQBnAGgAdABzACAAUgBlAHMAZQByAHYAZQBkAEUAeABwAGUAYwB0AGEAdABpAHYAZQBSAGUAZwB1AGwAYQByAEUAeABwAGUAYwB0AGEAdABpAHYAZQA6AFYAZQByAHMAaQBvAG4AIAAxAC4AMAAwAEUAeABwAGUAYwB0AGEAdABpAHYAZQBWAGUAcgBzAGkAbwBuACAAMQAuADAAMAA7AE8AYwB0AG8AYgBlAHIAIAAxADkALAAgADIAMAAxADgAOwBGAG8AbgB0AEMAcgBlAGEAdABvAHIAIAAxADEALgA1AC4AMAAuADIANAAyADEAIAAzADIALQBiAGkAdABFAHgAcABlAGMAdABhAHQAaQB2AGUAVABoAGkAcwAgAGYAbwBuAHQAIAB3AGEAcwAgAGMAcgBlAGEAdABlAGQAIAB1AHMAaQBuAGcAIABGAG8AbgB0AEMAcgBlAGEAdABvAHIAIAAxADEALgA1ACAAZgByAG8AbQAgAEgAaQBnAGgALQBMAG8AZwBpAGMALgBjAG8AbQAAAAIAAAAAAAD/JwCWAAAAAAAAAAAAAAAAAAAAAAAAAAAA7AAAAAEAAgADAAQABQAGAAcACAAJAAoACwAMAA0ADgAPABAAEQASABMAFAAVABYAFwAYABkAGgAbABwAHQAeAB8AIAAhACIAIwAkACUAJgAnACgAKQAqACsALAAtAC4ALwAwADEAMgAzADQANQA2ADcAOAA5ADoAOwA8AD0APgA/AEAAQQBCAEMARABFAEYARwBIAEkASgBLAEwATQBOAE8AUABRAFIAUwBUAFUAVgBXAFgAWQBaAFsAXABdAF4AXwBgAGEAowCEAIUAvQCWAOgAhgCOAIsAnQCpAKQAigDaAIMAkwECAQMAjQCXAIgAwwDeAQQAngCqAPUA9AD2AKIArQDJAMcArgBiAGMAkABkAMsAZQDIAMoAzwDMAM0AzgDpAGYA0wDQANEArwBnAPAAkQDWANQA1QBoAOsA7QCJAGoAaQBrAG0AbABuAKAAbwBxAHAAcgBzAHUAdAB2AHcA6gB4AHoAeQB7AH0AfAC4AKEAfwB+AIAAgQDsAO4AugDXANgA4QEFANsA3ADdAOAA2QDfALIAswC2ALcAxAC0ALUAxQCCAMIAhwCrAL4AvwC8APcBBgEHAQgBCQCMAJgAqACaAJkA7wClAJIAnACnAJQAlQEKAQsHdW5pMDBCMgd1bmkwMEIzB3VuaTAwQjkHdW5pMDJDOQRsaXJhBnBlc2V0YQRFdXJvB3VuaTIxMTYHdW5pRjAwMQd1bmlGMDAyAAABAAH//wAPAAAAAAAAAAAAAAAAAAAAAAAAAAABnAGcAZwBnAVUAAAFVAVUAAAAAAVUAAAFVAVUAAAAALAALCCwAFVYRVkgIEu4AA5RS7AGU1pYsDQbsChZYGYgilVYsAIlYbkIAAgAY2MjYhshIbAAWbAAQyNEsgABAENgQi2wASywIGBmLbACLCMhIyEtsAMsIGSzAxQVAEJDsBNDIGBgQrECFENCsSUDQ7ACQ1R4ILAMI7ACQ0NhZLAEUHiyAgICQ2BCsCFlHCGwAkNDsg4VAUIcILACQyNCshMBE0NgQiOwAFBYZVmyFgECQ2BCLbAELLADK7AVQ1gjISMhsBZDQyOwAFBYZVkbIGQgsMBQsAQmWrIoAQ1DRWNFsAZFWCGwAyVZUltYISMhG4pYILBQUFghsEBZGyCwOFBYIbA4WVkgsQENQ0VjRWFksChQWCGxAQ1DRWNFILAwUFghsDBZGyCwwFBYIGYgiophILAKUFhgGyCwIFBYIbAKYBsgsDZQWCGwNmAbYFlZWRuwAiWwDENjsABSWLAAS7AKUFghsAxDG0uwHlBYIbAeS2G4EABjsAxDY7gFAGJZWWRhWbABK1lZI7AAUFhlWVkgZLAWQyNCWS2wBSwgRSCwBCVhZCCwB0NQWLAHI0KwCCNCGyEhWbABYC2wBiwjISMhsAMrIGSxB2JCILAII0KwBkVYG7EBDUNFY7EBDUOwAWBFY7AFKiEgsAhDIIogirABK7EwBSWwBCZRWGBQG2FSWVgjWSFZILBAU1iwASsbIbBAWSOwAFBYZVktsAcssAlDK7IAAgBDYEItsAgssAkjQiMgsAAjQmGwAmJmsAFjsAFgsAcqLbAJLCAgRSCwDkNjuAQAYiCwAFBYsEBgWWawAWNgRLABYC2wCiyyCQ4AQ0VCKiGyAAEAQ2BCLbALLLAAQyNEsgABAENgQi2wDCwgIEUgsAErI7AAQ7AEJWAgRYojYSBkILAgUFghsAAbsDBQWLAgG7BAWVkjsABQWGVZsAMlI2FERLABYC2wDSwgIEUgsAErI7AAQ7AEJWAgRYojYSBksCRQWLAAG7BAWSOwAFBYZVmwAyUjYUREsAFgLbAOLCCwACNCsw0MAANFUFghGyMhWSohLbAPLLECAkWwZGFELbAQLLABYCAgsA9DSrAAUFggsA8jQlmwEENKsABSWCCwECNCWS2wESwgsBBiZrABYyC4BABjiiNhsBFDYCCKYCCwESNCIy2wEixLVFixBGREWSSwDWUjeC2wEyxLUVhLU1ixBGREWRshWSSwE2UjeC2wFCyxABJDVVixEhJDsAFhQrARK1mwAEOwAiVCsQ8CJUKxEAIlQrABFiMgsAMlUFixAQBDYLAEJUKKiiCKI2GwECohI7ABYSCKI2GwECohG7EBAENgsAIlQrACJWGwECohWbAPQ0ewEENHYLACYiCwAFBYsEBgWWawAWMgsA5DY7gEAGIgsABQWLBAYFlmsAFjYLEAABMjRLABQ7AAPrIBAQFDYEItsBUsALEAAkVUWLASI0IgRbAOI0KwDSOwAWBCILAUI0IgYLABYbcYGAEAEQATAEJCQopgILAUQ2CwFCNCsRQIK7CLKxsiWS2wFiyxABUrLbAXLLEBFSstsBgssQIVKy2wGSyxAxUrLbAaLLEEFSstsBsssQUVKy2wHCyxBhUrLbAdLLEHFSstsB4ssQgVKy2wHyyxCRUrLbArLCMgsBBiZrABY7AGYEtUWCMgLrABXRshIVktsCwsIyCwEGJmsAFjsBZgS1RYIyAusAFxGyEhWS2wLSwjILAQYmawAWOwJmBLVFgjIC6wAXIbISFZLbAgLACwDyuxAAJFVFiwEiNCIEWwDiNCsA0jsAFgQiBgsAFhtRgYAQARAEJCimCxFAgrsIsrGyJZLbAhLLEAICstsCIssQEgKy2wIyyxAiArLbAkLLEDICstsCUssQQgKy2wJiyxBSArLbAnLLEGICstsCgssQcgKy2wKSyxCCArLbAqLLEJICstsC4sIDywAWAtsC8sIGCwGGAgQyOwAWBDsAIlYbABYLAuKiEtsDAssC8rsC8qLbAxLCAgRyAgsA5DY7gEAGIgsABQWLBAYFlmsAFjYCNhOCMgilVYIEcgILAOQ2O4BABiILAAUFiwQGBZZrABY2AjYTgbIVktsDIsALEAAkVUWLEOBkVCsAEWsDEqsQUBFUVYMFkbIlktsDMsALAPK7EAAkVUWLEOBkVCsAEWsDEqsQUBFUVYMFkbIlktsDQsIDWwAWAtsDUsALEOBkVCsAFFY7gEAGIgsABQWLBAYFlmsAFjsAErsA5DY7gEAGIgsABQWLBAYFlmsAFjsAErsAAWtAAAAAAARD4jOLE0ARUqIS2wNiwgPCBHILAOQ2O4BABiILAAUFiwQGBZZrABY2CwAENhOC2wNywuFzwtsDgsIDwgRyCwDkNjuAQAYiCwAFBYsEBgWWawAWNgsABDYbABQ2M4LbA5LLECABYlIC4gR7AAI0KwAiVJiopHI0cjYSBYYhshWbABI0KyOAEBFRQqLbA6LLAAFrAXI0KwBCWwBCVHI0cjYbEMAEKwC0MrZYouIyAgPIo4LbA7LLAAFrAXI0KwBCWwBCUgLkcjRyNhILAGI0KxDABCsAtDKyCwYFBYILBAUVizBCAFIBuzBCYFGllCQiMgsApDIIojRyNHI2EjRmCwBkOwAmIgsABQWLBAYFlmsAFjYCCwASsgiophILAEQ2BkI7AFQ2FkUFiwBENhG7AFQ2BZsAMlsAJiILAAUFiwQGBZZrABY2EjICCwBCYjRmE4GyOwCkNGsAIlsApDRyNHI2FgILAGQ7ACYiCwAFBYsEBgWWawAWNgIyCwASsjsAZDYLABK7AFJWGwBSWwAmIgsABQWLBAYFlmsAFjsAQmYSCwBCVgZCOwAyVgZFBYIRsjIVkjICCwBCYjRmE4WS2wPCywABawFyNCICAgsAUmIC5HI0cjYSM8OC2wPSywABawFyNCILAKI0IgICBGI0ewASsjYTgtsD4ssAAWsBcjQrADJbACJUcjRyNhsABUWC4gPCMhG7ACJbACJUcjRyNhILAFJbAEJUcjRyNhsAYlsAUlSbACJWG5CAAIAGNjIyBYYhshWWO4BABiILAAUFiwQGBZZrABY2AjLiMgIDyKOCMhWS2wPyywABawFyNCILAKQyAuRyNHI2EgYLAgYGawAmIgsABQWLBAYFlmsAFjIyAgPIo4LbBALCMgLkawAiVGsBdDWFAbUllYIDxZLrEwARQrLbBBLCMgLkawAiVGsBdDWFIbUFlYIDxZLrEwARQrLbBCLCMgLkawAiVGsBdDWFAbUllYIDxZIyAuRrACJUawF0NYUhtQWVggPFkusTABFCstsEMssDorIyAuRrACJUawF0NYUBtSWVggPFkusTABFCstsEQssDsriiAgPLAGI0KKOCMgLkawAiVGsBdDWFAbUllYIDxZLrEwARQrsAZDLrAwKy2wRSywABawBCWwBCYgICBGI0dhsAwjQi5HI0cjYbALQysjIDwgLiM4sTABFCstsEYssQoEJUKwABawBCWwBCUgLkcjRyNhILAGI0KxDABCsAtDKyCwYFBYILBAUVizBCAFIBuzBCYFGllCQiMgR7AGQ7ACYiCwAFBYsEBgWWawAWNgILABKyCKimEgsARDYGQjsAVDYWRQWLAEQ2EbsAVDYFmwAyWwAmIgsABQWLBAYFlmsAFjYbACJUZhOCMgPCM4GyEgIEYjR7ABKyNhOCFZsTABFCstsEcssQA6Ky6xMAEUKy2wSCyxADsrISMgIDywBiNCIzixMAEUK7AGQy6wMCstsEkssAAVIEewACNCsgABARUUEy6wNiotsEossAAVIEewACNCsgABARUUEy6wNiotsEsssQABFBOwNyotsEwssDkqLbBNLLAAFkUjIC4gRoojYTixMAEUKy2wTiywCiNCsE0rLbBPLLIAAEYrLbBQLLIAAUYrLbBRLLIBAEYrLbBSLLIBAUYrLbBTLLIAAEcrLbBULLIAAUcrLbBVLLIBAEcrLbBWLLIBAUcrLbBXLLMAAABDKy2wWCyzAAEAQystsFksswEAAEMrLbBaLLMBAQBDKy2wWyyzAAABQystsFwsswABAUMrLbBdLLMBAAFDKy2wXiyzAQEBQystsF8ssgAARSstsGAssgABRSstsGEssgEARSstsGIssgEBRSstsGMssgAASCstsGQssgABSCstsGUssgEASCstsGYssgEBSCstsGcsswAAAEQrLbBoLLMAAQBEKy2waSyzAQAARCstsGosswEBAEQrLbBrLLMAAAFEKy2wbCyzAAEBRCstsG0sswEAAUQrLbBuLLMBAQFEKy2wbyyxADwrLrEwARQrLbBwLLEAPCuwQCstsHEssQA8K7BBKy2wciywABaxADwrsEIrLbBzLLEBPCuwQCstsHQssQE8K7BBKy2wdSywABaxATwrsEIrLbB2LLEAPSsusTABFCstsHcssQA9K7BAKy2weCyxAD0rsEErLbB5LLEAPSuwQistsHossQE9K7BAKy2weyyxAT0rsEErLbB8LLEBPSuwQistsH0ssQA+Ky6xMAEUKy2wfiyxAD4rsEArLbB/LLEAPiuwQSstsIAssQA+K7BCKy2wgSyxAT4rsEArLbCCLLEBPiuwQSstsIMssQE+K7BCKy2whCyxAD8rLrEwARQrLbCFLLEAPyuwQCstsIYssQA/K7BBKy2whyyxAD8rsEIrLbCILLEBPyuwQCstsIkssQE/K7BBKy2wiiyxAT8rsEIrLbCLLLILAANFUFiwBhuyBAIDRVgjIRshWVlCK7AIZbADJFB4sQUBFUVYMFktAAAAAEu4AMhSWLEBAY5ZsAG5CAAIAGNwsQAHQrIXAQAqsQAHQrMMCAEKKrEAB0KzFAYBCiqxAAhCugNAAAEACyqxAAlCugBAAAEACyq5AAMAAESxJAGIUViwQIhYuQADAGREsSgBiFFYuAgAiFi5AAMAAERZG7EnAYhRWLoIgAABBECIY1RYuQADAABEWVlZWVmzDgYBDiq4Af+FsASNsQIARLMFZAYAREQA";
+    const START_ALIGN = {"fov":55.9,"position":{"x":-89.3012,"y":-47.576,"z":65.1444},"target":{"x":-16.6515,"y":-23.0417,"z":-20.8056},"up":{"x":0.3711,"y":0.8851,"z":0.2809},"meshScale":1.59,"extrusionDepth":2.6};
+    const MAIN_TEXT = 'QUANTUM\nWOO PONG';
+
+    const canvas = document.getElementById('view');
+    const wrap = canvas.parentElement;
+    const fovRange = document.getElementById('fovRange');
+    const fovInput = document.getElementById('fovInput');
+    const scaleRange = document.getElementById('scaleRange');
+    const scaleInput = document.getElementById('scaleInput');
+    const depthRange = document.getElementById('depthRange');
+    const depthInput = document.getElementById('depthInput');
+    const twistRange = document.getElementById('twistRange');
+    const twistInput = document.getElementById('twistInput');
+    const exportBtn = document.getElementById('exportBtn');
+    const jsonOut = document.getElementById('jsonOut');
+    const status = document.getElementById('status');
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+    const scene = new THREE.Scene();
+    scene.background = null;
+
+    const camera = new THREE.PerspectiveCamera(START_ALIGN.fov, 1, 0.1, 1000);
+    camera.position.set(START_ALIGN.position.x, START_ALIGN.position.y, START_ALIGN.position.z);
+    if (START_ALIGN.up) {
+      camera.up.set(START_ALIGN.up.x, START_ALIGN.up.y, START_ALIGN.up.z);
+    }
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(START_ALIGN.target.x, START_ALIGN.target.y, START_ALIGN.target.z);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    camera.lookAt(controls.target);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.4);
+    keyLight.position.set(0, 0, 120);
+    scene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0x5af0f0, 1.6);
+    fillLight.position.set(120, -150, 80);
+    scene.add(fillLight);
+
+    const grid = new THREE.GridHelper(140, 14, 0x334055, 0x1f2736);
+    grid.position.y = -26;
+    grid.material.opacity = 0.35;
+    grid.material.transparent = true;
+    scene.add(grid);
+
+    const textGroup = new THREE.Group();
+    scene.add(textGroup);
+
+    const textMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35, metalness: 0 });
+
+    let currentFont = null;
+    let meshScale = START_ALIGN.meshScale ?? 1;
+    let extrusionDepth = START_ALIGN.extrusionDepth ?? 4;
+    let cameraTwistDeg = 0;
+    const baseUp = camera.up.clone().normalize();
+
+    function buildMultilineText(font) {
+      const size = 8;
+      const depth = extrusionDepth;
+      const lines = MAIN_TEXT.split('\n');
+      const lineHeight = size * 1.2;
+      const topBaselineY = ((lines.length - 1) * lineHeight) / 2;
+
+      for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+        const line = lines[lineIdx];
+        const baselineY = topBaselineY - lineIdx * lineHeight;
+
+        const chars = [];
+        for (const char of line) {
+          if (char === ' ') {
+            chars.push({ char, geometry: null, width: size * 0.5, bbox: null });
+            continue;
+          }
+          const geo = new TextGeometry(char, {
+            font,
+            size,
+            depth,
+            curveSegments: 12,
+            bevelEnabled: false,
+          });
+          geo.computeBoundingBox();
+          const bbox = geo.boundingBox;
+          chars.push({
+            char,
+            geometry: geo,
+            width: bbox.max.x - bbox.min.x,
+            bbox,
+          });
+        }
+
+        const lineWidth = chars.reduce((sum, c) => sum + c.width, 0);
+        let cursorX = -lineWidth / 2;
+
+        for (const c of chars) {
+          if (c.geometry) {
+            const letterGeo = c.geometry.clone();
+            letterGeo.translate(cursorX - c.bbox.min.x, baselineY, -depth);
+            textGroup.add(new THREE.Mesh(letterGeo, textMaterial));
+          }
+          cursorX += c.width;
+        }
+      }
+
+      textGroup.scale.setScalar(meshScale);
+    }
+
+    function clearTextMeshes() {
+      while (textGroup.children.length > 0) {
+        const child = textGroup.children.pop();
+        if (child.geometry) child.geometry.dispose();
+        if (Array.isArray(child.material)) {
+          for (const m of child.material) m.dispose();
+        }
+      }
+    }
+
+    function rebuildText() {
+      if (!currentFont) return;
+      clearTextMeshes();
+      buildMultilineText(currentFont);
+    }
+
+    function resize() {
+      const rect = wrap.getBoundingClientRect();
+      const width = Math.max(1, Math.floor(rect.width));
+      const height = Math.max(1, Math.floor(rect.height));
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+
+    function clamp(v, min, max, fallback) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return fallback;
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function applyCameraTwist() {
+      const dir = new THREE.Vector3().subVectors(controls.target, camera.position).normalize();
+      const up = baseUp.clone().applyAxisAngle(dir, THREE.MathUtils.degToRad(cameraTwistDeg));
+      camera.up.copy(up);
+      camera.lookAt(controls.target);
+    }
+
+    function getCameraJson() {
+      const toNum = (v) => Number(v.toFixed(4));
+      return {
+        fov: toNum(camera.fov),
+        position: {
+          x: toNum(camera.position.x),
+          y: toNum(camera.position.y),
+          z: toNum(camera.position.z),
+        },
+        target: {
+          x: toNum(controls.target.x),
+          y: toNum(controls.target.y),
+          z: toNum(controls.target.z),
+        },
+        up: {
+          x: toNum(camera.up.x),
+          y: toNum(camera.up.y),
+          z: toNum(camera.up.z),
+        },
+        meshScale: toNum(meshScale),
+        extrusionDepth: toNum(extrusionDepth),
+      };
+    }
+
+    function refreshJsonPreview() {
+      jsonOut.value = JSON.stringify(getCameraJson(), null, 2) + '\n';
+    }
+
+    function setStatus(message) {
+      status.textContent = message;
+    }
+
+    function applyFov(value) {
+      const fov = clamp(value, 10, 110, 38);
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+      fovRange.value = String(fov);
+      fovInput.value = String(fov);
+      refreshJsonPreview();
+    }
+
+    function applyMeshScale(value) {
+      meshScale = clamp(value, 0.2, 3, 1);
+      textGroup.scale.setScalar(meshScale);
+      scaleRange.value = String(meshScale);
+      scaleInput.value = String(meshScale);
+      refreshJsonPreview();
+    }
+
+    function applyExtrusionDepth(value) {
+      extrusionDepth = clamp(value, 0.2, 12, 4);
+      depthRange.value = String(extrusionDepth);
+      depthInput.value = String(extrusionDepth);
+      rebuildText();
+      refreshJsonPreview();
+    }
+
+    function applyTwist(value) {
+      cameraTwistDeg = clamp(value, -180, 180, 0);
+      twistRange.value = String(cameraTwistDeg);
+      twistInput.value = String(cameraTwistDeg);
+      applyCameraTwist();
+      refreshJsonPreview();
+    }
+
+    fovRange.addEventListener('input', () => applyFov(fovRange.value));
+    fovInput.addEventListener('change', () => applyFov(fovInput.value));
+
+    scaleRange.addEventListener('input', () => applyMeshScale(scaleRange.value));
+    scaleInput.addEventListener('change', () => applyMeshScale(scaleInput.value));
+
+    depthRange.addEventListener('input', () => applyExtrusionDepth(depthRange.value));
+    depthInput.addEventListener('change', () => applyExtrusionDepth(depthInput.value));
+
+    twistRange.addEventListener('input', () => applyTwist(twistRange.value));
+    twistInput.addEventListener('change', () => applyTwist(twistInput.value));
+
+    exportBtn.addEventListener('click', async () => {
+      const text = JSON.stringify(getCameraJson(), null, 2);
+      try {
+        await navigator.clipboard.writeText(text + '\n');
+        setStatus('Camera JSON copied to clipboard.');
+      }
+      catch {
+        setStatus('Clipboard blocked. Copy from the text area below.');
+      }
+      refreshJsonPreview();
+      jsonOut.focus();
+      jsonOut.select();
+    });
+
+    window.addEventListener('resize', resize);
+
+    const ttfLoader = new TTFLoader();
+    const fontLoader = new FontLoader();
+    ttfLoader.load(
+      FONT_TTF_URL,
+      (json) => {
+        currentFont = fontLoader.parse(json);
+        rebuildText();
+        resize();
+        applyFov(START_ALIGN.fov);
+        applyMeshScale(START_ALIGN.meshScale ?? 1);
+        applyExtrusionDepth(START_ALIGN.extrusionDepth ?? 4);
+        applyTwist(0);
+        setStatus('Font loaded. Orbit and tune controls, then export.');
+      },
+      undefined,
+      (error) => {
+        console.error(error);
+        setStatus('Failed to load font.');
+      },
+    );
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      applyCameraTwist();
+      refreshJsonPreview();
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
+</body>
+</html>

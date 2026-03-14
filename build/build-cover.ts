@@ -53,6 +53,24 @@ interface CoverOptions {
   // Which outlined sphere spiral to render in generateOutlinedSphereHTML.
   // 'both' keeps current behavior, 'first' renders j=0 only, 'second' renders j=1 only.
   outlinedSphereSpiral?: 'both' | 'first' | 'second'
+  // Optional camera alignment exported by build/text-aligner.ts.
+  // When present, this overrides the guide-line-based perspective alignment.
+  textAlignCamera?: TextAlignCameraConfig
+}
+
+type Vec3 = {
+  x: number
+  y: number
+  z: number
+}
+
+type TextAlignCameraConfig = {
+  fov: number
+  position: Vec3
+  target: Vec3
+  up?: Vec3
+  meshScale?: number
+  extrusionDepth?: number
 }
 
 type LetterManifestEntry = {
@@ -66,6 +84,29 @@ type LetterManifestEntry = {
 
 const coverImgDir = join(__dirname, '..', 'public', 'cover-images')
 const coverCircleIconCache = new Map<IconName, Awaited<ReturnType<typeof loadImage>>>()
+const FONT_TTF_DATA_URL = `data:font/ttf;base64,${readFileSync(
+  join(__dirname, '..', 'public', 'fonts', 'Expectative-grK1.ttf'),
+).toString('base64')}`
+export const DEFAULT_TEXT_ALIGN_CAMERA: TextAlignCameraConfig = {
+  fov: 90.1,
+  position: {
+    x: -31.4854,
+    y: -28.236,
+    z: 33.9035,
+  },
+  target: {
+    x: -11.4479,
+    y: -20.8457,
+    z: -19.1921,
+  },
+  up: {
+    x: 0.2949,
+    y: 0.9203,
+    z: 0.2571,
+  },
+  meshScale: 1.26,
+  extrusionDepth: 1.6,
+}
 
 // Register TTF font for bottom text
 registerFont(join(__dirname, '..', 'public', 'fonts', 'Chewy-Regular.ttf'), { family: 'MyFont' })
@@ -85,6 +126,7 @@ async function main() {
     perspectiveWidthFactor: 1.8,
     extrusionViewAngleX: -8,
     extrusionViewAngleY: -13,
+    textAlignCamera: DEFAULT_TEXT_ALIGN_CAMERA,
     topEdgeLeftY: 25,
     topEdgeRightY: 25,
     bottomEdgeLeftY: 8,
@@ -399,14 +441,16 @@ async function getLetterCount(options: CoverOptions): Promise<number> {
   await page.setContent(html)
 
   await page.waitForFunction(() => (window as any).letterCount !== undefined, { timeout: 10000 })  // eslint-disable-line
-  const letterCount = await page.evaluate(() => (window as any).letterCount)
+  const letterCount = await page.evaluate(() => (window as any).letterCount) // eslint-disable-line
 
   await browser.close()
 
   return letterCount
 }
 
-main().catch(console.error) // eslint-disable-line no-console
+if (require.main === module) {
+  main().catch(console.error) // eslint-disable-line no-console
+}
 
 async function createBackgroundImage(outPath: string, options: CoverOptions): Promise<void> {
   const { topText = '', topTextSkew = 0, bottomText = '', bottomTextSkew = 0 } = options
@@ -1285,7 +1329,7 @@ function generateOutlinedSphereHTML(options: CoverOptions): string {
 
 function generateThreeJSHTML(options: CoverOptions): string {
   const {
-    topText = '',
+    // topText = '',
     mainText,
     showEdgeTubes = false,
     showOuterEdges = false,
@@ -1302,7 +1346,10 @@ function generateThreeJSHTML(options: CoverOptions): string {
     edgeLineX = 30,
     showGuideLines = false,
     visibleLetters = 'all',
+    textAlignCamera,
   } = options
+  const textAlignCameraJson = JSON.stringify(textAlignCamera ?? null)
+  const shouldUseGuideWarp = usePerspective && !textAlignCamera
 
   return `<!DOCTYPE html>
 <html>
@@ -1326,10 +1373,13 @@ function generateThreeJSHTML(options: CoverOptions): string {
     import * as THREE from 'three';
     import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
     import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+    import { TTFLoader } from 'three/addons/loaders/TTFLoader.js';
 
     window.renderComplete = false;
     const MAIN_TEXT = \`${mainText}\`
     const VISIBLE_LETTERS = ${JSON.stringify(visibleLetters)};
+    const RUBIK_FONT_TTF_URL = ${JSON.stringify(FONT_TTF_DATA_URL)};
+    const TEXT_ALIGN_CAMERA = ${textAlignCameraJson};
 
     const COVER_WIDTH = ${COVER_WIDTH};
     const COVER_HEIGHT = ${COVER_HEIGHT};
@@ -1341,56 +1391,77 @@ function generateThreeJSHTML(options: CoverOptions): string {
     // Camera setup
     const aspect = COVER_WIDTH / COVER_HEIGHT;
     let camera;
-    
-    ${usePerspective
-      ? `
-    // Isometric view: orthographic projection from a diagonal camera angle.
-    // This preserves parallel depth lines and avoids FOV/vanishing-point distortion.
-    // Camera position is calculated from viewing angles using spherical coordinates.
-    const cameraDistance = 87.6;
-    const angleXRad = THREE.MathUtils.degToRad(${extrusionViewAngleX}); // Horizontal angle (azimuthal)
-    const angleYRad = THREE.MathUtils.degToRad(${extrusionViewAngleY}); // Vertical angle (elevation)
-    
-    // Convert spherical coordinates to Cartesian
-    const cameraX = cameraDistance * Math.cos(angleYRad) * Math.sin(angleXRad);
-    const cameraY = cameraDistance * Math.sin(angleYRad);
-    const cameraZ = cameraDistance * Math.cos(angleYRad) * Math.cos(angleXRad);
-    
-    const isoFrustumSize = 54;
-    camera = new THREE.OrthographicCamera(
-      -isoFrustumSize * aspect / 2,
-      isoFrustumSize * aspect / 2,
-      isoFrustumSize / 2,
-      -isoFrustumSize / 2,
-      0.1,
-      1000
-    );
-    camera.position.set(cameraX, cameraY, cameraZ);
-    camera.lookAt(0, 0, 0);
-    
-    console.log('Camera position:', cameraX.toFixed(2), cameraY.toFixed(2), cameraZ.toFixed(2));
-    `
-      : `
-    // Orthographic camera for flat look
-    const frustumSize = 50;
-    camera = new THREE.OrthographicCamera(
-      -frustumSize * aspect / 2,
-      frustumSize * aspect / 2,
-      frustumSize / 2,
-      -frustumSize / 2,
-      0.1,
-      1000
-    );
-    camera.position.set(0, 0, 50);
-    camera.lookAt(0, 0, 0);
-    `}
+    let cameraX = 0;
+    let cameraY = 0;
+    let cameraZ = 50;
+
+    if (TEXT_ALIGN_CAMERA) {
+      camera = new THREE.PerspectiveCamera(TEXT_ALIGN_CAMERA.fov, aspect, 0.1, 1000);
+      camera.position.set(TEXT_ALIGN_CAMERA.position.x, TEXT_ALIGN_CAMERA.position.y, TEXT_ALIGN_CAMERA.position.z);
+      if (TEXT_ALIGN_CAMERA.up) {
+        camera.up.set(TEXT_ALIGN_CAMERA.up.x, TEXT_ALIGN_CAMERA.up.y, TEXT_ALIGN_CAMERA.up.z);
+      }
+      camera.lookAt(TEXT_ALIGN_CAMERA.target.x, TEXT_ALIGN_CAMERA.target.y, TEXT_ALIGN_CAMERA.target.z);
+      cameraX = camera.position.x;
+      cameraY = camera.position.y;
+      cameraZ = camera.position.z;
+    }
+    else {
+      ${usePerspective
+        ? `
+      // Isometric view: orthographic projection from a diagonal camera angle.
+      // This preserves parallel depth lines and avoids FOV/vanishing-point distortion.
+      // Camera position is calculated from viewing angles using spherical coordinates.
+      const cameraDistance = 87.6;
+      const angleXRad = THREE.MathUtils.degToRad(${extrusionViewAngleX}); // Horizontal angle (azimuthal)
+      const angleYRad = THREE.MathUtils.degToRad(${extrusionViewAngleY}); // Vertical angle (elevation)
+
+      // Convert spherical coordinates to Cartesian
+      cameraX = cameraDistance * Math.cos(angleYRad) * Math.sin(angleXRad);
+      cameraY = cameraDistance * Math.sin(angleYRad);
+      cameraZ = cameraDistance * Math.cos(angleYRad) * Math.cos(angleXRad);
+
+      const isoFrustumSize = 54;
+      camera = new THREE.OrthographicCamera(
+        -isoFrustumSize * aspect / 2,
+        isoFrustumSize * aspect / 2,
+        isoFrustumSize / 2,
+        -isoFrustumSize / 2,
+        0.1,
+        1000
+      );
+      camera.position.set(cameraX, cameraY, cameraZ);
+      camera.lookAt(0, 0, 0);
+
+      console.log('Camera position:', cameraX.toFixed(2), cameraY.toFixed(2), cameraZ.toFixed(2));
+      `
+        : `
+      // Orthographic camera for flat look
+      const frustumSize = 50;
+      camera = new THREE.OrthographicCamera(
+        -frustumSize * aspect / 2,
+        frustumSize * aspect / 2,
+        frustumSize / 2,
+        -frustumSize / 2,
+        0.1,
+        1000
+      );
+      camera.position.set(0, 0, 50);
+      camera.lookAt(0, 0, 0);
+      cameraX = camera.position.x;
+      cameraY = camera.position.y;
+      cameraZ = camera.position.z;
+      `}
+    }
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(COVER_WIDTH, COVER_HEIGHT);
     renderer.setClearColor(0x000000, 0);
     document.body.appendChild(renderer.domElement);
-    const extrudeDepth = 4;
+    const extrudeDepth = TEXT_ALIGN_CAMERA?.extrusionDepth ?? 4;
+    const meshScale = TEXT_ALIGN_CAMERA?.meshScale ?? 1;
+    const scaledExtrudeDepth = extrudeDepth * meshScale;
 
     // bright front
     const frontLight = new THREE.DirectionalLight(0xffffff, 100);
@@ -1478,11 +1549,13 @@ function generateThreeJSHTML(options: CoverOptions): string {
     `
       : ''}
 
-    // Load font and create text
-    const loader = new FontLoader();
-    loader.load(
-      'https://cdn.jsdelivr.net/npm/three@0.181.2/examples/fonts/helvetiker_bold.typeface.json',
-      (font) => {
+    // Load Rubik TTF and convert it to a Three.js font for TextGeometry.
+    const ttfLoader = new TTFLoader();
+    const fontLoader = new FontLoader();
+    ttfLoader.load(
+      RUBIK_FONT_TTF_URL,
+      (json) => {
+        const font = fontLoader.parse(json);
 
         // Main extruded text - create merged geometry first
         const { mergedGeo: mergedTextGeo, letterTriangleRanges } = createMultilineTextGeometry(MAIN_TEXT, {
@@ -1494,10 +1567,13 @@ function generateThreeJSHTML(options: CoverOptions): string {
         });
 
         mergedTextGeo.translate(0, 0, -extrudeDepth);
+        if (Math.abs(meshScale - 1) > 1e-6) {
+          mergedTextGeo.scale(meshScale, meshScale, meshScale);
+        }
         
         // Map text vertices so each X column spans between the configured
         // top and bottom guide lines. This warps the ENTIRE text block.
-        ${usePerspective
+        ${shouldUseGuideWarp
           ? `
         const isoRatio = cameraX / Math.max(0.01, cameraZ);
         warpGeometryToEdgeLines(mergedTextGeo, {
@@ -1566,7 +1642,8 @@ function generateThreeJSHTML(options: CoverOptions): string {
                 8,
                 true
               );
-              tubeGeo.translate(0, 0, extrudeDepth + zOffset);
+              // Keep outline layers aligned with transformed letter depth.
+              tubeGeo.translate(0, 0, scaledExtrudeDepth + zOffset * meshScale);
               return tubeGeo;
             };
 
@@ -1609,6 +1686,10 @@ function generateThreeJSHTML(options: CoverOptions): string {
         // Render
         renderer.render(scene, camera);
         window.renderComplete = true;
+      },
+      undefined,
+      (error) => {
+        console.error('Failed to load Rubik TTF font', error);
       }
     );
 

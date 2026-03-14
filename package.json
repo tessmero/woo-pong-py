@@ -12,7 +12,8 @@
     "build-blobs": "ts-node -r tsconfig-paths/register build/build-blobs.ts",
     "build-rooms": "ts-node -r tsconfig-paths/register build/build-room-layouts.ts",
     "build-starts": "ts-node -r tsconfig-paths/register build/build-start-layouts.ts",
-    "build-cover": "ts-node -r tsconfig-paths/register build/build-cover.ts"
+    "build-cover": "ts-node -r tsconfig-paths/register build/build-cover.ts",
+    "build-text-aligner": "ts-node -r tsconfig-paths/register build/text-aligner.ts"
   },
   "keywords": [],
   "author": "",
