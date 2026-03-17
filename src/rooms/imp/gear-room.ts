@@ -31,13 +31,16 @@ type Direction = 'clockwise' | 'counter-clockwise'
 
 type Gear = {
   dir: Direction
-  frameIndex: number
+  startingFrameIndex: number
   center: Obstacle
   teeth: Array<Obstacle>
   obstacles: Array<Obstacle> // center and teeth
 }
 
+const prevOffset: Vec2 = [0, 0]
 const offset: Vec2 = [0, 0]
+
+const speedMult = 2
 
 export class GearRoom extends Room {
   static {
@@ -52,20 +55,30 @@ export class GearRoom extends Room {
 
   override update(_sim: Simulation, stepIndex: number) {
     for (const gear of this.gears) {
+      let prevFrameIndex: number
       let frameIndex: number
       if (gear.dir === 'clockwise') {
-        frameIndex = (gear.frameIndex + stepIndex) % N_GEAR_FRAMES
+        frameIndex = (gear.startingFrameIndex + speedMult * stepIndex) % N_GEAR_FRAMES
+        prevFrameIndex = (((frameIndex - 1) % N_GEAR_FRAMES) + N_GEAR_FRAMES) % N_GEAR_FRAMES
       }
       else {
-        frameIndex = (((gear.frameIndex - stepIndex) % N_GEAR_FRAMES) + N_GEAR_FRAMES) % N_GEAR_FRAMES
+        frameIndex = (((
+          gear.startingFrameIndex - speedMult * stepIndex
+        ) % N_GEAR_FRAMES) + N_GEAR_FRAMES) % N_GEAR_FRAMES
+        prevFrameIndex = (frameIndex + 1) % N_GEAR_FRAMES
       }
       const centerPos = gear.center.pos
       const toothDelta = N_GEAR_FRAMES / N_GEAR_TEETH
       for (let toothIndex = 0; toothIndex < N_GEAR_TEETH; toothIndex++) {
         const i = (frameIndex + toothDelta * toothIndex) % N_GEAR_FRAMES
+        const prevI = (prevFrameIndex + toothDelta * toothIndex) % N_GEAR_FRAMES
 
         offset[0] = this.gearLut.get(i, 'x')
         offset[1] = this.gearLut.get(i, 'y')
+
+        prevOffset[0] = this.gearLut.get(prevI, 'x')
+        prevOffset[1] = this.gearLut.get(prevI, 'y')
+
         const cx = centerPos[0] + offset[0]
         const rx = cx - this.circleLut.maxOffsetX
 
@@ -81,6 +94,10 @@ export class GearRoom extends Room {
 
         tooth.pos[1] = cy
         tooth.collisionRect[1] = ry
+
+        // compute velocity for imparting momentumt o balls
+        tooth.vel[0] = (offset[0]-prevOffset[0]) * speedMult
+        tooth.vel[1] = (offset[1]-prevOffset[1]) * speedMult
       }
     }
   }
@@ -158,7 +175,7 @@ export class GearRoom extends Room {
 
     const gear: Gear = {
       dir,
-      frameIndex,
+      startingFrameIndex: frameIndex,
       center: centerObs,
       teeth,
       obstacles,

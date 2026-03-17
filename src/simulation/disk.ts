@@ -13,6 +13,8 @@ import { DISK_RADIUS } from './constants'
 import { playImpact } from 'audio/collision-sounds'
 import type { PatternName } from 'imp-names'
 import type { Simulation } from './simulation'
+import { collideDisks } from './luts/imp/disk-disk-lut'
+import { applyFrictionX, applyFrictionY } from './luts/imp/disk-friction-lut'
 
 let _dnlCache: Lut | null = null
 function _getDnl() {
@@ -111,7 +113,25 @@ export class Disk {
     let oi = 0
     for (; oi < obstacles.length; oi++) {
       const obs = obstacles[oi]
+
       if (rectContainsPoint(obs.collisionRect, nx, ny)) {
+        if (obs.shape === 'circle') {
+          const diskRep: Disk = new Disk()
+          diskRep.currentState.x = obs.pos[0]
+          diskRep.currentState.y = obs.pos[1]
+          diskRep.currentState.dx = -this.currentState.dx
+          diskRep.currentState.dy = -this.currentState.dy
+          applyFrictionX(diskRep.currentState)
+          applyFrictionY(diskRep.currentState)
+          diskRep.currentState.dx += obs.vel[0]
+          diskRep.currentState.dy += obs.vel[1]
+          if (collideDisks(this, diskRep)) {
+          // applyFrictionX(this.nextState)
+          // applyFrictionY(this.nextState)
+          }
+          continue // skip normal collision below
+        }
+
         const xRad = (obs.lut as ObstacleLut).obsOffsetDetailX
         const yRad = (obs.lut as ObstacleLut).obsOffsetDetailY
         let xOff = nx - obs.pos[0]

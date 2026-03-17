@@ -4,13 +4,13 @@
  * Shape parameters for the spinning gear obstacle.
  */
 
-import { VALUE_SCALE } from 'simulation/constants'
+import { DISK_RADIUS, VALUE_SCALE } from 'simulation/constants'
 
 /** Number of teeth on the gear. */
 export const N_GEAR_TEETH = 6
 
 /** Total animation frames per full gear revolution. */
-export const N_GEAR_FRAMES = 18000
+export const N_GEAR_FRAMES = 30000
 
 if (!Number.isInteger(N_GEAR_FRAMES / N_GEAR_TEETH)) {
   throw new Error('gear frames must be a multiple of gear teeth')
@@ -20,7 +20,7 @@ if (!Number.isInteger(N_GEAR_FRAMES / N_GEAR_TEETH)) {
 export const BIG_CIRCLE_RADIUS = 12 * VALUE_SCALE
 
 /** Effective radius of each tooth circle obstacle (SVG radius 200 × scale VALUE_SCALE/40). */
-export const TOOTH_RADIUS = 4.05 * VALUE_SCALE
+export const TOOTH_RADIUS = DISK_RADIUS //4.05 * VALUE_SCALE
 
 /** Distance from gear center to each tooth center. */
 export const GEAR_ORBIT_RADIUS = BIG_CIRCLE_RADIUS + TOOTH_RADIUS

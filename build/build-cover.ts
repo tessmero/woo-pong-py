@@ -4,7 +4,7 @@
  * Create 3D cover images with extruded text using Three.js.
  *
  */
-import { mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
 import puppeteer from 'puppeteer'
 import { createCanvas, loadImage, registerFont } from 'canvas'
@@ -231,6 +231,21 @@ async function main() {
     }, null, 2)}\n`,
   )
   // console.log(`  wrote manifest: ${manifestPath}`)
+
+  // remove unused outputs
+  const toRemove = [
+    'cover-recombined.png', 'cover-background.png', 'cover-full.png', 'cover-sphere.png',
+    'cover-sphere-debug.png', 'cover-sphere-part-b.png', 'cover-sphere-spiral-a.png', 'cover-sphere-spiral-b.png',
+  ]
+  for (const file of toRemove) {
+    const filePath = join(coverImgDir, file)
+    if (!existsSync(filePath)) {
+      throw new Error(`Expected output file does not exist: ${filePath}`)
+    }
+  }
+  for (const file of toRemove) {
+    unlinkSync(join(coverImgDir, file))
+  }
 
   // console.log('Done!')
 }

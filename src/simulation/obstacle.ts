@@ -23,10 +23,8 @@ export class Obstacle {
 
   isStatic = true // disable movement
 
-  // movement only for pong paddles
-  readonly vel: Vec2 = [100, 0]
-  readonly minX = 20 * VALUE_SCALE
-  readonly maxX = 80 * VALUE_SCALE
+  // velocity only for disk-like spinning gear teeth
+  readonly vel: Vec2 = [0, 0]
 
   private _isFlippedX = false
   set isFlippedX(value: boolean) {

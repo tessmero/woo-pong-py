@@ -222,7 +222,10 @@ export class PlayingGui extends Gui<PlayingLayoutKey> {
     // for (const bspElem of bspElems) {
     //   toggleElement(bspElem, ballSelectionPanel.isShowing)
     // }
-    toggleElement(resetBtn, pinballWizard.activeSim.winningDiskIndex !== -1)
+
+    // toggleElement(resetBtn, pinballWizard.activeSim.winningDiskIndex !== -1)
+    toggleElement(resetBtn, true)
+
     // const hasBranched = pinballWizard.hasBranched
     // for (const btn of diskBtns) {
     //   toggleElement(btn, !hasBranched)

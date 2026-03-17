@@ -17,12 +17,16 @@ export const PLAYING_LAYOUT = {
 
   resetBtn: {
     'parent': 'screen',
-    'width': '50%',
-    'min-width': 200,
-    'height': '10%',
-    'min-height': 50,
-    'left': 'auto',
-    'top': 'auto',
+    width: 200,
+    height: 40,
+    top: 5,
+    right: 5,
+    // 'width': '50%',
+    // 'min-width': 200,
+    // 'height': '10%',
+    // 'min-height': 50,
+    // 'left': 'auto',
+    // 'top': 'auto',
   },
 
 } as const satisfies CssLayout

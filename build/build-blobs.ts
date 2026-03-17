@@ -13,7 +13,6 @@ import { createHash } from 'crypto'
 import { Lut } from '../src/simulation/luts/lut'
 import { SHAPE_NAMES } from '../src/simulation/shapes'
 import { getCollectedSimHashes } from '../src/simulation/luts/imp/race-lut'
-import { exportLutAsPython } from './lut-exporter-py'
 
 import type { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 // import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
@@ -79,13 +78,13 @@ for (const shapeName of SHAPE_NAMES) {
   writeFileSync(outputPath, buffer) // Removed encoding option
   console.log(`Blob file replaced at: ${outputPath}`) // eslint-disable-line no-console
 
-  // write python object
-  const pyName = shapeName.replaceAll('-', '_').toUpperCase()
-  const pyFilepath = join(__dirname,
-    `../public/py/${pyName}.py`,
-  )
-  const pyContent = exportLutAsPython(lut, pyName)
-  writeFileSync(pyFilepath, pyContent)
+  // // write python object
+  // const pyName = shapeName.replaceAll('-', '_').toUpperCase()
+  // const pyFilepath = join(__dirname,
+  //   `../public/py/${pyName}.py`,
+  // )
+  // const pyContent = exportLutAsPython(lut, pyName)
+  // writeFileSync(pyFilepath, pyContent)
 
   // Read back and verify
   const originalData = lut.data.slice()
@@ -143,13 +142,13 @@ for (const lutName of LUT.NAMES) {
   writeFileSync(outputPath, buffer)
   console.log(`Blob file replaced at: ${outputPath}`) // eslint-disable-line no-console
 
-  // write python object
-  const pyName = lutName.replaceAll('-', '_').toUpperCase()
-  const pyFilepath = join(__dirname,
-    `../public/py/${pyName}.py`,
-  )
-  const pyContent = exportLutAsPython(lut, pyName)
-  writeFileSync(pyFilepath, pyContent)
+  // // write python object
+  // const pyName = lutName.replaceAll('-', '_').toUpperCase()
+  // const pyFilepath = join(__dirname,
+  //   `../public/py/${pyName}.py`,
+  // )
+  // const pyContent = exportLutAsPython(lut, pyName)
+  // writeFileSync(pyFilepath, pyContent)
 
   // Read back and verify
   const originalData = lut.data.slice()

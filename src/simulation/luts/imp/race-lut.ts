@@ -15,12 +15,52 @@ import { computeSimHash, HASH_STEP_INTERVAL } from 'simulation/sim-hash'
 
 export type RaceLeaf = LeafValues
 
-const nRaces = 100
+const nRaces = 1
 const maxStepsTotal = 1e7
+
+export type DiskScoreAccumulator = {
+  rankings: Int8Array
+  rIndex: number
+}
+
+const accRankingsLength = 1000
+
+function newScoreAccs(): Array<DiskScoreAccumulator> {
+  const result: Array<DiskScoreAccumulator> = []
+
+  for (let i = 0; i < DISK_COUNT; i++) {
+    result.push({
+      rankings: new Int8Array(accRankingsLength),
+      rIndex: 0,
+    })
+  }
+  return result
+}
+
+function accumulateScores(sim: Simulation, accs: Array<DiskScoreAccumulator>) {
+  const sortedDisks = [...sim.disks]
+  sortedDisks.sort((a, b) => b.currentState.y - a.currentState.y)
+
+  for (let i = 0; i < DISK_COUNT; i++) {
+    const diskRank = sortedDisks.indexOf(sim.disks[i])
+    const acc = accs[i]
+    acc.rankings[acc.rIndex] = diskRank
+    acc.rIndex = (acc.rIndex + 1) % accRankingsLength
+  }
+}
+
+function getUnderdogScore(acc: DiskScoreAccumulator) {
+  let result = 0
+  for (const ranking of acc.rankings) {
+    result += ranking
+  }
+  return result
+}
 
 export type BranchDatum = {
   midSeed: number
   finalStepCount: number
+  underdogScore: number
 }
 
 /** Schema: startSeed (i32) + per-disk midSeed (i32) and finalStepCount (i32). */
@@ -132,8 +172,9 @@ function _tryComputeLeaf(): LeafValues | null {
   const commonStartSeed = nextSeed++
   const branches: Array<BranchDatum> = Array.from(
     { length: DISK_COUNT },
-    () => ({ midSeed: -1, finalStepCount: INT32_MAX }),
+    () => ({ midSeed: -1, finalStepCount: INT32_MAX, underdogScore: 0 }),
   )
+  const accs = newScoreAccs()
 
   // // return dummy race-lut to skip simulations
   // const dummyResult: LeafValues = { startSeed: commonStartSeed }
@@ -169,12 +210,18 @@ function _tryComputeLeaf(): LeafValues | null {
     // Perturbations.setSeed(branchSeed)
     // console.log('race-lut set branch seed')
     // console.log(`set branch seed ${branchSeed} for sim with step count ${sim.stepCount}`)
-    while (sim.winningDiskIndex === -1 && _stepCount < maxStepsTotal) {
+    while (sim.winningDiskIndex === -1 && _stepCount <= maxStepsTotal) {
       step(sim)
+      accumulateScores(sim, accs)
       _stepCount++
     }
 
-    // // debug
+    if (_stepCount > maxStepsTotal) {
+      // console.log('')
+      break // give up on this starting seed, taking too long to find all branches
+    }
+
+    // // // debug
     // const pos = sim.disks[sim.winningDiskIndex].currentState
     // console.log(`got winning disk ${sim.winningDiskIndex} after ${_stepCount} steps (${JSON.stringify(pos)})`)
 
@@ -199,6 +246,7 @@ function _tryComputeLeaf(): LeafValues | null {
       console.log(`level finished ${minSteps - sim.stepCount} steps too early`)
 
       // break // give up on this starting seed
+      continue // don't use this branch as a solution
     }
 
     if (sim.stepCount > HISTORY_MAX_STEPS) {
@@ -208,22 +256,31 @@ function _tryComputeLeaf(): LeafValues | null {
       continue // don't use this branch as a solution
     }
 
-    // record this solution as a branch
-    branches[sim.winningDiskIndex] = {
-      midSeed: branchSeed,
-      finalStepCount: sim.stepCount,
-      // roomSeqs: roomSeqs,
+    // compute underdog score (how close is the race)
+    const acc = accs[sim.winningDiskIndex]
+    if (!acc) {
+      console.log(`no acc for sim with winning disk index ${sim.winningDiskIndex}`)
+      continue
+    }
+    const underdogScore = getUnderdogScore(acc)
+
+    // check if this is a new or improved race
+    const currentBranchDatum = branches[sim.winningDiskIndex]
+    if (currentBranchDatum.underdogScore < underdogScore) {
+      // console.log(`found new best solution for disk ${sim.winningDiskIndex} with underdog score ${underdogScore}`)
+
+      // record this solution as a branch
+      branches[sim.winningDiskIndex] = {
+        midSeed: branchSeed,
+        finalStepCount: sim.stepCount,
+        underdogScore,
+      }
     }
 
     // // use as dummy data for all disks to trigger early finish
     // for (let i = 0; i < DISK_COUNT; i++) {
     //   branches[i] = branches[sim.winningDiskIndex]
     // }
-
-    if (_stepCount > maxStepsTotal) {
-      // console.log('')
-      break // give up on this starting seed, taking too long to find all branches
-    }
   }
 
   if (branches.some(({ midSeed }) => midSeed === -1)) {

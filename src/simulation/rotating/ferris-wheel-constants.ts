@@ -11,7 +11,7 @@ import { GEAR_ORBIT_RADIUS } from './gear-constants'
 export const N_FERRIS_CARS = 6
 
 /** Total animation frames per full ferris wheel revolution. */
-export const N_FERRIS_FRAMES = 18000
+export const N_FERRIS_FRAMES = 30000
 
 if (!Number.isInteger(N_FERRIS_FRAMES / N_FERRIS_CARS)) {
   throw new Error('ferris wheel frames must be a multiple of car count')

@@ -13,7 +13,8 @@ import { RESTITUTION } from 'simulation/constants'
 const cacheScale = 1e2
 export const speedDetail = 20 // half size of cache along relative vx and vy
 const maxAxisSpeed = cacheScale * speedDetail
-export const speedToIndex = speed => Math.floor(speed * speedDetail / maxAxisSpeed)
+// Use truncation so negative speeds quantize toward zero instead of away from it.
+export const speedToIndex = speed => Math.trunc(speed * speedDetail / maxAxisSpeed)
 export const indexToSpeed = i => i * maxAxisSpeed / speedDetail
 
 const dflSchema: LeafSchema = [i16('speed')]
@@ -49,6 +50,7 @@ export function applyFrictionX(state: DiskState) {
     index = speedDetail * Math.sign(index)
   }
   state.dx = lut.get(index + speedDetail, 'speed')
+  console.log(`old dx ${oldSpeed} new dx ${state.dx} change ${state.dx/oldSpeed}`)
 }
 export function applyFrictionY(state: DiskState) {
   const lut = Lut.create('disk-friction-lut')
