@@ -19,13 +19,18 @@ import { GfxRegion } from '../gfx-region'
 import { drawText } from 'gfx/canvas-text-util'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 
-const _LAYOUT_KEYS = ['settings', 'status'] as const
+const _LAYOUT_KEYS = [
+  'settings', 'status',
+  'home', // test
+] as const
 type LayoutKey = (typeof _LAYOUT_KEYS)[number]
 type Layout = Record<LayoutKey, Rectangle>
 
 const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
   settings: () => settingsPanel.isShowing,
   status: () => false,
+
+  home: pw => pw.gameState === 'home', // test
 }
 
 const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
@@ -38,6 +43,14 @@ const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
   },
   status: () => {
     // do nothing
+  },
+  home: (pw) => {
+    if (pw.gameState === 'home') {
+      pw.gameState = 'playing'
+    }
+    else {
+      pw.gameState = 'home'
+    }
   },
 }
 
@@ -67,7 +80,8 @@ export class TopBarGfx extends GfxRegion {
     const btnWidth = h
     this._layout = {
       settings: [x, y, btnWidth, h],
-      status: [x + btnWidth, y, w - btnWidth, h],
+      home: [x + btnWidth, y, btnWidth, h], // test
+      status: [x + 2 * btnWidth, y, w - 2 * btnWidth, h],
     }
   }
 

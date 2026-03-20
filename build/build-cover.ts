@@ -4,6 +4,10 @@
  * Create 3D cover images with extruded text using Three.js.
  *
  */
+
+/* eslint-disable max-lines */
+/* eslint-disable max-lines-per-function */
+
 import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
 import puppeteer from 'puppeteer'

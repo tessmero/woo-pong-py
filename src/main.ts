@@ -9,7 +9,7 @@ import.meta.glob('./**/*.ts', { eager: true })
 
 import { gfxConfig } from './configs/imp/gfx-config'
 import { PinballWizard } from './pinball-wizard'
-import { getTestSupport } from 'test-support'
+import { getTestSupport, initCursorStyleDetector } from 'test-support'
 import { applyDevMode, isDevMode } from 'configs/imp/top-config'
 import { Lut } from 'simulation/luts/lut'
 import { GUI, LUT } from 'imp-names'
@@ -143,13 +143,9 @@ async function main() {
   const inner = iframe.contentDocument as Document
   const startBtn = inner.getElementById('start-button') as HTMLElement
 
-  // Register button with title screen module so it can be positioned
   setTitleScreenStartButton(startBtn)
-
-  // Position button initially
   onTitleScreenResize()
 
-  // const layeredViewport = new LayeredViewport()
   gfxConfig.refreshConfig()
 
   const pinballWizard = new PinballWizard()
@@ -173,8 +169,6 @@ async function main() {
   initTitleScreenFlipCanvas()
   initListeners(pinballWizard)
   pinballWizard.loadingState = 'D'
-  // Scrollbar.initListeners(pinballWizard)
-  // ballSelectionPanel.initListeners(pinballWizard)
   pinballWizard.loadingState = 'E'
   await _initAssets(startBtn)
   // TitleScreen.startHilbert()
@@ -195,7 +189,7 @@ async function main() {
 
   startBtn.onclick = async () => {
     startBtn.innerText = 'READY'
-    pinballWizard.isSecondTitleScreen = true
+    pinballWizard.gameState = 'second-title-screen'
     shortVibrate(pinballWizard)
 
     // Check if we should advance to next page or start the game
@@ -208,12 +202,9 @@ async function main() {
     // document.documentElement.requestFullscreen()
     await pinballWizard.init()
     pinballWizard.gui = Gui.create('playing-gui')
-    pinballWizard.isTitleScreen = false
-    // Graphics.isTitleScreen = false
+    pinballWizard.gameState = 'playing'
     pinballWizard.onResize()
     titleScreenElem.classList.add('hidden')
-    // Scrollbar.show()
-    // ballSelectionPanel.show()
 
     isTitleAnimPlaying = false // break title screen loop
     document.removeEventListener('resize', onTitleScreenResize)
@@ -228,23 +219,7 @@ async function main() {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // TestSupport // support automated report on tessmero.github.io
-  if (navigator.webdriver) { // if in puppeteer env
-    document.querySelector('*')!.addEventListener('mousemove', (event) => {
-      // @ts-expect-error TestSupport
-      (window as any).mouseXForTestSupport = event.clientX; // eslint-disable-line @typescript-eslint/no-explicit-any
-      // @ts-expect-error TestSupport
-      (window as any).mouseYForTestSupport = event.clientY // eslint-disable-line @typescript-eslint/no-explicit-any
-      // @ts-expect-error TestSupport
-      const currentCursor = window.getComputedStyle(event.target).cursor
-      if (currentCursor === 'auto') {
-        (window as any).cursorForTestSupport = 'default'// eslint-disable-line @typescript-eslint/no-explicit-any
-      }
-      else {
-        (window as any).cursorForTestSupport = currentCursor // eslint-disable-line @typescript-eslint/no-explicit-any
-      }
-      event.stopPropagation() // prevent repeating for parent elements
-    })
-  }
+  initCursorStyleDetector()
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   pinballWizard.loadingState = 'M'

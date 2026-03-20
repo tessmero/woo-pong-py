@@ -29,6 +29,7 @@ export default ESLintUtils.RuleCreator.withoutDocs({
   },
   defaultOptions: [],
 
+  /* eslint-disable max-lines-per-function */
   create(context) {
     let hasCssLayoutImport = false
     let exportedConst: TSESTree.ExportNamedDeclaration | undefined

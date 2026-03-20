@@ -22,7 +22,7 @@ import { Serializer } from 'simulation/serializer'
 
 export type RaceLeaf = LeafValues
 
-const nRaces = 100
+const nRaces = 1
 const maxStepsTotal = 1e8 // max steps to simulate before giving up on a starting seed
 const scoreSampleInterval = 1
 const isVerboseRaceLogs = false
@@ -195,6 +195,7 @@ let nextSeed = Perturbations.randomSeed()
 //   sim.winningDiskIndex = -1
 // }
 
+/* eslint-disable max-lines-per-function */
 function _tryComputeLeaf(): LeafValues | null {
   // console.log('race-lut comput eleaf')
 
@@ -275,18 +276,6 @@ function _tryComputeLeaf(): LeafValues | null {
     // const pos = sim.disks[sim.winningDiskIndex].currentState
     // console.log(`got winning disk ${sim.winningDiskIndex} after ${_stepCount} steps (${JSON.stringify(pos)})`)
 
-    // // get breakout sequences
-    // const roomSeqs: Array<Array<number> | null> = []
-    // for (const [_roomIndex, room] of sim.level.rooms.entries()) {
-    //   if (room instanceof BreakoutRoom) {
-    //     // console.log(`breakout room at index ${roomIndex} had sequence ${JSON.stringify(room.hitSequence)}`)
-    //     roomSeqs.push(room.hitSequence)
-    //   }
-    //   else {
-    //     roomSeqs.push(null)
-    //   }
-    // }
-
     // make sure level solution leaves enough time for gas box to resolve
     const minSteps = STEPS_BEFORE_BRANCH // + GAS_BOX_SOLVE_STEPS
     if (sim.stepCount < (minSteps)) {
@@ -361,29 +350,6 @@ function _tryComputeLeaf(): LeafValues | null {
     console.log(`failed race with start seed ${commonStartSeed}`)// eslint-disable-line no-console
     return null
   }
-
-  // // solve breakout room
-  // let breakoutSolution: Array<number> = []
-  // for (let roomIndex = 0; roomIndex < ROOM_COUNT; roomIndex++) {
-  //   if (branches.some(branch => branch.roomSeqs[roomIndex])) {
-  //     console.log('computing breakout room at index', roomIndex)
-  //     // if (branches.some(branch => !branch.roomSeqs[roomIndex])) {
-  //     //   throw new Error('branches have breakout rooms at different indices')
-  //     // }
-  //   }
-  //   else {
-  //     continue // room is not breakout room
-  //   }
-  //   const branchSequences = branches.map((branch,branchIndex) => {
-  //     const result =branch.roomSeqs[roomIndex] as Array<number>
-  //     if( !result ) throw new Error(`branch at index ${branchIndex} has no seq`)
-  //     console.log(`branch at index ${branchIndex} has seq ${JSON.stringify(result)}`)
-  //     return result
-  //   }).filter(Boolean)
-  //   breakoutSolution = BreakoutRoom.solve(branchSequences)
-  //   console.log(branchSequences)
-  //   console.log('solution:', breakoutSolution)
-  // }
 
   // console.log(`found seeds for race with ${DISK_COUNT} disks`
   //   + ` after ${simCount} simulations and ${stepCount} total steps`)

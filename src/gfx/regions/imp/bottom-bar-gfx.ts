@@ -20,7 +20,10 @@ import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { settingsPanel } from 'overlay-panels/settings-panel'
 import { Timeline } from 'timeline'
 
-const _LAYOUT_KEYS = ['bsp', 'clock', 'pause', 'play', 'fast', 'faster'] as const
+const _LAYOUT_KEYS = [
+  'bsp', 'clock', 'pause', 'play', 'fast', 'faster',
+] as const
+
 type LayoutKey = (typeof _LAYOUT_KEYS)[number]
 type Layout = Record<LayoutKey, Rectangle>
 
@@ -205,6 +208,7 @@ export class BottomBarGfx extends GfxRegion {
       play: [x + btnWidth + clockWidth + btnWidth, y, btnWidth, h],
       fast: [x + btnWidth + clockWidth + 2 * btnWidth, y, btnWidth, h],
       faster: [x + btnWidth + clockWidth + 3 * btnWidth, y, btnWidth, h],
+
     }
   }
 }

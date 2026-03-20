@@ -12,11 +12,31 @@ import type { SimGfx } from 'gfx/regions/imp/sim-gfx'
 import type { BottomBarGfx } from 'gfx/regions/imp/bottom-bar-gfx'
 import { Graphics } from 'gfx/graphics'
 
+export function initCursorStyleDetector() {
+  if (navigator.webdriver) { // if in puppeteer env
+    document.querySelector('*')!.addEventListener('mousemove', (event) => {
+      // @ts-expect-error TestSupport
+      (window as any).mouseXForTestSupport = event.clientX; // eslint-disable-line @typescript-eslint/no-explicit-any
+      // @ts-expect-error TestSupport
+      (window as any).mouseYForTestSupport = event.clientY // eslint-disable-line @typescript-eslint/no-explicit-any
+      // @ts-expect-error TestSupport
+      const currentCursor = window.getComputedStyle(event.target).cursor
+      if (currentCursor === 'auto') {
+        (window as any).cursorForTestSupport = 'default'// eslint-disable-line @typescript-eslint/no-explicit-any
+      }
+      else {
+        (window as any).cursorForTestSupport = currentCursor // eslint-disable-line @typescript-eslint/no-explicit-any
+      }
+      event.stopPropagation() // prevent repeating for parent elements
+    })
+  }
+}
+
 export function getTestSupport(pinballWizard: PinballWizard) {
   return {
 
     locateElement: (id: string) => {
-      if (pinballWizard.isTitleScreen) {
+      if (pinballWizard.gameState === 'title-screen' || pinballWizard.gameState === 'second-title-screen') {
         // // lookup element in title screen html doc
         // const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
         // const inner = iframe.contentDocument as Document
@@ -72,14 +92,14 @@ export function getTestSupport(pinballWizard: PinballWizard) {
     },
 
     getGameState: () => {
-      if (pinballWizard.loadingState) {
+      if (pinballWizard.gameState === 'loading') {
         return pinballWizard.loadingState
       }
-      if (pinballWizard.isTitleScreen) {
-        if (pinballWizard.isSecondTitleScreen) {
-          return 'second-title-screen'
-        }
+      if (pinballWizard.gameState === 'title-screen') {
         return 'title-screen'
+      }
+      if (pinballWizard.gameState === 'second-title-screen') {
+        return 'second-title-screen'
       }
 
       const winner = pinballWizard.activeSim.winningDiskIndex

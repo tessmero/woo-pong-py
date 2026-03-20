@@ -48,12 +48,12 @@ export default tseslint.config(
       }],
 
       // limit lines per file
-      'max-lines': ['warn', { max: 6000,
+      'max-lines': ['warn', { max: 600,
         // skipBlankLines: true, skipComments: true
       }],
 
       // // limit lines per function
-      'max-lines-per-function': ['warn', { max: 1200,
+      'max-lines-per-function': ['warn', { max: 140,
         // skipBlankLines: true, skipComments: true
       }],
 

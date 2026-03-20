@@ -54,6 +54,7 @@ export default ESLintUtils.RuleCreator.withoutDocs({
   },
   defaultOptions: [{ allowedSuffixes: ['-keys.ts', '-urls.ts'] }],
 
+  /* eslint-disable max-lines-per-function */
   create(context) {
     const options = context.options[0] || {}
     const allowedSuffixes: Array<string> = options.allowedSuffixes || ['-keys.ts', '-urls.ts']

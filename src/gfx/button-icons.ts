@@ -86,6 +86,13 @@ export const BUTTON_ICONS = {
   grow: `
 <svg width="800px" height="800px" viewBox="0 0 24 24" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{fill:none;stroke:#020202;stroke-miterlimit:10;stroke-width:1.91px;}</style></defs><path class="cls-1" d="M18.54,23.5h0a24.47,24.47,0,0,1,2.29-9.9,8.62,8.62,0,0,0,.73-3.25A8.71,8.71,0,0,0,13.25,1.5a8.61,8.61,0,0,0-8.9,8.61c0,.2,0,.39,0,.58L2.58,14.58a1.49,1.49,0,0,0-.15.66h0A1.57,1.57,0,0,0,4,16.8h.35v1a2.86,2.86,0,0,0,2.87,2.87H9.13V23.5"/><polygon class="cls-1" points="13.91 8.2 12 11.06 13.91 11.06 13.91 8.2"/><polygon class="cls-1" points="13.91 13.94 15.83 11.06 13.91 11.06 13.91 13.94"/></svg>
 `,
+
+  home: `
+  <svg width="800px" height="800px" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M8 0L0 6V8H1V15H4V10H7V15H15V8H16V6L14 4.5V1H11V2.25L8 0ZM9 10H12V13H9V10Z" 
+fill="currentColor"/>
+</svg>
+  `
 } as const satisfies Record<string, string>
 
 export type IconName = keyof typeof BUTTON_ICONS

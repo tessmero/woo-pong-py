@@ -1,5 +1,5 @@
 /**
- * @file sim-gfx.ts
+ * @file home-gfx.ts
  *
  * Graphics region for sim visuals.
  */
@@ -22,13 +22,13 @@ const ballFlashCycles = 5 // cycles per duration
 
 const dummy: Vec2 = [0, 0]
 
-export class SimGfx extends GfxRegion {
+export class HomeGfx extends GfxRegion {
   static {
-    GfxRegion.register('sim-gfx', () => new SimGfx())
+    GfxRegion.register('home-gfx', () => new HomeGfx())
   }
 
   public override shouldDraw(pw: PinballWizard) {
-    return pw.gameState === 'playing'
+    return pw.gameState === 'home'
   }
 
   down(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {

@@ -49,13 +49,18 @@ export type SpeedAnim = {
 
 export type InputId = 'mouse' | number
 
+export type GameState = 'loading' | 'title-screen' | 'second-title-screen' | 'playing' | 'home'
+
 export class PinballWizard {
-  public activeSim!: Simulation // assigned in init
-  public gui!: Gui // assigned in init
+  public activeSim!: Simulation // assigned in init -> reset
+  public homeSim!: Simulation // assigned in init -> reset
+  public gui!: Gui // assigned in init -> reset
 
   public loadingState: string | null = 'A'
-  public isTitleScreen = true
-  public isSecondTitleScreen = false
+  public gameState: GameState = 'loading'
+  // public isTitleScreen = true
+  // public isSecondTitleScreen = false
+  // public isHomeScreen = false
 
   public get selectedDiskIndex() {
     return this.activeSim?.selectedDiskIndex ?? -1
@@ -172,6 +177,9 @@ export class PinballWizard {
 
     this.activeSim = new Simulation(commonStartSeed)
 
+    const homeSeed = 1234
+    this.homeSim = new Simulation(homeSeed)
+
     if (!this.isSeedConfiged) {
       this.activeSim.branchSeed = 29137 // seed to insert later
       this.activeSim.finalStepCount = INT32_MAX
@@ -185,14 +193,6 @@ export class PinballWizard {
       //   this.activeSim.expectedHashes = SIM_HASHES.hashes
       // }
     }
-
-    // const brickValuesStartIndex = 1 + DISK_COUNT
-    // const room = this.activeSim.level.rooms.find(room => 'breakoutBricks' in room) as BreakoutRoom
-    // if (room) {
-    //   for (let i = 0; i < BOBRICK_COUNT; i++) {
-    //     room.breakoutBricks[i].label = `${this._race[i + brickValuesStartIndex]}`
-    //   }
-    // }
 
     this.gui = Gui.create('playing-gui')
     this.camera.jumpToRoom(this, 0)
@@ -288,13 +288,6 @@ export class PinballWizard {
     // advance physics, append to sim-history, set display positions, play sounds
     this.activeSim.update(dt * this._speedMult, isBranchingAllowed)
 
-    // if (this.activeSim.winningDiskIndex !== -1) {
-    //   // race finished
-    //   this._speed = 'paused'
-    //   this._isHalted = true
-    //   this._speedMult = 0
-    // }
-
     if (this.hasBranched && !wasBranched) {
       // just branched
       // this.onResize()
@@ -312,12 +305,6 @@ export class PinballWizard {
     this.camera.update(dt, this)
 
     Graphics.draw(this)
-
-    // // repaint ball selection panel if necessary
-    // if (ballSelectionPanel.isRepaintQueued) {
-    //   ballSelectionPanel.isRepaintQueued = false
-    //   repaintDiagram(this, ballSelectionPanel)
-    // }
 
     // this.debugBranchCountdown(Graphics.ctx, Graphics.cvs.width, Graphics.cvs.height)
 

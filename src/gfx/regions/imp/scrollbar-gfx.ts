@@ -96,7 +96,8 @@ export class ScrollbarGfx extends GfxRegion {
   }
 
   public override shouldDraw(pw: PinballWizard): boolean {
-    return pw.activeSim.stepCount > 0
+    return pw.gameState === 'playing' // draw for active sim only, don't draw on home screen
+      && pw.activeSim.stepCount > 0 // don't draw until aftersripted  throwing sequence
   }
 
   protected _draw(

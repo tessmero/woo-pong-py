@@ -188,6 +188,10 @@ export class Graphics {
         leftGutterWidthPx, barHeightPx,
         simCssWidth, cssHeight - barHeightPx * 2,
       ],
+      'home-gfx': [
+        leftGutterWidthPx, barHeightPx,
+        _root[2] - leftGutterWidthPx - rightGutterWidthPx, cssHeight - barHeightPx * 2,
+      ],
       'start-gfx': [
         leftGutterWidthPx, barHeightPx,
         simCssWidth, cssHeight - barHeightPx * 2,
@@ -296,25 +300,41 @@ export class Graphics {
 
     // fill gutters
     ctx.fillStyle = OBSTACLE_FILL
+    let gutterIndex = 0
     for (const rect of this._dpGutters) {
-      ctx.fillRect(...rect)
+      let shouldFill = true
+      if (pw.gameState === 'home' && gutterIndex === 1) {
+        shouldFill = false
+      }
+      gutterIndex++
+      if (shouldFill) {
+        ctx.fillRect(...rect)
+      }
     }
 
-    const sim = GfxRegion.create('sim-gfx') as SimGfx
+    const simGfx = GfxRegion.create('sim-gfx') as SimGfx
+    const homeGfx = GfxRegion.create('home-gfx') as SimGfx
     const scrollbar = GfxRegion.create('scrollbar-gfx') as ScrollbarGfx
 
     // fill regions near gutters to cut out rounded corners
-    sim.fillRoundedMarginCorners(ctx, pw)
-    scrollbar.fillRoundedMarginCorners(ctx, pw)
+    if (pw.gameState === 'playing') {
+      simGfx.fillRoundedMarginCorners(ctx, pw)
+      scrollbar.fillRoundedMarginCorners(ctx, pw)
+    }
+    else {
+      homeGfx.fillRoundedMarginCorners(ctx, pw)
+    }
 
-    // draw disks on scrollbar
-    scrollbar.drawDisks(ctx, pw, this._dpRegions['scrollbar-gfx'] as Rectangle)
+    if (pw.gameState === 'playing') {
+      // draw disks on scrollbar
+      scrollbar.drawDisks(ctx, pw, this._dpRegions['scrollbar-gfx'] as Rectangle)
 
-    // draw view cursor on scrollbar
-    scrollbar.drawViewRect(ctx, pw, this._dpRegions['scrollbar-gfx'] as Rectangle)
+      // draw view cursor on scrollbar
+      scrollbar.drawViewRect(ctx, pw, this._dpRegions['scrollbar-gfx'] as Rectangle)
+    }
 
     // draw annotations for hovered and selected disks in sim
-    sim.drawHalos(ctx, pw)
+    simGfx.drawHalos(ctx, pw)
 
     // // draw top edge of gutters
     // ctx.strokeStyle = 'black'
