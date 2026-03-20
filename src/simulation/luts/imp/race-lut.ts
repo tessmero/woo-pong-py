@@ -7,16 +7,29 @@
 import { LUT_BLOBS } from 'set-by-build'
 import { Lut, i32 } from '../lut'
 import type { LeafSchema, LeafValues } from '../lut'
-import { DISK_COUNT, HISTORY_MAX_STEPS, INT32_MAX, STEPS_BEFORE_BRANCH } from 'simulation/constants'
+import {
+  DISK_COUNT,
+  HISTORY_CHECKPOINT_STEPS,
+  HISTORY_MAX_STEPS,
+  INT32_MAX,
+  STEPS_BEFORE_BRANCH,
+} from 'simulation/constants'
 import { Perturbations } from 'simulation/perturbations'
 import { Simulation } from 'simulation/simulation'
 import { step } from 'simulation/sim-step'
 import { computeSimHash, HASH_STEP_INTERVAL } from 'simulation/sim-hash'
+import { Serializer } from 'simulation/serializer'
 
 export type RaceLeaf = LeafValues
 
-const nRaces = 1
-const maxStepsTotal = 1e7
+const nRaces = 100
+const maxStepsTotal = 1e8 // max steps to simulate before giving up on a starting seed
+const scoreSampleInterval = 1
+const isVerboseRaceLogs = false
+const isQuickProfileBuild = false
+const quickProfileMaxBranchAttempts = 4
+
+const minUnderdogScore = 0 // minumum score to count as solution
 
 export type DiskScoreAccumulator = {
   rankings: Int8Array
@@ -30,29 +43,45 @@ function newScoreAccs(): Array<DiskScoreAccumulator> {
 
   for (let i = 0; i < DISK_COUNT; i++) {
     result.push({
-      rankings: new Int8Array(accRankingsLength),
+      rankings: _intArr(i),
       rIndex: 0,
     })
   }
   return result
 }
 
-function accumulateScores(sim: Simulation, accs: Array<DiskScoreAccumulator>) {
-  const sortedDisks = [...sim.disks]
-  sortedDisks.sort((a, b) => b.currentState.y - a.currentState.y)
+const _intArrCache: Array<Int8Array> = []
+function _intArr(i: number) {
+  while (_intArrCache.length < (i + 1)) {
+    _intArrCache.push(new Int8Array(accRankingsLength))
+  }
+  return _intArrCache[i]
+}
 
+function accumulateScores(sim: Simulation, accs: Array<DiskScoreAccumulator>) {
+  const disks = sim.disks
   for (let i = 0; i < DISK_COUNT; i++) {
-    const diskRank = sortedDisks.indexOf(sim.disks[i])
+    const yi = disks[i].currentState.y
+    let diskRank = 0
+    for (let j = 0; j < DISK_COUNT; j++) {
+      if (disks[j].currentState.y > yi) {
+        diskRank++
+      }
+    }
+
     const acc = accs[i]
     acc.rankings[acc.rIndex] = diskRank
-    acc.rIndex = (acc.rIndex + 1) % accRankingsLength
+    acc.rIndex++
+    if (acc.rIndex === accRankingsLength) {
+      acc.rIndex = 0
+    }
   }
 }
 
 function getUnderdogScore(acc: DiskScoreAccumulator) {
   let result = 0
-  for (const ranking of acc.rankings) {
-    result += ranking
+  for (const val of acc.rankings) {
+    result += val
   }
   return result
 }
@@ -184,25 +213,35 @@ function _tryComputeLeaf(): LeafValues | null {
   // }
   // return dummyResult
 
-  console.log(`attempting to solve race with start seed ${commonStartSeed}...`)// eslint-disable-line no-console
+  if (isVerboseRaceLogs) {
+    console.log(`attempting to solve race with start seed ${commonStartSeed}...`)// eslint-disable-line no-console
+  }
 
-  let _simCount = 0
   let _stepCount = 0
+  let branchAttemptCount = 0
+  let unresolvedDisks = DISK_COUNT
 
-  while (branches.some(({ midSeed }) => midSeed === -1)) {
-    _simCount++
+  const sim = new Simulation(commonStartSeed)
+  sim.branchSeed = 0
+  while (sim.stepCount < STEPS_BEFORE_BRANCH) {
+    step(sim)
+    _stepCount++
+  }
 
-    // run common start
-    // console.log('race-lut reset sim')
-    // rewindToStep(sim, STEPS_BEFORE_BRANCH)
-    const sim = new Simulation(commonStartSeed)
+  const restoreStepCount = STEPS_BEFORE_BRANCH - HISTORY_CHECKPOINT_STEPS
+  const restoreEntryIndex = restoreStepCount / HISTORY_CHECKPOINT_STEPS
+  if (!Number.isInteger(restoreEntryIndex)) {
+    throw new Error('restore entry index must be integer')
+  }
+
+  while (unresolvedDisks > 0) {
+    branchAttemptCount++
+    Serializer.restore(sim, restoreEntryIndex)
+    sim.winningDiskIndex = -1
+
     const branchSeed = Perturbations.randomSeed()
     sim.branchSeed = branchSeed
-    for (let i = 0; i < STEPS_BEFORE_BRANCH; i++) {
-      step(sim)
-      _stepCount++
-    }
-    // console.log('race-lut finish common start')
+
     if (sim.winningDiskIndex !== -1) {
       throw new Error('sim already has winning disk before branching')
     }
@@ -212,12 +251,23 @@ function _tryComputeLeaf(): LeafValues | null {
     // console.log(`set branch seed ${branchSeed} for sim with step count ${sim.stepCount}`)
     while (sim.winningDiskIndex === -1 && _stepCount <= maxStepsTotal) {
       step(sim)
-      accumulateScores(sim, accs)
+      if (sim.stepCount % scoreSampleInterval === 0) {
+        accumulateScores(sim, accs)
+      }
       _stepCount++
     }
 
+    if (isQuickProfileBuild && branchAttemptCount >= quickProfileMaxBranchAttempts) {
+      if (isVerboseRaceLogs) {
+        // eslint-disable-next-line no-console
+        console.log(`quick profile exit after ${branchAttemptCount} branch attempts`)
+      }
+      break
+    }
+
     if (_stepCount > maxStepsTotal) {
-      // console.log('')
+      // eslint-disable-next-line no-console
+      console.log(`passed max steps total of ${maxStepsTotal} for starting seed ${commonStartSeed}`)
       break // give up on this starting seed, taking too long to find all branches
     }
 
@@ -259,6 +309,7 @@ function _tryComputeLeaf(): LeafValues | null {
     // compute underdog score (how close is the race)
     const acc = accs[sim.winningDiskIndex]
     if (!acc) {
+      // eslint-disable-next-line no-console
       console.log(`no acc for sim with winning disk index ${sim.winningDiskIndex}`)
       continue
     }
@@ -266,8 +317,15 @@ function _tryComputeLeaf(): LeafValues | null {
 
     // check if this is a new or improved race
     const currentBranchDatum = branches[sim.winningDiskIndex]
-    if (currentBranchDatum.underdogScore < underdogScore) {
-      // console.log(`found new best solution for disk ${sim.winningDiskIndex} with underdog score ${underdogScore}`)
+    if ((currentBranchDatum.midSeed === -1 || currentBranchDatum.underdogScore < underdogScore) && (underdogScore >= minUnderdogScore)) {
+      if (currentBranchDatum.midSeed === -1) {
+        unresolvedDisks--
+      }
+
+      if (isVerboseRaceLogs) {
+        // eslint-disable-next-line no-console
+        console.log(`found new best solution for disk ${sim.winningDiskIndex} with underdog score ${underdogScore}`)
+      }
 
       // record this solution as a branch
       branches[sim.winningDiskIndex] = {
@@ -283,7 +341,19 @@ function _tryComputeLeaf(): LeafValues | null {
     // }
   }
 
-  if (branches.some(({ midSeed }) => midSeed === -1)) {
+  if (isQuickProfileBuild && unresolvedDisks > 0) {
+    const resolved = branches.find(branch => branch.midSeed !== -1)
+    if (resolved) {
+      for (let i = 0; i < DISK_COUNT; i++) {
+        if (branches[i].midSeed === -1) {
+          branches[i] = { ...resolved }
+          unresolvedDisks--
+        }
+      }
+    }
+  }
+
+  if (unresolvedDisks > 0) {
     // leaf failed
     console.log(`failed race with start seed ${commonStartSeed}`)// eslint-disable-line no-console
     return null
@@ -323,7 +393,7 @@ function _tryComputeLeaf(): LeafValues | null {
 
   // console.log(result)
   // eslint-disable-next-line no-console
-  console.log(`solved race with start seed ${commonStartSeed}`)
+  console.log(`solved race with start seed ${commonStartSeed} after ${_stepCount} total steps`)
 
   // _verifyRace(commonStartSeed, branches)
 

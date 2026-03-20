@@ -116,16 +116,15 @@ export class Disk {
 
       if (rectContainsPoint(obs.collisionRect, nx, ny)) {
         if (obs.shape === 'circle') {
-          const diskRep: Disk = new Disk()
-          diskRep.currentState.x = obs.pos[0]
-          diskRep.currentState.y = obs.pos[1]
-          diskRep.currentState.dx = -this.currentState.dx
-          diskRep.currentState.dy = -this.currentState.dy
-          applyFrictionX(diskRep.currentState)
-          applyFrictionY(diskRep.currentState)
-          diskRep.currentState.dx += obs.vel[0]
-          diskRep.currentState.dy += obs.vel[1]
-          if (collideDisks(this, diskRep)) {
+          dummyDisk.currentState.x = obs.pos[0]
+          dummyDisk.currentState.y = obs.pos[1]
+          dummyDisk.currentState.dx = -this.currentState.dx
+          dummyDisk.currentState.dy = -this.currentState.dy
+          applyFrictionX(dummyDisk.currentState)
+          applyFrictionY(dummyDisk.currentState)
+          dummyDisk.currentState.dx += obs.vel[0]
+          dummyDisk.currentState.dy += obs.vel[1]
+          if (collideDisks(this, dummyDisk)) {
           // applyFrictionX(this.nextState)
           // applyFrictionY(this.nextState)
           }
@@ -244,6 +243,8 @@ export class Disk {
     }
   }
 }
+
+const dummyDisk: Disk = new Disk()
 
 function hBounce(state: DiskState) {
   state.dx *= -1

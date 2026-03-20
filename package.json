@@ -9,6 +9,7 @@
     "build:quickprod": "vite build --config vite.config.prod.ts && npm run zip",
     "zip": "cp -r reports dist && cd dist && zip -r woo-pong.zip .",
     "build": "npm run build-starts && npm run build-rooms && npm run build-blobs",
+    "build:race-lut": "ts-node -r tsconfig-paths/register build/build-blobs.ts --lut race-lut",
     "build-blobs": "ts-node -r tsconfig-paths/register build/build-blobs.ts",
     "build-rooms": "ts-node -r tsconfig-paths/register build/build-room-layouts.ts",
     "build-starts": "ts-node -r tsconfig-paths/register build/build-start-layouts.ts",

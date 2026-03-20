@@ -13,6 +13,7 @@ import { createHash } from 'crypto'
 import { Lut } from '../src/simulation/luts/lut'
 import { SHAPE_NAMES } from '../src/simulation/shapes'
 import { getCollectedSimHashes } from '../src/simulation/luts/imp/race-lut'
+import { LUT_BLOBS } from '../src/set-by-build'
 
 import type { ObstacleLut } from '../src/simulation/luts/imp/obstacle-lut'
 // import { GasBoxLut } from '../src/simulation/luts/imp/gas-box-lut'
@@ -25,6 +26,13 @@ requireImps(LUT, ROOM, ROOM_LAYOUT, GFX_REGION, START_LAYOUT)
 
 // test
 const _test = [Spin]
+
+const args = process.argv.slice(2)
+const lutArgFlagIndex = args.findIndex(arg => arg === '--lut')
+const targetLutName = lutArgFlagIndex === -1 ? null : (args[lutArgFlagIndex + 1] ?? null)
+if (lutArgFlagIndex !== -1 && !targetLutName) {
+  throw new Error('Missing value for --lut. Example: --lut race-lut')
+}
 
 // // Inject the build-time pattern solver so GasBoxLut.computeLeaf() can use it
 // GasBoxLut.patternSolver = solvePatternPositions
@@ -43,11 +51,25 @@ const _test = [Spin]
 // Remove existing files in public/luts
 const collisionsDir = join(__dirname, '../public/luts')
 const existingFiles = readdirSync(collisionsDir)
-existingFiles.forEach((file) => {
-  const filePath = join(collisionsDir, file)
-  unlinkSync(filePath)
-})
-console.log(`Removed existing files in: ${collisionsDir}`) // eslint-disable-line no-console
+if (targetLutName) {
+  const targetPrefix = `${targetLutName}-`
+  existingFiles.forEach((file) => {
+    if (!file.startsWith(targetPrefix)) {
+      return
+    }
+
+    const filePath = join(collisionsDir, file)
+    unlinkSync(filePath)
+  })
+  console.log(`Removed existing ${targetLutName} files in: ${collisionsDir}`) // eslint-disable-line no-console
+}
+else {
+  existingFiles.forEach((file) => {
+    const filePath = join(collisionsDir, file)
+    unlinkSync(filePath)
+  })
+  console.log(`Removed existing files in: ${collisionsDir}`) // eslint-disable-line no-console
+}
 
 // Update the constants in set-by-build.ts
 const sourceFilePath = join(__dirname, '../src/set-by-build.ts')
@@ -57,12 +79,31 @@ const jsdocComment = `/**
  * This file gets modified by npm scripts in build folder.
  */`
 
-const lutBlobs: Record<string, { url: string, hash: string, xRad?: number, yRad?: number }> = {}
+const lutBlobs: Record<string, { url: string, hash: string, xRad?: number, yRad?: number }> = targetLutName
+  ? { ...LUT_BLOBS }
+  : {}
+
+if (targetLutName && targetLutName !== 'obstacle-lut' && !LUT.NAMES.some(name => name === targetLutName)) {
+  throw new Error(`Unknown singleton LUT name: ${targetLutName}`)
+}
+
+if (targetLutName && targetLutName.startsWith('obstacle-lut')) {
+  throw new Error('Targeting obstacle luts by shape is not supported in this script.')
+}
 
 // write obstacle luts' blobs
 for (const shapeName of SHAPE_NAMES) {
+  if (targetLutName && targetLutName !== 'race-lut') {
+    continue
+  }
+
   const lut = Lut.create('obstacle-lut', shapeName)
   lut.computeAll()
+
+  if (targetLutName === 'race-lut') {
+    // Race simulations depend on obstacle luts, but race-only builds should not rewrite obstacle blobs.
+    continue
+  }
 
   const encodedBlob = LutEncoder.encode(lut.tree, lut)
   const buffer = Buffer.from(encodedBlob.buffer, encodedBlob.byteOffset, encodedBlob.byteLength)
@@ -119,9 +160,24 @@ for (const shapeName of SHAPE_NAMES) {
 }
 
 // write singleton luts' blobs
+if (targetLutName === 'race-lut') {
+  for (const lutName of LUT.NAMES) {
+    if (lutName === 'obstacle-lut' || lutName === 'race-lut') {
+      continue
+    }
+
+    const depLut = Lut.create(lutName)
+    depLut.computeAll()
+  }
+}
+
 for (const lutName of LUT.NAMES) {
   if (lutName === 'obstacle-lut') {
     continue // skip obstacle-lut, because it is not a singleton
+  }
+
+  if (targetLutName && lutName !== targetLutName) {
+    continue
   }
 
   const lut = Lut.create(lutName)
@@ -196,6 +252,13 @@ if (simHashes) {
     + '  branchSeed: number\n'
     + '  hashes: Record<number, number>\n'
     + `} = ${hashJson};`
+}
+else if (targetLutName) {
+  simHashesExport = 'export const SIM_HASHES: {\n'
+    + '  startSeed: number\n'
+    + '  branchSeed: number\n'
+    + '  hashes: Record<number, number>\n'
+    + '} | null = null;'
 }
 else {
   simHashesExport = 'export const SIM_HASHES: {\n'

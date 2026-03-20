@@ -7,7 +7,7 @@
 import { Page } from 'title-screen/page'
 // Import page implementations to trigger their static register blocks
 import 'title-screen/pages/imp/cover-page'
-import 'title-screen/pages/imp/test-page'
+import 'title-screen/pages/imp/second-page'
 import type { PageName } from 'imp-names'
 
 export type TitleCoverLetterAsset = {
@@ -39,7 +39,7 @@ export function getPageSourceDimensions(): { width: number, height: number } {
 
 // Page management with animation
 class PageBook {
-  private pageNames: Array<PageName> = ['cover-page', 'test-page']
+  private pageNames: Array<PageName> = ['cover-page', 'second-page']
   private currentPageIndex = 0
   private flipState: 'idle' | 'flipping' = 'idle'
   private flipStartTime = 0

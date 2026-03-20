@@ -1,20 +1,20 @@
 /**
- * @file test-page.ts
+ * @file second-page.ts
  *
  * Test page with dummy content.
  */
 
 import { Page } from '../../page'
-import { getPageSourceDimensions } from '../../../title-screen'
+import { getPageSourceDimensions } from '../../title-screen'
 import { BUTTON_ICONS, type IconName } from '../../../gfx/button-icons'
 
-export class TestPage extends Page {
+export class SecondPage extends Page {
   private orderedListStartTimeMs: number | null = null
   private static readonly bulletIconCache = new Map<IconName, HTMLImageElement>()
 
   static {
     // Register the test page
-    Page.register('test-page', () => new TestPage())
+    Page.register('second-page', () => new SecondPage())
   }
 
   override getStartButtonPosition(): { x: number, y: number } | null {
@@ -49,6 +49,27 @@ export class TestPage extends Page {
     // ctx.strokeRect(drawX, drawY, drawW, drawH)
 
     this._drawOrderedList(ctx, drawX, drawY, drawW, drawH, pageScale)
+    this._drawRaceDiagram(ctx, drawX, drawY, drawW, drawH, pageScale)
+  }
+
+  private _drawRaceDiagram(
+    ctx: CanvasRenderingContext2D,
+    drawX: number,
+    drawY: number,
+    drawW: number,
+    drawH: number,
+    pageScale: number,
+  ): void {
+    const x = drawX + drawW * 0.8
+    const y = drawY + drawH * 0.1
+    const w = drawW * 0.1
+    const h = drawH * 0.8
+
+    drawFinish(ctx, x, y + 0.8 * h, w)
+
+    ctx.strokeStyle = 'red'
+    ctx.lineWidth = 2
+    ctx.strokeRect( x,y,w,h)
   }
 
   private _drawOrderedList(
@@ -85,7 +106,7 @@ export class TestPage extends Page {
       const iconSize = 35 * 5 * pageScale
       const iconX = drawW - iconSize - 50 * 5 * pageScale
       const iconY = y + 2 * 5 * pageScale
-      const icon = TestPage._getBulletIcon(item.iconName)
+      const icon = SecondPage._getBulletIcon(item.iconName)
       if (icon.complete) {
         ctx.drawImage(icon, iconX, iconY, iconSize, iconSize)
       }
@@ -121,13 +142,13 @@ export class TestPage extends Page {
   }
 
   private static _getBulletIcon(iconName: IconName): HTMLImageElement {
-    const cached = TestPage.bulletIconCache.get(iconName)
+    const cached = SecondPage.bulletIconCache.get(iconName)
     if (cached) return cached
 
     const icon = new Image()
-    const solidSvg = TestPage._toSolidBlackSvg(BUTTON_ICONS[iconName])
+    const solidSvg = SecondPage._toSolidBlackSvg(BUTTON_ICONS[iconName])
     icon.src = `data:image/svg+xml;utf8,${encodeURIComponent(solidSvg)}`
-    TestPage.bulletIconCache.set(iconName, icon)
+    SecondPage.bulletIconCache.set(iconName, icon)
     return icon
   }
 }
@@ -152,3 +173,19 @@ const listItems = [
     iconName: 'grow' as const,
   },
 ]
+
+function drawFinish(ctx: CanvasRenderingContext2D, x, y, w) {
+  const pad = w / 10
+  x += pad
+  w -= 2 * pad
+  const squareSize = w / 10
+  const nCols = 10
+  const nRows = 4
+  // const h = nRows * squareSize
+  for (let row = 0; row < nRows; row++) {
+    for (let col = 0; col < nCols; col++) {
+      ctx.fillStyle = (row + col) % 2 === 0 ? 'white' : 'black'
+      ctx.fillRect(x + col * squareSize, y + row * squareSize, squareSize, squareSize)
+    }
+  }
+}

@@ -65,6 +65,7 @@ export const ROOM = {
     // 'sorter-room', // balls pass through or end up in numbered regions
 
     'gear-room', // spinning interlocked gears
+    'fast-gear-room',
     'ferris-wheel-room', // spinning wheel
 
     'empty-room', // no obstacles
@@ -129,7 +130,7 @@ export const SHUFFLED_PATTERN_NAMES = [...PATTERN.NAMES]
 export const PAGE = {
   NAMES: [
     'cover-page',
-    'test-page',
+    'second-page',
   ],
   SOURCES: ['src/title-screen/pages/imp/**/*.ts'],
 } as const satisfies ImpManifest

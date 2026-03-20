@@ -27,7 +27,7 @@ import {
   advanceTitlePage,
   setPageSourceDimensions,
   initTitleScreenFlipCanvas,
-} from 'title-screen'
+} from 'title-screen/title-screen'
 import { BASE_FONT_SIZE } from 'gfx/canvas-text-util'
 import { shortVibrate } from 'util/vibrate'
 import { loadAllSounds } from 'audio/sound-asset-loader'

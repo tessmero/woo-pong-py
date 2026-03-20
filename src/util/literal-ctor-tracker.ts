@@ -51,18 +51,18 @@ function trackArrayImpl<T>(value: Array<T>, _meta: { file: string, line?: number
 export const __trackObject = trackObjectImpl
 export const __trackArray = trackArrayImpl
 
-// function startLiteralCtorCheck() {
-//   const startCounts = { ...COUNTS }
-//   startCounts.Object++ // account for one object created on previous line
-//   setTimeout(() => {
-//     for (const ctorName of _TRACKED_CTORS) {
-//       const delta = COUNTS[ctorName] - startCounts[ctorName]
-//       if (delta > 0) {
-//         console.log(`constructed ${delta} ${ctorName} in one second`)
-//       }
-//     }
-//   }, 1000)
-// }
+function startLiteralCtorCheck() {
+  const startCounts = { ...COUNTS }
+  startCounts.Object++ // account for one object created on previous line
+  setTimeout(() => {
+    for (const ctorName of _TRACKED_CTORS) {
+      const delta = COUNTS[ctorName] - startCounts[ctorName]
+      if (delta > 0) {
+        console.log(`constructed ${delta} ${ctorName} in one second`)
+      }
+    }
+  }, 1000)
+}
 
-// // Sample every second
-// window.setInterval(startLiteralCtorCheck, 1000)
+// Sample every second
+window.setInterval(startLiteralCtorCheck, 1000)

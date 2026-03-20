@@ -23,7 +23,7 @@ export const INT32_MAX = 2147483647
 export const DISK_COUNT = 10
 export const BOBRICK_COUNT = 30
 
-export const ROOM_COUNT = 9
+export const ROOM_COUNT = 10
 
 export const RESTITUTION = 0.95
 

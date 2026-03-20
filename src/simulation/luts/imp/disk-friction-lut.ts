@@ -50,7 +50,7 @@ export function applyFrictionX(state: DiskState) {
     index = speedDetail * Math.sign(index)
   }
   state.dx = lut.get(index + speedDetail, 'speed')
-  console.log(`old dx ${oldSpeed} new dx ${state.dx} change ${state.dx/oldSpeed}`)
+  // console.log(`old dx ${oldSpeed} new dx ${state.dx} change ${state.dx/oldSpeed}`)
 }
 export function applyFrictionY(state: DiskState) {
   const lut = Lut.create('disk-friction-lut')
