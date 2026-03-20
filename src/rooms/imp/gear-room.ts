@@ -96,8 +96,8 @@ export class GearRoom extends Room {
         tooth.collisionRect[1] = ry
 
         // compute velocity for imparting momentumt o balls
-        tooth.vel[0] = (offset[0]-prevOffset[0]) * speedMult
-        tooth.vel[1] = (offset[1]-prevOffset[1]) * speedMult
+        tooth.vel[0] = (offset[0] - prevOffset[0]) * speedMult
+        tooth.vel[1] = (offset[1] - prevOffset[1]) * speedMult
       }
     }
   }

@@ -16,7 +16,7 @@ export const PLAYING_LAYOUT = {
   screen: {},
 
   resetBtn: {
-    'parent': 'screen',
+    parent: 'screen',
     width: 200,
     height: 40,
     top: 5,

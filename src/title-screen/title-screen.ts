@@ -139,6 +139,9 @@ export function setTitleScreenStartButton(button: HTMLElement) {
   _startButton = button
 }
 
+const _layout = { drawX: 0, drawY: 0, drawW: 0, drawH: 0, pageScale: 0 }
+const _transform = { scale: 0, drawX: 0, drawY: 0, drawW: 0, drawH: 0 }
+
 export function getTitleCanvasTransform(): {
   scale: number
   drawX: number
@@ -148,13 +151,12 @@ export function getTitleCanvasTransform(): {
 } | null {
   const layout = getTitleCanvasLayout()
   const dims = getPageSourceDimensions()
-  const scale = layout.pageScale
-  const drawW = dims.width * scale
-  const drawH = dims.height * scale
-  const drawX = layout.drawX
-  const drawY = layout.drawY
-
-  return { scale, drawX, drawY, drawW, drawH }
+  _transform.scale = layout.pageScale
+  _transform.drawX = layout.drawX
+  _transform.drawY = layout.drawY
+  _transform.drawW = dims.width * layout.pageScale
+  _transform.drawH = dims.height * layout.pageScale
+  return _transform
 }
 
 function getTitleCanvasLayout(): {
@@ -165,25 +167,18 @@ function getTitleCanvasLayout(): {
   pageScale: number
 } {
   // Use viewport dimensions so canvas and UI transforms stay aligned inside the iframe.
-  const viewportWidth = window.innerWidth
-  const viewportHeight = window.innerHeight
-  const inset = 0
+  const vw = window.innerWidth
+  const vh = window.innerHeight
   const dims = getPageSourceDimensions()
-  const targetW = viewportWidth * (1 - inset * 2)
-  const targetH = viewportHeight * (1 - inset * 2)
-  const pageScale = Math.min(targetW / dims.width, targetH / dims.height)
+  const pageScale = Math.min(vw / dims.width, vh / dims.height)
   const drawW = dims.width * pageScale
   const drawH = dims.height * pageScale
-  const drawX = (viewportWidth - drawW) * 0.5
-  const drawY = (viewportHeight - drawH) * 0.5
-
-  return {
-    drawX,
-    drawY,
-    drawW,
-    drawH,
-    pageScale,
-  }
+  _layout.drawX = (vw - drawW) * 0.5
+  _layout.drawY = (vh - drawH) * 0.5
+  _layout.drawW = drawW
+  _layout.drawH = drawH
+  _layout.pageScale = pageScale
+  return _layout
 }
 
 export function setTitleCoverBackground(bg: HTMLImageElement) {

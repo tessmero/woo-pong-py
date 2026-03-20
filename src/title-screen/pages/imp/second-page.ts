@@ -49,7 +49,7 @@ export class SecondPage extends Page {
     // ctx.strokeRect(drawX, drawY, drawW, drawH)
 
     this._drawOrderedList(ctx, drawX, drawY, drawW, drawH, pageScale)
-    this._drawRaceDiagram(ctx, drawX, drawY, drawW, drawH, pageScale)
+    // this._drawRaceDiagram(ctx, drawX, drawY, drawW, drawH, pageScale)
   }
 
   private _drawRaceDiagram(
@@ -58,7 +58,7 @@ export class SecondPage extends Page {
     drawY: number,
     drawW: number,
     drawH: number,
-    pageScale: number,
+    _pageScale: number,
   ): void {
     const x = drawX + drawW * 0.8
     const y = drawY + drawH * 0.1
@@ -69,7 +69,7 @@ export class SecondPage extends Page {
 
     ctx.strokeStyle = 'red'
     ctx.lineWidth = 2
-    ctx.strokeRect( x,y,w,h)
+    ctx.strokeRect(x, y, w, h)
   }
 
   private _drawOrderedList(

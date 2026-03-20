@@ -317,7 +317,10 @@ function _tryComputeLeaf(): LeafValues | null {
 
     // check if this is a new or improved race
     const currentBranchDatum = branches[sim.winningDiskIndex]
-    if ((currentBranchDatum.midSeed === -1 || currentBranchDatum.underdogScore < underdogScore) && (underdogScore >= minUnderdogScore)) {
+    if (
+      (currentBranchDatum.midSeed === -1 || currentBranchDatum.underdogScore < underdogScore)
+      && (underdogScore >= minUnderdogScore)
+    ) {
       if (currentBranchDatum.midSeed === -1) {
         unresolvedDisks--
       }
