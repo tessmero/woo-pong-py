@@ -92,7 +92,35 @@ export const BUTTON_ICONS = {
 <path fill-rule="evenodd" clip-rule="evenodd" d="M8 0L0 6V8H1V15H4V10H7V15H15V8H16V6L14 4.5V1H11V2.25L8 0ZM9 10H12V13H9V10Z" 
 fill="currentColor"/>
 </svg>
-  `
+  `,
+
+  score: `
+  <svg viewBox="0 0 62.5 62.5" width="${imgSize}" height="${imgSize}" xmlns="http://www.w3.org/2000/svg">
+<circle cx="16.44736842105263" cy="18.092105263157894" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="31.25" cy="18.092105263157894" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="46.05263157894737" cy="18.092105263157894" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="9.046052631578945" cy="31.25" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="23.848684210526315" cy="31.25" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="38.651315789473685" cy="31.25" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="53.453947368421055" cy="31.25" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="16.44736842105263" cy="44.4078947368421" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="31.25" cy="44.4078947368421" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="46.05263157894737" cy="44.4078947368421" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+</svg>`,
+
+  party: `
+  <svg viewBox="0 0 62.5 62.5" width="${imgSize}" height="${imgSize}" xmlns="http://www.w3.org/2000/svg">
+<circle cx="16.44736842105263" cy="18.092105263157894" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="31.25" cy="18.092105263157894" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="46.05263157894737" cy="18.092105263157894" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="9.046052631578945" cy="31.25" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="23.848684210526315" cy="31.25" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="38.651315789473685" cy="31.25" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="53.453947368421055" cy="31.25" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="16.44736842105263" cy="44.4078947368421" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="31.25" cy="44.4078947368421" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+<circle cx="46.05263157894737" cy="44.4078947368421" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+</svg>`,
 } as const satisfies Record<string, string>
 
 export type IconName = keyof typeof BUTTON_ICONS

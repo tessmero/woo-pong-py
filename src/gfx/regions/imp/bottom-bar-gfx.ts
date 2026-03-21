@@ -20,36 +20,46 @@ import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { settingsPanel } from 'overlay-panels/settings-panel'
 import { Timeline } from 'timeline'
 
-const _LAYOUT_KEYS = [
-  'bsp', 'clock', 'pause', 'play', 'fast', 'faster',
-] as const
+type ButtonSpec = {
+  activeChecker: (pw: PinballWizard) => boolean
+  clickAction: (pw: PinballWizard, xFrac: number) => void
+}
 
-type LayoutKey = (typeof _LAYOUT_KEYS)[number]
+const _BUTTONS = {
+  bsp: {
+    activeChecker: () => ballSelectionPanel.isShowing,
+    clickAction: (pw: PinballWizard, _xFrac: number) => {
+      shortVibrate(pw)
+      ballSelectionPanel.toggle(pw)
+    },
+  },
+  clock: {
+    activeChecker: () => Timeline.isShowing,
+    clickAction: (pw: PinballWizard, _xFrac: number) => {
+      shortVibrate(pw)
+      Timeline.toggle()
+    },
+  },
+  pause: {
+    activeChecker: (pw: PinballWizard) => pw.speed === 'paused',
+    clickAction: (pw: PinballWizard, _xFrac: number) => { pw.speed = 'paused' },
+  },
+  play: {
+    activeChecker: (pw: PinballWizard) => pw.speed === 'normal',
+    clickAction: (pw: PinballWizard, _xFrac: number) => { pw.speed = 'normal' },
+  },
+  fast: {
+    activeChecker: (pw: PinballWizard) => pw.speed === 'fast',
+    clickAction: (pw: PinballWizard, _xFrac: number) => { pw.speed = 'fast' },
+  },
+  faster: {
+    activeChecker: (pw: PinballWizard) => pw.speed === 'faster',
+    clickAction: (pw: PinballWizard, _xFrac: number) => { pw.speed = 'faster' },
+  },
+} as const satisfies Record<string, ButtonSpec>
+
+type LayoutKey = keyof typeof _BUTTONS
 type Layout = Record<LayoutKey, Rectangle>
-
-const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
-  bsp: () => ballSelectionPanel.isShowing,
-  clock: () => Timeline.isShowing,
-  pause: pw => pw.speed === 'paused',
-  play: pw => pw.speed === 'normal',
-  fast: pw => pw.speed === 'fast',
-  faster: pw => pw.speed === 'faster',
-}
-
-const clickActions: Record<LayoutKey, (pw: PinballWizard, xFrac: number) => void> = {
-  bsp: (pw) => {
-    shortVibrate(pw)
-    ballSelectionPanel.toggle(pw)
-  },
-  clock: (pw) => {
-    shortVibrate(pw)
-    Timeline.toggle()
-  },
-  pause: (pw) => { pw.speed = 'paused' },
-  play: (pw) => { pw.speed = 'normal' },
-  fast: (pw) => { pw.speed = 'fast' },
-  faster: (pw) => { pw.speed = 'faster' },
-}
 
 export class BottomBarGfx extends GfxRegion {
   static {
@@ -75,7 +85,7 @@ export class BottomBarGfx extends GfxRegion {
     if (this._held) {
       const rect = this._layout![this._held]
       const xFrac = (mousePos[0] * window.devicePixelRatio - rect[0]) / rect[2]
-      clickActions[this._held](pw, xFrac)
+      _BUTTONS[this._held].clickAction(pw, xFrac)
     }
     return false
   }
@@ -96,7 +106,7 @@ export class BottomBarGfx extends GfxRegion {
     for (const [key, rect] of Object.entries(this._layout)) {
       if (rectContainsPoint(rect, ...mousePos.map(v => v * window.devicePixelRatio) as Vec2)) {
         this._hovered = key as LayoutKey
-        if (key !== 'clock' && !activeCheckers[key](pw)) {
+        if (key !== 'clock' && !_BUTTONS[key as LayoutKey].activeChecker(pw)) {
           Graphics.cvs.style.setProperty('cursor', 'pointer')
         }
         return
@@ -124,7 +134,7 @@ export class BottomBarGfx extends GfxRegion {
   }
 
   public override shouldDraw(pw: PinballWizard): boolean {
-    return pw.activeSim.stepCount > 0
+    return pw.activeSim && pw.activeSim.stepCount > 0
   }
 
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
@@ -143,7 +153,7 @@ export class BottomBarGfx extends GfxRegion {
       const innerRect = this._layout[key]
       const isHovered = this._hovered === key
       // const isHeld = this._held === key
-      const isActive = activeCheckers[key](pw)
+      const isActive = _BUTTONS[key].activeChecker(pw)
 
       // // Draw button background
       // ctx.save()

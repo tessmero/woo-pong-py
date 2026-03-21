@@ -8,7 +8,7 @@ import { setSimAudibleRect } from 'audio/collision-sounds'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { Camera } from 'camera'
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
-import { topConfig } from 'configs/imp/top-config'
+import { isDevMode, topConfig } from 'configs/imp/top-config'
 import { GfxRegion } from 'gfx/regions/gfx-region'
 import { Graphics } from 'gfx/graphics'
 import type { ElementId } from 'guis/gui'
@@ -53,7 +53,6 @@ export type GameState = 'loading' | 'title-screen' | 'second-title-screen' | 'pl
 
 export class PinballWizard {
   public activeSim!: Simulation // assigned in init -> reset
-  public homeSim!: Simulation // assigned in init -> reset
   public gui!: Gui // assigned in init -> reset
 
   public loadingState: string | null = 'A'
@@ -158,6 +157,26 @@ export class PinballWizard {
     this._speed = 'normal'
     this._speedBeforeHalt = 'normal'
 
+    if (this.gameState === 'home') {
+      this._resetHome()
+    }
+    else {
+      this._resetPlaying()
+    }
+
+    this.gui = Gui.create('playing-gui')
+    this.camera.jumpToRoom(this, 0)
+    this.onResize()
+  }
+
+  private _resetHome() {
+    const homeSeed = 1234
+    this.activeSim = new Simulation(homeSeed, true)
+    this.activeSim.t = 0
+    this.activeSim._stepCount = 0
+  }
+
+  private _resetPlaying() {
     const cfgSeed = topConfig.flatConfig.rngSeed
     this.isSeedConfiged = cfgSeed !== -1 // is seed set manually (used for puppeteer)
 
@@ -177,8 +196,11 @@ export class PinballWizard {
 
     this.activeSim = new Simulation(commonStartSeed)
 
-    const homeSeed = 1234
-    this.homeSim = new Simulation(homeSeed)
+    // // skip throwing animation in dev mode
+    // if (isDevMode) {
+    //   this.activeSim.t = 0
+    //   this.activeSim._stepCount = 0
+    // }
 
     if (!this.isSeedConfiged) {
       this.activeSim.branchSeed = 29137 // seed to insert later
@@ -193,10 +215,6 @@ export class PinballWizard {
       //   this.activeSim.expectedHashes = SIM_HASHES.hashes
       // }
     }
-
-    this.gui = Gui.create('playing-gui')
-    this.camera.jumpToRoom(this, 0)
-    this.onResize()
   }
 
   get isHalted() {
@@ -359,7 +377,7 @@ export class PinballWizard {
     this._lastInputId = inputId
     for (const [name, rect] of Object.entries(Graphics.regions)) {
       const gfx = GfxRegion.create(name as GfxRegionName)
-      if (rectContainsPoint(rect, ...rawPos)) {
+      if (gfx.shouldDraw(this) && rectContainsPoint(rect, ...rawPos)) {
         gfx.move(this, rawPos, inputId)
       }
       else {

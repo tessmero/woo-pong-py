@@ -100,7 +100,7 @@ export type StartLayoutName = (typeof START_LAYOUT.NAMES)[number]
 export const GFX_REGION = {
   NAMES: [
 
-    'sim-gfx', 'loop-gfx',
+    'sim-gfx',
     'home-gfx',
     'scrollbar-gfx', 'bottom-bar-gfx', 'top-bar-gfx',
 
@@ -109,6 +109,7 @@ export const GFX_REGION = {
     'timeline-gfx', // toggleable timeline
     'bsp-gfx', // toggleable ball selection panel
     'settings-gfx', // toggleable settings panel
+    'score-gfx', // toggleable score panel
 
     'start-gfx', // temporary layer on top
   ],

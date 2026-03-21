@@ -37,6 +37,38 @@ button {
   transition: opacity 0.5s ease;
   opacity: 1;
 }
+
+.startup-layer {
+  transition: opacity 0.35s ease;
+}
+
+.startup-transparent {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.startup-gone {
+  visibility: hidden;
+}
+
+#startup-loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ddd;
+  color: #37352f;
+  font-family: 'Rubik', sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+#startup-loading-label {
+  font-size: clamp(1rem, 2.2vw, 1.5rem);
+}
+
 .hidden {
   opacity: 0;
   pointer-events: none;

@@ -105,6 +105,46 @@ async function loadTitleCoverImages() {
 
 let isTitleAnimPlaying = true
 let lastTime = performance.now()
+const STARTUP_FADE_MS = 350
+
+function waitForNextFrame(): Promise<void> {
+  return new Promise(resolve => requestAnimationFrame(() => resolve()))
+}
+
+async function waitForOpacityTransition(element: HTMLElement): Promise<void> {
+  await new Promise<void>((resolve) => {
+    let isDone = false
+
+    const finish = () => {
+      if (isDone) return
+      isDone = true
+      element.removeEventListener('transitionend', onTransitionEnd)
+      window.clearTimeout(timeoutId)
+      resolve()
+    }
+
+    const onTransitionEnd = (event: Event) => {
+      if (!(event instanceof TransitionEvent)) return
+      if (event.target !== element || event.propertyName !== 'opacity') return
+      finish()
+    }
+
+    const timeoutId = window.setTimeout(finish, STARTUP_FADE_MS + 100)
+    element.addEventListener('transitionend', onTransitionEnd)
+  })
+}
+
+async function revealTitleScreen(loadingScreen: HTMLElement, titleScreenElem: HTMLElement) {
+  titleScreenElem.classList.remove('startup-gone')
+  await waitForNextFrame()
+
+  loadingScreen.classList.add('startup-transparent')
+  await waitForOpacityTransition(loadingScreen)
+  loadingScreen.classList.add('hidden')
+
+  titleScreenElem.classList.remove('startup-transparent')
+  await waitForOpacityTransition(titleScreenElem)
+}
 
 function titleAnimLoop() {
   if (!isTitleAnimPlaying) return
@@ -129,6 +169,9 @@ async function main() {
   window.addEventListener('resize', onTitleScreenResize)
 
   const iframe = document.getElementById('title-iframe') as HTMLIFrameElement
+  const loadingScreen = document.getElementById('startup-loading-screen') as HTMLElement
+  const loadingLabel = document.getElementById('startup-loading-label') as HTMLElement
+  const titleScreenElem = document.getElementById('title-screen') as HTMLElement
 
   // Wait for the title iframe to be loaded before continuing
   await new Promise<void>((resolve) => {
@@ -160,24 +203,27 @@ async function main() {
   // window.addEventListener('keydown', (event) => {
   //   pinballWizard.gui.keydown(pinballWizard, event.code)
   // })
-
-  // show title screen
-  const titleScreenElem = document.getElementById('title-screen') as HTMLElement
-  titleScreenElem.classList.remove('hidden')
   pinballWizard.loadingState = 'K'
 
   initTitleScreenFlipCanvas()
   initListeners(pinballWizard)
   pinballWizard.loadingState = 'D'
   pinballWizard.loadingState = 'E'
-  await _initAssets(startBtn)
+  await _initAssets(loadingLabel)
   // TitleScreen.startHilbert()
+
+  TitleScreen.update(0)
+  onTitleScreenResize()
+  await waitForNextFrame()
+  await waitForNextFrame()
 
   for (const elem of inner.getElementsByClassName('toHide')) {
     elem.setAttribute('style', 'opacity:0')
   }
   pinballWizard.loadingState = 'F'
   startBtn.innerHTML = 'START'
+  await revealTitleScreen(loadingScreen, titleScreenElem)
+  pinballWizard.gameState = 'title-screen'
   pinballWizard.loadingState = 'G'
 
   for (const guiName of GUI.NAMES) {
@@ -196,6 +242,9 @@ async function main() {
     const shouldStartGame = advanceTitlePage()
     if (!shouldStartGame) {
       // Page advanced, wait for next click
+      if (isDevMode) {
+        setTimeout(async () => startBtn.click(), 100)
+      }
       return
     }
 
@@ -209,6 +258,9 @@ async function main() {
     isTitleAnimPlaying = false // break title screen loop
     document.removeEventListener('resize', onTitleScreenResize)
     mainLoop() // start first loop
+  }
+  if (isDevMode) {
+    setTimeout(async () => startBtn.click(), 100)
   }
   pinballWizard.loadingState = 'J'
 

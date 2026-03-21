@@ -17,6 +17,8 @@ import { START_LAYOUT_POSVELS } from 'rooms/start-layouts/set-by-build'
 import { step } from './sim-step'
 import { Serializer } from './serializer'
 import { StartLayout } from 'rooms/start-layouts/start-layout'
+import { isDevMode } from 'configs/imp/top-config'
+import { HomeLevel } from 'home-screen/home-level'
 
 const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 5; i++) {
@@ -71,12 +73,14 @@ export class Simulation {
   get stepCount() { return this._stepCount }
   public t: number// = this._stepCount * STEP_DURATION
 
-  constructor(seed: number) {
+  constructor(seed: number, isHome = false) {
     // console.log(`construct simulation with starting seed ${seed}`)
 
     Perturbations.setSeed(seed)
 
-    this.level = new Level()
+    this.level = isHome ? new HomeLevel() : new Level() // home has one room
+
+
     const sl = StartLayout.create(this.level.startLayout)
     const animDur = sl.animDur
     this._stepCount = -animDur

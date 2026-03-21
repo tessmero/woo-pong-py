@@ -10,6 +10,7 @@ import { GfxRegion } from '../gfx-region'
 import { OBSTACLE_FILL, type CanvasName } from 'gfx/graphics'
 import { VALUE_SCALE } from 'simulation/constants'
 import { drawDisk } from 'gfx/disk-gfx-util'
+import { packHalf2x16 } from 'three/src/nodes/math/PackFloatNode.js'
 
 let isShowing = false
 
@@ -20,7 +21,7 @@ export class StartGfx extends GfxRegion {
 
   override targetCanvas: CanvasName = 'start'
   override shouldDraw(pw: PinballWizard) {
-    return pw.activeSim.stepCount < 2000 // ballSelectionPanel.isShowing
+    return pw.activeSim && pw.activeSim.stepCount < 2000 // ballSelectionPanel.isShowing
   }
 
   public drawSimScale: number = 1 // set in drawSim

@@ -8,8 +8,9 @@
   
 </head>
 <body>
-  
-
+  <div id="startup-loading-screen" class="startup-layer">
+    <div id="startup-loading-label">LOADING</div>
+  </div>
 
   <canvas id="main-canvas" style="z-index:3;"></canvas>
   <canvas id="bsp-canvas" style="z-index:4;display:none;background:transparent;pointer-events:none;"></canvas>
@@ -20,7 +21,7 @@
 
   <div id="controls-container" style="z-index:7"></div>
 
-  <div id="title-screen" class="modal toHide">
+  <div id="title-screen" class="modal toHide startup-layer startup-transparent startup-gone">
     <div class="modal-content">
       <iframe 
         id="title-iframe" src="title-screen.html" 

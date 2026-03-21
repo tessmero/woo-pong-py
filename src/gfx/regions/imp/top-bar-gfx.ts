@@ -18,41 +18,64 @@ import { settingsPanel } from 'overlay-panels/settings-panel'
 import { GfxRegion } from '../gfx-region'
 import { drawText } from 'gfx/canvas-text-util'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
+import { scorePanel } from 'overlay-panels/score-panel'
+import { ballPartyPanel } from 'overlay-panels/ball-party-panel'
 
-const _LAYOUT_KEYS = [
-  'settings', 'status',
-  'home', // test
-] as const
-type LayoutKey = (typeof _LAYOUT_KEYS)[number]
+type ButtonSpec = {
+  activeChecker: (pw: PinballWizard) => boolean
+  clickAction: (pw: PinballWizard) => void
+}
+
+const _BUTTONS = {
+  settings: {
+    activeChecker: () => settingsPanel.isShowing,
+    clickAction: (pw: PinballWizard) => {
+      if (!settingsPanel.isShowing) {
+        shortVibrate(pw)
+      }
+      settingsPanel.toggle(pw)
+    },
+  },
+  status: {
+    activeChecker: () => false,
+    clickAction: () => {
+      // do nothing
+    },
+  },
+  home: {
+    activeChecker: (pw: PinballWizard) => pw.gameState === 'home',
+    clickAction: (pw: PinballWizard) => {
+      if (pw.gameState === 'home') {
+        pw.gameState = 'playing'
+      }
+      else {
+        pw.gameState = 'home'
+      }
+      pw.reset()
+    },
+  },
+  score: {
+    activeChecker: () => scorePanel.isShowing,
+    clickAction: (pw: PinballWizard) => {
+      if (!scorePanel.isShowing) {
+        shortVibrate(pw)
+      }
+      scorePanel.toggle(pw)
+    },
+  },
+  party: {
+    activeChecker: () => ballPartyPanel.isShowing,
+    clickAction: (pw: PinballWizard) => {
+      if (!ballPartyPanel.isShowing) {
+        shortVibrate(pw)
+      }
+      ballPartyPanel.toggle(pw)
+    },
+  },
+} as const satisfies Record<string, ButtonSpec>
+
+type LayoutKey = keyof typeof _BUTTONS
 type Layout = Record<LayoutKey, Rectangle>
-
-const activeCheckers: Record<LayoutKey, (pw: PinballWizard) => boolean> = {
-  settings: () => settingsPanel.isShowing,
-  status: () => false,
-
-  home: pw => pw.gameState === 'home', // test
-}
-
-const clickActions: Record<LayoutKey, (pw: PinballWizard) => void> = {
-  settings: (pw) => {
-    // console.log('top-bar-gfx clickActions.settings')
-    if (!settingsPanel.isShowing) {
-      shortVibrate(pw)
-    }
-    settingsPanel.toggle(pw)
-  },
-  status: () => {
-    // do nothing
-  },
-  home: (pw) => {
-    if (pw.gameState === 'home') {
-      pw.gameState = 'playing'
-    }
-    else {
-      pw.gameState = 'home'
-    }
-  },
-}
 
 export class TopBarGfx extends GfxRegion {
   static {
@@ -81,7 +104,9 @@ export class TopBarGfx extends GfxRegion {
     this._layout = {
       settings: [x, y, btnWidth, h],
       home: [x + btnWidth, y, btnWidth, h], // test
-      status: [x + 2 * btnWidth, y, w - 2 * btnWidth, h],
+      score: [x + 2 * btnWidth, y, btnWidth, h], // test
+      party: [x + 3 * btnWidth, y, btnWidth, h], // test
+      status: [x + 4 * btnWidth, y, w - 4 * btnWidth, h],
     }
   }
 
@@ -90,7 +115,7 @@ export class TopBarGfx extends GfxRegion {
     this._held = this._hovered
 
     if (this._held) {
-      clickActions[this._held](pw)
+      _BUTTONS[this._held].clickAction(pw)
     }
     return false
   }
@@ -112,7 +137,7 @@ export class TopBarGfx extends GfxRegion {
     for (const [key, rect] of Object.entries(this._layout)) {
       if (rectContainsPoint(rect, ...mousePos.map(v => v * window.devicePixelRatio) as Vec2)) {
         this._hovered = key as LayoutKey
-        if (key !== 'status' && !activeCheckers[key](pw)) {
+        if (key !== 'status' && !_BUTTONS[key as LayoutKey].activeChecker(pw)) {
           Graphics.cvs.style.setProperty('cursor', 'pointer')
         }
         return
@@ -129,7 +154,7 @@ export class TopBarGfx extends GfxRegion {
   }
 
   public override shouldDraw(pw: PinballWizard): boolean {
-    return pw.activeSim.stepCount > 0
+    return pw.activeSim && pw.activeSim.stepCount > 0
   }
 
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
@@ -146,7 +171,7 @@ export class TopBarGfx extends GfxRegion {
       const innerRect = this._layout[key]
       const isHovered = this._hovered === key
       // const isHeld = this._held === key
-      const isActive = activeCheckers[key](pw)
+      const isActive = _BUTTONS[key].activeChecker(pw)
 
       // // Draw button background
       // ctx.save()

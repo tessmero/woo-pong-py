@@ -42,7 +42,7 @@ export class Level {
   public readonly rooms: Array<Room>
   public readonly startLayout: StartLayoutName
   private readonly _bounds: Rectangle
-  constructor() {
+  constructor(roomCount = ROOM_COUNT) {
     this.startLayout = randomStartLayout()
     // full level with multiple rooms
     this._bounds = ([
@@ -50,7 +50,7 @@ export class Level {
       100 - 2 * thick,
       totalHeight - 2 * thick,
     ]).map(v => v * VALUE_SCALE) as Rectangle
-    this.rooms = Array.from({ length: ROOM_COUNT }, (_, roomIndex) => {
+    this.rooms = Array.from({ length: roomCount }, (_, roomIndex) => {
       const roomOffset = VALUE_SCALE * (
         startPadding
         + (100 + roomPadding) * roomIndex
@@ -68,6 +68,7 @@ export class Level {
   get bounds(): Rectangle { return this._bounds }
 
   buildObstacles(): Array<Obstacle> {
+
     const result: Array<Obstacle> = []
     for (const [_roomIndex, room] of this.rooms.entries()) {
       result.push(...room.buildObstacles())
