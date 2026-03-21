@@ -12,10 +12,9 @@ import { PinballWizard } from './pinball-wizard'
 import { getTestSupport, initCursorStyleDetector } from 'test-support'
 import { applyDevMode, isDevMode } from 'configs/imp/top-config'
 import { Lut } from 'simulation/luts/lut'
-import { GUI, LUT } from 'imp-names'
+import { LUT } from 'imp-names'
 import type { ShapeName } from 'simulation/shapes'
 import { SHAPE_PATHS } from 'simulation/shapes'
-import { Gui } from 'guis/gui'
 import { Graphics } from 'gfx/graphics'
 import {
   onTitleScreenResize,
@@ -226,9 +225,6 @@ async function main() {
   pinballWizard.gameState = 'title-screen'
   pinballWizard.loadingState = 'G'
 
-  for (const guiName of GUI.NAMES) {
-    Gui.preload(pinballWizard, guiName)
-  }
   pinballWizard.loadingState = 'H'
   // pinballWizard.onResize()
   pinballWizard.loadingState = 'I'
@@ -250,7 +246,6 @@ async function main() {
 
     // document.documentElement.requestFullscreen()
     await pinballWizard.init()
-    pinballWizard.gui = Gui.create('playing-gui')
     pinballWizard.gameState = 'playing'
     pinballWizard.onResize()
     titleScreenElem.classList.add('hidden')

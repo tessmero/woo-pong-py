@@ -11,7 +11,6 @@ import { BUTTON_ICONS } from 'gfx/button-icons'
 import { Graphics, gutterPx } from 'gfx/graphics'
 
 import { stepsToSeconds } from 'simulation/constants'
-import { formatTime } from 'guis/imp/playing-gui'
 import { setupRubikText } from '../../canvas-text-util'
 import { drawRoundedRect, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
 import { shortVibrate } from 'util/vibrate'
@@ -226,3 +225,14 @@ export class BottomBarGfx extends GfxRegion {
 // const ethBtns: Array<PlayingElem> = [
 //   ...Object.values(speedBtns),
 // ]
+
+function formatTime(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = Math.floor(totalSeconds % 60)
+
+  // Use padStart to ensure two digits for both minutes and seconds
+  const formattedMinutes = String(minutes).padStart(2, '0')
+  const formattedSeconds = String(seconds).padStart(2, '0')
+
+  return `${formattedMinutes}:${formattedSeconds}`
+}

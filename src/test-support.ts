@@ -6,7 +6,6 @@
 
 import { type PinballWizard } from 'pinball-wizard'
 import { topConfig } from 'configs/imp/top-config'
-import { Gui } from 'guis/gui'
 import { GfxRegion } from 'gfx/regions/gfx-region'
 import type { SimGfx } from 'gfx/regions/imp/sim-gfx'
 import type { BottomBarGfx } from 'gfx/regions/imp/bottom-bar-gfx'
@@ -61,15 +60,15 @@ export function getTestSupport(pinballWizard: PinballWizard) {
         const rect = gfx.tsLocateElement(id)
         if (rect) return rect
 
-        // locate element in gui
-        const guisToCheck = [Gui.create('playing-gui')]
-        for (const gui of guisToCheck) {
-          const rect = gui.layoutRectangles[id]
-          if (!rect) continue
-          const [x, y, w, h] = rect
-          const ps = 1// seaBlock.config.flatConfig.pixelScale
-          return [x * ps, y * ps, w * ps, h * ps]
-        }
+        // // locate element in gui
+        // const guisToCheck = [Gui.create('playing-gui')]
+        // for (const gui of guisToCheck) {
+        //   const rect = gui.layoutRectangles[id]
+        //   if (!rect) continue
+        //   const [x, y, w, h] = rect
+        //   const ps = 1// seaBlock.config.flatConfig.pixelScale
+        //   return [x * ps, y * ps, w * ps, h * ps]
+        // }
       }
       return null
     },

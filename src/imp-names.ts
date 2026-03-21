@@ -13,17 +13,6 @@ export type ImpManifest = {
   SOURCES: Array<string> // source file patterns used in tools and tests
 }
 
-// guis
-export const GUI = {
-  NAMES: [
-    // 'title-screen-gui',
-    // 'warning-gui',
-    'playing-gui',
-  ],
-  SOURCES: ['src/guis/imp/**/*.ts'],
-} as const satisfies ImpManifest
-export type GuiName = (typeof GUI.NAMES)[number]
-
 // configurables
 export const CONFIGURABLE = {
   NAMES: [

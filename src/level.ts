@@ -15,16 +15,6 @@ const roomPadding = 10 // space between 100x100 rooms
 const startPadding = 10
 const endPadding = 10
 
-const totalHeight = startPadding
-  + 100 * ROOM_COUNT
-  + roomPadding * (ROOM_COUNT - 1)
-  + endPadding
-
-const finishThickness = 50
-const _finish: Rectangle = [
-  0, totalHeight - finishThickness,
-  100, finishThickness,
-]
 
 const thick = 1 // thickness of walls
 
@@ -42,9 +32,21 @@ export class Level {
   public readonly rooms: Array<Room>
   public readonly startLayout: StartLayoutName
   private readonly _bounds: Rectangle
+  private readonly _finish: Rectangle
   constructor(roomCount = ROOM_COUNT) {
-    this.startLayout = randomStartLayout()
-    // full level with multiple rooms
+    this.startLayout = this.pickStartLayout()
+    
+    const totalHeight = startPadding
+      + 100 * roomCount
+      + roomPadding * (roomCount - 1)
+      + endPadding
+
+    const finishThickness = 50
+    this._finish = [
+      0, totalHeight - finishThickness,
+      100, finishThickness,
+    ]
+
     this._bounds = ([
       thick, thick,
       100 - 2 * thick,
@@ -63,7 +65,11 @@ export class Level {
     })
   }
 
-  get finish(): Rectangle { return _finish }
+  protected pickStartLayout(): StartLayoutName {
+    return randomStartLayout()
+  }
+
+  get finish(): Rectangle { return this._finish }
 
   get bounds(): Rectangle { return this._bounds }
 

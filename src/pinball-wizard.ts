@@ -11,11 +11,8 @@ import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
 import { isDevMode, topConfig } from 'configs/imp/top-config'
 import { GfxRegion } from 'gfx/regions/gfx-region'
 import { Graphics } from 'gfx/graphics'
-import type { ElementId } from 'guis/gui'
-import { Gui } from 'guis/gui'
-import { toggleElement } from 'guis/gui-html-elements'
 import type { GfxRegionName } from 'imp-names'
-import { GUI, SHUFFLED_PATTERN_NAMES } from 'imp-names'
+import { SHUFFLED_PATTERN_NAMES } from 'imp-names'
 import type { Speed } from 'simulation/constants'
 import {
   HALT_LOOK_AHEAD_STEPS,
@@ -53,7 +50,6 @@ export type GameState = 'loading' | 'title-screen' | 'second-title-screen' | 'pl
 
 export class PinballWizard {
   public activeSim!: Simulation // assigned in init -> reset
-  public gui!: Gui // assigned in init -> reset
 
   public loadingState: string | null = 'A'
   public gameState: GameState = 'loading'
@@ -164,7 +160,6 @@ export class PinballWizard {
       this._resetPlaying()
     }
 
-    this.gui = Gui.create('playing-gui')
     this.camera.jumpToRoom(this, 0)
     this.onResize()
   }
@@ -350,9 +345,6 @@ export class PinballWizard {
         }
       }
     }
-
-    //
-    this.gui.update(this, dt)
   }
 
   public get hasBranched() {
@@ -481,21 +473,5 @@ export class PinballWizard {
     // // on title screen, set level bounds to match screen height
     // console.log('poop')
     // this.activeSim.level.bounds[3] = Math.floor(Graphics.cvs.height / Graphics.drawSimScale)
-
-    // console.log('onResize')
-    // console.log('this.gui is ', this.gui.constructor.name)
-    for (const guiName of GUI.NAMES) {
-      const gui = Gui.create(guiName)
-      const isVisible = (gui === this.gui)
-
-      // game hud and dialogs
-      for (const id in gui.elements) {
-        // console.log('toggle element', gui.elements[id]!.htmlElem.innerHTML)
-        toggleElement(id as ElementId, isVisible)
-      }
-      if (this.gui) this.gui.refreshLayout(this)
-    }
-
-    if (this.gui) this.gui.showHideElements(this)
   }
 }
