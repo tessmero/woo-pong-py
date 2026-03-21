@@ -94,20 +94,6 @@ fill="currentColor"/>
 </svg>
   `,
 
-  score: `
-  <svg viewBox="0 0 62.5 62.5" width="${imgSize}" height="${imgSize}" xmlns="http://www.w3.org/2000/svg">
-<circle cx="16.44736842105263" cy="18.092105263157894" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
-<circle cx="31.25" cy="18.092105263157894" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
-<circle cx="46.05263157894737" cy="18.092105263157894" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
-<circle cx="9.046052631578945" cy="31.25" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
-<circle cx="23.848684210526315" cy="31.25" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
-<circle cx="38.651315789473685" cy="31.25" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
-<circle cx="53.453947368421055" cy="31.25" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
-<circle cx="16.44736842105263" cy="44.4078947368421" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
-<circle cx="31.25" cy="44.4078947368421" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
-<circle cx="46.05263157894737" cy="44.4078947368421" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>
-</svg>`,
-
   party: `
   <svg viewBox="0 0 62.5 62.5" width="${imgSize}" height="${imgSize}" xmlns="http://www.w3.org/2000/svg">
 <circle cx="16.44736842105263" cy="18.092105263157894" r="5.2631578947368425" fill="currentColor" stroke="currentColor" stroke-width="1"/>

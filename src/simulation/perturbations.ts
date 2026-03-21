@@ -8,48 +8,27 @@ import type { DiskState } from './disk'
 
 const minSpeed = 10 // only perterb vel along axes greater than this magnitude
 
-let state = 0
-
 export class Perturbations {
-  public static nextInt = _makePRNG(_randomSeed())
+  private state = 0
+  public nextInt = this._makePRNG()
 
   // expose helper publically
   static randomSeed = _randomSeed
 
-  static getSeed(): number {
-    return state
+  getSeed(): number {
+    return this.state
   }
 
-  static setSeed(seed: number) {
+  setSeed(seed: number) {
     // console.log('set seed', seed)
-    state = seed
+    this.state = seed
     // Perturbations.nextInt = _makePRNG(seed)
   }
 
-  // static blinkBarrier(barrier: Barrier) {
-  //   const modVal = (Perturbations.nextInt() >>> 0) % 1000
-  //   if (modVal === 0) {
-  //     barrier.isHidden = !barrier.isHidden
-  //   }
-  // }
-
-  // static blinkObstacle(obstacle: Obstacle) {
-  //   const modVal = (Perturbations.nextInt() >>> 0) % 1000
-  //   if (modVal === 0) {
-  //     obstacle.isHidden = !obstacle.isHidden
-  //   }
-  // }
-  // static reverseObstacle(obstacle: Obstacle) {
-  //   const modVal = (Perturbations.nextInt() >>> 0) % 1000
-  //   if (modVal === 0) {
-  //     obstacle.vel[0] *= -1
-  //   }
-  // }
-
-  static perturbDisk(state: DiskState) {
+  perturbDisk(state: DiskState) {
     // dx
     if (Math.abs(state.dx) > minSpeed) {
-      const d6 = (Perturbations.nextInt() >>> 0) % 6
+      const d6 = (this.nextInt() >>> 0) % 6
       if (d6 === 0) {
         state.dx += 1
       }
@@ -59,7 +38,7 @@ export class Perturbations {
     }
     // dy
     if (Math.abs(state.dy) > minSpeed) {
-      const d6 = (Perturbations.nextInt() >>> 0) % 6
+      const d6 = (this.nextInt() >>> 0) % 6
       if (d6 === 0) {
         state.dy += 1
       }
@@ -68,22 +47,22 @@ export class Perturbations {
       }
     }
   }
+
+  // Seedable 32-bit integer-only PRNG (xorshift32)
+  _makePRNG() {
+    if (this.state === 0) this.state = 1
+    const pert = this
+    return function nextInt() {
+      pert.state ^= pert.state << 13
+      pert.state ^= pert.state >>> 17
+      pert.state ^= pert.state << 5
+      return pert.state | 0
+    }
+  }
 }
 
 function _randomSeed() {
   return Math.floor(Math.random() * 32000)
-}
-
-// Seedable 32-bit integer-only PRNG (xorshift32)
-function _makePRNG(seed) {
-  state = seed | 0
-  if (state === 0) state = 1
-  return function nextInt() {
-    state ^= state << 13
-    state ^= state >>> 17
-    state ^= state << 5
-    return state | 0
-  }
 }
 
 // // Example usage:

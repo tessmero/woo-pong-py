@@ -7,10 +7,11 @@
 import type { StartLayoutName } from 'imp-names'
 import { Level } from 'level'
 import type { Obstacle } from 'simulation/obstacle'
+import type { Perturbations } from 'simulation/perturbations'
 
 export class HomeLevel extends Level {
-  constructor() {
-    super(1) // one room
+  constructor(perturbations: Perturbations) {
+    super(perturbations, 1) // one room
   }
 
   protected override pickStartLayout(): StartLayoutName {

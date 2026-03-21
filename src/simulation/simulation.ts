@@ -8,17 +8,17 @@ import { Barrier } from './barrier'
 import { DISK_COUNT, INT32_MAX, STEP_DURATION, STEPS_BEFORE_BRANCH, VALUE_SCALE } from './constants'
 import { Disk } from './disk'
 import type { Obstacle } from './obstacle'
-import { type Rectangle } from 'util/math-util'
+import { dShuffle, type Rectangle } from 'util/math-util'
 import { Perturbations } from './perturbations'
 import { Level } from 'level'
 import { SimHistory } from './sim-short-history'
-import { SHUFFLED_PATTERN_NAMES } from 'imp-names'
+import { PATTERN, SHUFFLED_PATTERN_NAMES } from 'imp-names'
 import { START_LAYOUT_POSVELS } from 'rooms/start-layouts/set-by-build'
 import { step } from './sim-step'
 import { Serializer } from './serializer'
 import { StartLayout } from 'rooms/start-layouts/start-layout'
-import { isDevMode } from 'configs/imp/top-config'
 import { HomeLevel } from 'home-screen/home-level'
+import { homeSimStep } from 'home-screen/home-sim-step'
 
 const _disks: Array<[number, number, number, number]> = []
 for (let i = 0; i < 5; i++) {
@@ -55,11 +55,16 @@ export class Simulation {
   // readonly barriers: Array<Barrier>
   readonly finish: Barrier
 
+  public readonly perturbations = new Perturbations()
+
   finalStepCount = INT32_MAX
 
   branchSeed = -1
   selectedDiskIndex = -1 // index of first disk to hit finish
   winningDiskIndex = -1 // index of first disk to hit finish
+
+  // debug
+  seedUponWinning = -1
 
   loopDiskIndex = 0 // only for loop sim
 
@@ -76,10 +81,9 @@ export class Simulation {
   constructor(seed: number, isHome = false) {
     // console.log(`construct simulation with starting seed ${seed}`)
 
-    Perturbations.setSeed(seed)
+    this.perturbations.setSeed(seed)
 
-    this.level = isHome ? new HomeLevel() : new Level() // home has one room
-
+    this.level = isHome ? new HomeLevel(this.perturbations) : new Level(this.perturbations)
 
     const sl = StartLayout.create(this.level.startLayout)
     const animDur = sl.animDur
@@ -87,7 +91,9 @@ export class Simulation {
     this.t = this._stepCount * STEP_DURATION
     // console.log(`got anim dur ${animDur} for start layout ${this.level.startLayout}`)
 
-    const posVels = START_LAYOUT_POSVELS[this.level.startLayout]
+    const posVels = JSON.parse(JSON.stringify(START_LAYOUT_POSVELS[this.level.startLayout]))
+
+    dShuffle(posVels, this.perturbations)
 
     // let diskIndex = 0
     // this.disks = _disks.map((pars) => {
@@ -99,7 +105,12 @@ export class Simulation {
       const [[x, y], [vx, vy]] = posVels[diskIndex]
       const disk = Disk.fromJson([x, y, vx, vy])
 
-      disk.pattern = SHUFFLED_PATTERN_NAMES[diskIndex % SHUFFLED_PATTERN_NAMES.length]
+      if (isHome) {
+        disk.pattern = PATTERN.NAMES[diskIndex % PATTERN.NAMES.length]
+      }
+      else {
+        disk.pattern = SHUFFLED_PATTERN_NAMES[diskIndex % SHUFFLED_PATTERN_NAMES.length]
+      }
       // diskIndex++
       return disk
     })
@@ -110,7 +121,7 @@ export class Simulation {
     //   Lut.create('obstacle-lut', shapeName) as ObstacleLut,
     // ))
 
-    this.obstacles = this.level.buildObstacles()
+    this.obstacles = this.level.buildObstacles(this.perturbations)
     // this.gasBoxes = this.level.buildGasBoxes()
 
     // this.barriers = _barriers.map(rect =>
@@ -137,7 +148,12 @@ export class Simulation {
         break
       }
 
-      step(this)
+      if (this.level instanceof HomeLevel) {
+        homeSimStep(this)
+      }
+      else {
+        step(this)
+      }
 
       SimHistory.takeSnapshot(this)
 

@@ -1,15 +1,14 @@
 /**
- * @file top-bar-gfx.ts
+ * @file home-bar-gfx.ts
  *
- * Controls along the top of the screen.
+ * Controls along the top of the screen, replaces top-bar-gfx for home screen.
  */
 
 import type { PinballWizard } from 'pinball-wizard'
 import { rectContainsPoint, type Rectangle, type Vec2 } from 'util/math-util'
-import { SECONDS_BEFORE_BRANCH, STEPS_BEFORE_BRANCH, stepsToSeconds } from 'simulation/constants'
 
-import { Graphics, gutterPx, OBSTACLE_FILL } from 'gfx/graphics'
-import { drawRoundedRect, fillFrameBetweenRectAndRounded, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
+import { Graphics, gutterPx } from 'gfx/graphics'
+import { drawRoundedRect, ROUNDED_RECT_PADDING } from 'gfx/canvas-rounded-rect-util'
 import { BUTTON_ICONS } from 'gfx/button-icons'
 import { drawButton } from 'gfx/icons-gfx-util'
 import { shortVibrate } from 'util/vibrate'
@@ -17,7 +16,6 @@ import { settingsPanel } from 'overlay-panels/settings-panel'
 import { GfxRegion } from '../gfx-region'
 import { drawText } from 'gfx/canvas-text-util'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
-import { scorePanel } from 'overlay-panels/score-panel'
 import { ballPartyPanel } from 'overlay-panels/ball-party-panel'
 
 type ButtonSpec = {
@@ -47,15 +45,6 @@ const _BUTTONS = {
       pw.reset()
     },
   },
-  score: {
-    activeChecker: () => scorePanel.isShowing,
-    clickAction: (pw: PinballWizard) => {
-      if (!scorePanel.isShowing) {
-        shortVibrate(pw)
-      }
-      scorePanel.toggle(pw)
-    },
-  },
   party: {
     activeChecker: () => ballPartyPanel.isShowing,
     clickAction: (pw: PinballWizard) => {
@@ -63,15 +52,6 @@ const _BUTTONS = {
         shortVibrate(pw)
       }
       ballPartyPanel.toggle(pw)
-    },
-  },
-  playAgain: {
-    activeChecker: pw => pw.activeSim.winningDiskIndex !== -1,
-    clickAction: (pw) => {
-      ballSelectionPanel.hide(pw, true)
-      shortVibrate(pw)
-      pw.reset()
-      Graphics.targetBspAnim = 0
     },
   },
   status: {
@@ -85,9 +65,9 @@ const _BUTTONS = {
 type LayoutKey = keyof typeof _BUTTONS
 type Layout = Record<LayoutKey, Rectangle>
 
-export class TopBarGfx extends GfxRegion {
+export class HomeBarGfx extends GfxRegion {
   static {
-    GfxRegion.register('top-bar-gfx', () => new TopBarGfx())
+    GfxRegion.register('home-bar-gfx', () => new HomeBarGfx())
   }
 
   override onResize(rect: Rectangle): void {
@@ -112,9 +92,7 @@ export class TopBarGfx extends GfxRegion {
     this._layout = {
       settings: [x, y, btnWidth, h],
       home: [x + btnWidth, y, btnWidth, h], // test
-      score: [x + 2 * btnWidth, y, btnWidth, h], // test
       party: [x + 3 * btnWidth, y, btnWidth, h], // test
-      playAgain: [x + w - 2 * btnWidth, y, 2 * btnWidth, h],
       status: [x + 4 * btnWidth, y, w - 4 * btnWidth, h],
     }
   }
@@ -163,7 +141,7 @@ export class TopBarGfx extends GfxRegion {
   }
 
   public override shouldDraw(pw: PinballWizard): boolean {
-    return pw.activeSim && pw.activeSim.stepCount > 0 && pw.gameState === 'playing'
+    return pw.activeSim && pw.activeSim.stepCount > 0 && pw.gameState === 'home'
   }
 
   protected _draw(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
@@ -214,66 +192,14 @@ export class TopBarGfx extends GfxRegion {
   private _drawStatus(ctx: CanvasRenderingContext2D, pw: PinballWizard, rect: Rectangle) {
     const [x, y, w, h] = rect
 
-    const progress = Math.min(1, pw.activeSim.stepCount / STEPS_BEFORE_BRANCH)
-
     ctx.fillStyle = '#ccc'
     // ctx.fillStyle = OBSTACLE_FILL
     ctx.fillRect(x + 1, y + 1, w - 2, h - 2)
 
-    _padded[0] = x + pad
-    _padded[1] = y + pad
-    _padded[2] = w - 2 * pad
-    _padded[3] = h - 2 * pad
-    ctx.fillStyle = OBSTACLE_FILL
-    fillFrameBetweenRectAndRounded(ctx,
-      _padded,
-      pad,
-    )
-
-    ctx.fillStyle = OBSTACLE_FILL
-    ctx.fillRect(x, y, w * progress, h)
-
-    const label = getStatusText(pw)
-    // const label = `step ${pw.activeSim._stepCount}`
-    // debug
-    // const label = `${Scrollbar.isDragging}`
+    const label = 'HOME'
     drawText(ctx, rect, label)
   }
 }
 
 const pad = 8
 const _padded: Rectangle = [0, 0, 1, 1]
-
-function getStatusText(
-  pw: PinballWizard,
-) {
-  const maxSteps = pw.activeSim._maxStepCount // maximum reached step count
-  if (maxSteps >= STEPS_BEFORE_BRANCH) {
-    // user passed branching points and may have rewinded
-    if (pw.activeSim.winningDiskIndex !== -1) {
-      return 'finished'
-    }
-    return `Choice locked`
-  }
-
-  const steps = pw.activeSim.stepCount // displayed step count
-  const secondsElapsed = stepsToSeconds(steps)
-  const remainingSeconds = SECONDS_BEFORE_BRANCH - secondsElapsed
-
-  if (pw.activeSim.winningDiskIndex !== -1) {
-    return 'finished'
-  }
-  if (pw.isHalted) {
-    return `you must choose a ball`
-  }
-  const i = pw.selectedDiskIndex
-  if (i === -1) {
-    return `${remainingSeconds} sec choose a ball`
-  }
-  if (pw.hasBranched) {
-    return `Choice locked`
-  }
-
-  // const patternName = pinballWizard.activeSim.disks[i].pattern
-  return `${remainingSeconds} sec to reconsider`
-}

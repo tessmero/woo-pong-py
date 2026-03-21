@@ -6,7 +6,6 @@
 
 import { DISK_COUNT, HISTORY_CHECKPOINT_STEPS, HISTORY_MAX_ENTRIES, STEP_DURATION } from './constants'
 import { Disk } from './disk'
-import { Perturbations } from './perturbations'
 import type { Simulation } from './simulation'
 
 // const dummy: Vec2 = [0, 0]
@@ -27,14 +26,14 @@ export class Serializer {
 
   // used just for loop room
   static captureLoopCheckpoint(sim: Simulation, entryIndex: number) {
-    const seed = Perturbations.getSeed()
+    const seed = sim.perturbations.getSeed()
     _captureCheckpoint(sim, entryIndex, seed)
   }
 
   // called when periodic checkpoint times are reached
   static passCheckpoint(sim: Simulation) {
     // if (sim.isLoop) return // no regular checkpoints for loop sim
-    const seed = Perturbations.getSeed()
+    const seed = sim.perturbations.getSeed()
 
     // assert this is a valid step to serialize the sim
     const entryIndex = sim.stepCount / stepInterval
@@ -70,7 +69,7 @@ export class Serializer {
   static restore(sim: Simulation, entryIndex: number) {
   // console.log(`restore serialized sim entry ${entryIndex} with seed ${seeds[entryIndex]}`)
 
-    Perturbations.setSeed(seeds[entryIndex])
+    sim.perturbations.setSeed(seeds[entryIndex])
     sim._stepCount = entryIndex * HISTORY_CHECKPOINT_STEPS
     sim.t = sim._stepCount * STEP_DURATION
 

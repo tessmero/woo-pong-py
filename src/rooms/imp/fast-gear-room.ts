@@ -19,7 +19,7 @@ import type { PinballWizard } from 'pinball-wizard'
 import { type Vec2 } from 'util/math-util'
 import { OBSTACLE_FILL, OBSTACLE_STROKE } from 'gfx/graphics'
 import { ROOM_LAYOUT_POSITIONS } from 'rooms/room-layouts/set-by-build'
-import { Perturbations } from 'simulation/perturbations'
+import type { Perturbations } from 'simulation/perturbations'
 import { N_TWO_GEAR_LAYOUTS } from 'rooms/room-layouts/imp/two-gears'
 import type { Simulation } from 'simulation/simulation'
 
@@ -98,7 +98,7 @@ export class GearRoom extends Room {
     }
   }
 
-  buildObstacles(): Array<Obstacle> {
+  buildObstacles(perturbations: Perturbations): Array<Obstacle> {
     this.roomCenter = [50 * VALUE_SCALE, this.bounds[1] + 50 * VALUE_SCALE]
 
     // const holderLut = Lut.create('obstacle-lut', 'holder') as ObstacleLut
@@ -122,7 +122,7 @@ export class GearRoom extends Room {
     // build spinning gears
     const layout = ROOM_LAYOUT_POSITIONS['two-gears'] as Array<[number, Vec2]>
 
-    const i = (Perturbations.nextInt() >>> 0) % N_TWO_GEAR_LAYOUTS
+    const i = (perturbations.nextInt() >>> 0) % N_TWO_GEAR_LAYOUTS
     const [leftFrame, leftPos] = layout[2 * i + 0]
     const [middleFrame, middlePos] = layout[2 * i + 1]
 

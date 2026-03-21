@@ -5,7 +5,6 @@
  */
 
 import type { Simulation } from './simulation'
-import { Perturbations } from './perturbations'
 import { collideDisks } from './luts/imp/disk-disk-lut'
 import { Disk } from './disk'
 import { HISTORY_CHECKPOINT_STEPS, STEPS_BEFORE_BRANCH } from './constants'
@@ -49,7 +48,7 @@ export function step(sim: Simulation) {
 
   if (sim._stepCount === (STEPS_BEFORE_BRANCH) && sim.branchSeed !== -1) {
     // console.log('set mid seed')
-    Perturbations.setSeed(sim.branchSeed)
+    sim.perturbations.setSeed(sim.branchSeed)
     // console.log(`set branch seed ${sim.branchSeed} for sim with step count ${sim.stepCount}`)
   }
   else if (sim._stepCount === (STEPS_BEFORE_BRANCH)) {
@@ -100,7 +99,7 @@ function _activeStep(sim: Simulation) {
 
     disk.advance(sim.obstacles, sim.stepCount)
     disk.pushInBounds(sim)
-    Perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
+    sim.perturbations.perturbDisk(disk.nextState) // add slight adjustments to facilitate branching
 
     // if( !sim.isLoop ) {
     disk.nextState.dy += 1 // gravity

@@ -18,7 +18,7 @@ import type { PinballWizard } from 'pinball-wizard'
 import { type Vec2 } from 'util/math-util'
 import { OBSTACLE_FILL } from 'gfx/graphics'
 import type { ShapeName } from 'simulation/shapes'
-import { Perturbations } from 'simulation/perturbations'
+import type { Perturbations } from 'simulation/perturbations'
 import { N_GEAR_FRAMES } from 'simulation/rotating/gear-constants'
 import type { Simulation } from 'simulation/simulation'
 
@@ -49,9 +49,9 @@ const possibleShapes: Array<ShapeName> = [
 
 ]
 
-function randomToothShape(): ShapeName {
+function randomToothShape(perturbations: Perturbations): ShapeName {
   const n = possibleShapes.length
-  const i = (Perturbations.nextInt() >>> 0) % n
+  const i = (perturbations.nextInt() >>> 0) % n
   return possibleShapes[i]
 }
 const offset: Vec2 = [0, 0]
@@ -64,9 +64,7 @@ export class FerrisWheelRoom extends Room {
   private wheels: Array<Wheel> = []
   private roomCenter: Vec2 = [0, 0]
 
-  private toothShape = randomToothShape()
   private centerShape: ShapeName = 'circle'
-  private readonly circleLut = Lut.create('obstacle-lut', this.toothShape) as ObstacleLut
   private readonly gearLut = Lut.create('gear-lut')
 
   override update(_sim: Simulation, stepIndex: number) {
@@ -84,10 +82,10 @@ export class FerrisWheelRoom extends Room {
         const i = (frameIndex + toothDelta * toothIndex) % N_FERRIS_FRAMES
 
         const cx = centerPos[0] + this.gearLut.get(i, 'x') * 2
-        const rx = cx - this.circleLut.maxOffsetX
+        const rx = cx - this.toothLut.maxOffsetX
 
         const cy = centerPos[1] + this.gearLut.get(i, 'y') * 2
-        const ry = cy - this.circleLut.maxOffsetY
+        const ry = cy - this.toothLut.maxOffsetY
         const tooth = wheel.teeth[toothIndex]
         if (!Number.isInteger(cx)) throw new Error('cx must be an integer')
         if (!Number.isInteger(cy)) throw new Error('cy must be an integer')
@@ -102,10 +100,14 @@ export class FerrisWheelRoom extends Room {
     }
   }
 
-  buildObstacles(): Array<Obstacle> {
+  private toothShape: ShapeName = 'airplane'
+  private toothLut = Lut.create('obstacle-lut', this.toothShape) as ObstacleLut
+  buildObstacles(perturbations: Perturbations): Array<Obstacle> {
+    this.toothShape = randomToothShape(perturbations)
+    this.toothLut = Lut.create('obstacle-lut', this.toothShape) as ObstacleLut
     this.roomCenter = [50 * VALUE_SCALE, this.bounds[1] + 50 * VALUE_SCALE]
 
-    const dir = ((Perturbations.nextInt() >>> 0) % 2) ? 'clockwise' : 'counter-clockwise'
+    const dir = ((perturbations.nextInt() >>> 0) % 2) ? 'clockwise' : 'counter-clockwise'
     const frameIndex = 0
     this.wheels.push(this._buildGear(this.roomCenter, dir, frameIndex))
 
@@ -132,7 +134,7 @@ export class FerrisWheelRoom extends Room {
           pos[0] + offset[0],
           pos[1] + offset[1],
         ]
-        const tooth = new Obstacle(toothPos, this.toothShape, this.circleLut, this)
+        const tooth = new Obstacle(toothPos, this.toothShape, this.toothLut, this)
         // offset = rotate90(offset)
         return tooth
       },

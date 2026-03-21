@@ -8,7 +8,7 @@ import type { InputId, PinballWizard } from 'pinball-wizard'
 import { twopi, type Rectangle, type Vec2 } from 'util/math-util'
 import { Graphics } from 'gfx/graphics'
 import { CLICKABLE_RADSQ, VALUE_SCALE } from 'simulation/constants'
-import { drawDisk, drawDiskCrown, drawDiskFollowHalo, drawDiskHoverHalo } from 'gfx/disk-gfx-util'
+import { drawDisk, drawDiskCrown, drawDiskHoverHalo } from 'gfx/disk-gfx-util'
 import { drawObstacles } from 'gfx/obstacle-gfx-util'
 import type { Barrier } from 'simulation/barrier'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
@@ -22,9 +22,9 @@ const ballFlashCycles = 5 // cycles per duration
 
 const dummy: Vec2 = [0, 0]
 
-export class HomeGfx extends GfxRegion {
+export class HomeSimGfx extends GfxRegion {
   static {
-    GfxRegion.register('home-gfx', () => new HomeGfx())
+    GfxRegion.register('home-sim-gfx', () => new HomeSimGfx())
   }
 
   public override shouldDraw(pw: PinballWizard) {
@@ -398,13 +398,13 @@ export class HomeGfx extends GfxRegion {
     ctx.scale(this.drawSimScale, this.drawSimScale)
 
     const sim = pw.activeSim
-    const { hoveredDiskIndex, followDiskIndex, selectedDiskIndex } = pw
+    const { hoveredDiskIndex, selectedDiskIndex } = pw
     if (hoveredDiskIndex !== -1) {
       drawDiskHoverHalo(ctx, sim.disks[hoveredDiskIndex])
     }
-    if (followDiskIndex !== -1) {
-      drawDiskFollowHalo(ctx, sim.disks[followDiskIndex])
-    }
+    // if (followDiskIndex !== -1) {
+    //   drawDiskFollowHalo(ctx, sim.disks[followDiskIndex])
+    // }
 
     if (selectedDiskIndex !== -1) {
       drawDiskCrown(ctx, sim.disks[selectedDiskIndex])

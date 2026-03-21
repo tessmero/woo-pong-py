@@ -8,7 +8,7 @@ import { setSimAudibleRect } from 'audio/collision-sounds'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { Camera } from 'camera'
 import { pinballWizardConfig } from 'configs/imp/pinball-wizard-config'
-import { isDevMode, topConfig } from 'configs/imp/top-config'
+import { topConfig } from 'configs/imp/top-config'
 import { GfxRegion } from 'gfx/regions/gfx-region'
 import { Graphics } from 'gfx/graphics'
 import type { GfxRegionName } from 'imp-names'
@@ -18,7 +18,6 @@ import {
   HALT_LOOK_AHEAD_STEPS,
   HISTORY_CHECKPOINT_STEPS,
   INT32_MAX,
-  ROOM_COUNT,
   SPEEDS, STEPS_BEFORE_BRANCH,
 } from 'simulation/constants'
 import { Lut } from 'simulation/luts/lut'
@@ -31,6 +30,8 @@ import type { SimGfx } from 'gfx/regions/imp/sim-gfx'
 import type { GlassGfx } from 'gfx/regions/imp/glass-gfx'
 import { settingsPanel } from 'overlay-panels/settings-panel'
 import { Serializer } from 'simulation/serializer'
+import { HomeSimMiner } from 'home-screen/home-sim-miner'
+import { materialLineDashOffset } from 'three/src/nodes/accessors/MaterialNode.js'
 // import { SIM_HASHES } from 'set-by-build'
 
 // can only be constructed once
@@ -64,6 +65,7 @@ export class PinballWizard {
   public set selectedDiskIndex(i: number) {
     if (!this.activeSim) return
     this.activeSim.selectedDiskIndex = i
+    HomeSimMiner.goodSeeds.length = 0 // reset mined seeds for home screen sim
   }
 
   public followDiskIndex = -1
@@ -144,7 +146,7 @@ export class PinballWizard {
     settingsPanel.hide(this, true)
     ballSelectionPanel.hide(this, true)
 
-    this.selectedDiskIndex = -1
+    // this.selectedDiskIndex = -1
     this.followDiskIndex = -1
     this.currentRoomIndex = 0 // greatest room index that has had balls
     this.camera = new Camera()
@@ -154,7 +156,7 @@ export class PinballWizard {
     this._speedBeforeHalt = 'normal'
 
     if (this.gameState === 'home') {
-      this._resetHome()
+      this._resetHome(this.selectedDiskIndex)
     }
     else {
       this._resetPlaying()
@@ -164,11 +166,18 @@ export class PinballWizard {
     this.onResize()
   }
 
-  private _resetHome() {
-    const homeSeed = 1234
+  private _resetHome(selectedDiskIndex = -1) {
+    const goodSeeds = HomeSimMiner.goodSeeds
+    let homeSeed = 1234
+    if( goodSeeds.length > 0 ){
+      homeSeed = goodSeeds[Math.floor(Math.random() * goodSeeds.length)]
+    }
+    console.log('reset home with seed', homeSeed)
     this.activeSim = new Simulation(homeSeed, true)
-    this.activeSim.t = 0
-    this.activeSim._stepCount = 0
+    // this.activeSim.t = 0
+    // this.activeSim._stepCount = 0
+    this.activeSim.selectedDiskIndex = selectedDiskIndex
+    // console.log('finish reset home with selected disk', this.activeSim.selectedDiskIndex)
   }
 
   private _resetPlaying() {
@@ -236,6 +245,7 @@ export class PinballWizard {
     this._hasMoved = false
 
     Graphics.updateBspAnim(dt)
+    Graphics.updatePartyAnim(dt)
     Graphics.updateStgAnim(dt);
     (GfxRegion.create('glass-gfx') as GlassGfx).update(this, dt)
     const wasBranched = this.hasBranched
@@ -301,6 +311,10 @@ export class PinballWizard {
     // advance physics, append to sim-history, set display positions, play sounds
     this.activeSim.update(dt * this._speedMult, isBranchingAllowed)
 
+    if (this.gameState === 'home') {
+      HomeSimMiner.update(this.activeSim.selectedDiskIndex)
+    }
+
     if (this.hasBranched && !wasBranched) {
       // just branched
       // this.onResize()
@@ -311,6 +325,12 @@ export class PinballWizard {
       // console.log('finished with final step count', this.activeSim.stepCount)
       // just finished
       // ballSelectionPanel.hide(this)
+
+      if (this.gameState === 'home') {
+        console.log('live home sim finished', this.activeSim.perturbations.getSeed(), this.activeSim.seedUponWinning)
+        this._resetHome(this.selectedDiskIndex)
+      }
+
       this.onResize()
       // Graphics.targetPixelAnim = 1
     }
@@ -337,7 +357,7 @@ export class PinballWizard {
       // no disk selected
     // check if next room was reached
       const nextRoomIndex = this.currentRoomIndex + 1
-      if (nextRoomIndex < ROOM_COUNT) {
+      if (nextRoomIndex < this.activeSim.level.rooms.length) {
         if (this.activeSim.maxBallY > this.activeSim.level.rooms[nextRoomIndex].bounds[1]) {
           // just reached new room
           this.currentRoomIndex = nextRoomIndex

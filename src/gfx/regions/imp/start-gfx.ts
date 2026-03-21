@@ -10,7 +10,6 @@ import { GfxRegion } from '../gfx-region'
 import { OBSTACLE_FILL, type CanvasName } from 'gfx/graphics'
 import { VALUE_SCALE } from 'simulation/constants'
 import { drawDisk } from 'gfx/disk-gfx-util'
-import { packHalf2x16 } from 'three/src/nodes/math/PackFloatNode.js'
 
 let isShowing = false
 

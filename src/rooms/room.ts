@@ -10,6 +10,7 @@ import { VALUE_SCALE } from 'simulation/constants'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
+import type { Perturbations } from 'simulation/perturbations'
 import type { ShapeName } from 'simulation/shapes'
 import type { Simulation } from 'simulation/simulation'
 import type { Rectangle, Vec2 } from 'util/math-util'
@@ -25,7 +26,7 @@ export abstract class Room {
   readonly name: RoomName = '' as RoomName // re-assigned in create
   readonly bounds: Rectangle = {} as Rectangle // re-assigned in create
 
-  abstract buildObstacles(): Array<Obstacle>
+  abstract buildObstacles(perturbations: Perturbations): Array<Obstacle>
 
   protected wedges(): Array<Obstacle> {
     return _wedges.map(([pos, shapeName, isFlippedX]) => {

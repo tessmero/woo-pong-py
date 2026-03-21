@@ -1,7 +1,7 @@
 /**
- * @file bsp-gfx.ts
+ * @file party-gfx.ts
  *
- * Graphics region for BSP (Ball Selection Panel) visuals.
+ * Graphics region for ball party overlay on home screen.
  */
 
 import type { InputId, PinballWizard } from 'pinball-wizard'
@@ -15,6 +15,7 @@ import { GfxRegion } from '../gfx-region'
 import type { PatternName } from 'imp-names'
 import { Pattern } from 'gfx/patterns/pattern'
 import { buildFillStyle } from 'gfx/patterns/pattern-util'
+import { ballPartyPanel } from 'overlay-panels/ball-party-panel'
 
 const _lastWidth = -1
 const _lastHeight = -1
@@ -91,14 +92,14 @@ for (let i = 0; i < DISK_COUNT; i++) {
 const _drawOffset: Vec2 = [0, 0]
 let _drawScale = 1
 
-export class BspGfx extends GfxRegion {
+export class PartyGfx extends GfxRegion {
   static {
-    GfxRegion.register('bsp-gfx', () => new BspGfx())
+    GfxRegion.register('party-gfx', () => new PartyGfx())
   }
 
   override targetCanvas: CanvasName = 'bsp'
   override shouldDraw() {
-    return ballSelectionPanel.isShowing
+    return ballPartyPanel.isShowing
   }
 
   _entranceStartTime = 0
@@ -114,7 +115,7 @@ export class BspGfx extends GfxRegion {
   down(pw: PinballWizard, mousePos: Vec2) {
     if (pw.hasFinished) return false
     if (ballSelectionPanel.isShowing) {
-      const clickedDisk = getBspHoveredDiskIndex(...mousePos)
+      const clickedDisk = getPartyHoveredDiskIndex(...mousePos)
       if (clickedDisk !== -1) {
         pw.trySelectDisk(clickedDisk)
         return true
@@ -126,7 +127,7 @@ export class BspGfx extends GfxRegion {
   move(pw: PinballWizard, mousePos: Vec2, inputId: InputId) {
     if (pw.hasFinished) return
     if (ballSelectionPanel.isShowing) {
-      const hoveredDisk = inputId === 'mouse' ? getBspHoveredDiskIndex(...mousePos) : -1
+      const hoveredDisk = inputId === 'mouse' ? getPartyHoveredDiskIndex(...mousePos) : -1
 
       pw.hoveredDiskIndex = hoveredDisk
       if (hoveredDisk !== -1) {
@@ -186,7 +187,7 @@ export class BspGfx extends GfxRegion {
 
       const diskStagger = diskStaggerOrder[i] / DISK_COUNT
 
-      let diskAnim = Graphics.bspAnim * 2 + diskStagger - 0.5
+      let diskAnim = Graphics.partyAnim * 2 + diskStagger - 0.5
       if (diskAnim <= 0) {
         continue
       }
@@ -297,13 +298,13 @@ function _buildScaledPattern(pattern: PatternName): CanvasPattern | string {
   return original // string
 }
 
-export function getBspHoveredDiskIndexPe(e: PointerEvent): number {
-  return getBspHoveredDiskIndex(e.offsetX, e.offsetY)
+export function getPartyHoveredDiskIndexPe(e: PointerEvent): number {
+  return getPartyHoveredDiskIndex(e.offsetX, e.offsetY)
 }
 
 const _debugMousePos: Vec2 = [0, 0]
 
-export function getBspHoveredDiskIndex(offsetX: number, offsetY: number): number {
+export function getPartyHoveredDiskIndex(offsetX: number, offsetY: number): number {
   const dpr = window.devicePixelRatio
   const mx = offsetX / _drawScale * dpr - _drawOffset[0] / _drawScale
   const my = offsetY / _drawScale * dpr - _drawOffset[1] / _drawScale

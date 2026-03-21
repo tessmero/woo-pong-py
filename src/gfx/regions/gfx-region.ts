@@ -13,15 +13,17 @@ type Registered = () => GfxRegion
 
 const _GFX_DEBUG_COLORS: Record<GfxRegionName, string> = {
   'bottom-bar-gfx': 'white',
+  'home-bar-gfx': 'white',
   'top-bar-gfx': 'lightblue',
   'scrollbar-gfx': 'orange',
   'bsp-gfx': 'violet',
+  'party-gfx': 'green',
   'sim-gfx': 'green',
   'glass-gfx': 'yellow',
   'settings-gfx': 'black',
   'start-gfx': 'purple',
   'timeline-gfx': '#198',
-  'home-gfx': 'red',
+  'home-sim-gfx': 'red',
   'score-gfx': 'red',
 }
 

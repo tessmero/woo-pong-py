@@ -8,13 +8,12 @@ import type { RoomName, StartLayoutName } from 'imp-names'
 import { Room } from 'rooms/room'
 import { ROOM_COUNT, VALUE_SCALE } from 'simulation/constants'
 import type { Obstacle } from 'simulation/obstacle'
-import { Perturbations } from 'simulation/perturbations'
+import type { Perturbations } from 'simulation/perturbations'
 import type { Rectangle } from 'util/math-util'
 
 const roomPadding = 10 // space between 100x100 rooms
 const startPadding = 10
 const endPadding = 10
-
 
 const thick = 1 // thickness of walls
 
@@ -22,9 +21,9 @@ const possibleStarts: Array<StartLayoutName> = [
   // 'pool',
   'spin',
 ]
-function randomStartLayout(): StartLayoutName {
+function randomStartLayout(perturbations: Perturbations): StartLayoutName {
   return possibleStarts[
-    (Perturbations.nextInt() >>> 0) % possibleStarts.length
+    (perturbations.nextInt() >>> 0) % possibleStarts.length
   ]
 }
 
@@ -33,9 +32,9 @@ export class Level {
   public readonly startLayout: StartLayoutName
   private readonly _bounds: Rectangle
   private readonly _finish: Rectangle
-  constructor(roomCount = ROOM_COUNT) {
-    this.startLayout = this.pickStartLayout()
-    
+  constructor(perturbations: Perturbations, roomCount = ROOM_COUNT) {
+    this.startLayout = this.pickStartLayout(perturbations)
+
     const totalHeight = startPadding
       + 100 * roomCount
       + roomPadding * (roomCount - 1)
@@ -61,23 +60,22 @@ export class Level {
         0, roomOffset, 100 * VALUE_SCALE, 100 * VALUE_SCALE,
       ]
 
-      return randomRoom(roomIndex, roomBounds)
+      return randomRoom(perturbations, roomIndex, roomBounds)
     })
   }
 
-  protected pickStartLayout(): StartLayoutName {
-    return randomStartLayout()
+  protected pickStartLayout(perturbations: Perturbations): StartLayoutName {
+    return randomStartLayout(perturbations)
   }
 
   get finish(): Rectangle { return this._finish }
 
   get bounds(): Rectangle { return this._bounds }
 
-  buildObstacles(): Array<Obstacle> {
-
+  buildObstacles(perturbations: Perturbations): Array<Obstacle> {
     const result: Array<Obstacle> = []
     for (const [_roomIndex, room] of this.rooms.entries()) {
-      result.push(...room.buildObstacles())
+      result.push(...room.buildObstacles(perturbations))
     }
 
     // result.push(new Obstacle(
@@ -98,7 +96,7 @@ export class Level {
   // }
 }
 
-function randomRoom(roomIndex: number, bounds: Rectangle) {
+function randomRoom(perturbations: Perturbations, roomIndex: number, bounds: Rectangle) {
   if (roomIndex === 0) {
     return Room.create('start-room', bounds)
   }
@@ -111,7 +109,7 @@ function randomRoom(roomIndex: number, bounds: Rectangle) {
 
   // return Room.create('pong-room', bounds)
 
-  const i = Perturbations.nextInt() >>> 0
+  const i = perturbations.nextInt() >>> 0
   const roomName = randomRoomNames[i % randomRoomNames.length]
 
   // // prevent multiple breakout rooms

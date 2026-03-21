@@ -22,6 +22,7 @@ export const OBSTACLE_FILL = '#888'
 export const OBSTACLE_STROKE = '#000'
 
 const bspAnimSpeed = 2e-3// fraction per ms
+const partyAnimSpeed = 2e-3// fraction per ms
 const stgAnimSpeed = 4e-3// fraction per ms
 
 export const gutterPx = 3
@@ -38,6 +39,22 @@ export class Graphics {
   static get cvs() { return this._canvases['main'] }
 
   static innerWidth = 1
+
+  static partyAnim = 0 // 0-1 state
+  static targetPartyAnim = 0 // 0 or 1 target state
+  static updatePartyAnim(dt: number) {
+    if (this.partyAnim === this.targetPartyAnim) return
+    const delta = dt * partyAnimSpeed
+    if (this.partyAnim < this.targetPartyAnim) {
+      this.partyAnim = Math.min(this.targetPartyAnim, this.partyAnim + delta)
+    }
+    if (this.partyAnim > this.targetPartyAnim) {
+      this.partyAnim = Math.max(this.targetPartyAnim, this.partyAnim - delta)
+    }
+    Graphics._canvases['bsp'].style.setProperty('display', this.partyAnim === 0 ? 'none' : 'block')
+
+    this._updateCanvasDims() // update width and height if necessary
+  }
 
   static bspAnim = 0 // 0-1 state
   static targetBspAnim = 0 // 0 or 1 target state
@@ -188,7 +205,7 @@ export class Graphics {
         leftGutterWidthPx, barHeightPx,
         simCssWidth, cssHeight - barHeightPx * 2,
       ],
-      'home-gfx': [
+      'home-sim-gfx': [
         leftGutterWidthPx, barHeightPx,
         _root[2] - leftGutterWidthPx - rightGutterWidthPx, cssHeight - barHeightPx * 2,
       ],
@@ -216,11 +233,20 @@ export class Graphics {
         _root[2],
         barHeightPx,
       ],
+      'home-bar-gfx': [
+        0, 0,
+        _root[2],
+        barHeightPx,
+      ],
       'glass-gfx': [
         0, 0,
         _root[2], _root[3],
       ],
       'bsp-gfx': [
+        0, 0,
+        _root[2], _root[3],
+      ],
+      'party-gfx': [
         0, 0,
         _root[2], _root[3],
       ],
@@ -313,7 +339,7 @@ export class Graphics {
     }
 
     const simGfx = GfxRegion.create('sim-gfx') as SimGfx
-    const homeGfx = GfxRegion.create('home-gfx') as SimGfx
+    const homeGfx = GfxRegion.create('home-sim-gfx') as SimGfx
     const scrollbar = GfxRegion.create('scrollbar-gfx') as ScrollbarGfx
 
     // fill regions near gutters to cut out rounded corners
@@ -331,10 +357,13 @@ export class Graphics {
 
       // draw view cursor on scrollbar
       scrollbar.drawViewRect(ctx, pw, this._dpRegions['scrollbar-gfx'] as Rectangle)
-    }
 
-    // draw annotations for hovered and selected disks in sim
-    simGfx.drawHalos(ctx, pw)
+      // draw annotations for hovered and selected disks in sim
+      simGfx.drawHalos(ctx, pw)
+    }
+    else {
+      homeGfx.drawHalos(ctx, pw)
+    }
 
     // // draw top edge of gutters
     // ctx.strokeStyle = 'black'

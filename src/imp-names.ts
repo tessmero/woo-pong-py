@@ -90,7 +90,7 @@ export const GFX_REGION = {
   NAMES: [
 
     'sim-gfx',
-    'home-gfx',
+    'home-sim-gfx', 'home-bar-gfx', 'party-gfx',
     'scrollbar-gfx', 'bottom-bar-gfx', 'top-bar-gfx',
 
     'glass-gfx', // overlay that covers main view

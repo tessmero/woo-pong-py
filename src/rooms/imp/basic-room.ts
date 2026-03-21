@@ -10,7 +10,7 @@ import { ROOM_LAYOUT_POSITIONS } from 'rooms/room-layouts/set-by-build'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
-import { Perturbations } from 'simulation/perturbations'
+import type { Perturbations } from 'simulation/perturbations'
 import { type ShapeName } from 'simulation/shapes'
 import type { Vec2 } from 'util/math-util'
 
@@ -19,10 +19,10 @@ export class BasicRoom extends Room {
     Room.register('basic-room', () => new BasicRoom())
   }
 
-  buildObstacles(): Array<Obstacle> {
-    const isMixed = ((Perturbations.nextInt() >>> 0) % 10) > 8
+  buildObstacles(perturbations: Perturbations): Array<Obstacle> {
+    const isMixed = ((perturbations.nextInt() >>> 0) % 10) > 8
 
-    const layoutName = randomLayout()
+    const layoutName = randomLayout(perturbations)
     // const layout = RoomLayout.create(layoutName).computePositions()
     const layout = ROOM_LAYOUT_POSITIONS[layoutName]
     const groupShapes: Record<number, ShapeName> = {}
@@ -32,11 +32,11 @@ export class BasicRoom extends Room {
       const pos = entry[1] as Vec2
       let shapeName: ShapeName
       if (isMixed) {
-        shapeName = randomShape()
+        shapeName = randomShape(perturbations)
       }
       else {
         if (!Object.hasOwn(groupShapes, group)) {
-          groupShapes[group] = randomShape()
+          groupShapes[group] = randomShape(perturbations)
         }
         shapeName = groupShapes[group]
       }
@@ -47,7 +47,7 @@ export class BasicRoom extends Room {
         this,
       )
 
-      if ((Perturbations.nextInt() >>> 0) % 2) {
+      if ((perturbations.nextInt() >>> 0) % 2) {
         result.isFlippedX = true
       }
       return result
@@ -62,9 +62,9 @@ const possibleLayouts: Array<RoomLayoutName> = [
   // 'four-by-four',
 ]
 
-function randomLayout(): RoomLayoutName {
+function randomLayout(perturbations: Perturbations): RoomLayoutName {
   return possibleLayouts[
-    (Perturbations.nextInt() >>> 0) % possibleLayouts.length
+    (perturbations.nextInt() >>> 0) % possibleLayouts.length
   ]
 }
 
@@ -85,8 +85,8 @@ const possibleShapes: Array<ShapeName> = [
 
 ]
 
-function randomShape(): ShapeName {
+function randomShape(perturbations: Perturbations): ShapeName {
   return possibleShapes[
-    (Perturbations.nextInt() >>> 0) % possibleShapes.length
+    (perturbations.nextInt() >>> 0) % possibleShapes.length
   ]
 }

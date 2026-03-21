@@ -14,13 +14,13 @@ class BallPartyPanel extends Panel {
   protected _show(_pw: PinballWizard) {
     // ballsBtn.htmlElem?.classList.add('active')
     Graphics.targetBspAnim = 1
-    ;(GfxRegion.create('bsp-gfx') as BspGfx).startEntrance()
+    ;(GfxRegion.create('party-gfx') as BspGfx).startEntrance()
   }
 
   protected _hide(_pw: PinballWizard) {
     // ballsBtn.htmlElem?.classList.remove('active')
     Graphics.targetBspAnim = 0
-    ;(GfxRegion.create('bsp-gfx') as BspGfx).startExit()
+    ;(GfxRegion.create('party-gfx') as BspGfx).startExit()
   }
 }
 

@@ -4,6 +4,8 @@
  * Math functions to use with custom Vec2 utilities.
  */
 
+import { Perturbations } from "simulation/perturbations"
+
 export type Rectangle = [number, number, number, number] // x, y,w ,h
 export type Box = [number, number, number, number, number, number] // x,y,z,w,h,d
 
@@ -75,6 +77,7 @@ export function mod(a: number, m: number): number {
 
 // https://stackoverflow.com/a/2450976
 export function shuffle(array) {
+  console.log('shuffle', JSON.stringify(array))
   let currentIndex = array.length
   let randomIndex
 
@@ -82,6 +85,26 @@ export function shuffle(array) {
   while (currentIndex > 0) {
     // Pick a remaining element.
     randomIndex = Math.floor(Math.random() * currentIndex)
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]]
+  }
+
+  return array
+}
+
+// https://stackoverflow.com/a/2450976
+export function dShuffle(array, perturbations: Perturbations) {
+
+  let currentIndex = array.length
+  let randomIndex
+
+  // While there remain elements to shuffle.
+  while (currentIndex > 0) {
+    // Pick a remaining element.
+    randomIndex = (perturbations.nextInt() >>> 0) % currentIndex
     currentIndex--;
 
     // And swap it with the current element.

@@ -9,7 +9,7 @@ import { VALUE_SCALE } from 'simulation/constants'
 import type { ObstacleLut } from 'simulation/luts/imp/obstacle-lut'
 import { Lut } from 'simulation/luts/lut'
 import { Obstacle } from 'simulation/obstacle'
-import { Perturbations } from 'simulation/perturbations'
+import type { Perturbations } from 'simulation/perturbations'
 import type { ShapeName } from 'simulation/shapes'
 import type { Vec2 } from 'util/math-util'
 
@@ -26,7 +26,7 @@ export class PongRoom extends Room {
     Room.register('pong-room', () => new PongRoom())
   }
 
-  buildObstacles(): Array<Obstacle> {
+  buildObstacles(perturbations: Perturbations): Array<Obstacle> {
     const paddles = _obstacles.map(([pos, shapeName]) => {
       const obs = new Obstacle(
         [pos[0] * VALUE_SCALE, pos[1] * VALUE_SCALE + this.bounds[1]],
@@ -36,7 +36,7 @@ export class PongRoom extends Room {
       )
       obs.isStatic = false
 
-      if ((Perturbations.nextInt() >>> 0) % 2) {
+      if ((perturbations.nextInt() >>> 0) % 2) {
         obs.isFlippedX = true
       }
 

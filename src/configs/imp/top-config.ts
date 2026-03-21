@@ -11,7 +11,7 @@ import { SPEEDS, STEP_DURATION } from 'simulation/constants'
 
 export const isDevMode = true
 export async function applyDevMode(pinballWizard: PinballWizard) {
-  pinballWizard.rebuildControls() // show controls gui on startup
+  // pinballWizard.rebuildControls() // show controls gui on startup
 
   // show controls gui on tilde key
   document.addEventListener('keydown', (event) => {
