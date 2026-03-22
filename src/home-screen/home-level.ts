@@ -19,6 +19,8 @@ export class HomeLevel extends Level {
   }
 
   override buildObstacles(): Array<Obstacle> {
-    return [] // no obstacles
+    return HomeLevel.homeObstacles
   }
+
+  public static homeObstacles: Array<Obstacle> = []
 }

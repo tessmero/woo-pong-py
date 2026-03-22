@@ -53,7 +53,7 @@ export class HomeSimMiner {
       }
 
       if (steps > maxStepsPerUpdate) {
-        //console.log('finished home sim miner update early', sim.disks[0].currentState.y)
+        // console.log('finished home sim miner update early', sim.disks[0].currentState.y)
         break
       }
 

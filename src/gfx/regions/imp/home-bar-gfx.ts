@@ -17,6 +17,8 @@ import { GfxRegion } from '../gfx-region'
 import { drawText } from 'gfx/canvas-text-util'
 import { ballSelectionPanel } from 'overlay-panels/ball-selection-panel'
 import { ballPartyPanel } from 'overlay-panels/ball-party-panel'
+import { saveHomeState } from 'home-screen/local-storage'
+import { VALUE_SCALE } from 'simulation/constants'
 
 type ButtonSpec = {
   activeChecker: (pw: PinballWizard) => boolean
@@ -26,7 +28,7 @@ type ButtonSpec = {
 const _BUTTONS = {
   settings: {
     activeChecker: () => settingsPanel.isShowing,
-    clickAction: (pw: PinballWizard) => {
+    clickAction: (pw) => {
       if (!settingsPanel.isShowing) {
         shortVibrate(pw)
       }
@@ -34,8 +36,8 @@ const _BUTTONS = {
     },
   },
   home: {
-    activeChecker: (pw: PinballWizard) => pw.gameState === 'home',
-    clickAction: (pw: PinballWizard) => {
+    activeChecker: pw => pw.gameState === 'home',
+    clickAction: (pw) => {
       if (pw.gameState === 'home') {
         pw.gameState = 'playing'
       }
@@ -43,6 +45,15 @@ const _BUTTONS = {
         pw.gameState = 'home'
       }
       pw.reset()
+    },
+  },
+  addObstacle: {
+    activeChecker: pw => false,
+    clickAction: (pw) => {
+      const x = Math.floor(20 + 60 * Math.random())
+      const y = Math.floor(20 + 60 * Math.random())
+      pw.homeState.obstacles.push({ shape: 'airplane', pos: [x * VALUE_SCALE, y * VALUE_SCALE] })
+      saveHomeState(pw.homeState)
     },
   },
   party: {
@@ -92,6 +103,7 @@ export class HomeBarGfx extends GfxRegion {
     this._layout = {
       settings: [x, y, btnWidth, h],
       home: [x + btnWidth, y, btnWidth, h], // test
+      addObstacle: [x + 2 * btnWidth, y, btnWidth, h], // test
       party: [x + 3 * btnWidth, y, btnWidth, h], // test
       status: [x + 4 * btnWidth, y, w - 4 * btnWidth, h],
     }

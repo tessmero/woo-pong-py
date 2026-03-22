@@ -4,7 +4,7 @@
  * Math functions to use with custom Vec2 utilities.
  */
 
-import { Perturbations } from "simulation/perturbations"
+import type { Perturbations } from 'simulation/perturbations'
 
 export type Rectangle = [number, number, number, number] // x, y,w ,h
 export type Box = [number, number, number, number, number, number] // x,y,z,w,h,d
@@ -97,7 +97,6 @@ export function shuffle(array) {
 
 // https://stackoverflow.com/a/2450976
 export function dShuffle(array, perturbations: Perturbations) {
-
   let currentIndex = array.length
   let randomIndex
 

@@ -4,7 +4,6 @@
  * Repalces sim-step function for home screen simulation.
  */
 
-import { dirxml } from 'console'
 import { Disk } from 'simulation/disk'
 import { collideDisks } from 'simulation/luts/imp/disk-disk-lut'
 import type { Simulation } from 'simulation/simulation'
@@ -16,7 +15,6 @@ export function homeSimStep(sim: Simulation) {
 
 // t<0 regular real-physics step
 function _activeStep(sim: Simulation) {
-
   // collide disks with obstacles
   for (const [_diskIndex, disk] of sim.disks.entries()) {
     // //debug

@@ -31,7 +31,7 @@ import type { GlassGfx } from 'gfx/regions/imp/glass-gfx'
 import { settingsPanel } from 'overlay-panels/settings-panel'
 import { Serializer } from 'simulation/serializer'
 import { HomeSimMiner } from 'home-screen/home-sim-miner'
-import { materialLineDashOffset } from 'three/src/nodes/accessors/MaterialNode.js'
+import { loadHomeState } from 'home-screen/local-storage'
 // import { SIM_HASHES } from 'set-by-build'
 
 // can only be constructed once
@@ -51,6 +51,7 @@ export type GameState = 'loading' | 'title-screen' | 'second-title-screen' | 'pl
 
 export class PinballWizard {
   public activeSim!: Simulation // assigned in init -> reset
+  public homeState = loadHomeState()
 
   public loadingState: string | null = 'A'
   public gameState: GameState = 'loading'
@@ -169,7 +170,7 @@ export class PinballWizard {
   private _resetHome(selectedDiskIndex = -1) {
     const goodSeeds = HomeSimMiner.goodSeeds
     let homeSeed = 1234
-    if( goodSeeds.length > 0 ){
+    if (goodSeeds.length > 0) {
       homeSeed = goodSeeds[Math.floor(Math.random() * goodSeeds.length)]
     }
     console.log('reset home with seed', homeSeed)
